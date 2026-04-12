@@ -1,21 +1,29 @@
 ---
-- name: Include OS-specific base tasks
-  ansible.builtin.include_tasks: "{{ ansible_os_family | lower }}.yml"
-  tags: [base]
+- name: Detect OS family
+  ansible.builtin.raw: |
+    if [ -f /etc/redhat-release ]; then printf "RedHat\n"; elif [ -f /etc/debian_version ]; then printf "Debian\n"; fi
+  register: os_family
+  changed_when: false
 
-- name: Configure NTP with chrony
-  ansible.builtin.template:
-    src: chrony.conf.j2
-    dest: /etc/chrony.conf
-    owner: root
-    group: root
-    mode: '0644'
+- name: Include RedHat tasks
+  ansible.builtin.include_tasks: redhat.yml
+  when: "'RedHat' in os_family.stdout"
+
+- name: Include Debian tasks
+  ansible.builtin.include_tasks: debian.yml
+  when: "'Debian' in os_family.stdout"
+
+- name: Deploy chrony configuration
+  ansible.builtin.raw: |
+    cat > /etc/chrony.conf << 'CHRONYEOF'
+    {% for server in ntp_servers %}pool {{ server }} iburst
+    {% endfor %}driftfile /var/lib/chrony/drift
+    makestep 1.0 3
+    rtcsync
+    logdir /var/log/chrony
+    CHRONYEOF
   notify: Restart chronyd
-  tags: [base]
 
-- name: Ensure chronyd is started and enabled
-  ansible.builtin.systemd:
-    name: chronyd
-    state: started
-    enabled: true
-  tags: [base]
+- name: Enable and start chronyd
+  ansible.builtin.raw: systemctl enable --now chronyd
+  changed_when: false

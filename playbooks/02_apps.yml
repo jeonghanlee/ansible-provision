@@ -1,6 +1,7 @@
 ---
 - name: Deploy con, procServ, and conserver
   hosts: all_nodes
+  gather_facts: false
   become: yes
   roles:
     - role: app_con

@@ -1,30 +1,10 @@
 ---
-- name: Check if procServ binary exists
-  ansible.builtin.stat:
-    path: "{{ path_procserv_bin }}"
-  register: stat_procserv
-
 - name: Build and install procServ
-  when: not stat_procserv.stat.exists
-  block:
-    - name: Clone procServ-env repository
-      ansible.builtin.git:
-        repo: "{{ repo_procserv }}"
-        dest: "{{ path_procserv_src }}"
-        version: master
-
-    - name: Build and install procServ
-      ansible.builtin.command:
-        cmd: "make {{ item }}"
-        chdir: "{{ path_procserv_src }}"
-      loop:
-        - init
-        - conf
-        - build
-        - install
-
-  always:
-    - name: Remove procServ source directory
-      ansible.builtin.file:
-        path: "{{ path_procserv_src }}"
-        state: absent
+  ansible.builtin.raw: |
+    if [ ! -f {{ path_procserv_bin }} ]; then
+      rm -rf {{ path_procserv_src }}
+      git clone {{ repo_procserv }} {{ path_procserv_src }}
+      cd {{ path_procserv_src }} && make init && make conf && make build && make install
+      rm -rf {{ path_procserv_src }}
+    fi
+  changed_when: false

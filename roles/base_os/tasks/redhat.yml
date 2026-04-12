@@ -1,15 +1,41 @@
 ---
-- name: Install EPEL repository
-  ansible.builtin.command:
-    cmd: dnf install -y epel-release
+- name: Install dnf-plugins-core and EPEL
+  ansible.builtin.raw: dnf install -y dnf-plugins-core epel-release
   changed_when: false
 
 - name: Enable PowerTools repository
-  ansible.builtin.command:
-    cmd: dnf config-manager --set-enabled powertools
+  ansible.builtin.raw: dnf config-manager --set-enabled powertools
   changed_when: false
 
 - name: Install base packages (RedHat)
-  ansible.builtin.dnf:
-    name: "{{ pkg_base + ['openssl-devel', 'chrony'] }}"
-    state: present
+  ansible.builtin.raw: "dnf install -y {{ pkg_base  + pkg_standard | join(' ') }}"
+  changed_when: false
+
+- name: Enable firewalld
+  ansible.builtin.raw: systemctl enable --now firewalld
+  changed_when: false
+
+- name: Configure firewalld for NTP and EPICS
+  ansible.builtin.raw: |
+    firewall-cmd --permanent --add-service=ntp || true
+    for port in {% for p in epics_ca_ports_tcp %}{{ p }}/tcp {% endfor %}{% for p in epics_ca_ports_udp %}{{ p }}/udp {% endfor %}{% for p in epics_pva_ports_tcp %}{{ p }}/tcp {% endfor %}{% for p in epics_pva_ports_udp %}{{ p }}/udp {% endfor %}; do
+      firewall-cmd --permanent --add-port=$port || true
+    done
+    firewall-cmd --reload
+  changed_when: false
+
+- name: Install Python 3.9 and pip (RedHat)
+  ansible.builtin.raw: "dnf install -y {{ pkg_python_redhat | join(' ') }}"
+  changed_when: false
+
+- name: Install system Python packages
+  ansible.builtin.raw: "dnf install -y {{ pkg_python_system | join(' ') }}"
+  changed_when: false
+
+- name: Install pip packages
+  ansible.builtin.raw: "{{ pip_bin }} install {{ (pip_packages_global + pip_packages_epics) | join(' ') }}"
+  changed_when: false
+
+- name: Set python alternative
+  ansible.builtin.raw: "alternatives --set {{ runtime_python_alt_name }} {{ runtime_python_alt_path }}"
+  changed_when: false

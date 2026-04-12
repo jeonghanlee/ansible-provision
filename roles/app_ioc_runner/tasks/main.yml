@@ -1,85 +1,31 @@
 ---
-- name: Check if ioc-runner binary exists
-  ansible.builtin.stat:
-    path: "{{ path_ioc_runner_bin }}"
-  register: stat_ioc_runner
-
-- name: Deploy epics-ioc-runner
-  when: not stat_ioc_runner.stat.exists
-  block:
-    - name: Clone epics-ioc-runner to local filesystem
-      ansible.builtin.git:
-        repo: "{{ repo_ioc_runner }}"
-        dest: "{{ path_ioc_runner_src }}"
-        version: master
-
-    - name: Set execution permission for setup script
-      ansible.builtin.file:
-        path: "{{ path_ioc_runner_src }}/bin/setup-system-infra.bash"
-        mode: '0755'
-
-    - name: Run infrastructure setup (accounts, dirs, sudoers, systemd)
-      ansible.builtin.command:
-        cmd: "{{ path_ioc_runner_src }}/bin/setup-system-infra.bash --full"
-      register: runner_setup_result
-      changed_when: true
-
-    - name: Install ioc-runner CLI wrapper
-      ansible.builtin.copy:
-        src: "{{ path_ioc_runner_src }}/bin/ioc-runner"
-        dest: "{{ path_ioc_runner_bin }}"
-        remote_src: true
-        mode: '0755'
-
-    - name: Inject git hash into ioc-runner
-      ansible.builtin.shell:
-        cmd: >
-          git -C {{ path_ioc_runner_src }} rev-parse --short HEAD 2>/dev/null || printf "unknown"
-      register: git_hash
-      changed_when: false
-
-    - name: Inject build date into ioc-runner
-      ansible.builtin.shell:
-        cmd: date -u +"%Y-%m-%dT%H:%M:%SZ"
-      register: build_date
-      changed_when: false
-
-    - name: Stamp git hash into installed ioc-runner
-      ansible.builtin.replace:
-        path: "{{ path_ioc_runner_bin }}"
-        regexp: '^declare -g RUNNER_GIT_HASH=.*'
-        replace: 'declare -g RUNNER_GIT_HASH="{{ git_hash.stdout }}"'
-
-    - name: Stamp build date into installed ioc-runner
-      ansible.builtin.replace:
-        path: "{{ path_ioc_runner_bin }}"
-        regexp: '^declare -g RUNNER_BUILD_DATE=.*'
-        replace: 'declare -g RUNNER_BUILD_DATE="{{ build_date.stdout }}"'
-
-    - name: Deploy bash completion for ioc-runner
-      ansible.builtin.copy:
-        src: "{{ path_ioc_runner_src }}/completion/ioc-runner-completion.bash"
-        dest: /etc/bash_completion.d/ioc-runner
-        remote_src: true
-        mode: '0644'
-
-  always:
-    - name: Remove ioc-runner source directory
-      ansible.builtin.file:
-        path: "{{ path_ioc_runner_src }}"
-        state: absent
-
-- name: Add authorized engineers to ioc group
-  ansible.builtin.user:
-    name: "{{ item }}"
-    groups: ioc
-    append: yes
-  loop: "{{ epics_ioc_engineers }}"
+- name: Deploy epics-ioc-runner infrastructure
+  ansible.builtin.raw: |
+    if [ ! -f {{ path_ioc_runner_bin }} ]; then
+      rm -rf {{ path_ioc_runner_src }}
+      git clone {{ repo_ioc_runner }} {{ path_ioc_runner_src }}
+      chmod 0755 {{ path_ioc_runner_src }}/bin/setup-system-infra.bash
+      {{ path_ioc_runner_src }}/bin/setup-system-infra.bash --full
+      cp {{ path_ioc_runner_src }}/bin/ioc-runner {{ path_ioc_runner_bin }}
+      GIT_HASH=$(git -C {{ path_ioc_runner_src }} rev-parse --short HEAD 2>/dev/null || printf "unknown")
+      BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+      sed -i "s/^declare -g RUNNER_GIT_HASH=.*/declare -g RUNNER_GIT_HASH=\"${GIT_HASH}\"/" {{ path_ioc_runner_bin }}
+      sed -i "s/^declare -g RUNNER_BUILD_DATE=.*/declare -g RUNNER_BUILD_DATE=\"${BUILD_DATE}\"/" {{ path_ioc_runner_bin }}
+      chmod 0755 {{ path_ioc_runner_bin }}
+      cp {{ path_ioc_runner_src }}/completion/ioc-runner-completion.bash /etc/bash_completion.d/ioc-runner
+      chmod 0644 /etc/bash_completion.d/ioc-runner
+      rm -rf {{ path_ioc_runner_src }}
+    fi
+  changed_when: false
 
 - name: Create shared IOC deployment directory
-  ansible.builtin.file:
-    path: /opt/epics-iocs
-    state: directory
-    owner: root
-    group: ioc
-    mode: '2775'
+  ansible.builtin.raw: |
+    mkdir -p /opt/epics-iocs
+    chown root:ioc /opt/epics-iocs
+    chmod 2775 /opt/epics-iocs
+  changed_when: false
+
+- name: Add engineers to ioc group
+  ansible.builtin.raw: "usermod -aG ioc {{ item }}"
+  loop: "{{ epics_ioc_engineers }}"
+  changed_when: false

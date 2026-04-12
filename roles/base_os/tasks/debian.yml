@@ -1,10 +1,20 @@
 ---
 - name: Update apt cache
-  ansible.builtin.apt:
-    update_cache: true
-    cache_valid_time: 3600
+  ansible.builtin.raw: apt update -y
+  changed_when: false
 
 - name: Install base packages (Debian)
-  ansible.builtin.apt:
-    name: "{{ pkg_base + ['libssl-dev', 'chrony'] }}"
-    state: present
+  ansible.builtin.raw: "apt install -y {{ pkg_base + pkg_standard | join(' ') }}"
+  changed_when: false
+
+- name: Install Python 3 and pip (Debian)
+  ansible.builtin.raw: "apt install -y {{ pkg_python_debian | join(' ') }}"
+  changed_when: false
+
+- name: Install pip packages (Debian)
+  ansible.builtin.raw: "pip3 install {{ (pip_packages_global + pip_packages_epics) | join(' ') }}"
+  changed_when: false
+
+- name: Set python alternative
+  ansible.builtin.raw: "alternatives --set {{ runtime_python_alt_name }} {{ runtime_python_alt_path }}"
+  changed_when: false
