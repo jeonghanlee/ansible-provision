@@ -1,4 +1,5 @@
 ---
+# roles/base_os/tasks/main.yml
 - name: Detect OS family
   ansible.builtin.raw: |
     if [ -f /etc/redhat-release ]; then printf "RedHat\n"; elif [ -f /etc/debian_version ]; then printf "Debian\n"; fi

@@ -1,10 +1,11 @@
 ---
+# roles/base_os/tasks/debian.yml
 - name: Update apt cache
   ansible.builtin.raw: apt update -y
   changed_when: false
 
 - name: Install base packages (Debian)
-  ansible.builtin.raw: "apt install -y {{ pkg_base + pkg_standard | join(' ') }}"
+  ansible.builtin.raw: "apt install -y {{ (pkg_base + pkg_standard) | join(' ') }}"
   changed_when: false
 
 - name: Install Python 3 and pip (Debian)
@@ -16,5 +17,5 @@
   changed_when: false
 
 - name: Set python alternative
-  ansible.builtin.raw: "alternatives --set {{ runtime_python_alt_name }} {{ runtime_python_alt_path }}"
+  ansible.builtin.raw: "update-alternatives --set {{ runtime_python_alt_name }} {{ runtime_python_alt_path }}"
   changed_when: false
