@@ -99,4 +99,3 @@ pkg_python_debian:
 pkg_python_redhat:
   - python39
   - python39-pip
-

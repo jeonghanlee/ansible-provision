@@ -1,3 +1,6 @@
+---
+# inventory/group_vars/rocky8.yml
+
 epics_os_dir: "rocky-8"
 
 pkg_standard:
@@ -32,7 +35,6 @@ pkg_standard:
   - libcurl-devel
   - rpcgen
 
-
-  pkg_python_redhat:
+pkg_python_redhat:
   - python39
   - python39-pip
