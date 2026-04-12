@@ -1,0 +1,21 @@
+---
+- name: Include OS-specific base tasks
+  ansible.builtin.include_tasks: "{{ ansible_os_family | lower }}.yml"
+  tags: [base]
+
+- name: Configure NTP with chrony
+  ansible.builtin.template:
+    src: chrony.conf.j2
+    dest: /etc/chrony.conf
+    owner: root
+    group: root
+    mode: '0644'
+  notify: Restart chronyd
+  tags: [base]
+
+- name: Ensure chronyd is started and enabled
+  ansible.builtin.systemd:
+    name: chronyd
+    state: started
+    enabled: true
+  tags: [base]

@@ -1,0 +1,30 @@
+---
+- name: Check if con binary exists
+  ansible.builtin.stat:
+    path: "{{ path_con_bin }}"
+  register: stat_con
+
+- name: Build and install con
+  when: not stat_con.stat.exists
+  block:
+    - name: Clone con repository
+      ansible.builtin.git:
+        repo: "{{ repo_con }}"
+        dest: "{{ path_con_src }}"
+        version: master
+
+    - name: Build con
+      ansible.builtin.command:
+        cmd: make
+        chdir: "{{ path_con_src }}"
+
+    - name: Install con
+      ansible.builtin.command:
+        cmd: make install DESTDIR=/usr/local
+        chdir: "{{ path_con_src }}"
+
+  always:
+    - name: Remove con source directory
+      ansible.builtin.file:
+        path: "{{ path_con_src }}"
+        state: absent

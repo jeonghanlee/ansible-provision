@@ -1,0 +1,9 @@
+---
+- name: Deploy EPICS environment and ioc-runner
+  hosts: ioc_nodes
+  become: yes
+  roles:
+    - role: app_epics
+      tags: [app, epics]
+    - role: app_ioc_runner
+      tags: [app, ioc_runner]

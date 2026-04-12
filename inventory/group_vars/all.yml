@@ -1,0 +1,58 @@
+---
+# inventory/group_vars/all.yml
+
+# Proxy configuration (disabled by default for testbed)
+proxy_enabled: false
+
+# NTP servers
+ntp_servers:
+  - "pool.ntp.org"
+
+# EPICS Channel Access ports
+epics_ca_ports_tcp: ["5064", "5065"]
+epics_ca_ports_udp: ["5064", "5065"]
+
+# EPICS pvAccess ports
+epics_pva_ports_tcp: ["5075"]
+epics_pva_ports_udp: ["5075", "5076"]
+
+# Base packages (common to all OS types)
+pkg_base:
+  - git
+  - vim
+  - tmux
+  - make
+  - gcc
+  - autoconf
+  - automake
+
+# Application repositories
+repo_con:          "https://github.com/jeonghanlee/con"
+repo_procserv:     "https://github.com/jeonghanlee/procServ-env"
+repo_conserver:    "https://github.com/jeonghanlee/conserver-env"
+repo_ioc_runner:   "https://github.com/jeonghanlee/epics-ioc-runner"
+repo_epics:        "https://github.com/jeonghanlee/EPICS-env-distribution"
+
+# Temporary build paths
+path_con_src:        "/tmp/con"
+path_procserv_src:   "/tmp/procServ-env"
+path_conserver_src:  "/tmp/conserver-env"
+path_ioc_runner_src: "/tmp/epics-ioc-runner"
+path_epics_src:      "/tmp/EPICS-env-distribution"
+
+# Installed binary paths (idempotency check)
+path_con_bin:        "/usr/local/bin/con"
+path_procserv_bin:   "/usr/local/bin/procServ"
+path_conserver_bin:  "/usr/local/bin/conserver"
+path_ioc_runner_bin: "/usr/local/bin/ioc-runner"
+
+# EPICS installation path
+path_epics_local: "/opt/EPICS-env-distribution"
+
+# EPICS-env-distribution version selectors (epics_os_dir set per OS in group_vars)
+epics_env_version:  "1.2.0"
+epics_base_version: "7.0.10"
+
+# IOC management group members
+epics_ioc_engineers:
+  - vmadmin

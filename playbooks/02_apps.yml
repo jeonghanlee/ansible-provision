@@ -1,0 +1,11 @@
+---
+- name: Deploy con, procServ, and conserver
+  hosts: all_nodes
+  become: yes
+  roles:
+    - role: app_con
+      tags: [app, con]
+    - role: app_procserv
+      tags: [app, procserv]
+    - role: app_conserver
+      tags: [app, conserver]
