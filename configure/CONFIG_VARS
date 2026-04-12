@@ -1,0 +1,13 @@
+ANSIBLE_PLAYBOOK := ansible-playbook
+ANSIBLE_CMD      := ansible
+
+ANSIBLE_OPTS     ?=
+ANSIBLE_TAGS     ?=
+ANSIBLE_LIMIT    ?=
+
+_tag_opt   = $(if $(ANSIBLE_TAGS),  --tags $(ANSIBLE_TAGS),)
+_limit_opt = $(if $(ANSIBLE_LIMIT), --limit $(ANSIBLE_LIMIT),)
+_base_opts = -i $(INVENTORY) $(ANSIBLE_OPTS) $(_tag_opt) $(_limit_opt)
+
+VARS_EXCLUDES += ANSIBLE_PLAYBOOK ANSIBLE_CMD ANSIBLE_OPTS
+VARS_EXCLUDES += ANSIBLE_TAGS ANSIBLE_LIMIT _tag_opt _limit_opt _base_opts

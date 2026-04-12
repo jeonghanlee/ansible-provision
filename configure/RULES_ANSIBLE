@@ -1,0 +1,55 @@
+.DEFAULT_GOAL := help
+
+.PHONY: help all check ping
+
+help:
+	$(info -----------------------------------------)
+	$(info Make Targets)
+	$(info -----------------------------------------)
+	$(QUIET) awk '/^[a-zA-Z._0-9-]+:/ {             \
+	  nb = sub( /^## /, "", helpMsg );               \
+	  if(nb == 0) {                                  \
+	    helpMsg = $$0;                               \
+	    nb = sub( /^[^:]*:.* ## /, "", helpMsg );    \
+	  }                                              \
+	  if (nb)                                        \
+	    print  $$1 "\t" helpMsg;                     \
+	}                                                \
+	{ helpMsg = $$0 }'                               \
+	$(MAKEFILE_LIST) | column -ts:
+
+## Run full playbook stack on all nodes
+all:
+	$(QUIET) $(ANSIBLE_PLAYBOOK) $(_base_opts) $(SITE_YML)
+
+## Dry run full playbook stack on all nodes
+check:
+	$(QUIET) $(ANSIBLE_PLAYBOOK) $(_base_opts) -C $(SITE_YML)
+
+## Verify connectivity to all nodes
+ping:
+	$(QUIET) $(ANSIBLE_CMD) all -i $(INVENTORY) -m ping
+
+.PHONY: help.ansible
+help.ansible: ## Show dynamically generated playbook targets
+	$(QUIET) printf "\nPer-playbook targets (PLAYBOOK in: %s)\n" "$(PLAYBOOKS)"
+	$(QUIET) printf "  make <pb>                  Run playbook on all nodes\n"
+	$(QUIET) printf "  make <pb>.check            Dry run on all nodes\n"
+	$(QUIET) printf "  make <pb>.<os>             Run on OS group (rocky8|debian13)\n"
+	$(QUIET) printf "  make <pb>.<os>.check       Dry run on OS group\n"
+	$(QUIET) printf "  make <pb>.<os>.<node>      Run on single VM\n"
+	$(QUIET) printf "  make <pb>.<os>.<node>.check Dry run on single VM\n"
+	$(QUIET) printf "\nExamples:\n"
+	$(QUIET) printf "  make 01_base\n"
+	$(QUIET) printf "  make 01_base.rocky8\n"
+	$(QUIET) printf "  make 02_apps.rocky8.server\n"
+	$(QUIET) printf "  make 03_epics.debian13.node1.check\n"
+
+$(foreach pb,  $(PLAYBOOKS), $(eval $(call playbook_group_targets,$(pb))))
+$(foreach pb,  $(PLAYBOOKS), \
+  $(foreach os,  $(OS_GROUPS), $(eval $(call playbook_os_targets,$(pb),$(os)))))
+$(foreach pb,  $(PLAYBOOKS), \
+  $(foreach os,  $(OS_GROUPS), \
+    $(foreach node, $(NODE_IDS), $(eval $(call playbook_node_targets,$(pb),$(os),$(node))))))
+
+FORCE:
