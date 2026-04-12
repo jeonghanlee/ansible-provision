@@ -26,5 +26,5 @@
   notify: Restart chronyd
 
 - name: Enable and start chronyd
-  ansible.builtin.raw: systemctl enable --now chronyd
+  ansible.builtin.raw: systemctl enable chronyd 2>/dev/null || true; systemctl start chronyd
   changed_when: false
