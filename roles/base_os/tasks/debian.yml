@@ -13,9 +13,6 @@
   changed_when: false
 
 - name: Install pip packages (Debian)
-  ansible.builtin.raw: "pip3 install {{ (pip_packages_global + pip_packages_epics) | join(' ') }}"
+  ansible.builtin.raw: "pip3 install --break-system-packages {{ pip_packages_epics | join(' ') }}"
   changed_when: false
 
-- name: Set python alternative
-  ansible.builtin.raw: "update-alternatives --set {{ runtime_python_alt_name }} {{ runtime_python_alt_path }}"
-  changed_when: false
