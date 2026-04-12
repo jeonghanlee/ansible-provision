@@ -1,0 +1,6 @@
+INVENTORY    := inventory/testbed.ini
+PLAYBOOK_DIR := playbooks
+SITE_YML     := site.yml
+
+-include $(TOP)/../CONFIG_SITE.local
+-include $(TOP)/configure/CONFIG_SITE.local

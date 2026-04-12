@@ -1,0 +1,7 @@
+PLAYBOOKS  := 01_base 02_apps 03_epics
+OS_GROUPS  := rocky8 debian13
+NODE_IDS   := server node1 node2
+VM_PREFIX  := testbed
+
+-include $(TOP)/../RELEASE.local
+-include $(TOP)/configure/RELEASE.local
