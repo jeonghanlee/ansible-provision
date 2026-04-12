@@ -1,0 +1,7 @@
+---
+- name: Apply base OS configuration
+  hosts: all_nodes
+  become: yes
+  roles:
+    - role: base_os
+      tags: [base]

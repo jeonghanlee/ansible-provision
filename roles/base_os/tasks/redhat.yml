@@ -1,0 +1,15 @@
+---
+- name: Install EPEL repository
+  ansible.builtin.command:
+    cmd: dnf install -y epel-release
+  changed_when: false
+
+- name: Enable PowerTools repository
+  ansible.builtin.command:
+    cmd: dnf config-manager --set-enabled powertools
+  changed_when: false
+
+- name: Install base packages (RedHat)
+  ansible.builtin.dnf:
+    name: "{{ pkg_base + ['openssl-devel', 'chrony'] }}"
+    state: present

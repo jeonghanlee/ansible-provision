@@ -1,0 +1,30 @@
+---
+- name: Check if conserver binary exists
+  ansible.builtin.stat:
+    path: "{{ path_conserver_bin }}"
+  register: stat_conserver
+
+- name: Build and install conserver
+  when: not stat_conserver.stat.exists
+  block:
+    - name: Clone conserver-env repository
+      ansible.builtin.git:
+        repo: "{{ repo_conserver }}"
+        dest: "{{ path_conserver_src }}"
+        version: master
+
+    - name: Build and install conserver
+      ansible.builtin.command:
+        cmd: "make {{ item }}"
+        chdir: "{{ path_conserver_src }}"
+      loop:
+        - init
+        - conf
+        - build
+        - install
+
+  always:
+    - name: Remove conserver source directory
+      ansible.builtin.file:
+        path: "{{ path_conserver_src }}"
+        state: absent
