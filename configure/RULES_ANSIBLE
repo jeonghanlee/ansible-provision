@@ -28,7 +28,7 @@ check:
 
 ## Verify connectivity to all nodes
 ping:
-	$(QUIET) $(ANSIBLE_CMD) all -i $(INVENTORY) -m ping
+	$(QUIET) $(ANSIBLE_CMD) all -i $(INVENTORY) -m raw -a "uptime"
 
 .PHONY: help.ansible
 help.ansible: ## Show dynamically generated playbook targets

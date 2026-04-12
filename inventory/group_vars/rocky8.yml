@@ -33,6 +33,7 @@ pkg_standard:
   - net-snmp-utils
   - pcre-devel
   - libcurl-devel
+  - firewalld
   - rpcgen
 
 pkg_python_redhat:
