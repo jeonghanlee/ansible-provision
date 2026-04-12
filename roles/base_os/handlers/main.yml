@@ -1,5 +1,3 @@
 ---
 - name: Restart chronyd
-  ansible.builtin.systemd:
-    name: chronyd
-    state: restarted
+  ansible.builtin.raw: systemctl restart chronyd

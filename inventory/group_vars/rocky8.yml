@@ -1,2 +1,38 @@
----
 epics_os_dir: "rocky-8"
+
+pkg_standard:
+  - readline-devel
+  - libXt-devel
+  - libXmu-devel
+  - libXpm-devel
+  - motif-devel
+  - gcc-c++
+  - net-snmp-devel
+  - libusb-devel
+  - libusbx-devel
+  - systemd-devel
+  - libxml2-devel
+  - hdf5-devel
+  - netcdf-devel
+  - libtiff-devel
+  - libjpeg-turbo-devel
+  - libpng-devel
+  - libtirpc-devel
+  - libtirpc
+  - boost-devel
+  - libssh2-devel
+  - libssh2
+  - python3-devel
+  - flex-devel
+  - ncurses-devel
+  - perl-devel
+  - net-snmp
+  - net-snmp-utils
+  - pcre-devel
+  - libcurl-devel
+  - rpcgen
+
+
+  pkg_python_redhat:
+  - python39
+  - python39-pip

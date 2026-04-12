@@ -10,35 +10,86 @@ Deploys con, procServ, conserver, EPICS, and ioc-runner on Rocky 8 and Debian 13
 
 Testbed VMs must be running via `cloud-provision` before executing any playbook.
 
+## Makefile Workflow
+
+### Connectivity
+
 ```bash
-# Verify connectivity
-ansible all -m ping
+make ping
 ```
+
+### Provision
+
+```bash
+make all                           # site.yml on all nodes
+make 01_base                       # base OS on all nodes
+make 02_apps                       # con, procServ, conserver on all nodes
+make 03_epics                      # EPICS + ioc-runner on ioc nodes
+```
+
+```bash
+make 01_base.rocky8                # OS group
+make 01_base.rocky8.server         # single VM
+```
+
+### Dry Run
+
+```bash
+make check                         # full stack dry run
+make 01_base.rocky8.server.check
+```
+
+### Options
+
+```bash
+make 01_base ANSIBLE_TAGS=base ANSIBLE_OPTS=-v
+make 02_apps ANSIBLE_LIMIT=rocky8
+```
+
+### Configuration
+
+```bash
+make vars
+make PRINT.INVENTORY
+```
+
+---
+
+## Direct CLI Workflow
+
+```bash
+ansible all -m ping
+ansible-playbook site.yml
+ansible-playbook playbooks/01_base.yml
+ansible-playbook playbooks/02_apps.yml
+ansible-playbook playbooks/03_epics.yml
+```
+
+```bash
+ansible-playbook site.yml --limit rocky8
+ansible-playbook site.yml --limit testbed-rocky8-server
+ansible-playbook site.yml --tags epics
+ansible-playbook site.yml -C
+```
+
+---
 
 ## Inventory
 
 ```
-inventory/testbed.ini          # Rocky 8 + Debian 13 static IPs
-inventory/group_vars/all.yml   # Site-independent variables
-inventory/group_vars/rocky8.yml
-inventory/group_vars/debian13.yml
+inventory/testbed.ini              # Rocky 8 + Debian 13 static IPs
+inventory/group_vars/all.yml       # Site-independent variables
+inventory/group_vars/rocky8.yml    # Rocky 8 specific (epics_os_dir)
+inventory/group_vars/debian13.yml  # Debian 13 specific (epics_os_dir)
 ```
 
-## Workflow
-
-```bash
-ansible-playbook site.yml                     # full stack
-ansible-playbook playbooks/01_base.yml        # base OS only
-ansible-playbook playbooks/02_apps.yml        # con, procServ, conserver
-ansible-playbook playbooks/03_epics.yml       # EPICS + ioc-runner
-```
+Override inventory path via:
 
 ```bash
-ansible-playbook site.yml --limit rocky8      # single OS group
-ansible-playbook site.yml --limit testbed-rocky8-server
-ansible-playbook site.yml --tags epics        # single role
-ansible-playbook site.yml -C                  # dry run
+echo "INVENTORY=inventory/custom.ini" > configure/CONFIG_SITE.local
 ```
+
+---
 
 ## Roles
 

@@ -1,18 +1,15 @@
 ---
 - name: Clone EPICS-env-distribution (binary, depth 1)
-  ansible.builtin.git:
-    repo: "{{ repo_epics }}"
-    dest: "{{ path_epics_local }}"
-    version: master
-    depth: 1
-    force: yes
-  become: yes
-  become_user: "{{ ansible_user }}"
+  ansible.builtin.raw: |
+    if [ ! -d {{ path_epics_local }} ]; then
+      git clone --depth 1 {{ repo_epics }} {{ path_epics_local }}
+    fi
+  changed_when: false
 
 - name: Deploy EPICS environment activation script
-  ansible.builtin.template:
-    src: epics-env.sh.j2
-    dest: /etc/profile.d/epics-env.sh
-    owner: root
-    group: root
-    mode: '0644'
+  ansible.builtin.raw: |
+    cat > /etc/profile.d/epics-env.sh << 'EOF'
+    source {{ path_epics_local }}/{{ epics_env_version }}/{{ epics_os_dir }}/{{ epics_base_version }}/setEpicsEnv.bash
+    EOF
+    chmod 0644 /etc/profile.d/epics-env.sh
+  changed_when: false

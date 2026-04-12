@@ -19,12 +19,25 @@ epics_pva_ports_udp: ["5075", "5076"]
 # Base packages (common to all OS types)
 pkg_base:
   - git
+  - sudo
   - vim
   - tmux
   - make
   - gcc
   - autoconf
   - automake
+  - chrony
+  - libtool
+  - re2c
+  - graphviz
+  - cmake
+  - screen
+  - tree
+  - unzip
+  - chrpath
+  - wget
+  - sysstat
+  - cppcheck
 
 # Application repositories
 repo_con:          "https://github.com/jeonghanlee/con"
@@ -47,7 +60,7 @@ path_conserver_bin:  "/usr/local/bin/conserver"
 path_ioc_runner_bin: "/usr/local/bin/ioc-runner"
 
 # EPICS installation path
-path_epics_local: "/opt/EPICS-env-distribution"
+path_epics_local: "/opt/epics"
 
 # EPICS-env-distribution version selectors (epics_os_dir set per OS in group_vars)
 epics_env_version:  "1.2.0"
@@ -56,3 +69,34 @@ epics_base_version: "7.0.10"
 # IOC management group members
 epics_ioc_engineers:
   - vmadmin
+
+# Python runtime
+runtime_python_alt_name: "python"
+runtime_python_alt_path: "/usr/bin/python3"
+pip_bin:                 "/usr/bin/pip3.9"
+
+pkg_python_system:
+  - python3-pyserial
+
+pip_packages_global:
+  - build
+  - numpy
+  - nose2
+  - gcovr==5.0
+  - flawfinder==2.0.8
+  - pyparsing==2.4.2
+
+pip_packages_epics:
+  - epicscorelibs
+  - softioc
+  - cothread
+
+pkg_python_debian:
+  - python3
+  - python3-pip
+  - python3-serial
+
+pkg_python_redhat:
+  - python39
+  - python39-pip
+
