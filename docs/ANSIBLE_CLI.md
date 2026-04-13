@@ -3,11 +3,11 @@
 ## Connectivity
 
 ```bash
-# Verify connectivity to all nodes
-ansible all -i inventory/testbed.ini -m ping
+# Verify connectivity to all nodes (raw module, no Python dependency)
+ansible all -i inventory/testbed.ini -m raw -a "uptime"
 
 # Verify connectivity to a single group
-ansible rocky8 -i inventory/testbed.ini -m ping
+ansible rocky8 -i inventory/testbed.ini -m raw -a "uptime"
 ```
 
 ---
@@ -79,7 +79,7 @@ ansible-inventory -i inventory/testbed.ini --host testbed-rocky8-server
 ## Makefile Wrappers
 
 ```bash
-make ping                              # ansible all -m ping
+make ping                              # ansible all -m raw -a "uptime"
 make all                               # site.yml on all nodes
 make check                             # site.yml dry run
 

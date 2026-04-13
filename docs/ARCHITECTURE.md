@@ -163,10 +163,11 @@ usermod -aG ioc {{ epics_ioc_engineers }}
 | Concern | Rocky 8 | Debian 13 |
 |---|---|---|
 | Package manager | `dnf` | `apt` |
-| Task file | `redhat.yml` | `debian.yml` |
-| SSL headers | `openssl-devel` | `libssl-dev` |
+| Task file    | `redhat.yml` | `debian.yml` |
+| SSL headers  | `openssl-devel` | `libssl-dev` |
 | EPICS os dir | `rocky-8` | `debian-13` |
-| EPICS repo | `EPEL + PowerTools` required | standard apt |
+| EPICS repo   | `EPEL + PowerTools` required | standard apt |
+| Python pip   | `pip3.9` (system-wide)   | apt packages + `pip3 --break-system-packages` (EPICS only) |
 
 ---
 

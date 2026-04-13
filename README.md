@@ -58,7 +58,7 @@ make PRINT.INVENTORY
 ## Direct CLI Workflow
 
 ```bash
-ansible all -m ping
+ansible all -m raw -a "uptime"
 ansible-playbook site.yml
 ansible-playbook playbooks/01_base.yml
 ansible-playbook playbooks/02_apps.yml
