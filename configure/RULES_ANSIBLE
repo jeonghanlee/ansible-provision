@@ -26,9 +26,9 @@ all:
 check:
 	$(QUIET) $(ANSIBLE_PLAYBOOK) $(_base_opts) -C $(SITE_YML)
 
-## Verify connectivity to all nodes
+## Verify connectivity to all nodes (honors ANSIBLE_LIMIT)
 ping:
-	$(QUIET) $(ANSIBLE_CMD) all -i $(INVENTORY) -m raw -a "uptime"
+	$(QUIET) $(ANSIBLE_CMD) all -i $(INVENTORY) $(_limit_opt) -m raw -a "uptime"
 
 .PHONY: help.ansible
 help.ansible: ## Show dynamically generated playbook targets
