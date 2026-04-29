@@ -5,6 +5,7 @@
     if [ -f /etc/redhat-release ]; then printf "RedHat\n"; elif [ -f /etc/debian_version ]; then printf "Debian\n"; fi
   register: os_family
   changed_when: false
+  check_mode: false
 
 - name: Include RedHat tasks
   ansible.builtin.include_tasks: redhat.yml
