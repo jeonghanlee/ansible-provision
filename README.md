@@ -8,6 +8,12 @@ Deploys con, procServ, conserver, EPICS, and ioc-runner on Rocky 8 and Debian 13
 
 ## Prerequisites
 
+Install ansible-core on the control host:
+
+```bash
+make setup
+```
+
 Testbed VMs must be running via `cloud-provision` before executing any playbook.
 
 ## Makefile Workflow

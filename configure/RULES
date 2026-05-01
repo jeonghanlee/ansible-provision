@@ -1,5 +1,6 @@
 vpath %.local $(TOP)/configure
 
 include $(TOP)/configure/RULES_FUNC
+include $(TOP)/configure/RULES_SETUP
 include $(TOP)/configure/RULES_ANSIBLE
 include $(TOP)/configure/RULES_VARS
