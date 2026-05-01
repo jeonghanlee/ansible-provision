@@ -32,6 +32,11 @@ EPICS control system stack across Rocky 8 and Debian 13 nodes.
      |
      V
 [ Nodes ready for IOC deployment ]
+
+(out-of-band, not in site.yml)
+04_nfs_sim.yml → nfs_sim role
+                 - loopback NFS export with root_squash
+                 - replaces ~vmadmin/gitsrc with NFS-mounted symlink
 ```
 
 ---
@@ -60,14 +65,16 @@ ansible-provision/
 ├── playbooks/
 │   ├── 01_base.yml
 │   ├── 02_apps.yml
-│   └── 03_epics.yml
+│   ├── 03_epics.yml
+│   └── 04_nfs_sim.yml
 └── roles/
     ├── base_os/
     ├── app_con/
     ├── app_procserv/
     ├── app_conserver/
     ├── app_epics/
-    └── app_ioc_runner/
+    ├── app_ioc_runner/
+    └── nfs_sim/
 ```
 
 ---
@@ -94,6 +101,7 @@ No dynamic inventory is required.
 | `debian13` | server, node1, node2 |
 | `ioc_nodes` | rocky8 + debian13 |
 | `all_nodes` | rocky8 + debian13 |
+| `nfs_sim_nodes` | rocky8-server, debian13-server |
 
 ---
 
@@ -155,6 +163,33 @@ ioc-runner CLI install
 mkdir /opt/epics-iocs (2775, root:ioc)
 usermod -aG ioc {{ epics_ioc_engineers }}
 ```
+
+### NFS root_squash Simulation
+
+`nfs_sim` is an out-of-band role applied only to `nfs_sim_nodes`
+(rocky8-server + debian13-server). It is not part of `site.yml`
+and is invoked via `playbooks/04_nfs_sim.yml`. The role reproduces
+the production NFS root_squash environment on a single host, so
+that epics-ioc-runner install and build flows can be exercised
+against the same permission shape they meet in deployment:
+
+```
+install nfs-utils / nfs-kernel-server
+  │
+  ├── /srv/nfs/alsu/vmadmin/gitsrc        (export source, vmadmin:vmadmin)
+  │
+  ├── /etc/exports.d/nfs_sim.exports
+  │     127.0.0.1: rw,sync,root_squash,no_subtree_check,fsid=10
+  │
+  ├── /home/nfs/alsu/vmadmin/gitsrc       (mount point, fstab persistent)
+  │     127.0.0.1:/srv/... nfs rw,soft,_netdev
+  │
+  └── ~vmadmin/gitsrc -> /home/nfs/alsu/vmadmin/gitsrc
+```
+
+After application, root-owned operations under `~vmadmin/gitsrc`
+are squashed to nobody by the kernel NFS client over the loopback
+mount, with no second host required.
 
 ---
 
