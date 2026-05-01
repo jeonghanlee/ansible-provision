@@ -1,0 +1,11 @@
+---
+# roles/nfs_sim/tasks/debian.yml
+- name: Install NFS server and client (Debian)
+  ansible.builtin.raw: apt install -y nfs-kernel-server nfs-common
+  changed_when: false
+
+- name: Enable and start NFS server (Debian)
+  ansible.builtin.raw: |
+    systemctl enable nfs-kernel-server 2>/dev/null || true
+    systemctl start nfs-kernel-server
+  changed_when: false

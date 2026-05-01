@@ -1,0 +1,18 @@
+---
+# roles/nfs_sim/defaults/main.yml
+nfs_sim_user: vmadmin
+nfs_sim_group: vmadmin
+
+nfs_sim_export_root: "/srv/nfs/alsu/{{ nfs_sim_user }}"
+nfs_sim_export_dir:  "{{ nfs_sim_export_root }}/gitsrc"
+
+nfs_sim_mount_root:  "/home/nfs/alsu/{{ nfs_sim_user }}"
+nfs_sim_mount_dir:   "{{ nfs_sim_mount_root }}/gitsrc"
+
+nfs_sim_user_home:    "/home/{{ nfs_sim_user }}"
+nfs_sim_user_symlink: "{{ nfs_sim_user_home }}/gitsrc"
+
+nfs_sim_export_options:  "rw,sync,root_squash,no_subtree_check,fsid=10"
+nfs_sim_mount_options:   "rw,soft,_netdev"
+nfs_sim_export_dir_mode: "0750"
+nfs_sim_nfs_host:        "127.0.0.1"
