@@ -87,6 +87,7 @@ make 01_base                           # 01_base.yml on all nodes
 make 01_base.rocky8                    # limit to rocky8 group
 make 01_base.rocky8.server             # limit to single VM
 make 01_base.rocky8.server.check       # dry run on single VM
+make 04_nfs_sim                        # 04_nfs_sim.yml on nfs_sim_nodes (out-of-band)
 
 make vars                              # print active configuration
 make PRINT.INVENTORY                   # print a specific variable

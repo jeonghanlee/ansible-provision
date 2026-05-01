@@ -25,6 +25,7 @@ make all                           # site.yml on all nodes
 make 01_base                       # base OS on all nodes
 make 02_apps                       # con, procServ, conserver on all nodes
 make 03_epics                      # EPICS + ioc-runner on ioc nodes
+make 04_nfs_sim                    # NFS root_squash simulation (out-of-band)
 ```
 
 ```bash
@@ -101,6 +102,7 @@ echo "INVENTORY=inventory/custom.ini" > configure/CONFIG_SITE.local
 | `app_conserver` | conserver serial console server | [jeonghanlee/conserver-env](https://github.com/jeonghanlee/conserver-env) |
 | `app_epics` | EPICS binary distribution | [jeonghanlee/EPICS-env-distribution](https://github.com/jeonghanlee/EPICS-env-distribution) |
 | `app_ioc_runner` | epics-ioc-runner infrastructure | [jeonghanlee/epics-ioc-runner](https://github.com/jeonghanlee/epics-ioc-runner) |
+| `nfs_sim` | NFS root_squash simulation (loopback export + remount) | — |
 
 ## Playbook Layers
 
@@ -109,3 +111,4 @@ echo "INVENTORY=inventory/custom.ini" > configure/CONFIG_SITE.local
 | `01_base.yml` | `base_os` | all nodes |
 | `02_apps.yml` | `app_con`, `app_procserv`, `app_conserver` | all nodes |
 | `03_epics.yml` | `app_epics`, `app_ioc_runner` | ioc nodes |
+| `04_nfs_sim.yml` | `nfs_sim` | `nfs_sim_nodes` (out-of-band, not in `site.yml`) |
