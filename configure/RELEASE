@@ -1,4 +1,4 @@
-PLAYBOOKS  := 01_base 02_apps 03_epics
+PLAYBOOKS  := 01_base 02_apps 03_epics 04_nfs_sim
 OS_GROUPS  := rocky8 debian13
 NODE_IDS   := server node1 node2
 VM_PREFIX  := testbed

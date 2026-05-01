@@ -1,0 +1,17 @@
+---
+# roles/nfs_sim/tasks/redhat.yml
+- name: Install NFS server and client (RedHat)
+  ansible.builtin.raw: dnf install -y nfs-utils
+  changed_when: false
+
+- name: Enable and start NFS server (RedHat)
+  ansible.builtin.raw: |
+    systemctl enable nfs-server 2>/dev/null || true
+    systemctl start nfs-server
+  changed_when: false
+
+- name: Trust loopback in firewalld for self-export
+  ansible.builtin.raw: |
+    firewall-cmd --permanent --zone=trusted --add-interface=lo 2>/dev/null || true
+    firewall-cmd --reload 2>/dev/null || true
+  changed_when: false

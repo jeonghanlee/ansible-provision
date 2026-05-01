@@ -1,0 +1,9 @@
+---
+# playbooks/04_nfs_sim.yml
+- name: Apply NFS+root_squash simulation for golden image bake
+  hosts: nfs_sim_nodes
+  gather_facts: false
+  become: yes
+  roles:
+    - role: nfs_sim
+      tags: [nfs_sim]

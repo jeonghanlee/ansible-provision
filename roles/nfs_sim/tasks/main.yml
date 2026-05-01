@@ -1,0 +1,59 @@
+---
+# roles/nfs_sim/tasks/main.yml
+- name: Detect OS family
+  ansible.builtin.raw: |
+    if [ -f /etc/redhat-release ]; then printf "RedHat\n"; elif [ -f /etc/debian_version ]; then printf "Debian\n"; fi
+  register: os_family
+  changed_when: false
+  check_mode: false
+
+- name: Include RedHat tasks
+  ansible.builtin.include_tasks: redhat.yml
+  when: "'RedHat' in os_family.stdout"
+
+- name: Include Debian tasks
+  ansible.builtin.include_tasks: debian.yml
+  when: "'Debian' in os_family.stdout"
+
+- name: Create NFS export source directory
+  ansible.builtin.raw: |
+    mkdir -p {{ nfs_sim_export_dir }}
+    chown {{ nfs_sim_user }}:{{ nfs_sim_group }} {{ nfs_sim_export_root }} {{ nfs_sim_export_dir }}
+    chmod {{ nfs_sim_export_dir_mode }} {{ nfs_sim_export_root }} {{ nfs_sim_export_dir }}
+  changed_when: false
+
+- name: Configure NFS export entry
+  ansible.builtin.raw: |
+    mkdir -p /etc/exports.d
+    cat > /etc/exports.d/nfs_sim.exports << 'EOF'
+    {{ nfs_sim_export_dir }} {{ nfs_sim_nfs_host }}({{ nfs_sim_export_options }})
+    EOF
+    exportfs -ra
+  changed_when: false
+
+- name: Create NFS mount point
+  ansible.builtin.raw: mkdir -p {{ nfs_sim_mount_dir }}
+  changed_when: false
+
+- name: Add NFS fstab entry
+  ansible.builtin.raw: |
+    line="{{ nfs_sim_nfs_host }}:{{ nfs_sim_export_dir }} {{ nfs_sim_mount_dir }} nfs {{ nfs_sim_mount_options }} 0 0"
+    grep -qF "$line" /etc/fstab || printf '%s\n' "$line" >> /etc/fstab
+    systemctl daemon-reload
+  changed_when: false
+
+- name: Mount NFS share
+  ansible.builtin.raw: |
+    mountpoint -q {{ nfs_sim_mount_dir }} || mount {{ nfs_sim_mount_dir }}
+  changed_when: false
+
+- name: Replace user gitsrc with NFS-mount symlink
+  ansible.builtin.raw: |
+    target="{{ nfs_sim_mount_dir }}"
+    link="{{ nfs_sim_user_symlink }}"
+    if [ ! -L "$link" ] || [ "$(readlink "$link")" != "$target" ]; then
+      rm -rf "$link"
+      ln -s "$target" "$link"
+      chown -h {{ nfs_sim_user }}:{{ nfs_sim_group }} "$link"
+    fi
+  changed_when: false
