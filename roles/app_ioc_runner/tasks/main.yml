@@ -5,16 +5,7 @@
     if [ ! -f {{ path_ioc_runner_bin }} ]; then
       rm -rf {{ path_ioc_runner_src }}
       git clone {{ repo_ioc_runner }} {{ path_ioc_runner_src }}
-      chmod 0755 {{ path_ioc_runner_src }}/bin/setup-system-infra.bash
-      {{ path_ioc_runner_src }}/bin/setup-system-infra.bash --full
-      cp {{ path_ioc_runner_src }}/bin/ioc-runner {{ path_ioc_runner_bin }}
-      GIT_HASH=$(git -C {{ path_ioc_runner_src }} rev-parse --short HEAD 2>/dev/null || printf "unknown")
-      BUILD_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-      sed -i "s/^declare -g RUNNER_GIT_HASH=.*/declare -g RUNNER_GIT_HASH=\"${GIT_HASH}\"/" {{ path_ioc_runner_bin }}
-      sed -i "s/^declare -g RUNNER_BUILD_DATE=.*/declare -g RUNNER_BUILD_DATE=\"${BUILD_DATE}\"/" {{ path_ioc_runner_bin }}
-      chmod 0755 {{ path_ioc_runner_bin }}
-      cp {{ path_ioc_runner_src }}/completion/ioc-runner-completion.bash /etc/bash_completion.d/ioc-runner
-      chmod 0644 /etc/bash_completion.d/ioc-runner
+      bash {{ path_ioc_runner_src }}/bin/setup-system-infra.bash --full
       rm -rf {{ path_ioc_runner_src }}
     fi
   changed_when: false
