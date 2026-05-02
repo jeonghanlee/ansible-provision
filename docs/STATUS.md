@@ -1,0 +1,72 @@
+# ansible-provision Verification Status
+
+Living document tracking which role × OS combinations have been
+verified end-to-end on a real testbed, distinct from the structural
+description in ARCHITECTURE.md.
+
+**Last updated:** 2026-05-02
+**See also:** `TODO.md` for deferred feature work; this file tracks
+verification state and known defects.
+
+## Status legend
+
+| Symbol | Meaning |
+|--------|---------|
+| ✓      | Applied and verified — binary/config landed, idempotent rerun observed |
+| ?      | Applied; ansible reported ok but artefact not independently verified |
+| ✗      | Known broken — bug filed in Open Items below |
+| —      | Not yet applied on this OS |
+
+## Role × OS matrix
+
+| Role            | Playbook    | rocky8 | debian13 |
+|-----------------|-------------|--------|----------|
+| base_os         | 01_base     | ✓      | —        |
+| app_con         | 02_apps     | ?      | —        |
+| app_procserv    | 02_apps     | ?      | —        |
+| app_conserver   | 02_apps     | ✗      | —        |
+| app_epics       | 03_epics    | —      | —        |
+| app_ioc_runner  | 03_epics    | ?      | —        |
+| nfs_sim         | 04_nfs_sim  | —      | —        |
+
+`?` rows share the same structural risk: `raw` shell with no
+`set -e` plus `changed_when: false` masks step failures as ok. See
+the silent-failure project memory for detail.
+
+## Open items
+
+### A. conserver missing on rocky8-server
+`make 02_apps.rocky8` reports ok=3 but `/usr/local/bin/conserver`
+and `/usr/local/sbin/conserver` are both absent on
+`testbed-rocky8-server`. Install prefix in `conserver-env`
+Makefile not yet confirmed. Fix shape likely shared across the
+three `app_*` build roles.
+
+### B. app_ioc_runner version stamping
+Pre-fix: `ioc-runner -V` showed commit/install dates as
+`unreleased`. Role re-cp-ed the binary after setup-system-infra
+ran and stamped a nonexistent `RUNNER_BUILD_DATE`. Role cleaned
+up; rerun on a fresh substrate not yet performed.
+
+### C. app_epics path mismatch
+`epics_os_dir` was hardcoded `rocky-8` against an upstream layout
+of `rocky-8.10`. Value corrected; 03_epics has never been applied
+on any host.
+
+### D. debian13 path entirely unexercised
+VMs defined but shut off; `make ping` / `01_base` / `02_apps` /
+`03_epics` / `04_nfs_sim` all unrun on debian13.
+
+### E. SSH key existence check missing in setup_host.bash
+`bin/setup_host.bash` installs `ansible-core` but does not verify
+the operator has an SSH keypair. ansible reaches managed nodes
+over SSH, so a missing key surfaces only at first ping. Check for
+`~/.ssh/id_ed25519.pub` or `~/.ssh/id_rsa.pub` and warn if absent
+(mirrors the sister `cloud-provision` repo). Tracked in
+`TODO.md`.
+
+## Update protocol
+
+When a role × OS combination is applied or verified, update the
+matrix and the relevant Open Item in the same commit as the
+substantive change. Do not let the matrix drift behind the code.
