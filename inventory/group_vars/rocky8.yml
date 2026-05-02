@@ -1,7 +1,7 @@
 ---
 # inventory/group_vars/rocky8.yml
 
-epics_os_dir: "rocky-8"
+epics_os_dir: "rocky-8.10"
 
 pkg_standard:
   - readline-devel
