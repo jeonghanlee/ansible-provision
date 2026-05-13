@@ -60,7 +60,7 @@ ansible-provision/
 │   ├── testbed.ini                  (static IPs from cloud-provision)
 │   └── group_vars/
 │       ├── all.yml                  (site-independent variables)
-│       ├── rocky8.yml               (epics_os_dir: rocky-8)
+│       ├── rocky8.yml               (epics_os_dir: rocky-8.10)
 │       └── debian13.yml             (epics_os_dir: debian-13)
 ├── playbooks/
 │   ├── 01_base.yml
@@ -139,7 +139,7 @@ EPICS path resolution:
 
 | Variable | rocky8 | debian13 |
 |---|---|---|
-| `epics_os_dir` | `rocky-8` | `debian-13` |
+| `epics_os_dir` | `rocky-8.10` | `debian-13` |
 | `epics_env_version` | `1.2.0` | `1.2.0` |
 | `epics_base_version` | `7.0.10` | `7.0.10` |
 
@@ -200,7 +200,7 @@ mount, with no second host required.
 | Package manager | `dnf` | `apt` |
 | Task file    | `redhat.yml` | `debian.yml` |
 | SSL headers  | `openssl-devel` | `libssl-dev` |
-| EPICS os dir | `rocky-8` | `debian-13` |
+| EPICS os dir | `rocky-8.10` | `debian-13` |
 | EPICS repo   | `EPEL + PowerTools` required | standard apt |
 | Python pip   | `pip3.9` (system-wide)   | apt packages + `pip3 --break-system-packages` (EPICS only) |
 
@@ -211,6 +211,6 @@ mount, with no second host required.
 | Scope | File | Contents |
 |---|---|---|
 | All hosts | `group_vars/all.yml` | repos, paths, packages, NTP |
-| Rocky 8 | `group_vars/rocky8.yml` | `epics_os_dir: rocky-8` |
+| Rocky 8 | `group_vars/rocky8.yml` | `epics_os_dir: rocky-8.10` |
 | Debian 13 | `group_vars/debian13.yml` | `epics_os_dir: debian-13` |
 | Site override | `configure/CONFIG_SITE.local` | `INVENTORY`, `PLAYBOOK_DIR` |
