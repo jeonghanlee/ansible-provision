@@ -4,7 +4,7 @@ Living document tracking which role × OS combinations have been
 verified end-to-end on a real testbed, distinct from the structural
 description in ARCHITECTURE.md.
 
-**Last updated:** 2026-05-02
+**Last updated:** 2026-05-13
 **See also:** `TODO.md` for deferred feature work; this file tracks
 verification state and known defects.
 
@@ -21,7 +21,7 @@ verification state and known defects.
 
 | Role            | Playbook    | rocky8 | debian13 |
 |-----------------|-------------|--------|----------|
-| base_os         | 01_base     | ✓      | —        |
+| base_os         | 01_base     | ✓      | ✓        |
 | app_con         | 02_apps     | ?      | —        |
 | app_procserv    | 02_apps     | ?      | —        |
 | app_conserver   | 02_apps     | ✗      | —        |
@@ -53,9 +53,10 @@ up; rerun on a fresh substrate not yet performed.
 of `rocky-8.10`. Value corrected; 03_epics has never been applied
 on any host.
 
-### D. debian13 path entirely unexercised
-VMs defined but shut off; `make ping` / `01_base` / `02_apps` /
-`03_epics` / `04_nfs_sim` all unrun on debian13.
+### D. debian13 application and EPICS paths unexercised
+Debian 13 VMs are running and `01_base` is verified across
+`server`, `node1`, and `node2`. `02_apps`, `03_epics`, and
+`04_nfs_sim` remain unrun on debian13.
 
 ### E. SSH key existence check missing in setup_host.bash
 `bin/setup_host.bash` installs `ansible-core` but does not verify
