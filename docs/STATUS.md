@@ -25,34 +25,27 @@ verification state and known defects.
 | app_con         | 02_apps     | ✓      | ✓        |
 | app_procserv    | 02_apps     | ✓      | ✓        |
 | app_conserver   | 02_apps     | ✓      | ✓        |
-| app_epics       | 03_epics    | —      | —        |
-| app_ioc_runner  | 03_epics    | ?      | —        |
+| app_epics       | 03_epics    | ✓      | ✓        |
+| app_ioc_runner  | 03_epics    | ?      | ?        |
 | nfs_sim         | 04_nfs_sim  | —      | —        |
 
-`?` rows share the same structural risk: `raw` shell with no
-`set -e` plus `changed_when: false` masks step failures as ok. See
-the silent-failure project memory for detail.
+`?` indicates that the role has been applied and the installed
+artifact exists, but one or more acceptance criteria remain open.
 
 ## Open items
 
 ### A. app_ioc_runner version stamping
-Pre-fix: `ioc-runner -V` showed commit/install dates as
-`unreleased`. Role re-cp-ed the binary after setup-system-infra
-ran and stamped a nonexistent `RUNNER_BUILD_DATE`. Role cleaned
-up; rerun on a fresh substrate not yet performed.
+`03_epics` applies successfully across Rocky 8 and Debian 13, and
+`ioc-runner -V` reports `1.0.8-dev` on all hosts. The commit date
+metadata still reports `unknown`, so full ioc-runner closure remains
+part of Milestone 4.
 
-### B. app_epics path mismatch
-`epics_os_dir` was hardcoded `rocky-8` against an upstream layout
-of `rocky-8.10`. Value corrected; 03_epics has never been applied
-on any host.
+### B. NFS simulation paths unexercised
+Rocky 8 and Debian 13 VMs are running, and `01_base`, `02_apps`,
+and `03_epics` are verified across `server`, `node1`, and `node2`.
+`04_nfs_sim` remains unrun.
 
-### C. debian13 EPICS and NFS simulation paths unexercised
-Debian 13 VMs are running and `01_base` is verified across
-`server`, `node1`, and `node2`. `02_apps` is also verified across
-all debian13 hosts. `03_epics` and `04_nfs_sim` remain unrun on
-debian13.
-
-### D. SSH key existence check missing in setup_host.bash
+### C. SSH key existence check missing in setup_host.bash
 `bin/setup_host.bash` installs `ansible-core` but does not verify
 the operator has an SSH keypair. ansible reaches managed nodes
 over SSH, so a missing key surfaces only at first ping. Check for
