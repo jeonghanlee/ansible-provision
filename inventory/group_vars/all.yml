@@ -51,7 +51,7 @@ repo_epics:        "https://github.com/jeonghanlee/EPICS-env-distribution"
 path_con_src:        "/tmp/con"
 path_procserv_src:   "/tmp/procServ-env"
 path_conserver_src:  "/tmp/conserver-env"
-path_ioc_runner_src: "/tmp/epics-ioc-runner"
+path_ioc_runner_src: "/home/vmadmin/gitsrc/epics-ioc-runner"
 path_epics_src:      "/tmp/EPICS-env-distribution"
 
 # Installed binary paths (idempotency check)

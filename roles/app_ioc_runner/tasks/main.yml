@@ -2,16 +2,27 @@
 # roles/app_ioc_runner/tasks/main.yml
 - name: Deploy epics-ioc-runner infrastructure
   ansible.builtin.raw: |
-    if [ ! -f {{ path_ioc_runner_bin }} ]; then
-      rm -rf {{ path_ioc_runner_src }}
-      git clone {{ repo_ioc_runner }} {{ path_ioc_runner_src }}
-      bash {{ path_ioc_runner_src }}/bin/setup-system-infra.bash --full
-      rm -rf {{ path_ioc_runner_src }}
+    set -e
+    owner="{{ epics_ioc_engineers[0] }}"
+    src="{{ path_ioc_runner_src }}"
+    repo="{{ repo_ioc_runner }}"
+    bin="{{ path_ioc_runner_bin }}"
+    stamp_pattern='RUNNER_GIT_HASH="unknown"|RUNNER_COMMIT_DATE="unknown"|RUNNER_COMMIT_DATE="unreleased"'
+    install -d -o "${owner}" -g "${owner}" -m 0755 "$(dirname "${src}")"
+    if [ ! -d "${src}/.git" ]; then
+      rm -rf "${src}"
+      sudo -u "${owner}" git clone "${repo}" "${src}"
     fi
+    if [ ! -x "${bin}" ] || grep -Eq "${stamp_pattern}" "${bin}"; then
+      SUDO_USER="${owner}" bash "${src}/bin/setup-system-infra.bash" --full
+    fi
+    test -x "${bin}"
+    test -d "${src}/.git"
   changed_when: false
 
 - name: Create shared IOC deployment directory
   ansible.builtin.raw: |
+    set -e
     mkdir -p /opt/epics-iocs
     chown root:ioc /opt/epics-iocs
     chmod 2775 /opt/epics-iocs

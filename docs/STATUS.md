@@ -26,26 +26,17 @@ verification state and known defects.
 | app_procserv    | 02_apps     | ✓      | ✓        |
 | app_conserver   | 02_apps     | ✓      | ✓        |
 | app_epics       | 03_epics    | ✓      | ✓        |
-| app_ioc_runner  | 03_epics    | ?      | ?        |
+| app_ioc_runner  | 03_epics    | ✓      | ✓        |
 | nfs_sim         | 04_nfs_sim  | —      | —        |
-
-`?` indicates that the role has been applied and the installed
-artifact exists, but one or more acceptance criteria remain open.
 
 ## Open items
 
-### A. app_ioc_runner version stamping
-`03_epics` applies successfully across Rocky 8 and Debian 13, and
-`ioc-runner -V` reports `1.0.8-dev` on all hosts. The commit date
-metadata still reports `unknown`, so full ioc-runner closure remains
-part of Milestone 4.
-
-### B. NFS simulation paths unexercised
+### A. NFS simulation paths unexercised
 Rocky 8 and Debian 13 VMs are running, and `01_base`, `02_apps`,
 and `03_epics` are verified across `server`, `node1`, and `node2`.
 `04_nfs_sim` remains unrun.
 
-### C. SSH key existence check missing in setup_host.bash
+### B. SSH key existence check missing in setup_host.bash
 `bin/setup_host.bash` installs `ansible-core` but does not verify
 the operator has an SSH keypair. ansible reaches managed nodes
 over SSH, so a missing key surfaces only at first ping. Check for
