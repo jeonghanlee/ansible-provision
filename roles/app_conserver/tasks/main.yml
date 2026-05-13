@@ -2,10 +2,13 @@
 # roles/app_conserver/tasks/main.yml
 - name: Build and install conserver
   ansible.builtin.raw: |
-    if [ ! -f {{ path_conserver_bin }} ]; then
+    set -e
+    if [ ! -x {{ path_conserver_bin }} ] || [ ! -x {{ path_console_bin }} ]; then
       rm -rf {{ path_conserver_src }}
       git clone {{ repo_conserver }} {{ path_conserver_src }}
       cd {{ path_conserver_src }} && make init && make conf && make build && make install
       rm -rf {{ path_conserver_src }}
     fi
+    test -x {{ path_conserver_bin }}
+    test -x {{ path_console_bin }}
   changed_when: false

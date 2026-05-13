@@ -57,7 +57,8 @@ path_epics_src:      "/tmp/EPICS-env-distribution"
 # Installed binary paths (idempotency check)
 path_con_bin:        "/usr/local/bin/con"
 path_procserv_bin:   "/usr/local/bin/procServ"
-path_conserver_bin:  "/usr/local/bin/conserver"
+path_conserver_bin:  "/usr/local/sbin/conserver"
+path_console_bin:    "/usr/local/bin/console"
 path_ioc_runner_bin: "/usr/local/bin/ioc-runner"
 
 # EPICS installation path
