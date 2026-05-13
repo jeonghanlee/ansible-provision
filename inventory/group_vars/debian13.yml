@@ -5,6 +5,8 @@ epics_os_dir: "debian-13"
 
 pkg_standard:
   - build-essential
+  - iproute2
+  - socat
   - libreadline-dev
   - libxt-dev
   - libxmu-dev
