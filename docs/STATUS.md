@@ -22,9 +22,9 @@ verification state and known defects.
 | Role            | Playbook    | rocky8 | debian13 |
 |-----------------|-------------|--------|----------|
 | base_os         | 01_base     | ✓      | ✓        |
-| app_con         | 02_apps     | ✓      | —        |
-| app_procserv    | 02_apps     | ✓      | —        |
-| app_conserver   | 02_apps     | ✓      | —        |
+| app_con         | 02_apps     | ✓      | ✓        |
+| app_procserv    | 02_apps     | ✓      | ✓        |
+| app_conserver   | 02_apps     | ✓      | ✓        |
 | app_epics       | 03_epics    | —      | —        |
 | app_ioc_runner  | 03_epics    | ?      | —        |
 | nfs_sim         | 04_nfs_sim  | —      | —        |
@@ -46,10 +46,11 @@ up; rerun on a fresh substrate not yet performed.
 of `rocky-8.10`. Value corrected; 03_epics has never been applied
 on any host.
 
-### C. debian13 application and EPICS paths unexercised
+### C. debian13 EPICS and NFS simulation paths unexercised
 Debian 13 VMs are running and `01_base` is verified across
-`server`, `node1`, and `node2`. `02_apps`, `03_epics`, and
-`04_nfs_sim` remain unrun on debian13.
+`server`, `node1`, and `node2`. `02_apps` is also verified across
+all debian13 hosts. `03_epics` and `04_nfs_sim` remain unrun on
+debian13.
 
 ### D. SSH key existence check missing in setup_host.bash
 `bin/setup_host.bash` installs `ansible-core` but does not verify
