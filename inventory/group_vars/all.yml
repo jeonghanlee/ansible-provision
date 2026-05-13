@@ -37,6 +37,7 @@ pkg_base:
   - chrpath
   - wget
   - sysstat
+  - lsof
   - cppcheck
 
 # Application repositories

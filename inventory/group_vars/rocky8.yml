@@ -4,6 +4,8 @@
 epics_os_dir: "rocky-8.10"
 
 pkg_standard:
+  - iproute
+  - socat
   - readline-devel
   - libXt-devel
   - libXmu-devel
