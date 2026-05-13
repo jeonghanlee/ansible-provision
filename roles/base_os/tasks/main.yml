@@ -17,13 +17,29 @@
 
 - name: Deploy chrony configuration
   ansible.builtin.raw: |
-    cat > /etc/chrony.conf << 'CHRONYEOF'
+    set -e
+    target="/etc/chrony.conf"
+    if [ -d /etc/chrony ]; then
+      target="/etc/chrony/chrony.conf"
+    fi
+    tmp="$(mktemp)"
+    cat > "$tmp" << 'CHRONYEOF'
     {% for server in ntp_servers %}pool {{ server }} iburst
     {% endfor %}driftfile /var/lib/chrony/drift
     makestep 1.0 3
     rtcsync
     logdir /var/log/chrony
     CHRONYEOF
+    if [ -f "$target" ] && cmp -s "$tmp" "$target"; then
+      rm -f "$tmp"
+      printf "unchanged\n"
+    else
+      install -m 0644 "$tmp" "$target"
+      rm -f "$tmp"
+      printf "changed\n"
+    fi
+  register: chrony_config
+  changed_when: "chrony_config.stdout | trim == 'changed'"
   notify: Restart chronyd
 
 - name: Enable and start chronyd
