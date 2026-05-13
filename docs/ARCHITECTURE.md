@@ -156,6 +156,7 @@ setup-system-infra.bash --full
   └── /etc/systemd/system/epics-@.service (procServ template)
 
 ioc-runner CLI install
+  ├── clone epics-ioc-runner → /home/vmadmin/gitsrc/epics-ioc-runner
   ├── copy bin/ioc-runner → /usr/local/bin/
   ├── inject git hash + build date
   └── copy completion → /etc/bash_completion.d/
