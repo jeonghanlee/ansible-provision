@@ -22,9 +22,9 @@ verification state and known defects.
 | Role            | Playbook    | rocky8 | debian13 |
 |-----------------|-------------|--------|----------|
 | base_os         | 01_base     | ✓      | ✓        |
-| app_con         | 02_apps     | ?      | —        |
-| app_procserv    | 02_apps     | ?      | —        |
-| app_conserver   | 02_apps     | ✗      | —        |
+| app_con         | 02_apps     | ✓      | —        |
+| app_procserv    | 02_apps     | ✓      | —        |
+| app_conserver   | 02_apps     | ✓      | —        |
 | app_epics       | 03_epics    | —      | —        |
 | app_ioc_runner  | 03_epics    | ?      | —        |
 | nfs_sim         | 04_nfs_sim  | —      | —        |
@@ -35,30 +35,23 @@ the silent-failure project memory for detail.
 
 ## Open items
 
-### A. conserver missing on rocky8-server
-`make 02_apps.rocky8` reports ok=3 but `/usr/local/bin/conserver`
-and `/usr/local/sbin/conserver` are both absent on
-`testbed-rocky8-server`. Install prefix in `conserver-env`
-Makefile not yet confirmed. Fix shape likely shared across the
-three `app_*` build roles.
-
-### B. app_ioc_runner version stamping
+### A. app_ioc_runner version stamping
 Pre-fix: `ioc-runner -V` showed commit/install dates as
 `unreleased`. Role re-cp-ed the binary after setup-system-infra
 ran and stamped a nonexistent `RUNNER_BUILD_DATE`. Role cleaned
 up; rerun on a fresh substrate not yet performed.
 
-### C. app_epics path mismatch
+### B. app_epics path mismatch
 `epics_os_dir` was hardcoded `rocky-8` against an upstream layout
 of `rocky-8.10`. Value corrected; 03_epics has never been applied
 on any host.
 
-### D. debian13 application and EPICS paths unexercised
+### C. debian13 application and EPICS paths unexercised
 Debian 13 VMs are running and `01_base` is verified across
 `server`, `node1`, and `node2`. `02_apps`, `03_epics`, and
 `04_nfs_sim` remain unrun on debian13.
 
-### E. SSH key existence check missing in setup_host.bash
+### D. SSH key existence check missing in setup_host.bash
 `bin/setup_host.bash` installs `ansible-core` but does not verify
 the operator has an SSH keypair. ansible reaches managed nodes
 over SSH, so a missing key surfaces only at first ping. Check for
