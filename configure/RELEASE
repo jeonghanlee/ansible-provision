@@ -1,7 +1,7 @@
-PLAYBOOKS  := 01_base 02_apps 03_epics 04_nfs_sim
-OS_GROUPS  := rocky8 debian13
-NODE_IDS   := server node1 node2
-VM_PREFIX  := testbed
+APPNAME   := ansible-provision
+
+# Provisioning stages this project ships, in execution order.
+PLAYBOOKS := 01_base 02_apps 03_epics 04_nfs_sim
 
 -include $(TOP)/../RELEASE.local
 -include $(TOP)/configure/RELEASE.local
