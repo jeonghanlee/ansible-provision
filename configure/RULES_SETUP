@@ -1,4 +1,18 @@
-.PHONY: setup
+##@ Host Setup
+
+.PHONY: setup check-tools
 
 setup: ## Verify and install ansible-core required to run the playbooks
 	$(QUIET) $(SETUP_HOST)
+
+check-tools: ## Check that ansible-playbook and ansible are on PATH
+	$(QUIET) for tool in $(ANSIBLE_PLAYBOOK) $(ANSIBLE_CMD); do \
+	    if ! command -v "$$tool" >/dev/null 2>&1; then \
+	        printf "%s\n" "error: $$tool not found in PATH"; \
+	        printf "%s\n" "install ansible-core with: make setup"; \
+	        printf "%s\n" "  Debian: apt install ansible-core"; \
+	        printf "%s\n" "  Rocky:  dnf install ansible-core"; \
+	        exit 1; \
+	    fi; \
+	    printf "%s\n" "$$tool [OK]"; \
+	done

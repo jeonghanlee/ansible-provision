@@ -1,49 +1,70 @@
 .DEFAULT_GOAL := help
 
-.PHONY: help all check ping
+.PHONY: help help.detail all check ping
 
-help:
-	$(info -----------------------------------------)
-	$(info Make Targets)
-	$(info -----------------------------------------)
-	$(QUIET) awk '/^[a-zA-Z._0-9-]+:/ {             \
-	  nb = sub( /^## /, "", helpMsg );               \
-	  if(nb == 0) {                                  \
-	    helpMsg = $$0;                               \
-	    nb = sub( /^[^:]*:.* ## /, "", helpMsg );    \
-	  }                                              \
-	  if (nb)                                        \
-	    print  $$1 "\t" helpMsg;                     \
-	}                                                \
-	{ helpMsg = $$0 }'                               \
-	$(MAKEFILE_LIST) | column -ts:
+##@ Help
 
-## Run full playbook stack on all nodes
-all:
-	$(QUIET) $(ANSIBLE_PLAYBOOK) $(_base_opts) $(SITE_YML)
+help: ## Show the operator workflow
+	$(info Usage: make <target> [VAR=value])
+	$(info )
+	$(info Workflows)
+	$(info   Stage          Action)
+	$(info   ------------   ------------------------------------------------)
+	$(info   Host setup     make setup)
+	$(info   Connectivity   make ping)
+	$(info   Provision      make all)
+	$(info   Provision      make <pb>[.<os>[.<node>]])
+	$(info   Dry run        make check)
+	$(info   Dry run        make <pb>[.<os>[.<node>]].check)
+	$(info )
+	$(info   Stages (<pb>): $(PLAYBOOKS))
+	$(info   OS groups:     $(OS_GROUPS))
+	$(info   Nodes:         $(NODE_IDS))
+	$(info )
+	$(info Details: make help.detail)
+	$(QUIET) :
 
-## Dry run full playbook stack on all nodes
-check:
-	$(QUIET) $(ANSIBLE_PLAYBOOK) $(_base_opts) -C $(SITE_YML)
-
-## Verify connectivity to all nodes (honors ANSIBLE_LIMIT)
-ping:
-	$(QUIET) $(ANSIBLE_CMD) all -i $(INVENTORY) $(_limit_opt) -m raw -a "uptime"
-
-.PHONY: help.ansible
-help.ansible: ## Show dynamically generated playbook targets
-	$(QUIET) printf "\nPer-playbook targets (PLAYBOOK in: %s)\n" "$(PLAYBOOKS)"
-	$(QUIET) printf "  make <pb>                  Run playbook on all nodes\n"
-	$(QUIET) printf "  make <pb>.check            Dry run on all nodes\n"
-	$(QUIET) printf "  make <pb>.<os>             Run on OS group (rocky8|debian13)\n"
-	$(QUIET) printf "  make <pb>.<os>.check       Dry run on OS group\n"
-	$(QUIET) printf "  make <pb>.<os>.<node>      Run on single VM\n"
-	$(QUIET) printf "  make <pb>.<os>.<node>.check Dry run on single VM\n"
-	$(QUIET) printf "\nExamples:\n"
+help.detail: ## Show the full target reference
+	$(QUIET) awk ' \
+	    BEGIN { section = "" } \
+	    /^##@/ { \
+	        section = substr($$0, 5); \
+	        if (seen++) printf "\n"; \
+	        printf "%s\n", section; \
+	        next; \
+	    } \
+	    /^[a-zA-Z._0-9%-]+:/ { \
+	        msg = $$0; \
+	        if (sub(/^[^:]*:.* ## /, "", msg)) { \
+	            split($$0, t, ":"); \
+	            printf "  %-26s %s\n", t[1], msg; \
+	        } \
+	    }' $(MAKEFILE_LIST)
+	$(QUIET) printf "\n%s\n" "Per-playbook pattern targets"
+	$(QUIET) printf "  %-26s %s\n" "<pb>"                    "Run on all nodes"
+	$(QUIET) printf "  %-26s %s\n" "<pb>.check"              "Dry run on all nodes"
+	$(QUIET) printf "  %-26s %s\n" "<pb>.<os>"               "Run on OS group ($(OS_GROUPS))"
+	$(QUIET) printf "  %-26s %s\n" "<pb>.<os>.check"         "Dry run on OS group"
+	$(QUIET) printf "  %-26s %s\n" "<pb>.<os>.<node>"        "Run on single VM"
+	$(QUIET) printf "  %-26s %s\n" "<pb>.<os>.<node>.check"  "Dry run on single VM"
+	$(QUIET) printf "\n%s\n" "Examples"
 	$(QUIET) printf "  make 01_base\n"
-	$(QUIET) printf "  make 01_base.rocky8\n"
 	$(QUIET) printf "  make 02_apps.rocky8.server\n"
 	$(QUIET) printf "  make 03_epics.debian13.node1.check\n"
+	$(QUIET) :
+
+##@ Provisioning
+
+all: ## Run full playbook stack on all nodes
+	$(QUIET) $(ANSIBLE_PLAYBOOK) $(_base_opts) $(SITE_YML)
+
+check: ## Dry run full playbook stack on all nodes
+	$(QUIET) $(ANSIBLE_PLAYBOOK) $(_base_opts) -C $(SITE_YML)
+
+##@ Connectivity
+
+ping: ## Verify connectivity to all nodes (honors ANSIBLE_LIMIT)
+	$(QUIET) $(ANSIBLE_CMD) all -i $(INVENTORY) $(_limit_opt) -m raw -a "uptime"
 
 $(foreach pb,  $(PLAYBOOKS), $(eval $(call playbook_group_targets,$(pb))))
 $(foreach pb,  $(PLAYBOOKS), \
