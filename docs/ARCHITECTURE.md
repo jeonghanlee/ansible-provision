@@ -50,10 +50,11 @@ ansible-provision/
 ├── site.yml                         (master playbook)
 ├── configure/                       (EPICS-style Makefile system)
 │   ├── CONFIG / RULES               (aggregators)
-│   ├── RELEASE                      (playbook/group/node matrix)
-│   ├── CONFIG_SITE                  (inventory path, .local override)
+│   ├── RELEASE                      (appname, playbook stages)
+│   ├── CONFIG_SITE                  (inventory path, topology, .local override)
 │   ├── CONFIG_VARS                  (ansible command variables)
 │   ├── RULES_FUNC                   (dynamic target macros)
+│   ├── RULES_SETUP                  (host setup, tool checks)
 │   ├── RULES_ANSIBLE                (playbook targets)
 │   └── RULES_VARS                   (env inspection)
 ├── inventory/
@@ -214,4 +215,4 @@ mount, with no second host required.
 | All hosts | `group_vars/all.yml` | repos, paths, packages, NTP |
 | Rocky 8 | `group_vars/rocky8.yml` | `epics_os_dir: rocky-8.10` |
 | Debian 13 | `group_vars/debian13.yml` | `epics_os_dir: debian-13` |
-| Site override | `configure/CONFIG_SITE.local` | `INVENTORY`, `PLAYBOOK_DIR` |
+| Site override | `configure/CONFIG_SITE.local` | `INVENTORY`, `PLAYBOOK_DIR`, topology |
