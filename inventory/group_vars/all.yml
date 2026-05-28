@@ -28,6 +28,7 @@ pkg_base:
   - automake
   - chrony
   - libtool
+  - logrotate
   - re2c
   - graphviz
   - cmake
