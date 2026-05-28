@@ -15,6 +15,36 @@
   ansible.builtin.include_tasks: debian.yml
   when: "'Debian' in os_family.stdout"
 
+- name: Ensure includedir is the final active directive in /etc/sudoers
+  ansible.builtin.raw: |
+    set -e
+    sudoers=/etc/sudoers
+    idr_line="$(grep -nE '^[[:space:]]*[#@]includedir[[:space:]]+/etc/sudoers\.d' "$sudoers" | tail -1 | cut -d: -f1)"
+    if [ -z "$idr_line" ]; then
+      printf "unchanged\n"
+      exit 0
+    fi
+    trailing="$(tail -n +"$((idr_line + 1))" "$sudoers" | grep -E '^[[:space:]]*([^#[:space:]]|[#@]include)' || true)"
+    if [ -z "$trailing" ]; then
+      printf "unchanged\n"
+      exit 0
+    fi
+    idr_text="$(sed -n "${idr_line}p" "$sudoers")"
+    tmp="$(mktemp)"
+    grep -vE '^[[:space:]]*[#@]includedir[[:space:]]+/etc/sudoers\.d' "$sudoers" > "$tmp"
+    printf '%s\n' "$idr_text" >> "$tmp"
+    if visudo -cf "$tmp" >/dev/null 2>&1; then
+      install -m 0440 -o root -g root "$tmp" "$sudoers"
+      rm -f "$tmp"
+      printf "changed\n"
+    else
+      rm -f "$tmp"
+      printf "visudo validation failed; /etc/sudoers left untouched\n" >&2
+      exit 1
+    fi
+  register: sudoers_includedir
+  changed_when: "sudoers_includedir.stdout | trim == 'changed'"
+
 - name: Deploy chrony configuration
   ansible.builtin.raw: |
     set -e
