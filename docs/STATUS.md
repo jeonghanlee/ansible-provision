@@ -4,7 +4,9 @@ Living document tracking which role × OS combinations have been
 verified end-to-end on a real testbed, distinct from the structural
 description in ARCHITECTURE.md.
 
-**Last updated:** 2026-05-13
+Canonical roll-up: `docs/MILESTONES.md`.
+
+**Last updated:** 2026-06-04
 **See also:** `TODO.md` for deferred feature work; this file tracks
 verification state and known defects.
 
@@ -27,14 +29,16 @@ verification state and known defects.
 | app_conserver   | 02_apps     | ✓      | ✓        |
 | app_epics       | 03_epics    | ✓      | ✓        |
 | app_ioc_runner  | 03_epics    | ✓      | ✓        |
-| nfs_sim         | 04_nfs_sim  | —      | —        |
+| nfs_sim         | 04_nfs_sim  | ✓      | ✓        |
 
 ## Open items
 
-### A. NFS simulation paths unexercised
-Rocky 8 and Debian 13 VMs are running, and `01_base`, `02_apps`,
-and `03_epics` are verified across `server`, `node1`, and `node2`.
-`04_nfs_sim` remains unrun.
+### A. NFS simulation paths verified
+`04_nfs_sim` was applied on the Rocky 8 and Debian 13 ioc-runner
+server validation hosts. The simulation namespace was mounted at
+`/home/nfs/simulation/vmadmin/gitsrc`, old `alsu` namespace entries
+were absent, vmadmin writes succeeded, root-owned writes were denied by
+root_squash, and `ioc-runner` smoke checks passed.
 
 ### B. SSH key existence check missing in setup_host.bash
 `bin/setup_host.bash` installs `ansible-core` but does not verify

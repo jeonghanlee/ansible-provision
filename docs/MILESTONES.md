@@ -2,13 +2,15 @@
 
 ## Scope
 
-This document defines the implementation milestones required to bring
-the provisioning stack from partial role verification to full
-cross-OS validation.
+This document is the canonical work register for `ansible-provision`.
+It consolidates implementation milestones, carry-forward work, external
+gates, and conceptual-integrity findings that need owner decisions.
 
-**Out of scope:** Current pass/fail state is tracked in `docs/STATUS.md`.
-Deferred feature requests that are not required for the provisioning
-baseline are tracked in `TODO.md`.
+Supporting evidence remains in `docs/STATUS.md` and `TODO.md`; those
+documents are not competing status registers.
+
+Next session entry point: final review and commit preparation after V7
+closure.
 
 ## Completion Model
 
@@ -19,6 +21,28 @@ runtime workflows.
 
 Each milestone closes only when its acceptance criteria pass on the real
 testbed. Syntax checks alone are necessary but not sufficient.
+
+## Work Register
+
+| Topic | Work unit | Type | Status | Evidence or next action |
+|---|---|---|---|---|
+| Base OS | Milestone 1: Base OS parity | Milestone | Complete | `docs/STATUS.md` marks `base_os` verified on Rocky 8 and Debian 13. |
+| Applications | Milestone 2: Application role reliability | Milestone | Complete | `docs/STATUS.md` marks `app_con`, `app_procserv`, and `app_conserver` verified on both OS families. |
+| EPICS | Milestone 3: EPICS environment deployment | Milestone | Complete | `docs/STATUS.md` marks `app_epics` verified on both OS families. |
+| IOC runner | Milestone 4: IOC runner deployment | Milestone | Complete | `docs/STATUS.md` marks `app_ioc_runner` verified on both OS families. |
+| NFS simulation | Milestone 5: NFS simulation and cross-OS closure | Milestone | Complete | `docs/STATUS.md` marks `nfs_sim` verified on Rocky 8 and Debian 13 ioc-runner server validation hosts. |
+| Repository identity | Public baseline and validation boundary | Design gate | Implemented | README and architecture describe a public Linux baseline, validation defaults, testbed defaults, and site overlays. |
+| Makefile topology | Server-only NFS simulation targets | Design gate | Implemented | `04_nfs_sim` node targets are generated only for configured server node IDs. |
+| Host setup | SSH key existence check | Carry-forward | Open | `TODO.md` tracks a warning for missing `~/.ssh/id_ed25519.pub` or `~/.ssh/id_rsa.pub` in `bin/setup_host.bash`. |
+
+## Conceptual Integrity Findings
+
+| Finding | Reality rank | Evidence | Fate to decide |
+|---|---|---|---|
+| Direct CLI examples disagree with the repository's no-Python operational contract. | Latent but reachable | `docs/ANSIBLE_CLI.md:50`, `docs/ANSIBLE_CLI.md:53`, `docs/ANSIBLE_CLI.md:56`, and `docs/ANSIBLE_CLI.md:59` use `shell` or `setup`; `playbooks/01_base.yml:5`, `playbooks/02_apps.yml:5`, and `playbooks/03_epics.yml:5` set `gather_facts: false`. | Replace the `shell` and `setup` examples with `raw`, or explicitly label them as post-bootstrap Python-dependent commands. |
+| Pattern targets treat every playbook as valid for every OS and node, but `04_nfs_sim.yml` is scoped only to `nfs_sim_nodes`. | Resolved in design | `configure/CONFIG_SITE` now separates all-node and server-only playbooks; `configure/RULES_ANSIBLE` generates server-only node targets only from `SERVER_NODE_IDS`. | Verify `make help.detail` and confirm unsupported `04_nfs_sim.<os>.node1` targets are no longer generated. |
+| `app_ioc_runner` and `nfs_sim` need separate local and NFS source-root coverage. | Already decided | `inventory/group_vars/all.yml` keeps the default local `path_ioc_runner_root`; `playbooks/04_nfs_sim.yml` overrides `path_ioc_runner_root` and `path_ioc_runner_src` for the NFS simulation path and enables `ioc_runner_force_setup`; `roles/nfs_sim/defaults/main.yml` keeps the simulation symlink separate from the local testbed source root. | Keep this split and verify both `03_epics` local coverage and `04_nfs_sim` NFS coverage on the testbed. |
+| NFS simulation paths carried a site-specific namespace. | Resolved in defaults | `roles/nfs_sim/defaults/main.yml` uses `nfs_sim_namespace: simulation` to build export and mount roots. | Keep site namespaces in overlays, not public defaults. |
 
 ## Milestone 1: Base OS Parity
 
@@ -122,10 +146,13 @@ dependencies required by `epics-ioc-runner`.
 
 - `ioc-runner` is installed at the expected path.
 - `ioc-runner -V` reports stamped build metadata, not `unreleased`.
-- The `epics-ioc-runner` source tree is available in the intended
-  NFS-backed home location for iocrunner VMs.
-- `ioc-runner inspect` returns complete output, including socket and
-  client PID information.
+- The `epics-ioc-runner` source tree is available from the local source
+  root during `03_epics`.
+- The `epics-ioc-runner` source tree is available from the NFS-backed
+  simulation source root during `04_nfs_sim`.
+- `ioc-runner list -vv` and `ioc-runner inspect -h` run successfully.
+- Target-specific `ioc-runner inspect <ioc>` is covered by lifecycle
+  tests that create or install an IOC target.
 - Lifecycle tests that depend on inspect pass their assertions.
 
 ### Verification
@@ -139,7 +166,8 @@ Post-apply verification:
 
 ```bash
 ansible all -i inventory/testbed.ini -m raw -a "ioc-runner -V"
-ansible all -i inventory/testbed.ini -m raw -a "ioc-runner inspect"
+ansible all -i inventory/testbed.ini -m raw -a "ioc-runner list -vv"
+ansible all -i inventory/testbed.ini -m raw -a "ioc-runner inspect -h"
 ```
 
 ## Milestone 5: NFS Simulation and Cross-OS Closure
@@ -154,6 +182,8 @@ Validate the NFS simulation role and close the role-by-OS matrix.
   hosts.
 - Export paths, ownership, permissions, and service state match the
   documented architecture.
+- `app_ioc_runner` applies successfully from the NFS-backed simulation
+  source root without replacing the local source root.
 - Rocky 8 and Debian 13 both complete `01_base`, `02_apps`, `03_epics`,
   and `04_nfs_sim`.
 - `docs/STATUS.md` has no unverified, broken, or not-yet-applied
@@ -163,6 +193,8 @@ Validate the NFS simulation role and close the role-by-OS matrix.
 
 ### Verification
 
+Default-inventory target topology:
+
 ```bash
 make 04_nfs_sim.rocky8.server.check
 make 04_nfs_sim.debian13.server.check
@@ -170,6 +202,26 @@ make 04_nfs_sim.rocky8.server
 make 04_nfs_sim.debian13.server
 make check
 ```
+
+V7 completion evidence used the NFS/ioc-runner validation hosts from a
+temporary inventory:
+
+```bash
+ANSIBLE_LOCAL_TEMP=/tmp/ansible-local ANSIBLE_SSH_CONTROL_PATH_DIR=/tmp/ansible-cp ansible-playbook -i /tmp/ansible-provision-nfs-v7.ini -e @inventory/group_vars/all.yml playbooks/04_nfs_sim.yml
+```
+
+Validated hosts:
+
+| OS | Host | Address |
+|---|---|---|
+| Rocky 8 | `testbed-rocky8-iocrunner-server` | `192.168.122.150` |
+| Debian 13 | `testbed-debian13-iocrunner-server` | `192.168.122.50` |
+
+### Status
+
+Complete for Rocky 8 and Debian 13 ioc-runner server validation hosts.
+The NFS simulation uses the `simulation` namespace, keeps the local source
+root separate from `gitsrc-nfs-sim`, and verifies root_squash behavior.
 
 ## Update Protocol
 

@@ -2,6 +2,8 @@
 
 Deferred follow-up work for `ansible-provision`.
 
+Canonical roll-up: `docs/MILESTONES.md`.
+
 ## Host setup
 
 - Add SSH key existence check to `bin/setup_host.bash` (look for

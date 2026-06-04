@@ -19,7 +19,8 @@ help: ## Show the operator workflow
 	$(info )
 	$(info   Stages (<pb>): $(PLAYBOOKS))
 	$(info   OS groups:     $(OS_GROUPS))
-	$(info   Nodes:         $(NODE_IDS))
+	$(info   All-node pbs:  $(ALL_NODE_PLAYBOOKS))
+	$(info   Server pbs:    $(SERVER_ONLY_PLAYBOOKS))
 	$(info )
 	$(info Details: make help.detail)
 	$(QUIET) :
@@ -41,16 +42,20 @@ help.detail: ## Show the full target reference
 	        } \
 	    }' $(MAKEFILE_LIST)
 	$(QUIET) printf "\n%s\n" "Per-playbook pattern targets"
-	$(QUIET) printf "  %-26s %s\n" "<pb>"                    "Run on all nodes"
-	$(QUIET) printf "  %-26s %s\n" "<pb>.check"              "Dry run on all nodes"
+	$(QUIET) printf "  %-26s %s\n" "<pb>"                    "Run on the playbook host scope"
+	$(QUIET) printf "  %-26s %s\n" "<pb>.check"              "Dry run on the playbook host scope"
 	$(QUIET) printf "  %-26s %s\n" "<pb>.<os>"               "Run on OS group ($(OS_GROUPS))"
 	$(QUIET) printf "  %-26s %s\n" "<pb>.<os>.check"         "Dry run on OS group"
-	$(QUIET) printf "  %-26s %s\n" "<pb>.<os>.<node>"        "Run on single VM"
-	$(QUIET) printf "  %-26s %s\n" "<pb>.<os>.<node>.check"  "Dry run on single VM"
+	$(QUIET) printf "  %-26s %s\n" "<pb>.<os>.<node>"        "Run on supported node target"
+	$(QUIET) printf "  %-26s %s\n" "<pb>.<os>.<node>.check"  "Dry run on supported node target"
+	$(QUIET) printf "\n%s\n" "Playbook topology"
+	$(QUIET) printf "  %-26s %s\n" "All-node playbooks"      "$(ALL_NODE_PLAYBOOKS)"
+	$(QUIET) printf "  %-26s %s\n" "Server-only playbooks"   "$(SERVER_ONLY_PLAYBOOKS)"
 	$(QUIET) printf "\n%s\n" "Examples"
 	$(QUIET) printf "  make 01_base\n"
 	$(QUIET) printf "  make 02_apps.rocky8.server\n"
 	$(QUIET) printf "  make 03_epics.debian13.node1.check\n"
+	$(QUIET) printf "  make 04_nfs_sim.rocky8.server.check\n"
 	$(QUIET) :
 
 ##@ Provisioning
@@ -66,11 +71,15 @@ check: ## Dry run full playbook stack on all nodes
 ping: ## Verify connectivity to all nodes (honors ANSIBLE_LIMIT)
 	$(QUIET) $(ANSIBLE_CMD) all -i $(INVENTORY) $(_limit_opt) -m raw -a "uptime"
 
-$(foreach pb,  $(PLAYBOOKS), $(eval $(call playbook_group_targets,$(pb))))
+$(foreach pb,  $(ALL_NODE_PLAYBOOKS), $(eval $(call playbook_group_targets,$(pb),all nodes)))
+$(foreach pb,  $(SERVER_ONLY_PLAYBOOKS), $(eval $(call playbook_group_targets,$(pb),server nodes)))
 $(foreach pb,  $(PLAYBOOKS), \
   $(foreach os,  $(OS_GROUPS), $(eval $(call playbook_os_targets,$(pb),$(os)))))
-$(foreach pb,  $(PLAYBOOKS), \
+$(foreach pb,  $(ALL_NODE_PLAYBOOKS), \
   $(foreach os,  $(OS_GROUPS), \
     $(foreach node, $(NODE_IDS), $(eval $(call playbook_node_targets,$(pb),$(os),$(node))))))
+$(foreach pb,  $(SERVER_ONLY_PLAYBOOKS), \
+  $(foreach os,  $(OS_GROUPS), \
+    $(foreach node, $(SERVER_NODE_IDS), $(eval $(call playbook_node_targets,$(pb),$(os),$(node))))))
 
 FORCE:
