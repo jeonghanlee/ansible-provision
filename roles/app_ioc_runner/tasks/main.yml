@@ -13,7 +13,7 @@
       rm -rf "${src}"
       sudo -u "${owner}" git clone "${repo}" "${src}"
     fi
-    if [ ! -x "${bin}" ] || grep -Eq "${stamp_pattern}" "${bin}"; then
+    if [ "{{ ioc_runner_force_setup | bool | ternary('true', 'false') }}" = "true" ] || [ ! -x "${bin}" ] || grep -Eq "${stamp_pattern}" "${bin}"; then
       SUDO_USER="${owner}" bash "${src}/bin/setup-system-infra.bash" --full
     fi
     test -x "${bin}"
@@ -31,4 +31,12 @@
 - name: Add engineers to ioc group
   ansible.builtin.raw: "usermod -aG ioc {{ item }}"
   loop: "{{ epics_ioc_engineers }}"
+  changed_when: false
+
+- name: Verify ioc-runner command
+  ansible.builtin.raw: |
+    set -e
+    ioc-runner -V
+    ioc-runner list -vv
+    ioc-runner inspect -h
   changed_when: false

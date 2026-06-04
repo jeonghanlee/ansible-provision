@@ -2,9 +2,10 @@
 
 ## 1. Overview
 
-Ansible-based application provisioner for libvirt/KVM testbed VMs.
-Operates on top of `cloud-provision` base images and deploys the full
-EPICS control system stack across Rocky 8 and Debian 13 nodes.
+Ansible-based Linux system unification baseline for Rocky 8 and Debian 13.
+The repository installs common operating-system services and validates EPICS
+operation above that baseline. The first-pass validation environment uses
+`cloud-provision` VMs, but VM lifecycle is not owned by this repository.
 
 ---
 
@@ -13,8 +14,8 @@ EPICS control system stack across Rocky 8 and Debian 13 nodes.
 ```
 [ cloud-provision ]
      |
-     | VMs running, SSH accessible (vmadmin)
-     | Static IPs assigned via libvirt DHCP reservation
+     | VMs running, SSH accessible through example testbed inventory
+     | Static IPs assigned outside this repository
      |
      V
 [ ansible-provision ]
@@ -31,12 +32,13 @@ EPICS control system stack across Rocky 8 and Debian 13 nodes.
      |                 - epics-ioc-runner infrastructure setup
      |
      V
-[ Nodes ready for IOC deployment ]
+[ Linux nodes ready for EPICS IOC validation ]
 
 (out-of-band, not in site.yml)
-04_nfs_sim.yml → nfs_sim role
+04_nfs_sim.yml → nfs_sim role, app_ioc_runner role
                  - loopback NFS export with root_squash
-                 - replaces ~vmadmin/gitsrc with NFS-mounted symlink
+                 - exposes an NFS-mounted simulation source root
+                 - validates epics-ioc-runner from that NFS source root
 ```
 
 ---
@@ -58,7 +60,7 @@ ansible-provision/
 │   ├── RULES_ANSIBLE                (playbook targets)
 │   └── RULES_VARS                   (env inspection)
 ├── inventory/
-│   ├── testbed.ini                  (static IPs from cloud-provision)
+│   ├── testbed.ini                  (example validation inventory)
 │   └── group_vars/
 │       ├── all.yml                  (site-independent variables)
 │       ├── rocky8.yml               (epics_os_dir: rocky-8.10)
@@ -82,8 +84,10 @@ ansible-provision/
 
 ## 4. Inventory and Network
 
-Static IPs are inherited from `cloud-provision` DHCP reservations.
-No dynamic inventory is required.
+The bundled inventory is an example validation inventory. Static IPs and
+the default `vmadmin` SSH identity are testbed defaults inherited from the
+first-pass `cloud-provision` environment, not public baseline requirements.
+Production and site deployments should supply their own inventory.
 
 ```
 192.168.122.10   testbed-debian13-server   [debian13, ioc_nodes]
@@ -157,10 +161,11 @@ setup-system-infra.bash --full
   └── /etc/systemd/system/epics-@.service (procServ template)
 
 ioc-runner CLI install
-  ├── clone epics-ioc-runner → /home/vmadmin/gitsrc/epics-ioc-runner
+  ├── clone epics-ioc-runner → {{ path_ioc_runner_root }}/epics-ioc-runner
   ├── copy bin/ioc-runner → /usr/local/bin/
   ├── inject git hash + build date
-  └── copy completion → /etc/bash_completion.d/
+  ├── copy completion → /etc/bash_completion.d/
+  └── verify ioc-runner -V, list -vv, and inspect help
 
 mkdir /opt/epics-iocs (2775, root:ioc)
 usermod -aG ioc {{ epics_ioc_engineers }}
@@ -178,20 +183,26 @@ against the same permission shape they meet in deployment:
 ```
 install nfs-utils / nfs-kernel-server
   │
-  ├── /srv/nfs/alsu/vmadmin/gitsrc        (export source, vmadmin:vmadmin)
+  ├── /srv/nfs/simulation/vmadmin/gitsrc  (export source, vmadmin:vmadmin)
   │
   ├── /etc/exports.d/nfs_sim.exports
   │     127.0.0.1: rw,sync,root_squash,no_subtree_check,fsid=10
   │
-  ├── /home/nfs/alsu/vmadmin/gitsrc       (mount point, fstab persistent)
+  ├── /home/nfs/simulation/vmadmin/gitsrc (mount point, fstab persistent)
   │     127.0.0.1:/srv/... nfs rw,soft,_netdev
   │
-  └── ~vmadmin/gitsrc -> /home/nfs/alsu/vmadmin/gitsrc
+  └── ~vmadmin/gitsrc-nfs-sim -> /home/nfs/simulation/vmadmin/gitsrc
 ```
 
-After application, root-owned operations under `~vmadmin/gitsrc`
-are squashed to nobody by the kernel NFS client over the loopback
-mount, with no second host required.
+After application, root-owned operations under the testbed user's
+`gitsrc-nfs-sim` symlink are squashed to nobody by the kernel NFS client
+over the loopback mount, with no second host required. The regular
+`03_epics` path keeps the local source root from `path_ioc_runner_root`;
+`04_nfs_sim` overrides `path_ioc_runner_root` and enables
+`ioc_runner_force_setup` so the same `app_ioc_runner` role validates the
+NFS-backed source root separately. `nfs_sim_namespace`, `nfs_sim_user`,
+and `nfs_sim_group` are validation defaults and may be overridden in site
+or testbed overlays.
 
 ---
 
@@ -212,7 +223,8 @@ mount, with no second host required.
 
 | Scope | File | Contents |
 |---|---|---|
-| All hosts | `group_vars/all.yml` | repos, paths, packages, NTP |
-| Rocky 8 | `group_vars/rocky8.yml` | `epics_os_dir: rocky-8.10` |
-| Debian 13 | `group_vars/debian13.yml` | `epics_os_dir: debian-13` |
-| Site override | `configure/CONFIG_SITE.local` | `INVENTORY`, `PLAYBOOK_DIR`, topology |
+| Public baseline defaults | `group_vars/all.yml` | package lists, public GitHub repos, pool NTP, disabled proxy |
+| Validation defaults | `group_vars/all.yml`, `roles/nfs_sim/defaults/main.yml` | EPICS versions, ioc-runner source root, NFS simulation namespace |
+| Testbed defaults | `inventory/testbed.ini`, `group_vars/all.yml` | example IPs, `vmadmin` SSH user, example IOC engineer user |
+| OS defaults | `group_vars/rocky8.yml`, `group_vars/debian13.yml` | OS-specific EPICS binary directory selectors |
+| Site override | `configure/CONFIG_SITE.local`, custom inventory | `INVENTORY`, `PLAYBOOK_DIR`, topology, users, site paths |
