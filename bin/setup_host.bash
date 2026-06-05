@@ -36,6 +36,13 @@ else
     sudo "${PKG_CMD}" install -y ansible-core
 fi
 
+# SSH key check
+if [[ -f "${HOME}/.ssh/id_ed25519.pub" ]] || [[ -f "${HOME}/.ssh/id_rsa.pub" ]]; then
+    printf "  SSH public key  [OK]\n"
+else
+    printf "  SSH public key  [MISSING] Run ssh-keygen\n"
+fi
+
 printf "%s\n" "------------------------------------------------------------"
 printf "Host setup complete.\n"
 printf "%s\n" "------------------------------------------------------------"

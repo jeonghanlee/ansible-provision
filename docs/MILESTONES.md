@@ -33,7 +33,7 @@ testbed. Syntax checks alone are necessary but not sufficient.
 | NFS simulation | Milestone 5: NFS simulation and cross-OS closure | Milestone | Complete | `docs/STATUS.md` marks `nfs_sim` verified on Rocky 8 and Debian 13 ioc-runner server validation hosts. |
 | Repository identity | Public baseline and validation boundary | Design gate | Implemented | README and architecture describe a public Linux baseline, validation defaults, testbed defaults, and site overlays. |
 | Makefile topology | Server-only NFS simulation targets | Design gate | Implemented | `04_nfs_sim` node targets are generated only for configured server node IDs. |
-| Host setup | SSH key existence check | Carry-forward | Open | `TODO.md` tracks a warning for missing `~/.ssh/id_ed25519.pub` or `~/.ssh/id_rsa.pub` in `bin/setup_host.bash`. |
+| Host setup | SSH key existence check | Carry-forward | Complete | `bin/setup_host.bash` warns when neither `~/.ssh/id_ed25519.pub` nor `~/.ssh/id_rsa.pub` is present, mirroring the `cloud-provision` host setup. |
 
 ## Conceptual Integrity Findings
 
