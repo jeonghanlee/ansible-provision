@@ -40,3 +40,29 @@
 - name: Set python alternative
   ansible.builtin.raw: "alternatives --set {{ runtime_python_alt_name }} {{ runtime_python_alt_path }}"
   changed_when: false
+
+# RHEL-family sudo secure_path excludes /usr/local, so sudo cannot resolve
+# tools installed under /usr/local/bin (con, procServ, ioc-runner) or
+# /usr/local/sbin (conserver). Prepend both via a validated sudoers drop-in;
+# Debian already includes them in its default secure_path.
+- name: Add /usr/local to sudo secure_path
+  ansible.builtin.raw: |
+    set -e
+    target="/etc/sudoers.d/secure-path"
+    desired='Defaults secure_path="/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin"'
+    tmp="$(mktemp)"
+    printf '%s\n' "$desired" > "$tmp"
+    if [ -f "$target" ] && cmp -s "$tmp" "$target"; then
+      rm -f "$tmp"
+      printf "unchanged\n"
+    elif visudo -cf "$tmp" >/dev/null 2>&1; then
+      install -m 0440 -o root -g root "$tmp" "$target"
+      rm -f "$tmp"
+      printf "changed\n"
+    else
+      rm -f "$tmp"
+      printf "secure_path sudoers validation failed; /etc/sudoers.d left untouched\n" >&2
+      exit 1
+    fi
+  register: secure_path_dropin
+  changed_when: "secure_path_dropin.stdout | trim == 'changed'"
