@@ -216,6 +216,7 @@ or testbed overlays.
 | EPICS os dir | `rocky-8.10` | `debian-13` |
 | EPICS repo   | `EPEL + PowerTools` required | standard apt |
 | Python pip   | `pip3.9` (system-wide)   | apt packages + `pip3 --break-system-packages` (EPICS only) |
+| sudo secure_path | drop-in adds `/usr/local/{sbin,bin}` | default already includes `/usr/local` |
 
 ---
 
