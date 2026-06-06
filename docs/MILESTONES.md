@@ -9,8 +9,9 @@ gates, and conceptual-integrity findings that need owner decisions.
 Supporting evidence remains in `docs/STATUS.md` and `TODO.md`; those
 documents are not competing status registers.
 
-Next session entry point: final review and commit preparation after V7
-closure.
+Next session entry point: verify the RHEL sudo secure_path drop-in
+(c5b3fbe) on a Rocky 8 host; confirm sudo resolves /usr/local tools
+such as sudo con.
 
 ## Completion Model
 
@@ -34,6 +35,7 @@ testbed. Syntax checks alone are necessary but not sufficient.
 | Repository identity | Public baseline and validation boundary | Design gate | Implemented | README and architecture describe a public Linux baseline, validation defaults, testbed defaults, and site overlays. |
 | Makefile topology | Server-only NFS simulation targets | Design gate | Implemented | `04_nfs_sim` node targets are generated only for configured server node IDs. |
 | Host setup | SSH key existence check | Carry-forward | Complete | `bin/setup_host.bash` warns when neither `~/.ssh/id_ed25519.pub` nor `~/.ssh/id_rsa.pub` is present, mirroring the `cloud-provision` host setup. |
+| Base OS | RHEL sudo secure_path verification | Carry-forward | Open | Verify on Rocky 8 that sudo resolves `/usr/local` tools (`sudo con`, `sudo conserver`) after the secure-path drop-in (c5b3fbe). |
 
 ## Conceptual Integrity Findings
 
