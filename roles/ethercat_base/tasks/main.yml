@@ -1,0 +1,36 @@
+---
+# roles/ethercat_base/tasks/main.yml
+#
+# Provisions the EtherCAT/RT base image layer: build toolchain, running-kernel
+# headers, dkms, and the PREEMPT_RT kernel + headers. The RT kernel is INSTALLED
+# but never selected as the boot default here (ethercat-env decision D2); the
+# live app_ethercat run sets the boot default and confirms it post-reboot (M16).
+# Applied at bake time by playbooks/05_ethercat_base.yml.
+
+- name: Update apt cache
+  ansible.builtin.raw: apt-get update -y
+  changed_when: false
+
+- name: Install EtherCAT build toolchain and module prerequisites
+  ansible.builtin.raw: "apt-get install -y {{ ethercat_base_packages | join(' ') }}"
+  changed_when: false
+
+- name: Install kernel headers for the running kernel
+  ansible.builtin.raw: "apt-get install -y linux-headers-$(uname -r)"
+  changed_when: false
+
+- name: Install PREEMPT_RT kernel and headers (installed, not boot default per D2)
+  ansible.builtin.raw: "apt-get install -y {{ ethercat_rt_kernel_pkg }} {{ ethercat_rt_headers_pkg }}"
+  changed_when: false
+
+- name: Verify the RT kernel image is present without changing the boot default
+  ansible.builtin.raw: |
+    set -e
+    rt="$(ls /boot/vmlinuz-*rt-amd64* 2>/dev/null || true)"
+    if [ -z "$rt" ]; then
+      printf "ethercat_base: FAIL - no RT kernel under /boot after install\n" >&2
+      exit 1
+    fi
+    printf "ethercat_base: RT kernel present: %s\n" "$rt"
+    printf "ethercat_base: boot default left unchanged (D2); selection is a live app_ethercat step\n"
+  changed_when: false

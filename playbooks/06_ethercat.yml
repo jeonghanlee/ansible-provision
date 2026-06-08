@@ -1,0 +1,14 @@
+---
+# playbooks/06_ethercat.yml
+#
+# Live R2-12 validation: clones ethercat-env and executes its root-affecting
+# target graph for real on a baked EtherCAT/RT VM (the debian13-ethercat
+# variant), including an infra-driven reboot into the RT kernel. Run against the
+# ethercat_nodes group after `make debian13-ethercat.server` in cloud-provision.
+- name: Run the EtherCAT R2-12 live validation
+  hosts: ethercat_nodes
+  gather_facts: false
+  become: yes
+  roles:
+    - role: app_ethercat
+      tags: [ethercat, app_ethercat]
