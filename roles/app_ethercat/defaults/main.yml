@@ -1,10 +1,13 @@
 ---
 # roles/app_ethercat/defaults/main.yml
 
-# ethercat-env repository. The milestone buildout branch is pushed to origin so
-# the validation VM can clone it directly.
-ethercat_repo: https://github.com/jeonghanlee/ethercat-env
+# ethercat-env source. The validation network blocks github HTTPS from the VM
+# (L7 504), so the buildout branch is delivered from the ansible controller
+# (which has the repo) as a git bundle, then cloned from that bundle on the VM.
+ethercat_host_repo: /data/gitsrc/ethercat-env
 ethercat_branch: dev/milestone-buildout
+ethercat_bundle_local: /tmp/ethercat-env-buildout.bundle
+ethercat_bundle_remote: /tmp/ethercat-env-buildout.bundle
 ethercat_src: /opt/ethercat-env
 
 # Validation evidence directory (per-target make logs live here).
@@ -28,6 +31,9 @@ ethercat_targets_pre:
   - build
   - build.modules
   - module.lifecycle
+  - dkms.conf
+  - add.dkms
+  - build.dkms
   - install.dkms
   - install
   - command.install

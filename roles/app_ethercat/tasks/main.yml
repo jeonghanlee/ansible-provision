@@ -12,18 +12,27 @@
 # boot-default change and running-RT-kernel confirmation are M16-precursor
 # evidence, deliberately outside the repository's own targets (decision D2).
 
-- name: Clone the ethercat-env milestone buildout branch
+- name: Create a git bundle of the buildout branch on the controller
+  delegate_to: localhost
+  run_once: true
+  become: false
+  ansible.builtin.command:
+    cmd: git -C {{ ethercat_host_repo }} bundle create {{ ethercat_bundle_local }} {{ ethercat_branch }}
+  changed_when: false
+
+- name: Copy the git bundle to the VM
+  ansible.builtin.copy:
+    src: "{{ ethercat_bundle_local }}"
+    dest: "{{ ethercat_bundle_remote }}"
+    mode: "0644"
+
+- name: Clone ethercat-env from the bundle on the VM
   ansible.builtin.raw: |
     set -e
     src="{{ ethercat_src }}"
-    if [ ! -d "$src/.git" ]; then
-      rm -rf "$src"
-      git clone --branch "{{ ethercat_branch }}" "{{ ethercat_repo }}" "$src"
-    else
-      git -C "$src" fetch origin "{{ ethercat_branch }}"
-      git -C "$src" checkout "{{ ethercat_branch }}"
-      git -C "$src" reset --hard "origin/{{ ethercat_branch }}"
-    fi
+    rm -rf "$src"
+    git clone --branch "{{ ethercat_branch }}" "{{ ethercat_bundle_remote }}" "$src"
+    git -C "$src" remote remove origin 2>/dev/null || true
     printf "app_ethercat: HEAD = %s\n" "$(git -C "$src" rev-parse HEAD)"
   changed_when: false
 

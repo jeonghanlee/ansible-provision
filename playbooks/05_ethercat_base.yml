@@ -7,7 +7,7 @@
 # --limit testbed-debian13-server; the resulting disk is flattened into the
 # ethercat-debian13 golden image. Not part of site.yml.
 - name: Provision the EtherCAT/RT base image layer
-  hosts: debian13
+  hosts: ethercat_build
   gather_facts: false
   become: yes
   roles:

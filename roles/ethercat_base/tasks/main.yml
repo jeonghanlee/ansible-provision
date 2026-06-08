@@ -19,18 +19,38 @@
   ansible.builtin.raw: "apt-get install -y linux-headers-$(uname -r)"
   changed_when: false
 
-- name: Install PREEMPT_RT kernel and headers (installed, not boot default per D2)
-  ansible.builtin.raw: "apt-get install -y {{ ethercat_rt_kernel_pkg }} {{ ethercat_rt_headers_pkg }}"
-  changed_when: false
-
-- name: Verify the RT kernel image is present without changing the boot default
+- name: Install PREEMPT_RT kernel and headers, keeping the stock kernel as boot default
   ansible.builtin.raw: |
     set -e
+    grubfile=/etc/default/grub
+    grubcfg=/boot/grub/grub.cfg
+    stock="$(uname -r)"
+    apt-get install -y {{ ethercat_rt_kernel_pkg }} {{ ethercat_rt_headers_pkg }}
     rt="$(ls /boot/vmlinuz-*rt-amd64* 2>/dev/null || true)"
     if [ -z "$rt" ]; then
       printf "ethercat_base: FAIL - no RT kernel under /boot after install\n" >&2
       exit 1
     fi
     printf "ethercat_base: RT kernel present: %s\n" "$rt"
-    printf "ethercat_base: boot default left unchanged (D2); selection is a live app_ethercat step\n"
+    # Keep booting the stock kernel by default so the live app_ethercat
+    # pre-reboot build runs on the stock kernel (stock-first). This does NOT
+    # force RT as the default (D2); app_ethercat selects RT before its reboot.
+    # The grub.cfg parse is best-effort and may need tuning on first real run.
+    if grep -q '^GRUB_DEFAULT=' "$grubfile"; then
+      sed -i 's/^GRUB_DEFAULT=.*/GRUB_DEFAULT=saved/' "$grubfile"
+    else
+      printf 'GRUB_DEFAULT=saved\n' >> "$grubfile"
+    fi
+    update-grub
+    sub="$(awk -F\' '/^submenu /{print $2; exit}' "$grubcfg")"
+    entry="$(awk -F\' -v v="$stock" '/menuentry / && index($0, v) && $0 !~ /recovery/ {print $2; exit}' "$grubcfg")"
+    if [ -n "$sub" ] && [ -n "$entry" ]; then
+      grub-set-default "$sub>$entry"
+      printf 'ethercat_base: stock kernel kept as boot default: %s\n' "$entry"
+    elif [ -n "$entry" ]; then
+      grub-set-default "$entry"
+      printf 'ethercat_base: stock kernel kept as boot default: %s\n' "$entry"
+    else
+      printf 'WARN: could not resolve stock menuentry; GRUB default left as-is\n'
+    fi
   changed_when: false
