@@ -1,0 +1,65 @@
+---
+# roles/app_ethercat/defaults/main.yml
+
+# ethercat-env repository. The milestone buildout branch is pushed to origin so
+# the validation VM can clone it directly.
+ethercat_repo: https://github.com/jeonghanlee/ethercat-env
+ethercat_branch: dev/milestone-buildout
+ethercat_src: /opt/ethercat-env
+
+# Validation evidence directory (per-target make logs live here).
+ethercat_log_dir: /opt/ethercat-validation/logs
+
+# RT kernel flavor used to locate the baked RT kernel in grub for the
+# infra-driven boot-default change. This boot-default change is NOT an
+# ethercat-env target (decision D2); it is infrastructure that produces
+# M16-precursor evidence (running the RT kernel, DKMS rebuild on kernel change).
+ethercat_rt_kernel_flavor: rt-amd64
+ethercat_grub_file: /etc/default/grub
+ethercat_grub_cfg: /boot/grub/grub.cfg
+
+# Phase 0-4 plus RT provisioning and GRUB apply. Run for real before the
+# infra-driven reboot. Order mirrors the ethercat-env ordering constraints
+# (M5 doctor first; guards before root-affecting and destructive targets).
+ethercat_targets_pre:
+  - doctor
+  - init
+  - autoconf
+  - build
+  - build.modules
+  - module.lifecycle
+  - install.dkms
+  - install
+  - command.install
+  - loader.install
+  - runtime.generate
+  - runtime.lint
+  - udev.install
+  - systemd.install
+  - systemd.enable
+  - systemd.start
+  - runtime.status
+  - rt.kernel.provision
+  - rt.limits.install
+  - rt.grub.apply
+  - rt.service.apply
+  - rt.priority.show
+  - rt.latency.classify
+
+# Post-reboot confirmation on the RT kernel: RT readiness, GRUB parameter
+# persistence, runtime status, and the repository-local regression gate.
+ethercat_targets_post:
+  - rt.status
+  - rt.grub.audit
+  - runtime.status
+  - verify.all
+
+# Teardown / rollback flow, run for real and audited for residue. remove.purge
+# cascades remove.uninstall + remove.rt, so they are not listed separately.
+ethercat_targets_removal:
+  - remove.dryrun
+  - remove.stop
+  - remove.disable
+  - remove.dkms
+  - remove.purge
+  - remove.audit

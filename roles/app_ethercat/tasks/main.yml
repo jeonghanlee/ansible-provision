@@ -1,0 +1,164 @@
+---
+# roles/app_ethercat/tasks/main.yml
+#
+# Live R2-12 validation: clone ethercat-env and execute its root-affecting
+# target graph for real on a baked EtherCAT/RT VM, capturing per-target logs.
+#
+# Reboot model: the pre-reboot sequence runs the build, install, runtime,
+# systemd/udev, RT provisioning, and GRUB apply targets. An INFRASTRUCTURE step
+# (not an ethercat-env target) then selects the RT kernel as the boot default
+# and reboots; the post-reboot sequence observes the DKMS rebuild on the new
+# kernel and confirms RT readiness and GRUB-parameter persistence. The
+# boot-default change and running-RT-kernel confirmation are M16-precursor
+# evidence, deliberately outside the repository's own targets (decision D2).
+
+- name: Clone the ethercat-env milestone buildout branch
+  ansible.builtin.raw: |
+    set -e
+    src="{{ ethercat_src }}"
+    if [ ! -d "$src/.git" ]; then
+      rm -rf "$src"
+      git clone --branch "{{ ethercat_branch }}" "{{ ethercat_repo }}" "$src"
+    else
+      git -C "$src" fetch origin "{{ ethercat_branch }}"
+      git -C "$src" checkout "{{ ethercat_branch }}"
+      git -C "$src" reset --hard "origin/{{ ethercat_branch }}"
+    fi
+    printf "app_ethercat: HEAD = %s\n" "$(git -C "$src" rev-parse HEAD)"
+  changed_when: false
+
+- name: Run the pre-reboot ethercat target sequence
+  ansible.builtin.raw: |
+    set -e
+    src="{{ ethercat_src }}"
+    logdir="{{ ethercat_log_dir }}"
+    mkdir -p "$logdir"
+    n=0
+    for t in {{ ethercat_targets_pre | join(' ') }}; do
+      n=$((n+1))
+      safe="$(printf '%s' "$t" | tr './' '__')"
+      log="$logdir/pre-$(printf '%02d' "$n")-$safe.log"
+      printf '===== make %s =====\n' "$t"
+      if make -C "$src" "$t" >"$log" 2>&1; then
+        printf '  [OK] %s -> %s\n' "$t" "$log"
+      else
+        rc=$?
+        printf '  [FAIL rc=%s] %s -> %s\n' "$rc" "$t" "$log" >&2
+        tail -n 30 "$log" >&2
+        exit "$rc"
+      fi
+    done
+  changed_when: false
+
+- name: Select the RT kernel as boot default (infra; M16-precursor, not an ethercat-env target)
+  ansible.builtin.raw: |
+    set -e
+    logdir="{{ ethercat_log_dir }}"
+    mkdir -p "$logdir"
+    log="$logdir/infra-grub-select-rt.log"
+    {
+      grubfile="{{ ethercat_grub_file }}"
+      grubcfg="{{ ethercat_grub_cfg }}"
+      flavor="{{ ethercat_rt_kernel_flavor }}"
+      printf 'current running kernel: %s\n' "$(uname -r)"
+      # Persist grub-set-default selections across reboots.
+      if grep -q '^GRUB_DEFAULT=' "$grubfile"; then
+        sed -i 's/^GRUB_DEFAULT=.*/GRUB_DEFAULT=saved/' "$grubfile"
+      else
+        printf 'GRUB_DEFAULT=saved\n' >> "$grubfile"
+      fi
+      update-grub
+      # Resolve the "Advanced options" submenu title and the RT menuentry title
+      # from the generated grub.cfg. This parse is best-effort and may need
+      # tuning on the first real VM run; a miss is non-fatal so the reboot still
+      # proceeds and the post-reboot step reports the actual running kernel.
+      sub="$(awk -F\' '/^submenu /{print $2; exit}' "$grubcfg")"
+      entry="$(awk -F\' -v f="$flavor" '/menuentry / && $0 ~ f && $0 !~ /recovery/ {print $2; exit}' "$grubcfg")"
+      if [ -n "$sub" ] && [ -n "$entry" ]; then
+        printf 'grub-set-default %s>%s\n' "$sub" "$entry"
+        grub-set-default "$sub>$entry"
+      elif [ -n "$entry" ]; then
+        printf 'grub-set-default %s\n' "$entry"
+        grub-set-default "$entry"
+      else
+        printf 'WARN: could not resolve RT menuentry from %s; boot default unchanged\n' "$grubcfg"
+      fi
+    } 2>&1 | tee "$log"
+  changed_when: false
+
+- name: Reboot into the selected RT kernel (M16-precursor evidence)
+  ansible.builtin.reboot:
+    reboot_timeout: 600
+    post_reboot_delay: 15
+    msg: Rebooting to boot the PREEMPT_RT kernel for ethercat-env validation
+
+- name: Confirm running kernel and rebuild DKMS modules for it
+  ansible.builtin.raw: |
+    set -e
+    logdir="{{ ethercat_log_dir }}"
+    mkdir -p "$logdir"
+    log="$logdir/post-00-kernel-dkms.log"
+    {
+      printf 'running kernel after reboot: %s\n' "$(uname -r)"
+      case "$(uname -r)" in
+        *{{ ethercat_rt_kernel_flavor }}*) printf 'RT kernel is running [OK]\n' ;;
+        *) printf 'WARN: running kernel is not the RT flavor; grub selection may need tuning\n' ;;
+      esac
+      printf '----- dkms status -----\n'
+      dkms status || true
+      printf '----- dkms autoinstall (rebuild for running kernel) -----\n'
+      dkms autoinstall || true
+      printf '----- dkms status after autoinstall -----\n'
+      dkms status || true
+    } 2>&1 | tee "$log"
+  changed_when: false
+
+- name: Run the post-reboot ethercat target sequence
+  ansible.builtin.raw: |
+    set -e
+    src="{{ ethercat_src }}"
+    logdir="{{ ethercat_log_dir }}"
+    n=0
+    for t in {{ ethercat_targets_post | join(' ') }}; do
+      n=$((n+1))
+      safe="$(printf '%s' "$t" | tr './' '__')"
+      log="$logdir/post-$(printf '%02d' "$n")-$safe.log"
+      printf '===== make %s =====\n' "$t"
+      if make -C "$src" "$t" >"$log" 2>&1; then
+        printf '  [OK] %s -> %s\n' "$t" "$log"
+      else
+        rc=$?
+        printf '  [FAIL rc=%s] %s -> %s\n' "$rc" "$t" "$log" >&2
+        tail -n 30 "$log" >&2
+        exit "$rc"
+      fi
+    done
+  changed_when: false
+
+- name: Run the ethercat removal and audit sequence
+  ansible.builtin.raw: |
+    set -e
+    src="{{ ethercat_src }}"
+    logdir="{{ ethercat_log_dir }}"
+    n=0
+    for t in {{ ethercat_targets_removal | join(' ') }}; do
+      n=$((n+1))
+      safe="$(printf '%s' "$t" | tr './' '__')"
+      log="$logdir/rm-$(printf '%02d' "$n")-$safe.log"
+      printf '===== make %s =====\n' "$t"
+      if make -C "$src" "$t" >"$log" 2>&1; then
+        printf '  [OK] %s -> %s\n' "$t" "$log"
+      else
+        rc=$?
+        printf '  [FAIL rc=%s] %s -> %s\n' "$rc" "$t" "$log" >&2
+        tail -n 30 "$log" >&2
+        exit "$rc"
+      fi
+    done
+  changed_when: false
+
+- name: Summarize the validation evidence location
+  ansible.builtin.raw: |
+    printf 'ethercat validation logs: {{ ethercat_log_dir }}\n'
+    ls -1 "{{ ethercat_log_dir }}"
+  changed_when: false

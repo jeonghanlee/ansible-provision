@@ -1,0 +1,15 @@
+---
+# playbooks/05_ethercat_base.yml
+#
+# Bake-time playbook: provisions the EtherCAT/RT prerequisite layer (build
+# toolchain, kernel headers, dkms, RT kernel + headers installed but not boot
+# default). Invoked by cloud-provision's bake_ethercat_image.bash with
+# --limit testbed-debian13-server; the resulting disk is flattened into the
+# ethercat-debian13 golden image. Not part of site.yml.
+- name: Provision the EtherCAT/RT base image layer
+  hosts: debian13
+  gather_facts: false
+  become: yes
+  roles:
+    - role: ethercat_base
+      tags: [ethercat, ethercat_base]
