@@ -47,7 +47,7 @@
     mountpoint -q {{ nfs_sim_mount_dir }} || mount {{ nfs_sim_mount_dir }}
   changed_when: false
 
-- name: Replace user gitsrc with NFS-mount symlink
+- name: Create user NFS simulation symlink
   ansible.builtin.raw: |
     target="{{ nfs_sim_mount_dir }}"
     link="{{ nfs_sim_user_symlink }}"

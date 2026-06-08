@@ -35,13 +35,13 @@ $(1).$(2).$(3).check: ## Dry run $(1) on $(VM_PREFIX)-$(2)-$(3)
 endef
 
 # Generates group targets for a playbook (all OS groups).
-# Usage: $(call playbook_group_targets, playbook)
+# Usage: $(call playbook_group_targets, playbook, topology_label)
 define playbook_group_targets
 .PHONY: $(1) $(1).check
 
-$(1): $(addprefix $(1)., $(OS_GROUPS)) ## Run $(1) on all nodes
+$(1): $(addprefix $(1)., $(OS_GROUPS)) ## Run $(1) on $(2)
 
-$(1).check: $(addsuffix .check, $(addprefix $(1)., $(OS_GROUPS))) ## Dry run $(1) on all nodes
+$(1).check: $(addsuffix .check, $(addprefix $(1)., $(OS_GROUPS))) ## Dry run $(1) on $(2)
 endef
 
 VARS_EXCLUDES += playbook_os_targets playbook_node_targets playbook_group_targets

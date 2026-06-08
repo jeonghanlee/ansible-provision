@@ -4,7 +4,9 @@ Living document tracking which role × OS combinations have been
 verified end-to-end on a real testbed, distinct from the structural
 description in ARCHITECTURE.md.
 
-**Last updated:** 2026-05-13
+Canonical roll-up: `docs/MILESTONES.md`.
+
+**Last updated:** 2026-06-04
 **See also:** `TODO.md` for deferred feature work; this file tracks
 verification state and known defects.
 
@@ -14,7 +16,7 @@ verification state and known defects.
 |--------|---------|
 | ✓      | Applied and verified — binary/config landed, idempotent rerun observed |
 | ?      | Applied; ansible reported ok but artefact not independently verified |
-| ✗      | Known broken — bug filed in Open Items below |
+| ✗      | Known broken — documented in Verification notes below |
 | —      | Not yet applied on this OS |
 
 ## Role × OS matrix
@@ -27,22 +29,16 @@ verification state and known defects.
 | app_conserver   | 02_apps     | ✓      | ✓        |
 | app_epics       | 03_epics    | ✓      | ✓        |
 | app_ioc_runner  | 03_epics    | ✓      | ✓        |
-| nfs_sim         | 04_nfs_sim  | —      | —        |
+| nfs_sim         | 04_nfs_sim  | ✓      | ✓        |
 
-## Open items
+## Verification notes
 
-### A. NFS simulation paths unexercised
-Rocky 8 and Debian 13 VMs are running, and `01_base`, `02_apps`,
-and `03_epics` are verified across `server`, `node1`, and `node2`.
-`04_nfs_sim` remains unrun.
-
-### B. SSH key existence check missing in setup_host.bash
-`bin/setup_host.bash` installs `ansible-core` but does not verify
-the operator has an SSH keypair. ansible reaches managed nodes
-over SSH, so a missing key surfaces only at first ping. Check for
-`~/.ssh/id_ed25519.pub` or `~/.ssh/id_rsa.pub` and warn if absent
-(mirrors the sister `cloud-provision` repo). Tracked in
-`TODO.md`.
+### NFS simulation paths verified
+`04_nfs_sim` was applied on the Rocky 8 and Debian 13 ioc-runner
+server validation hosts. The simulation namespace was mounted at
+`/home/nfs/simulation/vmadmin/gitsrc`, old `alsu` namespace entries
+were absent, vmadmin writes succeeded, root-owned writes were denied by
+root_squash, and `ioc-runner` smoke checks passed.
 
 ## Update protocol
 
