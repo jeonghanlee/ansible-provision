@@ -46,17 +46,17 @@ ansible-playbook -i inventory/testbed.ini site.yml -v
 ## Ad-hoc Commands
 
 ```bash
-# Run a shell command on all nodes
-ansible all -i inventory/testbed.ini -m shell -a "uptime"
+# Run a command on all nodes without requiring managed-host Python
+ansible all -i inventory/testbed.ini -m raw -a "uptime"
 
 # Check a service status
-ansible rocky8 -i inventory/testbed.ini -m shell -a "systemctl is-active chronyd"
+ansible rocky8 -i inventory/testbed.ini -m raw -a "systemctl is-active chronyd"
 
-# Gather facts from a single node
-ansible testbed-rocky8-server -i inventory/testbed.ini -m setup
+# Check OS release data without gathering facts
+ansible testbed-rocky8-server -i inventory/testbed.ini -m raw -a "cat /etc/os-release"
 
 # Check a binary exists
-ansible all -i inventory/testbed.ini -m shell -a "which procServ"
+ansible all -i inventory/testbed.ini -m raw -a "command -v procServ"
 ```
 
 ---

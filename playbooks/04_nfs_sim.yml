@@ -7,3 +7,9 @@
   roles:
     - role: nfs_sim
       tags: [nfs_sim]
+    - role: app_ioc_runner
+      vars:
+        path_ioc_runner_root: "{{ nfs_sim_user_symlink }}"
+        path_ioc_runner_src: "{{ nfs_sim_user_symlink }}/epics-ioc-runner"
+        ioc_runner_force_setup: true
+      tags: [app, ioc_runner, nfs_sim]
