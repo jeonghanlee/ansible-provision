@@ -6,7 +6,7 @@ description in ARCHITECTURE.md.
 
 Canonical roll-up: `docs/MILESTONES.md`.
 
-**Last updated:** 2026-06-04
+**Last updated:** 2026-06-09
 **See also:** `TODO.md` for deferred feature work; this file tracks
 verification state and known defects.
 
@@ -39,6 +39,20 @@ server validation hosts. The simulation namespace was mounted at
 `/home/nfs/simulation/vmadmin/gitsrc`, old `alsu` namespace entries
 were absent, vmadmin writes succeeded, root-owned writes were denied by
 root_squash, and `ioc-runner` smoke checks passed.
+
+## EtherCAT validation (Debian 13, separate scope)
+
+Tracked outside the role × OS matrix above: EtherCAT is a Debian 13-only
+bake + live-VM validation harness for the external `ethercat-env` buildout,
+not part of the core completion model. See `docs/MILESTONES.md`.
+
+| Component      | Playbook         | Host group            | Status |
+|----------------|------------------|-----------------------|--------|
+| ethercat_base  | 05_ethercat_base | ethercat_build (bake) | —      |
+| app_ethercat   | 06_ethercat      | ethercat_nodes (live) | —      |
+
+Verification requires the baked `ethercat-debian13` golden image and a live
+VM run; not yet exercised end-to-end.
 
 ## Update protocol
 

@@ -23,19 +23,27 @@ runtime workflows.
 Each milestone closes only when its acceptance criteria pass on the real
 testbed. Syntax checks alone are necessary but not sufficient.
 
+The EtherCAT/RT validation harness (`ethercat_base`, `app_ethercat`) is
+tracked separately under "EtherCAT Validation Harness" below and is **not**
+part of this completion model: it validates the external `ethercat-env`
+buildout on a Debian 13 bake + live-VM topology, and acceptance of that
+buildout belongs to `ethercat-env` (M16/D2).
+
 ## Work Register
 
 | Topic | Work unit | Type | Status | Evidence or next action |
 |---|---|---|---|---|
 | Base OS | Milestone 1: Base OS parity | Milestone | Complete | `docs/STATUS.md` marks `base_os` verified on Rocky 8 and Debian 13. |
 | Applications | Milestone 2: Application role reliability | Milestone | Complete | `docs/STATUS.md` marks `app_con`, `app_procserv`, and `app_conserver` verified on both OS families. |
-| EPICS | Milestone 3: EPICS environment deployment | Milestone | Complete | `docs/STATUS.md` marks `app_epics` verified on both OS families. |
+| EPICS | Milestone 3: EPICS environment deployment | Milestone | Complete | `docs/STATUS.md` marks `app_epics` verified on both OS families. Resolves GH #1 (Rocky 8 `epics_os_dir` mismatch) via per-OS `epics_os_dir` in `group_vars`; GitHub close proposed. |
 | IOC runner | Milestone 4: IOC runner deployment | Milestone | Complete | `docs/STATUS.md` marks `app_ioc_runner` verified on both OS families. |
-| NFS simulation | Milestone 5: NFS simulation and cross-OS closure | Milestone | Complete | `docs/STATUS.md` marks `nfs_sim` verified on Rocky 8 and Debian 13 ioc-runner server validation hosts. |
+| NFS simulation | Milestone 5: NFS simulation and cross-OS closure | Milestone | Complete | `docs/STATUS.md` marks `nfs_sim` verified on Rocky 8 and Debian 13 ioc-runner server validation hosts. Resolves GH #2 (ioc-runner source on NFS-backed home) via the `04_nfs_sim.yml` source-root override; GitHub close proposed. |
 | Repository identity | Public baseline and validation boundary | Design gate | Implemented | README and architecture describe a public Linux baseline, validation defaults, testbed defaults, and site overlays. |
 | Makefile topology | Server-only NFS simulation targets | Design gate | Implemented | `04_nfs_sim` node targets are generated only for configured server node IDs. |
 | Host setup | SSH key existence check | Carry-forward | Complete | `bin/setup_host.bash` warns when neither `~/.ssh/id_ed25519.pub` nor `~/.ssh/id_rsa.pub` is present, mirroring the `cloud-provision` host setup. |
 | Base OS | RHEL sudo secure_path verification | Carry-forward | Open | Verify on Rocky 8 that sudo resolves `/usr/local` tools (`sudo con`, `sudo conserver`) after the secure-path drop-in (c5b3fbe). |
+| EtherCAT validation | EtherCAT/RT base image layer (`ethercat_base`, `05_ethercat_base`) | Validation harness | Implemented, unverified | Code present; bake-time prerequisite layer on `ethercat_build`. Verification is an external gate — cloud-provision `bake_ethercat_image.bash` then flatten to the `ethercat-debian13` golden image. Outside the core completion model. |
+| EtherCAT validation | EtherCAT R2-12 live validation (`app_ethercat`, `06_ethercat`) | Validation harness | Implemented, unverified | Code present; clones `ethercat-env` and runs its target graph + RT reboot on the baked VM (`ethercat_nodes`). Verification is an external gate — live `debian13-ethercat` VM; acceptance belongs to `ethercat-env` (M16/D2). Outside the core completion model. |
 
 ## Conceptual Integrity Findings
 
@@ -224,6 +232,34 @@ Validated hosts:
 Complete for Rocky 8 and Debian 13 ioc-runner server validation hosts.
 The NFS simulation uses the `simulation` namespace, keeps the local source
 root separate from `gitsrc-nfs-sim`, and verifies root_squash behavior.
+
+## EtherCAT Validation Harness
+
+This scope is **outside the M1-M5 completion model**. It validates the
+external `ethercat-env` buildout, not the core Linux provisioning baseline,
+and runs on a Debian 13 bake + live-VM topology rather than the
+`rocky8`/`debian13` server matrix.
+
+### Components
+
+- `ethercat_base` (`playbooks/05_ethercat_base.yml`, group `ethercat_build`):
+  bake-time prerequisite layer — build toolchain, running-kernel headers,
+  dkms, and the PREEMPT_RT kernel + headers installed but never made the boot
+  default (decision D2). Applied on the transient rtbase build host and
+  flattened into the `ethercat-debian13` golden image by cloud-provision's
+  `bake_ethercat_image.bash`.
+- `app_ethercat` (`playbooks/06_ethercat.yml`, group `ethercat_nodes`): live
+  R2-12 validation — clones `ethercat-env` from a controller-side git bundle
+  and runs its pre-reboot, RT boot-default change, reboot, post-reboot, and
+  removal target sequences for real, capturing per-target logs under
+  `/opt/ethercat-validation/logs`.
+
+### Status
+
+Code present, **unverified**. Verification is an external gate: it requires
+the baked `ethercat-debian13` golden image and a live VM run, and the GRUB
+menuentry parse is flagged best-effort pending its first real run. Acceptance
+of the underlying buildout belongs to `ethercat-env` (M16/D2).
 
 ## Update Protocol
 
