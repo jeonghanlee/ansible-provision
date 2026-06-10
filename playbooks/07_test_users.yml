@@ -1,0 +1,9 @@
+---
+# playbooks/07_test_users.yml
+- name: Create multi-user test fixture accounts for epics-ioc-runner docs/testplan.md
+  hosts: nfs_sim_nodes
+  gather_facts: false
+  become: yes
+  roles:
+    - role: test_users
+      tags: [test_users]

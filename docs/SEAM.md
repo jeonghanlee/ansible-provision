@@ -65,6 +65,11 @@ conserver). The "Dedicated variant?" column tells them apart.
 | procServ-env | procServ build + install | No (base VM app role) | base variant | `02_apps.yml` (`app_procserv`) | Complete |
 | conserver-env | conserver build + install | No (base VM app role) | base variant | `02_apps.yml` (`app_conserver`) | Complete |
 
+epics-ioc-runner's multi-user testplan scenarios extend its seam with a
+`test_users` fixture (`roles/test_users`, `playbooks/07_test_users.yml`),
+tracked in the tree but unwired pending a `07_test_users` bake step in
+`bake_iocrunner_image.bash`. Status: pending — see `docs/test_users_handoff.md`.
+
 Going forward, a new VM-needing project either claims a cloud-provision
 variant or rides the base VM, adds its host group and playbook in
 ansible-provision, and records a row here. Seam status stays Partial until

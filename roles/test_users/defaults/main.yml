@@ -1,0 +1,20 @@
+---
+# roles/test_users/defaults/main.yml
+# Multi-user test fixture accounts for the epics-ioc-runner docs/testplan.md
+# scenarios.
+# Baked into the iocrunner-test golden only; never imported by site.yml.
+
+# Operators: joined to the product ioc group, so the sudoers NOPASSWD
+# systemctl gate applies (full IOC lifecycle in system mode).
+test_users_operators: [opa, opb]
+
+# Observer: deliberately outside ioc; the negative control where every
+# state-changing call must fail at the sudo gate.
+test_users_observer: obs
+
+# Local-mode users: ordinary logins, no ioc, no sudo. Linger is enabled
+# so systemctl --user runs without an interactive session.
+test_users_local: [usera, userb]
+
+# Product group the operators join (created by app_ioc_runner / setup).
+test_users_ioc_group: ioc
