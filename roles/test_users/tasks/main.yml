@@ -1,0 +1,33 @@
+---
+# roles/test_users/tasks/main.yml
+# Create the multi-user test fixture accounts (epics-ioc-runner
+# docs/testplan.md). Uses the nfs_sim raw style so it runs without Python
+# on the freshly booted bake VM.
+
+- name: Verify the product ioc group exists (must run after app_ioc_runner)
+  ansible.builtin.raw: getent group {{ test_users_ioc_group }}
+  changed_when: false
+
+- name: Create operator accounts joined to the ioc group
+  ansible.builtin.raw: |
+    set -e
+    for u in {{ test_users_operators | join(' ') }}; do
+      id "$u" >/dev/null 2>&1 || useradd -m -s /bin/bash "$u"
+      usermod -aG {{ test_users_ioc_group }} "$u"
+    done
+  changed_when: false
+
+- name: Create the observer account outside the ioc group
+  ansible.builtin.raw: |
+    set -e
+    id {{ test_users_observer }} >/dev/null 2>&1 || useradd -m -s /bin/bash {{ test_users_observer }}
+  changed_when: false
+
+- name: Create local-mode accounts with linger enabled
+  ansible.builtin.raw: |
+    set -e
+    for u in {{ test_users_local | join(' ') }}; do
+      id "$u" >/dev/null 2>&1 || useradd -m -s /bin/bash "$u"
+      loginctl enable-linger "$u"
+    done
+  changed_when: false

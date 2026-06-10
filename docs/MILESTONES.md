@@ -9,9 +9,11 @@ gates, and conceptual-integrity findings that need owner decisions.
 Supporting evidence remains in `docs/STATUS.md` and `TODO.md`; those
 documents are not competing status registers.
 
-Next session entry point: verify the RHEL sudo secure_path drop-in
-(c5b3fbe) on a Rocky 8 host; confirm sudo resolves /usr/local tools
-such as sudo con.
+Next session entry point: activate the test_users fixture (B) — add the
+07_test_users bake step to cloud-provision bake_iocrunner_image.bash, re-bake
+the iocrunner goldens, and verify accounts; see docs/test_users_handoff.md.
+The RHEL secure_path verification (c5b3fbe) on Rocky 8 remains open in the
+register.
 
 ## Completion Model
 
@@ -44,6 +46,7 @@ buildout belongs to `ethercat-env` (M16/D2).
 | Base OS | RHEL sudo secure_path verification | Carry-forward | Open | Verify on Rocky 8 that sudo resolves `/usr/local` tools (`sudo con`, `sudo conserver`) after the secure-path drop-in (c5b3fbe). |
 | EtherCAT validation | EtherCAT/RT base image layer (`ethercat_base`, `05_ethercat_base`) | Validation harness | Implemented, unverified | Code present; bake-time prerequisite layer on `ethercat_build`. Verification is an external gate — cloud-provision `bake_ethercat_image.bash` then flatten to the `ethercat-debian13` golden image. Outside the core completion model. |
 | EtherCAT validation | EtherCAT R2-12 live validation (`app_ethercat`, `06_ethercat`) | Validation harness | Implemented, unverified | Code present; clones `ethercat-env` and runs its target graph + RT reboot on the baked VM (`ethercat_nodes`). Verification is an external gate — live `debian13-ethercat` VM; acceptance belongs to `ethercat-env` (M16/D2). Outside the core completion model. |
+| ioc-runner test fixtures | Multi-user `test_users` accounts (`roles/test_users`, `07_test_users`) | Carry-forward | Tracked, unwired | Role and playbook in tree but absent from `site.yml` / `CONFIG_SITE`; activation (B) pending a `07_test_users` bake step in cloud-provision `bake_iocrunner_image.bash`, re-bake, and verify. Plan: `docs/test_users_handoff.md`. |
 
 ## Conceptual Integrity Findings
 
