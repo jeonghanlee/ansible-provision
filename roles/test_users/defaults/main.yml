@@ -2,7 +2,9 @@
 # roles/test_users/defaults/main.yml
 # Multi-user test fixture accounts for the epics-ioc-runner docs/testplan.md
 # scenarios.
-# Baked into the iocrunner-test golden only; never imported by site.yml.
+# Intended for the iocrunner golden bake (activation pending — see
+# docs/test_users_handoff.md); never imported by site.yml. Until the
+# bake step lands, accounts are provisioned per run on the booted golden.
 
 # Operators: joined to the product ioc group, so the sudoers NOPASSWD
 # systemctl gate applies (full IOC lifecycle in system mode).

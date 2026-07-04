@@ -6,7 +6,7 @@ description in ARCHITECTURE.md.
 
 Canonical roll-up: `docs/MILESTONES.md`.
 
-**Last updated:** 2026-06-09
+**Last updated:** 2026-07-04
 **See also:** `TODO.md` for deferred feature work; this file tracks
 verification state and known defects.
 
@@ -36,9 +36,23 @@ verification state and known defects.
 ### NFS simulation paths verified
 `04_nfs_sim` was applied on the Rocky 8 and Debian 13 ioc-runner
 server validation hosts. The simulation namespace was mounted at
-`/home/nfs/simulation/vmadmin/gitsrc`, old `alsu` namespace entries
-were absent, vmadmin writes succeeded, root-owned writes were denied by
-root_squash, and `ioc-runner` smoke checks passed.
+`/home/nfs/simulation/vmadmin/gitsrc`, old site-named namespace
+entries were absent, vmadmin writes succeeded, and root-owned writes
+were denied by root_squash. The nfs_sim checkmark covers exactly what
+the role provides: export, mount, and root_squash behavior.
+Historical note: the original run also passed `ioc-runner` smoke
+checks via a `04_nfs_sim` app_ioc_runner pass that was later removed
+(3ea5c20); ioc-runner-over-NFS coverage now lives in the consumer's
+tar-push + suite flow.
+
+### Golden bakes and consumer gate (2026-06-26 .. 2026-07-02)
+With fixes 3ea5c20 + 3ccc8b8 (2026-06-26), both iocrunner goldens
+baked successfully on the site bake host (2026-06-26..07-01), and the
+consumer epics-ioc-runner ran its full 1.2.0 release gate on them —
+all suites plus the multi-user plan PASS (consumer released
+2026-07-02). The RHEL sudo secure_path drop-in was verified on the
+rocky8 golden 2026-07-02 (`sudo -n which con conserver` resolves
+`/usr/local/{bin,sbin}`).
 
 ## EtherCAT validation (Debian 13, separate scope)
 
