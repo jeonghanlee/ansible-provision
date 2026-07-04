@@ -42,7 +42,7 @@ runtime host boots that image.
 | Bake source variant | cloud-provision | `<os>` base (`rocky8` / `debian13`) | `debian13-rtbase` |
 | Runtime variant (`make <variant>.server`) | cloud-provision | `<os>-iocrunner` | `debian13-ethercat` |
 | Bake-time inventory target | ansible-provision inventory | `testbed-<os>-server` | `ethercat_build` |
-| Runtime host (boots the variant) | ansible-provision inventory | `testbed-<os>-iocrunner-server` | `ethercat_nodes` |
+| Runtime host (boots the variant) | cloud-provision naming + IP bases (iocrunner has NO inventory entry — its runtime playbook is none; the ethercat host is also listed in the ansible-provision inventory) | `testbed-<os>-iocrunner-server` | `testbed-debian13-ethercat-server` (192.168.122.70, group `ethercat_nodes`) |
 | Bake-time playbook | ansible-provision | `site.yml` + `04_nfs_sim.yml` | `05_ethercat_base.yml` |
 | Runtime playbook | ansible-provision | none (boots baked image) | `06_ethercat.yml` |
 
@@ -59,8 +59,8 @@ conserver). The "Dedicated variant?" column tells them apart.
 
 | Consumer / workload | Installs / tests | Dedicated variant? | cloud-provision | ansible-provision | Seam status |
 |---|---|---|---|---|---|
-| epics-ioc-runner | ioc-runner install + integration test | Yes | `bake_iocrunner_image.bash`, `*-iocrunner` | `site.yml` + `04_nfs_sim.yml` (`app_ioc_runner`) | Complete |
-| ethercat-env | EtherCAT R2-12 install + validation | Yes | `bake_ethercat_image.bash`, `debian13-ethercat` / `debian13-rtbase` — absent | `05_ethercat_base.yml`, `06_ethercat.yml` (`ethercat_base`, `app_ethercat`) | Partial |
+| epics-ioc-runner | ioc-runner install + integration test | Yes | `bake_iocrunner_image.bash`, `*-iocrunner` | `site.yml` + `04_nfs_sim.yml` (`app_ioc_runner` runs in `03_epics` inside `site.yml`; `04_nfs_sim` is nfs_sim-only since 3ea5c20) | Complete |
+| ethercat-env | EtherCAT R2-12 install + validation | Yes | `bake_ethercat_image.bash`, `debian13-ethercat` / `debian13-rtbase` — present | `05_ethercat_base.yml`, `06_ethercat.yml` (`ethercat_base`, `app_ethercat`) | Present, unverified end-to-end |
 | con | con build + install | No (base VM app role) | base variant | `02_apps.yml` (`app_con`) | Complete |
 | procServ-env | procServ build + install | No (base VM app role) | base variant | `02_apps.yml` (`app_procserv`) | Complete |
 | conserver-env | conserver build + install | No (base VM app role) | base variant | `02_apps.yml` (`app_conserver`) | Complete |
@@ -75,12 +75,20 @@ variant or rides the base VM, adds its host group and playbook in
 ansible-provision, and records a row here. Seam status stays Partial until
 both sides exist.
 
+Authoring rule (added 2026-07-04, review rs20260702_083212): before
+writing or changing a row that asserts the state of the OTHER side of
+the seam, verify that side on disk at authoring time (list the scripts,
+run `make -n` on the named targets). The original ethercat row claimed
+assets "absent" that already existed when the row was written —
+authoring-time verification, not periodic sweeps, is what prevents
+that class of defect.
+
 ## Open Seam Gap
 
-EtherCAT is the current partial seam. `playbooks/05_ethercat_base.yml` is the
-bake-time layer that `cloud-provision/bin/bake_ethercat_image.bash` would
-invoke, and `playbooks/06_ethercat.yml` assumes a baked `debian13-ethercat`
-runtime VM (from `make debian13-ethercat.server`). Neither the bake script nor
-the `debian13-ethercat` / `debian13-rtbase` variants exist in cloud-provision
-yet, so EtherCAT provisioning cannot run end-to-end until the cloud side is
-built.
+EtherCAT: both sides now exist — `cloud-provision` carries
+`bin/bake_ethercat_image.bash` plus the `debian13-ethercat` /
+`debian13-rtbase` variants, and this repository carries
+`05_ethercat_base.yml` / `06_ethercat.yml`. The remaining gap is that
+no end-to-end run has been executed (bake, boot, run 06, archive
+evidence). Readiness items before that first run are tracked as
+Phase D in `docs/MILESTONES.md`.

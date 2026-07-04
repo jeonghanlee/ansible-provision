@@ -10,7 +10,13 @@ NFS root_squash simulation.
 
 This repository does not own VM lifecycle, site network identity, internal
 package mirrors, proxy policy, or production deployment secrets. Site-specific
-values belong in inventory or `configure/CONFIG_SITE.local` overlays.
+values belong in inventory or `configure/CONFIG_SITE.local` overlays; the
+full override contract (which value goes in which plane) is in
+`docs/ARCHITECTURE.md` section 7.
+
+Trust posture: `ansible.cfg` disables host-key checking and assumes
+passwordless become on the testbed NAT. Do not point this configuration
+at non-testbed hosts as-is.
 
 ## Prerequisites
 
@@ -50,9 +56,13 @@ make 04_nfs_sim.rocky8.server      # server-only validation target
 ### Dry Run
 
 ```bash
-make check                         # full stack dry run
+make check                         # connectivity + templating check
 make 01_base.rocky8.server.check
 ```
+
+Raw tasks are skipped in check mode: `check` validates inventory,
+reachability, and template rendering only — it does not preview
+changes.
 
 ### Options
 
@@ -117,6 +127,9 @@ echo "INVENTORY=inventory/custom.ini" > configure/CONFIG_SITE.local
 | `app_epics` | EPICS binary distribution | [jeonghanlee/EPICS-env-distribution](https://github.com/jeonghanlee/EPICS-env-distribution) |
 | `app_ioc_runner` | epics-ioc-runner infrastructure | [jeonghanlee/epics-ioc-runner](https://github.com/jeonghanlee/epics-ioc-runner) |
 | `nfs_sim` | NFS root_squash simulation (loopback export + remount) | — |
+| `test_users` | Multi-user test fixture accounts for the consumer testplan (bake activation pending) | — |
+| `ethercat_base` | EtherCAT/RT bake-time prerequisite layer (Debian 13 rtbase) | — |
+| `app_ethercat` | EtherCAT R2-12 live validation harness | [jeonghanlee/ethercat-env](https://github.com/jeonghanlee/ethercat-env) (bundle) |
 
 ## Playbook Layers
 
@@ -125,4 +138,7 @@ echo "INVENTORY=inventory/custom.ini" > configure/CONFIG_SITE.local
 | `01_base.yml` | `base_os` | all nodes |
 | `02_apps.yml` | `app_con`, `app_procserv`, `app_conserver` | all nodes |
 | `03_epics.yml` | `app_epics`, `app_ioc_runner` | ioc nodes |
-| `04_nfs_sim.yml` | `nfs_sim`, `app_ioc_runner` | `nfs_sim_nodes` (server-only, out-of-band, not in `site.yml`) |
+| `04_nfs_sim.yml` | `nfs_sim` (ioc-runner validation relocated to the consumer's tar-push + suite flow; see docs/MILESTONES.md) | `nfs_sim_nodes` (server-only, out-of-band, not in `site.yml`) |
+| `05_ethercat_base.yml` | `ethercat_base` | `ethercat_build` (out-of-band: invoked by the cloud-provision ethercat bake; no make target) |
+| `06_ethercat.yml` | `app_ethercat` | `ethercat_nodes` (out-of-band: run directly with ansible-playbook; no make target) |
+| `07_test_users.yml` | `test_users` | `nfs_sim_nodes` (out-of-band today; bake activation pending, see docs/test_users_handoff.md) |
