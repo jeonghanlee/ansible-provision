@@ -9,6 +9,9 @@
 
 - name: Deploy EPICS environment activation script
   ansible.builtin.raw: |
+    set -e
+    env_script="{{ path_epics_local }}/{{ epics_env_version }}/{{ epics_os_dir }}/{{ epics_base_version }}/setEpicsEnv.bash"
+    test -f "${env_script}"
     cat > /etc/profile.d/epics-env.sh << 'EOF'
     source {{ path_epics_local }}/{{ epics_env_version }}/{{ epics_os_dir }}/{{ epics_base_version }}/setEpicsEnv.bash
     EOF
