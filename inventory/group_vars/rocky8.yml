@@ -38,6 +38,7 @@ pkg_standard:
   - firewalld
   - rpcgen
 
+# Sole owner of pkg_python_redhat (all.yml holds no copy).
 pkg_python_redhat:
   - python39
   - python39-pip
