@@ -128,6 +128,10 @@ Production and site deployments should supply their own inventory.
 
 ## 5. Role Architecture
 
+The raw-task house conventions (set -e, trailing assertions, quoted
+heredocs, sentinel changed_when, validated atomic writes) are codified
+in [`RAW_STYLE.md`](RAW_STYLE.md); roles below follow them.
+
 ### Build Pattern
 
 `app_con`, `app_procserv`, `app_conserver` follow an identical raw
