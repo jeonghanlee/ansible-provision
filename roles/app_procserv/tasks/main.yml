@@ -2,10 +2,12 @@
 # roles/app_procserv/tasks/main.yml
 - name: Build and install procServ
   ansible.builtin.raw: |
+    set -e
     if [ ! -f {{ path_procserv_bin }} ]; then
       rm -rf {{ path_procserv_src }}
       git clone {{ repo_procserv }} {{ path_procserv_src }}
       cd {{ path_procserv_src }} && make init && make conf && make build && make install
       rm -rf {{ path_procserv_src }}
     fi
+    test -x {{ path_procserv_bin }}
   changed_when: false
