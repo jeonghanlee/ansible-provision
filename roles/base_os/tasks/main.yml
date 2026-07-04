@@ -30,12 +30,15 @@
       exit 0
     fi
     idr_text="$(sed -n "${idr_line}p" "$sudoers")"
-    tmp="$(mktemp)"
+    # Same-filesystem temp file so the final mv is an atomic rename(2):
+    # /etc/sudoers is never truncated or absent, even on interruption.
+    tmp="$(mktemp /etc/sudoers.XXXXXX)"
     grep -vE '^[[:space:]]*[#@]includedir[[:space:]]+/etc/sudoers\.d' "$sudoers" > "$tmp"
     printf '%s\n' "$idr_text" >> "$tmp"
     if visudo -cf "$tmp" >/dev/null 2>&1; then
-      install -m 0440 -o root -g root "$tmp" "$sudoers"
-      rm -f "$tmp"
+      chmod 0440 "$tmp"
+      chown root:root "$tmp"
+      mv -f "$tmp" "$sudoers"
       printf "changed\n"
     else
       rm -f "$tmp"
