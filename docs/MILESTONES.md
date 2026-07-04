@@ -39,9 +39,9 @@ buildout belongs to `ethercat-env` (M16/D2).
 |---|---|---|---|---|
 | Base OS | Milestone 1: Base OS parity | Milestone | Complete | `docs/STATUS.md` marks `base_os` verified on Rocky 8 and Debian 13. |
 | Applications | Milestone 2: Application role reliability | Milestone | Complete | `docs/STATUS.md` marks `app_con`, `app_procserv`, and `app_conserver` verified on both OS families. |
-| EPICS | Milestone 3: EPICS environment deployment | Milestone | Complete | `docs/STATUS.md` marks `app_epics` verified on both OS families. Resolves GH #1 (Rocky 8 `epics_os_dir` mismatch) via per-OS `epics_os_dir` in `group_vars`; GitHub close proposed. |
+| EPICS | Milestone 3: EPICS environment deployment | Milestone | Complete | `docs/STATUS.md` marks `app_epics` verified on both OS families. Resolves GH #1 (Rocky 8 `epics_os_dir` mismatch) via per-OS `epics_os_dir` in `group_vars`; GH #1 closed 2026-06-09. |
 | IOC runner | Milestone 4: IOC runner deployment | Milestone | Complete | `docs/STATUS.md` marks `app_ioc_runner` verified on both OS families. |
-| NFS simulation | Milestone 5: NFS simulation and cross-OS closure | Milestone | Complete | `docs/STATUS.md` marks `nfs_sim` verified on Rocky 8 and Debian 13 ioc-runner server validation hosts. Resolves GH #2 (ioc-runner source on NFS-backed home) via the `04_nfs_sim.yml` source-root override; GitHub close proposed. |
+| NFS simulation | Milestone 5: NFS simulation and cross-OS closure | Milestone | Complete | `docs/STATUS.md` marks `nfs_sim` verified on Rocky 8 and Debian 13 ioc-runner server validation hosts. Resolves GH #2 (ioc-runner source on NFS-backed home) via the `04_nfs_sim.yml` source-root override (mechanism since removed by 3ea5c20 — see the dated amendments in Milestones 4 and 5); GH #2 closed 2026-06-09. |
 | Repository identity | Public baseline and validation boundary | Design gate | Implemented | README and architecture describe a public Linux baseline, validation defaults, testbed defaults, and site overlays. |
 | Makefile topology | Server-only NFS simulation targets | Design gate | Implemented | `04_nfs_sim` node targets are generated only for configured server node IDs. |
 | Host setup | SSH key existence check | Carry-forward | Complete | `bin/setup_host.bash` warns when neither `~/.ssh/id_ed25519.pub` nor `~/.ssh/id_rsa.pub` is present, mirroring the `cloud-provision` host setup. |
@@ -64,7 +64,7 @@ buildout belongs to `ethercat-env` (M16/D2).
 |---|---|---|---|
 | Direct CLI examples disagree with the repository's no-Python operational contract. | Resolved in docs | `docs/ANSIBLE_CLI.md` uses `-m raw` for every ad-hoc example (lines 50, 53, 56, 59); no `shell` or `setup` module remains, consistent with `gather_facts: false` in `playbooks/01_base.yml:5`, `playbooks/02_apps.yml:5`, and `playbooks/03_epics.yml:5`. | Keep ad-hoc examples on `raw`; do not reintroduce `shell` or `setup` in public docs. |
 | Pattern targets treat every playbook as valid for every OS and node, but `04_nfs_sim.yml` is scoped only to `nfs_sim_nodes`. | Resolved in design | `configure/CONFIG_SITE` now separates all-node and server-only playbooks; `configure/RULES_ANSIBLE` generates server-only node targets only from `SERVER_NODE_IDS`. | Verify `make help.detail` and confirm unsupported `04_nfs_sim.<os>.node1` targets are no longer generated. |
-| `app_ioc_runner` and `nfs_sim` need separate local and NFS source-root coverage. | Already decided | `inventory/group_vars/all.yml` keeps the default local `path_ioc_runner_root`; `playbooks/04_nfs_sim.yml` overrides `path_ioc_runner_root` and `path_ioc_runner_src` for the NFS simulation path and enables `ioc_runner_force_setup`; `roles/nfs_sim/defaults/main.yml` keeps the simulation symlink separate from the local testbed source root. | Keep this split and verify both `03_epics` local coverage and `04_nfs_sim` NFS coverage on the testbed. |
+| `app_ioc_runner` and `nfs_sim` need separate local and NFS source-root coverage. | Superseded (2026-07-04, 3ea5c20) | Historical: `playbooks/04_nfs_sim.yml` overrode `path_ioc_runner_root`/`path_ioc_runner_src` and enabled `ioc_runner_force_setup`; that block was removed by 3ea5c20 because become-root cannot operate inside the root_squash 0750 nfs_sim mount. `inventory/group_vars/all.yml` still keeps the default local `path_ioc_runner_root`; `roles/nfs_sim/defaults/main.yml` still keeps the simulation symlink separate. | New fate: local coverage stays in `03_epics`; NFS-side coverage relocated to the consumer's tar-push + suite flow (epics-ioc-runner 1.2.0 gate PASS). Do not re-add app_ioc_runner to `04_nfs_sim` — root-principal in-place validation is impossible under root_squash by design. |
 | NFS simulation paths carried a site-specific namespace. | Resolved in defaults | `roles/nfs_sim/defaults/main.yml` uses `nfs_sim_namespace: simulation` to build export and mount roots. | Keep site namespaces in overlays, not public defaults. |
 
 ## Milestone 1: Base OS Parity
@@ -173,6 +173,10 @@ dependencies required by `epics-ioc-runner`.
   root during `03_epics`.
 - The `epics-ioc-runner` source tree is available from the NFS-backed
   simulation source root during `04_nfs_sim`.
+  *(Amended 2026-07-04: satisfied at acceptance time; the `04_nfs_sim`
+  source-root mechanism was later removed by 3ea5c20. NFS-side
+  coverage now lives in the consumer's tar-push + suite flow. Retained
+  as the historical basis of the Complete status.)*
 - `ioc-runner list -vv` and `ioc-runner inspect -h` run successfully.
 - Target-specific `ioc-runner inspect <ioc>` is covered by lifecycle
   tests that create or install an IOC target.
@@ -207,6 +211,10 @@ Validate the NFS simulation role and close the role-by-OS matrix.
   documented architecture.
 - `app_ioc_runner` applies successfully from the NFS-backed simulation
   source root without replacing the local source root.
+  *(Amended 2026-07-04: satisfied at acceptance time; this pass was
+  removed by 3ea5c20 — become-root cannot operate inside the
+  root_squash mount. Coverage relocated to the consumer flow. Retained
+  as the historical basis of the Complete status.)*
 - Rocky 8 and Debian 13 both complete `01_base`, `02_apps`, `03_epics`,
   and `04_nfs_sim`.
 - `docs/STATUS.md` has no unverified, broken, or not-yet-applied
@@ -279,3 +287,14 @@ of the underlying buildout belongs to `ethercat-env` (M16/D2).
 When a milestone is completed, update this document and `docs/STATUS.md`
 in the same commit as the substantive change. The commit message should
 name the milestone and the role or OS boundary that changed.
+
+Additionally (extended 2026-07-04, review rs20260702_083212):
+
+- Any commit that changes a playbook's role composition, or that
+  invalidates a statement in this register, the `docs/STATUS.md`
+  matrix or notes, or a recorded acceptance criterion, updates those
+  documents in the same commit. The structure-mirroring locations are
+  README.md (Playbook Layers, Roles), `docs/ARCHITECTURE.md`
+  (sections 2, 3, 5), and `docs/SEAM.md` (consumer register).
+- When a GitHub issue changes state, the next documentation commit
+  reflects it in the affected register rows.
