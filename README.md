@@ -12,7 +12,8 @@ This repository does not own VM lifecycle, site network identity, internal
 package mirrors, proxy policy, or production deployment secrets. Site-specific
 values belong in inventory or `configure/CONFIG_SITE.local` overlays; the
 full override contract (which value goes in which plane) is in
-`docs/ARCHITECTURE.md` section 7.
+`docs/ARCHITECTURE.md` section 7. Baking behind a site proxy is a
+cloud-provision procedure: see `cloud-provision/docs/RUNBOOK_BAKE.md`.
 
 Trust posture: `ansible.cfg` disables host-key checking and assumes
 passwordless become on the testbed NAT. Do not point this configuration
@@ -141,4 +142,4 @@ echo "INVENTORY=inventory/custom.ini" > configure/CONFIG_SITE.local
 | `04_nfs_sim.yml` | `nfs_sim` (ioc-runner validation relocated to the consumer's tar-push + suite flow; see docs/MILESTONES.md) | `nfs_sim_nodes` (server-only, out-of-band, not in `site.yml`) |
 | `05_ethercat_base.yml` | `ethercat_base` | `ethercat_build` (out-of-band: invoked by the cloud-provision ethercat bake; no make target) |
 | `06_ethercat.yml` | `app_ethercat` | `ethercat_nodes` (out-of-band: run directly with ansible-playbook; no make target) |
-| `07_test_users.yml` | `test_users` | `nfs_sim_nodes` (out-of-band today; bake activation pending, see docs/test_users_handoff.md) |
+| `07_test_users.yml` | `test_users` | `nfs_sim_nodes` (server-only make targets; part of the iocrunner golden bake — see docs/test_users_handoff.md) |

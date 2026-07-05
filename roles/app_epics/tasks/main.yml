@@ -4,6 +4,7 @@
   ansible.builtin.raw: |
     if [ ! -d {{ path_epics_local }} ]; then
       git clone --depth 1 {{ repo_epics }} {{ path_epics_local }}
+      printf '%s %s %s %s\n' app_epics {{ repo_epics }} "$(git -C {{ path_epics_local }} rev-parse HEAD)" "$(date -u +%FT%TZ)" >> /etc/iocrunner-bake.manifest
     fi
   changed_when: false
 

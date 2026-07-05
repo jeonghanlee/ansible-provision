@@ -7,6 +7,7 @@
       rm -rf {{ path_procserv_src }}
       git clone {{ repo_procserv }} {{ path_procserv_src }}
       cd {{ path_procserv_src }} && make init && make conf && make build && make install
+      printf '%s %s %s %s\n' app_procserv {{ repo_procserv }} "$(git -C {{ path_procserv_src }} rev-parse HEAD)" "$(date -u +%FT%TZ)" >> /etc/iocrunner-bake.manifest
       rm -rf {{ path_procserv_src }}
     fi
     test -x {{ path_procserv_bin }}

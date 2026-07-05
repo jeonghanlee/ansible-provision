@@ -8,7 +8,7 @@ NODE_IDS              := server node1 node2
 SERVER_NODE_IDS       := server
 VM_PREFIX             := testbed
 ALL_NODE_PLAYBOOKS    := 01_base 02_apps 03_epics
-SERVER_ONLY_PLAYBOOKS := 04_nfs_sim
+SERVER_ONLY_PLAYBOOKS := 04_nfs_sim 07_test_users
 
 -include $(TOP)/../CONFIG_SITE.local
 -include $(TOP)/configure/CONFIG_SITE.local
