@@ -9,13 +9,13 @@ gates, and conceptual-integrity findings that need owner decisions.
 Supporting evidence remains in `docs/STATUS.md` and `TODO.md`; those
 documents are not competing status registers.
 
-Next session entry point: Phases A, B, and C are COMPLETE (2026-07-05;
-see the Phase rows below) — the goldens now carry the fixture accounts,
-zero proxy remnants, and a provenance manifest. Remaining: Phase D
-(EtherCAT verification readiness) when the end-to-end run is scheduled,
-and the U8 release convention — the 1.0 definition (A + B1/B2 + C1 +
-C3) is now SATISFIED, so the first tag (jointly with cloud-provision)
-can be cut at the next consumer release-gate bake, User-run.
+Next session entry point: Phases A, B, and C are COMPLETE and Phase D
+is retired to the owner's separate tracking (2026-07-05) — the goldens
+carry the fixture accounts, zero proxy remnants, and a provenance
+manifest. The only remaining register item is the U8 release
+convention: the 1.0 definition (A + B1/B2 + C1 + C3) is SATISFIED, so
+the first tag (jointly with cloud-provision) can be cut at the next
+consumer release-gate bake, User-run.
 
 ## Completion Model
 
@@ -55,7 +55,7 @@ buildout belongs to `ethercat-env` (M16/D2).
 | Review follow-up | Phase A: documentation truth-sync | Carry-forward | Complete (2026-07-04, commits 2439e6c/bde669f + cloud-provision 4e99811) | One sitting, no behavior change: post-3ea5c20 sweep (README:128; ARCHITECTURE.md:38-41/:199-204/:215/:231/:51; SEAM.md:45/:62 + ethercat row to "present, unverified end-to-end"; register rows 40/42 issue-close notes; row 58 superseded-with-new-fate; M4/M5 dated amendment notes); site-overlay contract section (two planes, override points, custom-inventory caveat, vmadmin invariant); Update Protocol trigger extension (composition-or-claim-invalidating commits sweep the mirroring docs); honest dry-run wording (README, ANSIBLE_CLI, make help); README Roles (10) + Playbook Layers (01-07) discoverability; STATUS.md re-anchor + events; test_users defaults comment; TODO.md pointer stub (U3); site-identity string generalization (U9); cloud-provision ARCHITECTURE IP table (.70/.80). |
 | Review follow-up | Phase B: raw-contract code must-dos | Carry-forward | Complete (2026-07-04, commits cc8e686/13d2910/544c487/4623e35; verified V1-V5 per handoff20260704_031000, integration rides the next re-bake) | B1 `set -e` + trailing `test -x` in app_con/app_procserv (silent-build-failure fix, empirically reproduced); B2 atomic sudoers replace (same-fs mktemp + `mv -f`); B3 one-page raw style contract doc (Tier-A patterns; playbook species; bake-path-raw-only vs Debian-13-live-module boundary); B4 config cleanup — delete `proxy_enabled` (or wire per U2) + `path_epics_src` + shadowed python lists, derive `path_ioc_runner_root` from `epics_ioc_engineers[0]`, gitignore `*.local`; B5 app_epics `test -f` before the profile.d write. |
 | Review follow-up | Phase C: bake pipeline (BOTH bake scripts; cross-repo with cloud-provision) | Carry-forward | Complete (2026-07-05; ansible 9910fe2 + cloud a8bdbd4; both goldens re-baked and verified on fresh variants: fixture accounts baked [ioc=opa,opb; obs outside; usera/userb linger], proxy remnants NONE, manifest in-image + sidecar; consumer testplan fixture paragraph synced) | C1 wire 07_test_users into the bake + two-token make wiring + re-bake + verify + sync the consumer testplan fixture paragraph; C2 de-proxy cleanup before flatten + in-image remnant grep acceptance + proxied-site runbook in cloud-provision docs (placeholder values only) + failed-bake recovery paragraph; C3 provenance manifest in-image + sidecar (bake date, ansible-provision HEAD, cloud-provision HEAD, per-repo rev-parse before `rm -rf`, EPICS env/base versions, base image identity, `pip3 freeze`); C4 bake scripts honor INVENTORY/VM_PREFIX from one source. |
-| Review follow-up | Phase D: EtherCAT verification readiness | Carry-forward | Deferred (until the run is scheduled) | Before the first end-to-end run: persist bundle HEAD + retrieve logs; bake fails on GRUB stock-menuentry parse miss (U10c); post-reboot RT-check strictness pending U10a/b (needs ethercat-env owner input). Then the enumerated 7-step run (session R7 artifact); keep-in-repo with a named split trigger (own release cadence, or gating iocrunner bakes). |
+| Review follow-up | Phase D: EtherCAT verification readiness | Carry-forward | Retired from this register (2026-07-05, User direction) | The EtherCAT verification work is tracked separately by the owner outside this register; the U10(a)/(b) strictness decisions and the R7 readiness items (persist bundle HEAD + log retrieval; GRUB parse-miss FAIL per U10c; 7-step end-to-end run) move with it. The ethercat roles/playbooks stay in this repository (keep-in-repo verdict unchanged, split trigger recorded in the review convergence). |
 | Policy | Review decisions U1-U10 | Decision record | Decided 2026-07-03 | U1 phases A+B now / C at re-bake / D when scheduled; U2 proxy runbook-first (role optional after); U3 TODO stub; U4 GitHub issues only for cross-repo/externally referenced items; U5 `repo_*_ref` pinning introduced empty-default, pinned at release-gate bakes (scope: git refs + pip + ethercat bundle); U6 selective sentinel `changed_when`; U7 dated amendment notes; U8 adopt family release convention jointly with cloud-provision — bare-number tags at release-gate bakes, register snapshot-restart, 1.0 = A + B1/B2 + C1 + C3 (retro-0.9 and CHANGELOG decided at tag time); U9 site-identity strings generalized in tracked files; U10 (c) decided FAIL-at-bake, (a)/(b) deferred. |
 
 ## Conceptual Integrity Findings
