@@ -13,6 +13,7 @@
       rm -rf "${src}"
       sudo -u "${owner}" git clone "${repo}" "${src}"
     fi
+    printf '%s %s %s %s\n' app_ioc_runner "${repo}" "$(git -C "${src}" rev-parse HEAD)" "$(date -u +%FT%TZ)" >> /etc/iocrunner-bake.manifest
     if [ "{{ ioc_runner_force_setup | bool | ternary('true', 'false') }}" = "true" ] || [ ! -x "${bin}" ] || grep -Eq "${stamp_pattern}" "${bin}"; then
       SUDO_USER="${owner}" bash "${src}/bin/setup-system-infra.bash" --full
     fi
