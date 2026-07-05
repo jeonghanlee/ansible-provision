@@ -71,7 +71,13 @@ operators join the `ioc` group that `app_ioc_runner` creates. The first task
 verifies the group exists and fails if the order is wrong. The bake step is
 therefore inserted right after the `04_nfs_sim` step.
 
-## Remaining work (activation — not done)
+## Remaining work (activation — DONE 2026-07-05)
+
+Executed in ansible-provision Phase C: the bake step landed in
+cloud-provision bin/bake_iocrunner_image.bash (Step 6/9, commit a8bdbd4),
+both goldens were re-baked, and the verify checklist below passed on
+fresh variants (ioc group opa,opb; obs outside; usera/userb linger).
+The snippet below is retained as the historical spec.
 
 1. cloud-provision — edit `bin/bake_iocrunner_image.bash`: add the
    `07_test_users.yml` step right after the `04_nfs_sim` step and renumber the
