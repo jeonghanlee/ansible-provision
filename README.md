@@ -115,6 +115,10 @@ Override inventory path via:
 echo "INVENTORY=inventory/custom.ini" > configure/CONFIG_SITE.local
 ```
 
+Standalone (non-testbed) VMs: see
+[docs/STANDALONE.md](docs/STANDALONE.md) for the control-host-over-ssh
+and local-clone recipes.
+
 ---
 
 ## Roles
