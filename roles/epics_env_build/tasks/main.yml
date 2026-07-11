@@ -1,0 +1,88 @@
+---
+# roles/epics_env_build/tasks/main.yml
+#
+# Builds EPICS-env from source, reproducing the GitHub Actions workflow steps
+# (Install required packages -> EPICS installation -> EPICS Environment Check),
+# then installs to {{ path_epics_install }}. Distinct from app_epics, which
+# clones the pre-built EPICS-env-distribution.
+#
+# One raw task: the build hosts boot a plain base cloud image without a Python
+# ansible facts can rely on, and pkg_automation is EPICS-env's own cross-OS
+# installer, so OS branching lives in the shell via /etc/os-release.
+
+- name: Build and install EPICS-env from source
+  ansible.builtin.raw: |
+    set -e
+
+    tag="{{ epics_env_tag }}"
+    src="{{ path_epics_source_src }}"
+    install_root="{{ path_epics_install }}"
+    repo_epics="{{ repo_epics_source }}"
+    repo_pkg="{{ repo_pkg_automation }}"
+    repo_uldaq="{{ repo_uldaq_env }}"
+    repo_open62541="{{ repo_open62541_env }}"
+
+    # Idempotency: skip when this tag's setEpicsEnv.bash is already installed.
+    installed=$(ls "${install_root}/${tag}"/*/*/setEpicsEnv.bash 2>/dev/null | head -1 || true)
+    if [ -n "${installed}" ]; then
+      echo "EPICS_ENV_BUILD_SKIPPED: ${tag} already installed at ${installed%/*}"
+      exit 0
+    fi
+
+    # --- Install required packages (workflow step 1) ---
+    . /etc/os-release
+    case "${ID}" in
+      rocky|rhel|centos)
+        dnf update -y
+        dnf install -y git tree make sudo bash wget unzip python3-pip libusbx-devel
+        pip3 install numpy nose
+        ;;
+      debian|ubuntu)
+        export DEBIAN_FRONTEND=noninteractive
+        apt update -y
+        apt install -y git make sudo bash wget unzip
+        ;;
+      *)
+        echo "epics_env_build: unsupported OS ID=${ID}" >&2
+        exit 1
+        ;;
+    esac
+
+    build_root="$(dirname "${src}")"
+    install -d -m 0755 "${build_root}"
+
+    git clone "${repo_pkg}" "${build_root}/pkg_automation" 2>/dev/null || true
+    bash "${build_root}/pkg_automation/pkg_automation.bash" -y
+
+    git clone "${repo_uldaq}" "${build_root}/uldaq-env" 2>/dev/null || true
+    make -C "${build_root}/uldaq-env/" github
+
+    git clone "${repo_open62541}" "${build_root}/open62541-env" 2>/dev/null || true
+    make -C "${build_root}/open62541-env/" github
+
+    # --- EPICS installation (workflow step 2) ---
+    rm -rf "${src}/EPICS-env"
+    install -d -m 0755 "${src}"
+    git clone -b "${tag}" "${repo_epics}" "${src}/EPICS-env"
+
+    # Override the default ${HOME}/epics install location via EPICS-env's own
+    # .local hook so make github.check / install / check.env all agree.
+    printf 'INSTALL_LOCATION=%s\n' "${install_root}" \
+      > "${src}/EPICS-env/configure/CONFIG_SITE.local"
+
+    # Run make from inside the tree, not with 'make -C': the module-deps audit
+    # resolves module names through $(TOP) in a way that breaks under 'make -C'
+    # on make 4.2.1 (rocky8). The validated CI procedure runs in-tree.
+    cd "${src}/EPICS-env"
+    make github.check
+    make install
+
+    # --- EPICS Environment Check (workflow step 3) ---
+    make check.env
+  register: epics_env_build_result
+  changed_when: "'EPICS_ENV_BUILD_SKIPPED' not in epics_env_build_result.stdout"
+
+- name: Show the installed EPICS-env location
+  ansible.builtin.raw: |
+    ls -d {{ path_epics_install }}/{{ epics_env_tag }}/*/*/setEpicsEnv.bash
+  changed_when: false

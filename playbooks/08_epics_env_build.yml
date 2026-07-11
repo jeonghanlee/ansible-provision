@@ -1,0 +1,13 @@
+---
+# playbooks/08_epics_env_build.yml
+#
+# Build EPICS-env from source on the dedicated epics-env build hosts. Standalone
+# by design: not part of site.yml, since it is a heavy from-source build on a
+# separate host group, not part of the standard baseline.
+- name: Build EPICS-env from source
+  hosts: epics_env_build
+  gather_facts: false
+  become: yes
+  roles:
+    - role: epics_env_build
+      tags: [epics_env_build, build]
