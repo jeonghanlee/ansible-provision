@@ -1,0 +1,24 @@
+---
+# inventory/group_vars/epics_env_build.yml
+#
+# Variables for the EPICS-env from-source build hosts. Distinct from app_epics,
+# which clones the pre-built EPICS-env-distribution; this group builds the
+# EPICS-env source repository at a tag and installs to /opt/epics.
+
+# EPICS-env source repository (not the -distribution binary).
+repo_epics_source: "https://github.com/jeonghanlee/EPICS-env"
+
+# Release tag to build.
+epics_env_tag: "1.2.1"
+
+# Install root; overrides EPICS-env's default ${HOME}/epics via CONFIG_SITE.local
+# so the source build lands next to the app_epics distribution convention.
+path_epics_install: "/opt/epics"
+
+# Where the source tree is cloned and built.
+path_epics_source_src: "/opt/epics-env-src"
+
+# Vendor dependency repositories built before EPICS-env (mirrors the CI steps).
+repo_pkg_automation: "https://github.com/jeonghanlee/pkg_automation"
+repo_uldaq_env:      "https://github.com/jeonghanlee/uldaq-env"
+repo_open62541_env:  "https://github.com/jeonghanlee/open62541-env"
