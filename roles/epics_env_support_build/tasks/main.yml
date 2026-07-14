@@ -1,0 +1,60 @@
+---
+# roles/epics_env_support_build/tasks/main.yml
+#
+# Builds EPICS-env-support (AreaDetector modules: ADCore, ADSimDetector,
+# ADGenICam, ADVimba) from source, layered on the epics_env_build install.
+# Sources the installed EPICS-env's setEpicsEnv.bash so support's AD modules
+# install next to asyn in the shared modules directory. Run after
+# epics_env_build (08_epics_env_build.yml).
+#
+# One raw task, matching epics_env_build: the build hosts boot a plain base
+# cloud image whose Python ansible facts cannot rely on, so the whole build
+# runs as a single raw shell step. AreaDetector system dependencies are already
+# installed by epics_env_build's pkg_automation step and are not reinstalled here.
+
+- name: Build and install EPICS-env-support from source
+  ansible.builtin.raw: |
+    set -e
+
+    tag="{{ epics_env_support_tag }}"
+    src="{{ path_epics_support_src }}"
+    install_root="{{ path_epics_install }}"
+    epics_tag="{{ epics_env_tag }}"
+    repo_support="{{ repo_epics_support }}"
+
+    # Resolve the EPICS-env install this support build layers onto.
+    env_script=$(ls "${install_root}/${epics_tag}"/*/*/setEpicsEnv.bash 2>/dev/null | head -1 || true)
+    if [ -z "${env_script}" ]; then
+      echo "epics_env_support_build: no EPICS-env ${epics_tag} install under ${install_root}; run epics_env_build first" >&2
+      exit 1
+    fi
+
+    # Idempotency: skip when ADCore is already installed in the shared modules dir.
+    modules_dir="$(dirname "${env_script}")/modules"
+    if ls -d "${modules_dir}"/ADCore* >/dev/null 2>&1; then
+      echo "EPICS_ENV_SUPPORT_BUILD_SKIPPED: ADCore already installed under ${modules_dir}"
+      exit 0
+    fi
+
+    # areaDetector system dependencies (hdf5, tiff, jpeg, netcdf, png, xml2,
+    # libusbx) are installed by the epics_env_build pkg_automation step on
+    # these same hosts, so they are not reinstalled here.
+
+    # --- Clone EPICS-env-support at the branch (tag once released) ---
+    rm -rf "${src}/EPICS-env-support"
+    install -d -m 0755 "${src}"
+    git clone -b "${tag}" "${repo_support}" "${src}/EPICS-env-support"
+
+    # --- Build against the installed EPICS-env (README Option 1 sequence) ---
+    # setEpicsEnv.bash and the EPICS make system require bash, so run the
+    # env-sourced build under an explicit bash regardless of the login shell.
+    cd "${src}/EPICS-env-support"
+    export EPICS_ENV_SCRIPT="${env_script}"
+    bash -c 'source "$EPICS_ENV_SCRIPT" && make conf.base && make init && make conf && make build && make symlinks && make exist'
+  register: epics_env_support_build_result
+  changed_when: "'EPICS_ENV_SUPPORT_BUILD_SKIPPED' not in epics_env_support_build_result.stdout"
+
+- name: Show the installed AreaDetector modules
+  ansible.builtin.raw: |
+    ls -d {{ path_epics_install }}/{{ epics_env_tag }}/*/*/modules/AD* 2>/dev/null
+  changed_when: false
