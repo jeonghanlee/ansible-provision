@@ -22,3 +22,15 @@ path_epics_source_src: "/opt/epics-env-src"
 repo_pkg_automation: "https://github.com/jeonghanlee/pkg_automation"
 repo_uldaq_env:      "https://github.com/jeonghanlee/uldaq-env"
 repo_open62541_env:  "https://github.com/jeonghanlee/open62541-env"
+
+# EPICS-env-support (AreaDetector modules) source build, layered on the
+# epics_env_build install above. Installs into the same /opt/epics/<tag> tree,
+# so its AD modules land next to asyn in the shared modules directory.
+repo_epics_support: "https://github.com/jeonghanlee/EPICS-env-support"
+
+# Branch to build now (the 1.2.1 tag is not cut yet; git clone -b resolves the
+# branch today and the tag once released, with no change here).
+epics_env_support_tag: "1.2.1"
+
+# Where the support source tree is cloned and built.
+path_epics_support_src: "/opt/epics-env-support-src"

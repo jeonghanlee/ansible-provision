@@ -1,0 +1,14 @@
+---
+# playbooks/09_epics_env_support_build.yml
+#
+# Build EPICS-env-support (AreaDetector modules) from source on the EPICS-env
+# build hosts, layered on the epics_env_build install. Standalone by design:
+# not part of site.yml, and depends on 08_epics_env_build.yml having installed
+# EPICS-env (with asyn) first.
+- name: Build EPICS-env-support from source
+  hosts: epics_env_build
+  gather_facts: false
+  become: yes
+  roles:
+    - role: epics_env_support_build
+      tags: [epics_env_support_build, build]

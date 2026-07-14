@@ -135,6 +135,8 @@ and local-clone recipes.
 | `test_users` | Multi-user test fixture accounts for the consumer testplan (bake activation pending) | — |
 | `ethercat_base` | EtherCAT/RT bake-time prerequisite layer (Debian 13 rtbase) | — |
 | `app_ethercat` | EtherCAT R2-12 live validation harness | [jeonghanlee/ethercat-env](https://github.com/jeonghanlee/ethercat-env) (bundle) |
+| `epics_env_build` | EPICS-env built from source (base + all modules incl. asyn) | [jeonghanlee/EPICS-env](https://github.com/jeonghanlee/EPICS-env) |
+| `epics_env_support_build` | EPICS-env-support AreaDetector modules, layered on the epics_env_build install | [jeonghanlee/EPICS-env-support](https://github.com/jeonghanlee/EPICS-env-support) |
 
 ## Playbook Layers
 
@@ -147,3 +149,5 @@ and local-clone recipes.
 | `05_ethercat_base.yml` | `ethercat_base` | `ethercat_build` (out-of-band: invoked by the cloud-provision ethercat bake; no make target) |
 | `06_ethercat.yml` | `app_ethercat` | `ethercat_nodes` (out-of-band: run directly with ansible-playbook; no make target) |
 | `07_test_users.yml` | `test_users` | `nfs_sim_nodes` (server-only make targets; part of the iocrunner golden bake — see docs/test_users_handoff.md) |
+| `08_epics_env_build.yml` | `epics_env_build` | `epics_env_build` (out-of-band: heavy from-source build, not in `site.yml`) |
+| `09_epics_env_support_build.yml` | `epics_env_support_build` | `epics_env_build` (out-of-band: layered on 08, not in `site.yml`) |
