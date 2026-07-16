@@ -28,8 +28,7 @@ repo_open62541_env:  "https://github.com/jeonghanlee/open62541-env"
 # so its AD modules land next to asyn in the shared modules directory.
 repo_epics_support: "https://github.com/jeonghanlee/EPICS-env-support"
 
-# Branch to build now (the 1.2.1 tag is not cut yet; git clone -b resolves the
-# branch today and the tag once released, with no change here).
+# Release tag to build.
 epics_env_support_tag: "1.2.1"
 
 # Where the support source tree is cloned and built.

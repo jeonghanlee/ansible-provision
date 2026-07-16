@@ -61,9 +61,13 @@
     make -C "${build_root}/open62541-env/" github
 
     # --- EPICS installation (workflow step 2) ---
+    # Pin the release tag explicitly: the repository carries a branch and a tag
+    # of the same name per release, and 'git clone -b <name>' resolves the
+    # branch, which drifts from the tag once the branch takes another commit.
     rm -rf "${src}/EPICS-env"
     install -d -m 0755 "${src}"
-    git clone -b "${tag}" "${repo_epics}" "${src}/EPICS-env"
+    git clone "${repo_epics}" "${src}/EPICS-env"
+    git -C "${src}/EPICS-env" checkout "refs/tags/${tag}"
 
     # Override the default ${HOME}/epics install location via EPICS-env's own
     # .local hook so make github.check / install / check.env all agree.
