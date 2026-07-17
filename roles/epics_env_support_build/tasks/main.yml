@@ -21,6 +21,7 @@
     install_root="{{ path_epics_install }}"
     epics_tag="{{ epics_env_tag }}"
     repo_support="{{ repo_epics_support }}"
+    flavor="{{ epics_env_build_flavor | default('internal') }}"
 
     # Resolve the EPICS-env install this support build layers onto.
     env_script=$(ls "${install_root}/${epics_tag}"/*/*/setEpicsEnv.bash 2>/dev/null | head -1 || true)
@@ -52,9 +53,13 @@
     # --- Build against the installed EPICS-env (README Option 1 sequence) ---
     # setEpicsEnv.bash and the EPICS make system require bash, so run the
     # env-sourced build under an explicit bash regardless of the login shell.
+    # The gz flavor swaps build for build.gz, matching the small-binary
+    # public distribution; everything else in the sequence is shared.
     cd "${src}/EPICS-env-support"
     export EPICS_ENV_SCRIPT="${env_script}"
-    bash -c 'source "$EPICS_ENV_SCRIPT" && make conf.base && make init && make conf && make build && make symlinks && make exist'
+    if [ "${flavor}" = "gz" ]; then build_goal="build.gz"; else build_goal="build"; fi
+    export BUILD_GOAL="${build_goal}"
+    bash -c 'source "$EPICS_ENV_SCRIPT" && make conf.base && make init && make conf && make "$BUILD_GOAL" && make symlinks && make exist'
   register: epics_env_support_build_result
   changed_when: "'EPICS_ENV_SUPPORT_BUILD_SKIPPED' not in epics_env_support_build_result.stdout"
 

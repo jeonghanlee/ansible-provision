@@ -21,6 +21,7 @@
     repo_pkg="{{ repo_pkg_automation }}"
     repo_uldaq="{{ repo_uldaq_env }}"
     repo_open62541="{{ repo_open62541_env }}"
+    flavor="{{ epics_env_build_flavor | default('internal') }}"
 
     # Idempotency: skip when this tag's setEpicsEnv.bash is already installed.
     installed=$(ls "${install_root}/${tag}"/*/*/setEpicsEnv.bash 2>/dev/null | head -1 || true)
@@ -77,8 +78,18 @@
     # Run make from inside the tree, not with 'make -C': the module-deps audit
     # resolves module names through $(TOP) in a way that breaks under 'make -C'
     # on make 4.2.1 (rocky8). The validated CI procedure runs in-tree.
+    #
+    # Two build flavors share this role. internal runs github.check, the
+    # validated CI aggregate. gz runs the same goal sequence with build
+    # replaced by build.gz, whose conf.gz.* steps add -g0 -gz=zlib for the
+    # small-binary public distribution; the aggregate spelling is used
+    # because the pinned release tags carry no gz aggregate target.
     cd "${src}/EPICS-env"
-    make github.check
+    if [ "${flavor}" = "gz" ]; then
+      make init patch vars conf check.module-deps build.gz symlinks
+    else
+      make github.check
+    fi
     make install
 
     # --- EPICS Environment Check (workflow step 3) ---
