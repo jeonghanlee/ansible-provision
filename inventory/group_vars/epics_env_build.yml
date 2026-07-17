@@ -11,6 +11,12 @@ repo_epics_source: "https://github.com/jeonghanlee/EPICS-env"
 # Release tag to build.
 epics_env_tag: "1.2.1"
 
+# Build flavor for layers 1 and 2. internal keeps debug info (make build,
+# the ALS GitLab distribution form); gz builds small binaries with
+# -g0 -gz=zlib (make build.gz, the public GitHub distribution form).
+# Override per run: -e '{"epics_env_build_flavor": "gz"}'
+epics_env_build_flavor: "internal"
+
 # Install root; overrides EPICS-env's default ${HOME}/epics via CONFIG_SITE.local
 # so the source build lands next to the app_epics distribution convention.
 path_epics_install: "/opt/epics"
