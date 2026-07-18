@@ -69,7 +69,7 @@ path_ioc_runner_bin: "/usr/local/bin/ioc-runner"
 path_epics_local: "/opt/epics"
 
 # EPICS-env-distribution version selectors (epics_os_dir set per OS in group_vars)
-epics_env_version:  "1.2.0"
+epics_env_version:  "1.2.1"
 epics_base_version: "7.0.10"
 
 # Testbed IOC management group members. Override in site overlays.
