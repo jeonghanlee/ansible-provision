@@ -35,6 +35,7 @@ pkg_standard:
   - net-snmp-utils
   - pcre-devel
   - libcurl-devel
+  - libevent-devel
   - firewalld
   - rpcgen
 
