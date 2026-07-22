@@ -19,14 +19,15 @@
     tag="{{ epics_env_support_tag }}"
     src="{{ path_epics_support_src }}"
     install_root="{{ path_epics_install }}"
-    epics_tag="{{ epics_env_tag }}"
     repo_support="{{ repo_epics_support }}"
     flavor="{{ epics_env_build_flavor | default('internal') }}"
 
-    # Resolve the EPICS-env install this support build layers onto.
-    env_script=$(ls "${install_root}/${epics_tag}"/*/*/setEpicsEnv.bash 2>/dev/null | head -1 || true)
+    # Resolve the EPICS-env install this support build layers onto. The install
+    # path carries EPICS-env's OWN version, not the tag, so match any version
+    # (mirrors epics_env_build and the site-modules role).
+    env_script=$(ls "${install_root}"/*/*/*/setEpicsEnv.bash 2>/dev/null | head -1 || true)
     if [ -z "${env_script}" ]; then
-      echo "epics_env_support_build: no EPICS-env ${epics_tag} install under ${install_root}; run epics_env_build first" >&2
+      echo "epics_env_support_build: no EPICS-env install under ${install_root}; run epics_env_build first" >&2
       exit 1
     fi
 
@@ -41,14 +42,14 @@
     # libusbx) are installed by the epics_env_build pkg_automation step on
     # these same hosts, so they are not reinstalled here.
 
-    # --- Clone EPICS-env-support at the release tag ---
-    # Pin the release tag explicitly: the repository carries a branch and a tag
-    # of the same name per release, and 'git clone -b <name>' resolves the
-    # branch, which drifts from the tag once the branch takes another commit.
+    # --- Clone EPICS-env-support and check out the pinned ref ---
+    # Support changes rarely and is decoupled from EPICS-env's release version
+    # (mirrors the site-modules role), so it tracks a branch (master) by default.
+    # Prefer a same-named tag if one exists, else check out the value as a branch.
     rm -rf "${src}/EPICS-env-support"
     install -d -m 0755 "${src}"
     git clone "${repo_support}" "${src}/EPICS-env-support"
-    git -C "${src}/EPICS-env-support" checkout "refs/tags/${tag}"
+    git -C "${src}/EPICS-env-support" checkout "refs/tags/${tag}" 2>/dev/null || git -C "${src}/EPICS-env-support" checkout "${tag}"
 
     # --- Build against the installed EPICS-env (README Option 1 sequence) ---
     # setEpicsEnv.bash and the EPICS make system require bash, so run the
@@ -65,5 +66,5 @@
 
 - name: Show the installed AreaDetector modules
   ansible.builtin.raw: |
-    ls -d {{ path_epics_install }}/{{ epics_env_tag }}/*/*/modules/AD* 2>/dev/null
+    ls -d {{ path_epics_install }}/*/*/*/modules/AD* 2>/dev/null
   changed_when: false
