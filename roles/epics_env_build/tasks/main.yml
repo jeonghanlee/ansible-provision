@@ -1,10 +1,11 @@
 ---
 # roles/epics_env_build/tasks/main.yml
 #
-# Builds EPICS-env from source, reproducing the GitHub Actions workflow steps
-# (Install required packages -> EPICS installation -> EPICS Environment Check),
-# then installs to {{ path_epics_install }}. Distinct from app_epics, which
-# clones the pre-built EPICS-env-distribution.
+# Builds EPICS-env from source and installs to {{ path_epics_install }} using the
+# distribution install.bash METHOD: the vendor libraries (uldaq, open62541) are
+# installed INTO the release tree's vendor/ and wired via RELEASE.local, so every
+# runpath stays $ORIGIN-relative (fully relocatable). Distinct from app_epics,
+# which clones the pre-built EPICS-env-distribution.
 #
 # One raw task: the build hosts boot a plain base cloud image without a Python
 # ansible facts can rely on, and pkg_automation is EPICS-env's own cross-OS
@@ -23,25 +24,28 @@
     repo_open62541="{{ repo_open62541_env }}"
     flavor="{{ epics_env_build_flavor | default('internal') }}"
 
-    # Idempotency: skip when this tag's setEpicsEnv.bash is already installed.
-    installed=$(ls "${install_root}/${tag}"/*/*/setEpicsEnv.bash 2>/dev/null | head -1 || true)
+    # Idempotency: skip when an EPICS-env tree is already installed. The install
+    # path carries EPICS-env's own version, not the tag, so match any version.
+    installed=$(ls "${install_root}"/*/*/*/setEpicsEnv.bash 2>/dev/null | head -1 || true)
     if [ -n "${installed}" ]; then
-      echo "EPICS_ENV_BUILD_SKIPPED: ${tag} already installed at ${installed%/*}"
+      echo "EPICS_ENV_BUILD_SKIPPED: already installed at ${installed%/*}"
       exit 0
     fi
 
-    # --- Install required packages (workflow step 1) ---
+    # --- Install required packages ---
     . /etc/os-release
     case "${ID}" in
       rocky|rhel|centos)
         dnf update -y
         dnf install -y git tree make sudo bash wget unzip python3-pip libusbx-devel
         pip3 install numpy nose
+        is_redhat=1
         ;;
       debian|ubuntu)
         export DEBIAN_FRONTEND=noninteractive
         apt update -y
         apt install -y git make sudo bash wget unzip
+        is_redhat=0
         ;;
       *)
         echo "epics_env_build: unsupported OS ID=${ID}" >&2
@@ -55,49 +59,60 @@
     git clone "${repo_pkg}" "${build_root}/pkg_automation" 2>/dev/null || true
     bash "${build_root}/pkg_automation/pkg_automation.bash" -y
 
-    git clone "${repo_uldaq}" "${build_root}/uldaq-env" 2>/dev/null || true
-    make -C "${build_root}/uldaq-env/" github
-
-    git clone "${repo_open62541}" "${build_root}/open62541-env" 2>/dev/null || true
-    make -C "${build_root}/open62541-env/" github
-
-    # --- EPICS installation (workflow step 2) ---
-    # Pin the release tag explicitly: the repository carries a branch and a tag
-    # of the same name per release, and 'git clone -b <name>' resolves the
-    # branch, which drifts from the tag once the branch takes another commit.
+    # --- Clone and pin EPICS-env FIRST: its install tree defines the vendor path.
+    # Prefer the release tag explicitly (a plain 'git clone -b <name>' resolves a
+    # same-named branch and drifts); fall back to a branch ref when no such tag
+    # exists yet (e.g. release-1.2.2 before 1.2.2 is cut).
     rm -rf "${src}/EPICS-env"
     install -d -m 0755 "${src}"
     git clone "${repo_epics}" "${src}/EPICS-env"
-    git -C "${src}/EPICS-env" checkout "refs/tags/${tag}"
+    git -C "${src}/EPICS-env" checkout "refs/tags/${tag}" 2>/dev/null || git -C "${src}/EPICS-env" checkout "${tag}"
+    printf 'INSTALL_LOCATION=%s\n' "${install_root}" > "${src}/EPICS-env/configure/CONFIG_SITE.local"
 
-    # Override the default ${HOME}/epics install location via EPICS-env's own
-    # .local hook so make github.check / install / check.env all agree.
-    printf 'INSTALL_LOCATION=%s\n' "${install_root}" \
-      > "${src}/EPICS-env/configure/CONFIG_SITE.local"
+    # Vendor libraries install INTO the release tree's vendor/, so their runpaths
+    # stay $ORIGIN-relative. Derive the tree path from EPICS-env's own location.
+    vendor_lib="$(cd "${src}/EPICS-env" && make print-INSTALL_LOCATION_EPICS)/vendor"
 
-    # Run make from inside the tree, not with 'make -C': the module-deps audit
-    # resolves module names through $(TOP) in a way that breaks under 'make -C'
-    # on make 4.2.1 (rocky8). The validated CI procedure runs in-tree.
-    #
-    # Two build flavors share this role. internal runs github.check, the
-    # validated CI aggregate. gz runs the same goal sequence with build
-    # replaced by build.gz, whose conf.gz.* steps add -g0 -gz=zlib for the
-    # small-binary public distribution; the aggregate spelling is used
-    # because the pinned release tags carry no gz aggregate target.
+    # --- Vendor libraries: build and install into the tree's vendor/ ---
+    # (install.bash _prep_vendor: distclean/init/conf[.rocky8]/build/install, NOT
+    # 'make github'. Re-write CONFIG_SITE.local after distclean, which removes *.local.)
+    for vdir in uldaq-env open62541-env; do
+      case "${vdir}" in
+        uldaq-env)     vrepo="${repo_uldaq}" ;;
+        open62541-env) vrepo="${repo_open62541}" ;;
+      esac
+      git clone "${vrepo}" "${build_root}/${vdir}" 2>/dev/null || true
+      cd "${build_root}/${vdir}"
+      printf 'INSTALL_LOCATION=%s\n' "${vendor_lib}" > configure/CONFIG_SITE.local
+      make distclean
+      printf 'INSTALL_LOCATION=%s\n' "${vendor_lib}" > configure/CONFIG_SITE.local
+      make init
+      if [ "${is_redhat}" = 1 ]; then make conf.rocky8; else make conf; fi
+      make build
+      make install
+    done
+
+    # --- EPICS-env: distclean/init/patch, wire vendor paths, then conf/build/install.
+    # Run make in-tree (module-deps resolution breaks under 'make -C' on make 4.2.1).
+    # The .local files are (re-)written after distclean, right before conf.
     cd "${src}/EPICS-env"
-    if [ "${flavor}" = "gz" ]; then
-      make init patch vars conf check.module-deps build.gz symlinks
-    else
-      make github.check
-    fi
+    make distclean
+    make init
+    make patch
+    printf 'INSTALL_LOCATION=%s\n' "${install_root}" > configure/CONFIG_SITE.local
+    printf 'VENDOR_ULDAQ_PATH=%s\n' "${vendor_lib}" > configure/RELEASE.local
+    echo 'OPEN62541_PATH=\$$\$$\(\_OPEN62541_CONFIG_OPCUA\)/../../../vendor' >> configure/RELEASE.local
+    make conf
+    if [ "${flavor}" = "gz" ]; then make build.gz; else make build; fi
     make install
+    make symlinks
 
-    # --- EPICS Environment Check (workflow step 3) ---
+    # --- EPICS Environment Check ---
     make check.env
   register: epics_env_build_result
   changed_when: "'EPICS_ENV_BUILD_SKIPPED' not in epics_env_build_result.stdout"
 
 - name: Show the installed EPICS-env location
   ansible.builtin.raw: |
-    ls -d {{ path_epics_install }}/{{ epics_env_tag }}/*/*/setEpicsEnv.bash
+    ls -d {{ path_epics_install }}/*/*/*/setEpicsEnv.bash
   changed_when: false
