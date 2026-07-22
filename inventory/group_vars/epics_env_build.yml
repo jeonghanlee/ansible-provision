@@ -8,8 +8,9 @@
 # EPICS-env source repository (not the -distribution binary).
 repo_epics_source: "https://github.com/jeonghanlee/EPICS-env"
 
-# Release tag to build.
-epics_env_tag: "1.2.1"
+# Release tag to build — or a branch ref before its tag is cut (the role
+# checks out the tag if it exists, else this value as a branch).
+epics_env_tag: "release-1.2.2"
 
 # Build flavor for layers 1 and 2. internal keeps debug info (make build,
 # the ALS GitLab distribution form); gz builds small binaries with
