@@ -4,10 +4,10 @@
 |---|---|
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Provisioning flow, role architecture, inventory, OS differences, variable scoping |
 | [ANSIBLE_CLI.md](ANSIBLE_CLI.md) | ansible-playbook, ad-hoc, inventory inspection, and Makefile wrapper reference |
-| [MILESTONES.md](MILESTONES.md) | Canonical work register, milestones, findings, acceptance criteria, and verification commands |
+| [MILESTONES.md](MILESTONES.md) | Canonical M.x deliverables, T.k verification, external gates, and decisions |
 | [STATUS.md](STATUS.md) | Role by OS verification evidence |
 | [RAW_STYLE.md](RAW_STYLE.md) | Raw-task house conventions: set -e, trailing assertions, sentinel changed_when, atomic privileged writes |
 | [STANDALONE.md](STANDALONE.md) | Provisioning a standalone (non-testbed) VM: control-host-over-ssh and local-clone recipes |
 | [SEAM.md](SEAM.md) | Seam contract with cloud-provision: responsibility boundary, naming contract, consumer register |
-| [test_users_handoff.md](test_users_handoff.md) | Activation plan (B) for the unwired ioc-runner test_users fixture |
+| [test_users_handoff.md](test_users_handoff.md) | Multi-user fixture accounts, bake placement, ordering, and verification |
 | [../TODO.md](../TODO.md) | Pointer stub — open work lives in the MILESTONES.md Work Register |

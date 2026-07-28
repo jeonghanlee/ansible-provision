@@ -132,7 +132,7 @@ and local-clone recipes.
 | `app_epics` | EPICS binary distribution | [jeonghanlee/EPICS-env-distribution](https://github.com/jeonghanlee/EPICS-env-distribution) |
 | `app_ioc_runner` | epics-ioc-runner infrastructure | [jeonghanlee/epics-ioc-runner](https://github.com/jeonghanlee/epics-ioc-runner) |
 | `nfs_sim` | NFS root_squash simulation (loopback export + remount) | — |
-| `test_users` | Multi-user test fixture accounts for the consumer testplan (bake activation pending) | — |
+| `test_users` | Multi-user test fixture accounts applied during the iocrunner golden bake | - |
 | `ethercat_base` | EtherCAT/RT bake-time prerequisite layer (Debian 13 rtbase) | — |
 | `app_ethercat` | EtherCAT R2-12 live validation harness | [jeonghanlee/ethercat-env](https://github.com/jeonghanlee/ethercat-env) (bundle) |
 | `epics_env_build` | EPICS-env built from source (base + all modules incl. asyn) | [jeonghanlee/EPICS-env](https://github.com/jeonghanlee/EPICS-env) |

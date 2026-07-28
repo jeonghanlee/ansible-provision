@@ -65,10 +65,11 @@ conserver). The "Dedicated variant?" column tells them apart.
 | procServ-env | procServ build + install | No (base VM app role) | base variant | `02_apps.yml` (`app_procserv`) | Complete |
 | conserver-env | conserver build + install | No (base VM app role) | base variant | `02_apps.yml` (`app_conserver`) | Complete |
 
-epics-ioc-runner's multi-user testplan scenarios extend its seam with a
-`test_users` fixture (`roles/test_users`, `playbooks/07_test_users.yml`),
-tracked in the tree but unwired pending a `07_test_users` bake step in
-`bake_iocrunner_image.bash`. Status: pending — see `docs/test_users_handoff.md`.
+epics-ioc-runner's multi-user testplan scenarios extend its seam with the
+`test_users` fixture (`roles/test_users`, `playbooks/07_test_users.yml`).
+cloud-provision `bake_iocrunner_image.bash` applies the fixture after
+`04_nfs_sim.yml`; fresh Rocky 8 and Debian 13 variants verified the account
+and linger state on 2026-07-05. See `docs/test_users_handoff.md`.
 
 Going forward, a new VM-needing project either claims a cloud-provision
 variant or rides the base VM, adds its host group and playbook in

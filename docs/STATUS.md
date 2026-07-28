@@ -1,75 +1,114 @@
 # ansible-provision Verification Status
 
-Living document tracking which role × OS combinations have been
-verified end-to-end on a real testbed, distinct from the structural
-description in ARCHITECTURE.md.
+## Scope
 
-Canonical roll-up: `docs/MILESTONES.md`.
+This document records observed role-by-OS and source-build verification.
+`docs/MILESTONES.md` defines deliverables and the `T.k` checks required to
+close them.
 
-**Last updated:** 2026-07-04
-**See also:** `TODO.md` for deferred feature work; this file tracks
-verification state and known defects.
+**Out of scope:** architecture and data flow are defined in
+`docs/ARCHITECTURE.md`; deferred work is indexed through the milestone
+register.
 
-## Status legend
+**Last updated:** 2026-07-28
+
+## Status Legend
 
 | Symbol | Meaning |
-|--------|---------|
-| ✓      | Applied and verified — binary/config landed, idempotent rerun observed |
-| ?      | Applied; ansible reported ok but artefact not independently verified |
-| ✗      | Known broken — documented in Verification notes below |
-| —      | Not yet applied on this OS |
+| :-- | :-- |
+| ✓ | Applied and independently verified. |
+| ? | Applied, but the current result has not been independently verified. |
+| ✗ | Observed broken; the note names the failure. |
+| — | Not applied on this OS or host. |
 
-## Role × OS matrix
+## Provisioning Role x OS Matrix
 
-| Role            | Playbook    | rocky8 | debian13 |
-|-----------------|-------------|--------|----------|
-| base_os         | 01_base     | ✓      | ✓        |
-| app_con         | 02_apps     | ✓      | ✓        |
-| app_procserv    | 02_apps     | ✓      | ✓        |
-| app_conserver   | 02_apps     | ✓      | ✓        |
-| app_epics       | 03_epics    | ✓      | ✓        |
-| app_ioc_runner  | 03_epics    | ✓      | ✓        |
-| nfs_sim         | 04_nfs_sim  | ✓      | ✓        |
+| Role | Playbook | Rocky 8 | Debian 13 |
+| :-- | :-- | :-: | :-: |
+| `base_os` | `01_base` | ? | ✓ |
+| `app_con` | `02_apps` | ✓ | ✓ |
+| `app_procserv` | `02_apps` | ✓ | ✓ |
+| `app_conserver` | `02_apps` | ✓ | ✓ |
+| `app_epics` | `03_epics` | ? | ? |
+| `app_ioc_runner` | `03_epics` | ? | ? |
+| `nfs_sim` | `04_nfs_sim` | ✓ | ✓ |
+| `test_users` | `07_test_users` | ✓ | ✓ |
 
-## Verification notes
+### Current-Golden Boundary
 
-### NFS simulation paths verified
-`04_nfs_sim` was applied on the Rocky 8 and Debian 13 ioc-runner
-server validation hosts. The simulation namespace was mounted at
-`/home/nfs/simulation/vmadmin/gitsrc`, old site-named namespace
-entries were absent, vmadmin writes succeeded, and root-owned writes
-were denied by root_squash. The nfs_sim checkmark covers exactly what
-the role provides: export, mount, and root_squash behavior.
-Historical note: the original run also passed `ioc-runner` smoke
-checks via a `04_nfs_sim` app_ioc_runner pass that was later removed
-(3ea5c20); ioc-runner-over-NFS coverage now lives in the consumer's
-tar-push + suite flow.
+Commit `1efca35` records successful Rocky 8 and Debian 13 iocrunner golden
+bakes with EPICS-env 1.2.2 on 2026-07-28. The bake proves that the selected
+distribution path exists and that the provisioning stack completes. It does
+not replace the independent login-shell, EPICS command, IOC runner, or
+generated-IOC checks in `M.1`, `M.3`, and `M.5`; the affected current-image
+cells therefore remain `?`.
 
-### Golden bakes and consumer gate (2026-06-26 .. 2026-07-02)
-With fixes 3ea5c20 + 3ccc8b8 (2026-06-26), both iocrunner goldens
-baked successfully on the site bake host (2026-06-26..07-01), and the
-consumer epics-ioc-runner ran its full 1.2.0 release gate on them —
-all suites plus the multi-user plan PASS (consumer released
-2026-07-02). The RHEL sudo secure_path drop-in was verified on the
-rocky8 golden 2026-07-02 (`sudo -n which con conserver` resolves
-`/usr/local/{bin,sbin}`).
+Rocky 8 includes `libevent-devel` after `026f859`. Installing that package on
+the prior running golden changed the same generated IOC from link failure to
+pass, but the complete role-to-current-golden-to-generated-IOC path has not
+been observed in one run.
 
-## EtherCAT validation (Debian 13, separate scope)
+## EPICS-env Source-Build Matrix
 
-Tracked outside the role × OS matrix above: EtherCAT is a Debian 13-only
-bake + live-VM validation harness for the external `ethercat-env` buildout,
-not part of the core completion model. See `docs/MILESTONES.md`.
+| Host OS | `epics_env_build` | `epics_env_support_build` | Evidence |
+| :-- | :-: | :-: | :-- |
+| Rocky 8 | ? | — | Commit `9dfd5a1` verified the initial path; the current vendor-install rewrite has not run on Rocky 8. |
+| Debian 13 | ✓ | ✓ | Commits `9dfd5a1` and `0148514`: layered tree built; `check_deps` exit 0. |
+| Rocky 10 | — | — | Inventory entry only. |
+| Ubuntu 24 | — | — | Inventory entry only. |
+| Ubuntu 26 | — | — | Inventory entry only. |
 
-| Component      | Playbook         | Host group            | Status |
-|----------------|------------------|-----------------------|--------|
-| ethercat_base  | 05_ethercat_base | ethercat_build (bake) | —      |
-| app_ethercat   | 06_ethercat      | ethercat_nodes (live) | —      |
+| Build property | Status | Evidence |
+| :-- | :-: | :-- |
+| Vendor libraries installed inside the release tree | ✓ | Commit `5c4f7fc`; absolute-path dependency findings reduced from 9 to 0. |
+| `internal` flavor | ✓ | Used by the recorded core-host builds. |
+| `gz` flavor | — | Code path added by `1732f77`; no observed run recorded. |
+| Base-layer repeated-run skip | ✓ | Commit `9dfd5a1`. |
+| Support-layer repeated-run skip | — | No observed repeated run recorded after `0148514`. |
 
-Verification requires the baked `ethercat-debian13` golden image and a live
-VM run; not yet exercised end-to-end.
+## NFS Simulation Evidence
 
-## Update protocol
+`04_nfs_sim` passed on the Rocky 8 and Debian 13 iocrunner server validation
+hosts. The verification covered the `simulation` namespace, export and mount
+state, ownership and permissions, regular-user writes, and denial of
+root-owned writes through `root_squash`.
 
-When a role × OS combination is applied or verified, update the
-matrix and the relevant Open Item in the same commit as the
-substantive change. Do not let the matrix drift behind the code.
+IOC runner validation no longer runs as root inside the 0750 NFS mount.
+Commit `3ea5c20` keeps local source-root checks in `03_epics`; the consumer's
+tar-push and suite flow owns NFS-side coverage.
+
+## Test Fixture Evidence
+
+Fresh Rocky 8 and Debian 13 variants from the 2026-07-05 goldens verified:
+
+- `opa` and `opb` belong to `ioc`.
+- `obs` does not belong to `ioc`.
+- `usera` and `userb` have systemd linger enabled.
+- The fixture survives a clean reprovision from each golden.
+
+## EtherCAT Validation
+
+EtherCAT is a separate Debian 13 bake and live-VM validation path.
+
+| Component | Playbook | Host group | Status |
+| :-- | :-- | :-- | :-: |
+| `ethercat_base` | `05_ethercat_base` | `ethercat_build` | — |
+| `app_ethercat` | `06_ethercat` | `ethercat_nodes` | — |
+
+The roles and playbooks are present. No accepted end-to-end bake and live
+R2-12 result is recorded in this repository.
+
+## Open Verification
+
+| Milestone checks | Required observation |
+| :-- | :-- |
+| `M.1/T.1`, `M.1/T.4` | Re-run `01_base` and build a generated PVXS IOC on the current Rocky 8 golden. |
+| `M.3/T.3-T.5` | Source the login environment, run `caget -h`, and verify version paths on both current goldens. |
+| `M.4/T.1`, `M.4/T.5-T.7` | Run the current Rocky 8 path, additional build hosts, `gz` flavor, and support-layer repeated-run check. |
+| `M.5/T.5` | Run IOC runner smoke and consumer lifecycle checks on both current goldens. |
+
+## Update Protocol
+
+Update this matrix and `docs/MILESTONES.md` with the substantive change when a
+role, supported OS boundary, version selector, or observed verification result
+changes. Record a pass only when the real shipped path and fixtures ran.
