@@ -20,14 +20,14 @@ operation above that baseline. The first-pass validation environment uses
      V
 [ ansible-provision ]
      |
-     | 01_base.yml  →  base_os role
+     | 01_base.yml  -> base_os role
      |                 - OS packages (dnf / apt)
      |                 - chrony NTP
      |
-     | 02_apps.yml  →  app_con, app_procserv, app_conserver roles
+     | 02_apps.yml  -> app_con, app_procserv, app_conserver roles
      |                 - Build from source via Makefile repos
      |
-     | 03_epics.yml →  app_epics, app_ioc_runner roles
+     | 03_epics.yml -> app_epics, app_ioc_runner roles
      |                 - EPICS-env-distribution (binary, depth 1)
      |                 - epics-ioc-runner infrastructure setup
      |
@@ -35,20 +35,24 @@ operation above that baseline. The first-pass validation environment uses
 [ Linux nodes ready for EPICS IOC validation ]
 
 (out-of-band, not in site.yml)
-04_nfs_sim.yml → nfs_sim role
+04_nfs_sim.yml -> nfs_sim role
                  - loopback NFS export with root_squash
                  - exposes an NFS-mounted simulation source root
                  (ioc-runner validation over that root is NOT done at
-                  bake time — root-principal access is impossible under
+                  bake time - root-principal access is impossible under
                   root_squash by design; coverage lives in the consumer's
                   tar-push + suite flow. See docs/MILESTONES.md.)
 
-05_ethercat_base.yml → ethercat_base role   (ethercat_build host;
+05_ethercat_base.yml -> ethercat_base role  (ethercat_build host;
                  invoked by the cloud-provision ethercat bake)
-06_ethercat.yml      → app_ethercat role    (ethercat_nodes; live
+06_ethercat.yml      -> app_ethercat role   (ethercat_nodes; live
                  R2-12 validation harness, run directly)
-07_test_users.yml    → test_users role      (nfs_sim_nodes; consumer
-                 test fixtures — bake activation pending)
+07_test_users.yml    -> test_users role     (nfs_sim_nodes; consumer
+                 fixtures applied during the iocrunner golden bake)
+08_epics_env_build.yml -> epics_env_build role
+                 (epics_env_build hosts; source build, out of band)
+09_epics_env_support_build.yml -> epics_env_support_build role
+                 (epics_env_build hosts; layered source build, out of band)
 ```
 
 ---
@@ -57,43 +61,48 @@ operation above that baseline. The first-pass validation environment uses
 
 ```
 ansible-provision/
-├── Makefile                         (entry point)
-├── ansible.cfg                      (defaults: inventory, become)
-├── site.yml                         (master playbook)
-├── configure/                       (EPICS-style Makefile system)
-│   ├── CONFIG / RULES               (aggregators)
-│   ├── RELEASE                      (appname, playbook stages)
-│   ├── CONFIG_SITE                  (inventory path, topology, .local override)
-│   ├── CONFIG_VARS                  (ansible command variables)
-│   ├── RULES_FUNC                   (dynamic target macros)
-│   ├── RULES_SETUP                  (host setup, tool checks)
-│   ├── RULES_ANSIBLE                (playbook targets)
-│   └── RULES_VARS                   (env inspection)
-├── inventory/
-│   ├── testbed.ini                  (example validation inventory)
-│   └── group_vars/
-│       ├── all.yml                  (site-independent variables)
-│       ├── rocky8.yml               (epics_os_dir: rocky-8.10)
-│       └── debian13.yml             (epics_os_dir: debian-13)
-├── playbooks/
-│   ├── 01_base.yml
-│   ├── 02_apps.yml
-│   ├── 03_epics.yml
-│   ├── 04_nfs_sim.yml
-│   ├── 05_ethercat_base.yml
-│   ├── 06_ethercat.yml
-│   └── 07_test_users.yml
-└── roles/
-    ├── base_os/
-    ├── app_con/
-    ├── app_procserv/
-    ├── app_conserver/
-    ├── app_epics/
-    ├── app_ioc_runner/
-    ├── nfs_sim/
-    ├── test_users/
-    ├── ethercat_base/
-    └── app_ethercat/
+|-- Makefile                         (entry point)
+|-- ansible.cfg                      (defaults: inventory, become)
+|-- site.yml                         (master playbook)
+|-- configure/                       (EPICS-style Makefile system)
+|   |-- CONFIG / RULES               (aggregators)
+|   |-- RELEASE                      (appname, playbook stages)
+|   |-- CONFIG_SITE                  (inventory path, topology, .local override)
+|   |-- CONFIG_VARS                  (ansible command variables)
+|   |-- RULES_FUNC                   (dynamic target macros)
+|   |-- RULES_SETUP                  (host setup, tool checks)
+|   |-- RULES_ANSIBLE                (playbook targets)
+|   `-- RULES_VARS                   (env inspection)
+|-- inventory/
+|   |-- testbed.ini                  (example validation inventory)
+|   `-- group_vars/
+|       |-- all.yml                  (site-independent variables)
+|       |-- rocky8.yml               (epics_os_dir: rocky-8.10)
+|       |-- debian13.yml             (epics_os_dir: debian-13)
+|       `-- epics_env_build.yml      (source-build inputs)
+|-- playbooks/
+|   |-- 01_base.yml
+|   |-- 02_apps.yml
+|   |-- 03_epics.yml
+|   |-- 04_nfs_sim.yml
+|   |-- 05_ethercat_base.yml
+|   |-- 06_ethercat.yml
+|   |-- 07_test_users.yml
+|   |-- 08_epics_env_build.yml
+|   `-- 09_epics_env_support_build.yml
+`-- roles/
+    |-- base_os/
+    |-- app_con/
+    |-- app_procserv/
+    |-- app_conserver/
+    |-- app_epics/
+    |-- app_ioc_runner/
+    |-- nfs_sim/
+    |-- test_users/
+    |-- ethercat_base/
+    |-- app_ethercat/
+    |-- epics_env_build/
+    `-- epics_env_support_build/
 ```
 
 ---
@@ -123,6 +132,11 @@ Production and site deployments should supply their own inventory.
 | `ioc_nodes` | rocky8 + debian13 |
 | `all_nodes` | rocky8 + debian13 |
 | `nfs_sim_nodes` | rocky8-server, debian13-server |
+| `ethercat_nodes` | debian13-ethercat-server |
+| `ethercat_build` | debian13-rtbase-server |
+| `epics_env_core` | epics-env rocky8, debian13 |
+| `epics_env_matrix` | epics-env rocky10, ubuntu24, ubuntu26 |
+| `epics_env_build` | `epics_env_core` + `epics_env_matrix` |
 
 ---
 
@@ -150,9 +164,9 @@ existence guard: skip when the installed binary is present
 `app_epics` clones a pre-built binary distribution (no compilation):
 
 ```
-git clone --depth 1 EPICS-env-distribution → path_epics_local
-  │
-  └── deploy /etc/profile.d/epics-env.sh
+git clone --depth 1 EPICS-env-distribution -> path_epics_local
+  |
+  `-- deploy /etc/profile.d/epics-env.sh
         source setEpicsEnv.bash (version + OS specific path)
 ```
 
@@ -165,8 +179,29 @@ EPICS path resolution:
 | Variable | rocky8 | debian13 |
 |---|---|---|
 | `epics_os_dir` | `rocky-8.10` | `debian-13` |
-| `epics_env_version` | `1.2.0` | `1.2.0` |
+| `epics_env_version` | `1.2.2` | `1.2.2` |
 | `epics_base_version` | `7.0.10` | `7.0.10` |
+
+### EPICS-env Source Builds
+
+`epics_env_build` and `epics_env_support_build` run outside `site.yml` on
+dedicated build hosts. The base layer installs vendor libraries inside the
+EPICS-env release tree before building EPICS Base and modules. The support
+layer then sources the installed environment and adds AreaDetector modules.
+
+```
+08_epics_env_build.yml
+  |-- package automation
+  |-- uldaq and open62541 -> <release>/vendor
+  `-- EPICS-env -> /opt/epics/<version>/<os>/<base>
+
+09_epics_env_support_build.yml
+  `-- EPICS-env-support -> <installed environment>/modules
+```
+
+The `internal` flavor uses the normal build target. The `gz` flavor selects
+the reduced-debug build target. Both roles detect an installed result and skip
+it on a repeated run.
 
 ### ioc-runner Infrastructure
 
@@ -262,18 +297,18 @@ Debian-13-live-only, and never modules on a bake path.
 There are TWO independent override planes; a value is reachable only
 from its own plane. The Make plane cannot set an Ansible variable.
 
-**Make plane** — `configure/CONFIG_SITE.local` (and `RELEASE.local`):
+**Make plane** - `configure/CONFIG_SITE.local` (and `RELEASE.local`):
 overrides `INVENTORY`, `PLAYBOOK_DIR`, `OS_GROUPS`, `NODE_IDS`,
 `VM_PREFIX`, and the playbook topology lists. Two search locations,
-later include wins: `$(TOP)/../CONFIG_SITE.local` (out-of-tree — the
+later include wins: `$(TOP)/../CONFIG_SITE.local` (out-of-tree - the
 recommended home for anything naming site identity) then
 `$(TOP)/configure/CONFIG_SITE.local`. These files are gitignored;
 never commit them.
 
-**Ansible plane** — group_vars edits, a custom inventory, or
+**Ansible plane** - group_vars edits, a custom inventory, or
 `ANSIBLE_OPTS='-e key=value'`: reaches users, paths, repos, package
 lists, NTP servers. Caveat: Ansible loads group_vars from the
-INVENTORY FILE'S directory — an out-of-tree custom inventory silently
+INVENTORY FILE'S directory - an out-of-tree custom inventory silently
 loses every baseline variable under `inventory/group_vars/`. A custom
 inventory must either live under `inventory/` next to the shipped
 group_vars or carry its own complete group_vars tree.
@@ -298,9 +333,9 @@ without the others fails late (clone/chown into the wrong home).
 
 **Known consumers that bypass the Make plane**: `ansible.cfg` pins
 `inventory/testbed.ini` for the Direct CLI workflow, and the
-cloud-provision bake scripts pass the same path literally — a
-CONFIG_SITE.local `INVENTORY` override affects make targets only
-(closing this is tracked as Phase C4 in `docs/MILESTONES.md`).
+cloud-provision bake scripts pass the same path literally. The current
+cloud-provision bake scripts honor `INVENTORY` and `VM_PREFIX` from their
+single configuration source.
 
 | Scope | File | Contents |
 |---|---|---|

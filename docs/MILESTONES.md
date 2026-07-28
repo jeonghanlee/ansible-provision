@@ -2,299 +2,297 @@
 
 ## Scope
 
-This document is the canonical work register for `ansible-provision`.
-It consolidates implementation milestones, carry-forward work, external
-gates, and conceptual-integrity findings that need owner decisions.
-
-Supporting evidence remains in `docs/STATUS.md` and `TODO.md`; those
-documents are not competing status registers.
-
-Next session entry point: Phases A, B, and C are COMPLETE and Phase D
-is retired to the owner's separate tracking (2026-07-05) — the goldens
-carry the fixture accounts, zero proxy remnants, and a provenance
-manifest. The only remaining register item is the U8 release
-convention: the 1.0 definition (A + B1/B2 + C1 + C3) is SATISFIED, so
-the first tag (jointly with cloud-provision) can be cut at the next
-consumer release-gate bake, User-run.
-
-## Completion Model
-
-The project is complete when all supported role and OS combinations in
-`docs/STATUS.md` are verified end-to-end, known broken paths are fixed,
-and the generated VMs provide the command-line tools required by the IOC
-runtime workflows.
-
-Each milestone closes only when its acceptance criteria pass on the real
-testbed. Syntax checks alone are necessary but not sufficient.
-
-The EtherCAT/RT validation harness (`ethercat_base`, `app_ethercat`) is
-tracked separately under "EtherCAT Validation Harness" below and is **not**
-part of this completion model: it validates the external `ethercat-env`
-buildout on a Debian 13 bake + live-VM topology, and acceptance of that
-buildout belongs to `ethercat-env` (M16/D2).
-
-## Work Register
-
-| Topic | Work unit | Type | Status | Evidence or next action |
-|---|---|---|---|---|
-| Base OS | Milestone 1: Base OS parity | Milestone | Complete | `docs/STATUS.md` marks `base_os` verified on Rocky 8 and Debian 13. |
-| Applications | Milestone 2: Application role reliability | Milestone | Complete | `docs/STATUS.md` marks `app_con`, `app_procserv`, and `app_conserver` verified on both OS families. |
-| EPICS | Milestone 3: EPICS environment deployment | Milestone | Complete | `docs/STATUS.md` marks `app_epics` verified on both OS families. Resolves GH #1 (Rocky 8 `epics_os_dir` mismatch) via per-OS `epics_os_dir` in `group_vars`; GH #1 closed 2026-06-09. |
-| IOC runner | Milestone 4: IOC runner deployment | Milestone | Complete | `docs/STATUS.md` marks `app_ioc_runner` verified on both OS families. |
-| NFS simulation | Milestone 5: NFS simulation and cross-OS closure | Milestone | Complete | `docs/STATUS.md` marks `nfs_sim` verified on Rocky 8 and Debian 13 ioc-runner server validation hosts. Resolves GH #2 (ioc-runner source on NFS-backed home) via the `04_nfs_sim.yml` source-root override (mechanism since removed by 3ea5c20 — see the dated amendments in Milestones 4 and 5); GH #2 closed 2026-06-09. |
-| Repository identity | Public baseline and validation boundary | Design gate | Implemented | README and architecture describe a public Linux baseline, validation defaults, testbed defaults, and site overlays. |
-| Makefile topology | Server-only NFS simulation targets | Design gate | Implemented | `04_nfs_sim` node targets are generated only for configured server node IDs. |
-| Host setup | SSH key existence check | Carry-forward | Complete | `bin/setup_host.bash` warns when neither `~/.ssh/id_ed25519.pub` nor `~/.ssh/id_rsa.pub` is present, mirroring the `cloud-provision` host setup. |
-| Base OS | RHEL sudo secure_path verification | Carry-forward | Complete | Verified 2026-07-02 on the rocky8 iocrunner golden: `sudo -n which con conserver` resolves `/usr/local/{bin,sbin}` (drop-in c5b3fbe). Scope: Rocky 8 only; Debian 13 needs no drop-in — its default secure_path already includes `/usr/local` (ARCHITECTURE.md OS-differences). |
-| EtherCAT validation | EtherCAT/RT base image layer (`ethercat_base`, `05_ethercat_base`) | Validation harness | Implemented, unverified | Code present; bake-time prerequisite layer on `ethercat_build`. Verification is an external gate — cloud-provision `bake_ethercat_image.bash` then flatten to the `ethercat-debian13` golden image. Outside the core completion model. |
-| EtherCAT validation | EtherCAT R2-12 live validation (`app_ethercat`, `06_ethercat`) | Validation harness | Implemented, unverified | Code present; clones `ethercat-env` and runs its target graph + RT reboot on the baked VM (`ethercat_nodes`). Verification is an external gate — live `debian13-ethercat` VM; acceptance belongs to `ethercat-env` (M16/D2). Outside the core completion model. |
-| ioc-runner test fixtures | Multi-user `test_users` accounts (`roles/test_users`, `07_test_users`) | Carry-forward | Tracked, unwired | Role and playbook in tree but absent from `site.yml` / `CONFIG_SITE`; activation (B) pending a `07_test_users` bake step in cloud-provision `bake_iocrunner_image.bash`, re-bake, and verify. Plan: `docs/test_users_handoff.md`. |
-| NFS bake fix | Drop app_ioc_runner from `04_nfs_sim`; default stdout callback | Carry-forward | Complete (review closed) | `3ea5c20` removes app_ioc_runner from `playbooks/04_nfs_sim.yml`; `3ccc8b8` sets the stdout callback to default. **Review closed 2026-07-03 (10-reviewer convergence, session rs20260702_083212): the removal is justified — in-place bake-time validation is impossible UNDER BECOME-ROOT against the root_squash 0750 nfs_sim mount (root maps to nobody), and no intended coverage was lost: the local source-root pass stays in `03_epics` and NFS-side coverage relocated to the consumer's tar-push + suite flow (epics-ioc-runner 1.2.0 release gate PASSED on goldens baked with the fix). The callback change stands; a `requirements.yml` collection install was REJECTED (cosmetic benefit; new proxied network fetch; one more unpinned input).** Origin: epics-ioc-runner M19 V002 bake on the site bake host (2026-06-26). |
-
-| Full-repo review | 10-reviewer review convergence (rs20260702_083212) | Review | Complete | Ten lenses (raw IaC, bake seam, consumer coverage, docs coherence, security/ops, adversarial cross-check, EtherCAT, config architecture, operator experience, repo-family conventions). All Round-1 verdicts sustained under adversarial attack; outcome = Phases A-D below + decisions U1-U10. Authoritative convergence: conv20260702_190045 (session-local; verdict substance recorded in these rows). |
-| Review follow-up | Phase A: documentation truth-sync | Carry-forward | Complete (2026-07-04, commits 2439e6c/bde669f + cloud-provision 4e99811) | One sitting, no behavior change: post-3ea5c20 sweep (README:128; ARCHITECTURE.md:38-41/:199-204/:215/:231/:51; SEAM.md:45/:62 + ethercat row to "present, unverified end-to-end"; register rows 40/42 issue-close notes; row 58 superseded-with-new-fate; M4/M5 dated amendment notes); site-overlay contract section (two planes, override points, custom-inventory caveat, vmadmin invariant); Update Protocol trigger extension (composition-or-claim-invalidating commits sweep the mirroring docs); honest dry-run wording (README, ANSIBLE_CLI, make help); README Roles (10) + Playbook Layers (01-07) discoverability; STATUS.md re-anchor + events; test_users defaults comment; TODO.md pointer stub (U3); site-identity string generalization (U9); cloud-provision ARCHITECTURE IP table (.70/.80). |
-| Review follow-up | Phase B: raw-contract code must-dos | Carry-forward | Complete (2026-07-04, commits cc8e686/13d2910/544c487/4623e35; verified V1-V5 per handoff20260704_031000, integration rides the next re-bake) | B1 `set -e` + trailing `test -x` in app_con/app_procserv (silent-build-failure fix, empirically reproduced); B2 atomic sudoers replace (same-fs mktemp + `mv -f`); B3 one-page raw style contract doc (Tier-A patterns; playbook species; bake-path-raw-only vs Debian-13-live-module boundary); B4 config cleanup — delete `proxy_enabled` (or wire per U2) + `path_epics_src` + shadowed python lists, derive `path_ioc_runner_root` from `epics_ioc_engineers[0]`, gitignore `*.local`; B5 app_epics `test -f` before the profile.d write. |
-| Review follow-up | Phase C: bake pipeline (BOTH bake scripts; cross-repo with cloud-provision) | Carry-forward | Complete (2026-07-05; ansible 9910fe2 + cloud a8bdbd4; both goldens re-baked and verified on fresh variants: fixture accounts baked [ioc=opa,opb; obs outside; usera/userb linger], proxy remnants NONE, manifest in-image + sidecar; consumer testplan fixture paragraph synced) | C1 wire 07_test_users into the bake + two-token make wiring + re-bake + verify + sync the consumer testplan fixture paragraph; C2 de-proxy cleanup before flatten + in-image remnant grep acceptance + proxied-site runbook in cloud-provision docs (placeholder values only) + failed-bake recovery paragraph; C3 provenance manifest in-image + sidecar (bake date, ansible-provision HEAD, cloud-provision HEAD, per-repo rev-parse before `rm -rf`, EPICS env/base versions, base image identity, `pip3 freeze`); C4 bake scripts honor INVENTORY/VM_PREFIX from one source. |
-| Review follow-up | Phase D: EtherCAT verification readiness | Carry-forward | Retired from this register (2026-07-05, User direction) | The EtherCAT verification work is tracked separately by the owner outside this register; the U10(a)/(b) strictness decisions and the R7 readiness items (persist bundle HEAD + log retrieval; GRUB parse-miss FAIL per U10c; 7-step end-to-end run) move with it. The ethercat roles/playbooks stay in this repository (keep-in-repo verdict unchanged, split trigger recorded in the review convergence). |
-| Policy | Review decisions U1-U10 | Decision record | Decided 2026-07-03 | U1 phases A+B now / C at re-bake / D when scheduled; U2 proxy runbook-first (role optional after); U3 TODO stub; U4 GitHub issues only for cross-repo/externally referenced items; U5 `repo_*_ref` pinning introduced empty-default, pinned at release-gate bakes (scope: git refs + pip + ethercat bundle); U6 selective sentinel `changed_when`; U7 dated amendment notes; U8 adopt family release convention jointly with cloud-provision — bare-number tags at release-gate bakes, register snapshot-restart, 1.0 = A + B1/B2 + C1 + C3 (retro-0.9 and CHANGELOG decided at tag time); U9 site-identity strings generalized in tracked files; U10 (c) decided FAIL-at-bake, (a)/(b) deferred. |
-
-## Conceptual Integrity Findings
-
-| Finding | Reality rank | Evidence | Fate to decide |
-|---|---|---|---|
-| Direct CLI examples disagree with the repository's no-Python operational contract. | Resolved in docs | `docs/ANSIBLE_CLI.md` uses `-m raw` for every ad-hoc example (lines 50, 53, 56, 59); no `shell` or `setup` module remains, consistent with `gather_facts: false` in `playbooks/01_base.yml:5`, `playbooks/02_apps.yml:5`, and `playbooks/03_epics.yml:5`. | Keep ad-hoc examples on `raw`; do not reintroduce `shell` or `setup` in public docs. |
-| Pattern targets treat every playbook as valid for every OS and node, but `04_nfs_sim.yml` is scoped only to `nfs_sim_nodes`. | Resolved in design | `configure/CONFIG_SITE` now separates all-node and server-only playbooks; `configure/RULES_ANSIBLE` generates server-only node targets only from `SERVER_NODE_IDS`. | Verify `make help.detail` and confirm unsupported `04_nfs_sim.<os>.node1` targets are no longer generated. |
-| `app_ioc_runner` and `nfs_sim` need separate local and NFS source-root coverage. | Superseded (2026-07-04, 3ea5c20) | Historical: `playbooks/04_nfs_sim.yml` overrode `path_ioc_runner_root`/`path_ioc_runner_src` and enabled `ioc_runner_force_setup`; that block was removed by 3ea5c20 because become-root cannot operate inside the root_squash 0750 nfs_sim mount. `inventory/group_vars/all.yml` still keeps the default local `path_ioc_runner_root`; `roles/nfs_sim/defaults/main.yml` still keeps the simulation symlink separate. | New fate: local coverage stays in `03_epics`; NFS-side coverage relocated to the consumer's tar-push + suite flow (epics-ioc-runner 1.2.0 gate PASS). Do not re-add app_ioc_runner to `04_nfs_sim` — root-principal in-place validation is impossible under root_squash by design. |
-| NFS simulation paths carried a site-specific namespace. | Resolved in defaults | `roles/nfs_sim/defaults/main.yml` uses `nfs_sim_namespace: simulation` to build export and mount roots. | Keep site namespaces in overlays, not public defaults. |
+This document is the canonical work register for `ansible-provision`. It
+records project deliverables as `M.x` milestones and the verification required
+to close each milestone as `T.k` checks.
+
+**Out of scope:** detailed operating procedures remain in the linked runbooks,
+and EtherCAT execution remains in the owner's separate tracker.
+
+Mode: register-authoritative. This file is the local source of truth; linked
+GitHub issues must be reconciled to it after document review.
+
+## Format
+
+- `M.x` identifies a deliverable.
+- `T.k` identifies one verification required to close its containing `M.x`.
+  `T.k` numbering restarts within each milestone and is not an independent work
+  identifier.
+- `G.x` identifies an external condition or operator action.
+- `D.x` identifies a durable decision.
+- Status: ✅ Complete · 🔄 In progress · ⬜ Not started · ⚠️ Conditional ·
+  🔒 Blocked.
+- A milestone is Complete only when every required `T.k` has observed evidence.
+  A clean syntax check does not replace a live execution requirement.
+
+## Now / Next (2026-07-28)
+
+- In progress: none.
+- Ready now: none.
+- External wait: current-golden runtime checks (`G.1`), expanded EPICS-env build
+  hosts (`G.2`), and the first release gate (`G.4`).
+
+Next session entry point: when fresh variants are available, execute the `G.1`
+checks on the current Rocky 8 and Debian 13 goldens; preserve historical
+verification dates and do not convert unexecuted checks into pass results.
+
+Tally: 12 milestones - ✅ 6 · ⚠️ 5 · 🔒 1.
+
+## Milestone Summary
+
+| ID | Deliverable | Type | Status | Evidence or next action |
+| :-- | :-- | :-- | :-- | :-- |
+| M.1 | Base OS readiness | Milestone | ⚠️ | Run the Rocky 8 PVXS consumer link check on a golden produced with `026f859`. |
+| M.2 | Application role reliability | Milestone | ✅ | Both supported OS families passed the application role checks. |
+| M.3 | EPICS binary-distribution deployment | Milestone | ⚠️ | The 1.2.2 goldens baked successfully; independent shell and command checks remain. |
+| M.4 | EPICS-env source-build environment | Milestone | ⚠️ | The current Debian 13 layers passed; Rocky 8, the expanded matrix, and the `gz` flavor remain. |
+| M.5 | IOC runner deployment | Milestone | ⚠️ | Re-run IOC runner smoke and consumer checks on the 1.2.2 goldens. |
+| M.6 | NFS simulation | Milestone | ✅ | Rocky 8 and Debian 13 passed export, mount, ownership, and root-squash checks. |
+| M.7 | Test fixtures and bake provenance | Carry-forward | ⚠️ | Fixture accounts and manifest files are present; GitHub #6 acceptance is not fully closed. |
+| M.8 | Repository architecture and operating documentation | Carry-forward | ✅ | Public baseline, overlay boundary, playbook topology, and raw-task contract are documented. |
+| M.9 | Current status synchronization | Carry-forward | ✅ | Local documents and linked GitHub issue state were reconciled on 2026-07-28. |
+| M.10 | EtherCAT verification transfer | Carry-forward | ✅ (retired) | The owner moved live EtherCAT verification to separate tracking on 2026-07-05. |
+| M.11 | Version 1.0 release convention | External gate | 🔒 | Wait for the next consumer release-gate bake and User-run tag sequence. |
+| M.12 | Review decisions and conceptual-integrity closure | Carry-forward | ✅ | Review outcomes, decisions U1-U10, and finding dispositions are recorded. |
+
+## M.1 Base OS Readiness
+
+### Deliverable
+
+Rocky 8 and Debian 13 hosts provide the system packages, time service, sudo
+path behavior, and operator prerequisites required by the higher layers.
+
+| T | Verification | Status | Evidence or completion condition |
+| :-- | :-- | :-- | :-- |
+| T.1 | Apply `01_base` twice on Rocky 8. | ⚠️ | The 2026-07-28 golden bake applied the role after `026f859`; a recorded second run is required. |
+| T.2 | Apply `01_base` twice on Debian 13. | ✅ | `docs/STATUS.md` records applied and idempotent verification. |
+| T.3 | Verify `git`, `make`, `lsof`, `ss`, and `socat`. | ✅ | Verified on both supported OS families before the 2026-07-04 status snapshot. |
+| T.4 | Build a generated PVXS IOC on the current Rocky 8 golden. | ⚠️ | GitHub #8 proved the package fix on a running host; the complete role-to-golden path still needs one observed run. |
+| T.5 | Resolve `con` and `conserver` through the Rocky 8 sudo `secure_path`. | ✅ | Verified 2026-07-02; commit `c5b3fbe`. |
+| T.6 | Warn when no supported SSH public key exists. | ✅ | `bin/setup_host.bash` checks Ed25519 and RSA public-key paths. |
+
+## M.2 Application Role Reliability
+
+### Deliverable
+
+The `app_con`, `app_procserv`, and `app_conserver` roles fail on build errors
+and install usable binaries on both supported OS families.
+
+| T | Verification | Status | Evidence or completion condition |
+| :-- | :-- | :-- | :-- |
+| T.1 | Apply and re-run `app_con` on Rocky 8 and Debian 13. | ✅ | Role-by-OS verification is recorded in `docs/STATUS.md`. |
+| T.2 | Apply and re-run `app_procserv` on Rocky 8 and Debian 13. | ✅ | Role-by-OS verification is recorded in `docs/STATUS.md`. |
+| T.3 | Apply and re-run `app_conserver` on Rocky 8 and Debian 13. | ✅ | Role-by-OS verification is recorded in `docs/STATUS.md`. |
+| T.4 | Verify `con`, `procServ`, and `conserver` at their installed paths. | ✅ | Independent binary checks passed on both OS families. |
+| T.5 | Confirm application build or environment-script failures cannot report success. | ✅ | Commit `cc8e686`; targeted verification V1-V2 passed. |
+
+## M.3 EPICS Binary-Distribution Deployment
+
+### Deliverable
+
+`app_epics` installs the selected EPICS-env binary distribution and deploys a
+working login activation script on Rocky 8 and Debian 13.
+
+| T | Verification | Status | Evidence or completion condition |
+| :-- | :-- | :-- | :-- |
+| T.1 | Bake Rocky 8 with EPICS-env 1.2.2. | ✅ | Commit `1efca35` records a successful 2026-07-28 iocrunner golden bake. |
+| T.2 | Bake Debian 13 with EPICS-env 1.2.2. | ✅ | Commit `1efca35` records a successful 2026-07-28 iocrunner golden bake. |
+| T.3 | Source `/etc/profile.d/epics-env.sh` on fresh variants from both goldens. | ⚠️ | Requires `G.1`; the role's `test -f` passed during bake, but no independent login-shell result is recorded. |
+| T.4 | Run `caget -h` on both fresh variants. | ⚠️ | Requires `G.1`. |
+| T.5 | Match the installed EPICS-env, OS directory, and EPICS Base versions to inventory selectors. | ⚠️ | Requires `G.1`; expected values are 1.2.2, `rocky-8.10` or `debian-13`, and 7.0.10. |
+
+## M.4 EPICS-env Source-Build Environment
+
+### Deliverable
 
-## Milestone 1: Base OS Parity
+Dedicated build hosts compile EPICS-env and EPICS-env-support from source,
+install vendor libraries into the release tree, and validate the installed
+runtime without changing `site.yml`.
 
-### Objective
+| T | Verification | Status | Evidence or completion condition |
+| :-- | :-- | :-- | :-- |
+| T.1 | Build and re-run the current EPICS-env path on Rocky 8. | ⚠️ | Commit `9dfd5a1` verified the initial path; no Rocky 8 run is recorded after the vendor-install rewrite in `5c4f7fc`. |
+| T.2 | Build and re-run the current EPICS-env path on Debian 13. | ✅ | Commits `5c4f7fc` and `0148514`: the current layered tree passed `check_deps`. |
+| T.3 | Build vendor libraries inside the Debian 13 release tree with no absolute-path dependency findings. | ✅ | Commit `5c4f7fc`: `check_deps` reduced from 9 absolute paths to 0. |
+| T.4 | Build the EPICS-env-support layer on Debian 13. | ✅ | Commit `0148514`: full layered tree and `check_deps` exit 0. |
+| T.5 | Build the configured Rocky 10, Ubuntu 24, and Ubuntu 26 matrix hosts. | ⚠️ | Requires `G.2`; inventory entries exist but no observed run is recorded. |
+| T.6 | Build the `gz` flavor through both source-build roles. | ⚠️ | The path exists after `1732f77`; no observed run is recorded. |
+| T.7 | Re-run the support role and observe its installed-tree skip. | ⚠️ | No observed re-run is recorded after `0148514`. |
 
-Establish a reliable base OS layer for Rocky 8 and Debian 13.
+## M.5 IOC Runner Deployment
 
-### Acceptance Criteria
+### Deliverable
 
-- `01_base` applies successfully on Rocky 8 and Debian 13 hosts.
-- Required operator and runtime tools are present after provisioning:
-  `git`, `make`, `lsof`, `ss`, and `socat`.
-- NTP service is installed, configured, enabled, and running.
-- A second run is idempotent at the provisioning contract level.
-
-### Verification
-
-```bash
-make 01_base.rocky8.server.check
-make 01_base.debian13.server.check
-make 01_base.rocky8.server
-make 01_base.debian13.server
-```
-
-Post-apply verification:
-
-```bash
-ansible rocky8 -i inventory/testbed.ini -m raw -a "command -v lsof ss socat"
-ansible debian13 -i inventory/testbed.ini -m raw -a "command -v lsof ss socat"
-```
-
-## Milestone 2: Application Role Reliability
-
-### Objective
-
-Make the application build roles fail visibly and verify their installed
-artifacts.
+IOC runner hosts provide the installed runtime, source tree, inspection
+commands, and consumer lifecycle behavior required by `epics-ioc-runner`.
 
-### Acceptance Criteria
+| T | Verification | Status | Evidence or completion condition |
+| :-- | :-- | :-- | :-- |
+| T.1 | Report stamped metadata from `ioc-runner -V`. | ✅ | Verified on the prior accepted goldens. |
+| T.2 | Run `ioc-runner list -vv` and `ioc-runner inspect -h`. | ✅ | Verified on the prior accepted goldens. |
+| T.3 | Provide the source tree from the local source root during `03_epics`. | ✅ | The prior IOC runner deployment verification established the local path. |
+| T.4 | Exercise the NFS-side consumer path through tar-push and the consumer suite. | ✅ | The epics-ioc-runner 1.2.0 release gate passed on the accepted goldens. |
+| T.5 | Repeat the smoke and lifecycle checks on fresh EPICS-env 1.2.2 goldens. | ⚠️ | Requires `G.1`. |
 
-- `app_con`, `app_procserv`, and `app_conserver` fail on build or
-  install errors instead of reporting ok after a partial failure.
-- `con`, `procServ`, and `conserver` binaries are installed at the
-  expected paths.
-- The Rocky 8 `app_conserver` missing-binary defect is resolved.
-- Debian 13 application roles are applied and independently verified.
+## M.6 NFS Simulation
 
-### Verification
+### Deliverable
 
-```bash
-make 02_apps.rocky8.server.check
-make 02_apps.debian13.server.check
-make 02_apps.rocky8.server
-make 02_apps.debian13.server
-```
-
-Post-apply verification:
-
-```bash
-ansible all -i inventory/testbed.ini -m raw -a "command -v con procServ conserver"
-```
+The `nfs_sim` role provides a loopback NFS export and mount that reproduces
+the intended namespace, ownership, permissions, and root-squash boundary on
+both supported OS families.
 
-## Milestone 3: EPICS Environment Deployment
+| T | Verification | Status | Evidence or completion condition |
+| :-- | :-- | :-- | :-- |
+| T.1 | Apply `04_nfs_sim` on Rocky 8. | ✅ | Verified on `testbed-rocky8-iocrunner-server`. |
+| T.2 | Apply `04_nfs_sim` on Debian 13. | ✅ | Verified on `testbed-debian13-iocrunner-server`. |
+| T.3 | Verify export, mount, ownership, permissions, and service state. | ✅ | Recorded in `docs/STATUS.md`. |
+| T.4 | Verify the simulation owner can write and root-owned writes are denied. | ✅ | Recorded root-squash verification passed. |
+| T.5 | Keep local IOC runner validation in `03_epics` and NFS-side coverage in the consumer flow. | ✅ | Commit `3ea5c20`; review session `rs20260702_083212` accepted the boundary. |
 
-### Objective
-
-Install and validate the EPICS runtime environment on both supported OS
-families.
+## M.7 Test Fixtures and Bake Provenance
+
+### Deliverable
 
-### Acceptance Criteria
-
-- `03_epics` applies successfully on Rocky 8 and Debian 13 hosts.
-- `epics_os_dir` resolves to an upstream-supported directory on each OS.
-- `/etc/profile.d/epics-env.sh` sources successfully at login.
-- EPICS base version and environment version match inventory selectors.
-- Required EPICS commands are available in a login shell.
+The iocrunner golden bake installs the multi-user test fixtures, removes
+site-proxy state, and records image and installed-source identities.
 
-### Verification
+| T | Verification | Status | Evidence or completion condition |
+| :-- | :-- | :-- | :-- |
+| T.1 | Run `07_test_users.yml` after `04_nfs_sim.yml` in the bake. | ✅ | cloud-provision `bake_iocrunner_image.bash` runs it as Step 6/9. |
+| T.2 | Verify `opa` and `opb` in `ioc`, `obs` outside it, and linger for `usera` and `userb`. | ✅ | Fresh Rocky 8 and Debian 13 variants passed on 2026-07-05. |
+| T.3 | Verify no configured proxy state remains before flattening. | ✅ | The bake fails when its de-proxy scan finds a remnant. |
+| T.4 | Write `/etc/iocrunner-bake.manifest` and the image sidecar. | ✅ | In-image and sidecar manifests were verified during Phase C. |
+| T.5 | Record repository revisions, version selectors, base-image identity, and `pip3 freeze`. | ✅ | The bake header and role append operations provide these fields. |
+| T.6 | Make a dirty or untagged installed source visibly distinguishable in the manifest. | ⚠️ | GitHub #6 remains open; a commit hash alone does not record dirty state. |
 
-```bash
-make 03_epics.rocky8.server.check
-make 03_epics.debian13.server.check
-make 03_epics.rocky8.server
-make 03_epics.debian13.server
-```
+## M.8 Repository Architecture and Operating Documentation
+
+### Deliverable
+
+The documentation describes the public baseline, inventory and overlay
+boundaries, role topology, raw-task contract, and standalone workflows without
+claiming unverified runtime behavior.
 
-Post-apply verification:
-
-```bash
-ansible all -i inventory/testbed.ini -m raw -a "bash -lc 'source /etc/profile.d/epics-env.sh && caget -h'"
-```
-
-## Milestone 4: IOC Runner Deployment
-
-### Objective
-
-Provision IOC runner hosts with the runtime, source tree, and inspection
-dependencies required by `epics-ioc-runner`.
-
-### Acceptance Criteria
-
-- `ioc-runner` is installed at the expected path.
-- `ioc-runner -V` reports stamped build metadata, not `unreleased`.
-- The `epics-ioc-runner` source tree is available from the local source
-  root during `03_epics`.
-- The `epics-ioc-runner` source tree is available from the NFS-backed
-  simulation source root during `04_nfs_sim`.
-  *(Amended 2026-07-04: satisfied at acceptance time; the `04_nfs_sim`
-  source-root mechanism was later removed by 3ea5c20. NFS-side
-  coverage now lives in the consumer's tar-push + suite flow. Retained
-  as the historical basis of the Complete status.)*
-- `ioc-runner list -vv` and `ioc-runner inspect -h` run successfully.
-- Target-specific `ioc-runner inspect <ioc>` is covered by lifecycle
-  tests that create or install an IOC target.
-- Lifecycle tests that depend on inspect pass their assertions.
-
-### Verification
-
-```bash
-make 03_epics.rocky8.server
-make 03_epics.debian13.server
-```
-
-Post-apply verification:
-
-```bash
-ansible all -i inventory/testbed.ini -m raw -a "ioc-runner -V"
-ansible all -i inventory/testbed.ini -m raw -a "ioc-runner list -vv"
-ansible all -i inventory/testbed.ini -m raw -a "ioc-runner inspect -h"
-```
-
-## Milestone 5: NFS Simulation and Cross-OS Closure
-
-### Objective
-
-Validate the NFS simulation role and close the role-by-OS matrix.
-
-### Acceptance Criteria
-
-- `04_nfs_sim` applies successfully on the configured NFS simulation
-  hosts.
-- Export paths, ownership, permissions, and service state match the
-  documented architecture.
-- `app_ioc_runner` applies successfully from the NFS-backed simulation
-  source root without replacing the local source root.
-  *(Amended 2026-07-04: satisfied at acceptance time; this pass was
-  removed by 3ea5c20 — become-root cannot operate inside the
-  root_squash mount. Coverage relocated to the consumer flow. Retained
-  as the historical basis of the Complete status.)*
-- Rocky 8 and Debian 13 both complete `01_base`, `02_apps`, `03_epics`,
-  and `04_nfs_sim`.
-- `docs/STATUS.md` has no unverified, broken, or not-yet-applied
-  entries for supported role and OS combinations.
-- Open items in `docs/STATUS.md` are either resolved or moved to
-  `TODO.md` as explicitly deferred work.
-
-### Verification
-
-Default-inventory target topology:
-
-```bash
-make 04_nfs_sim.rocky8.server.check
-make 04_nfs_sim.debian13.server.check
-make 04_nfs_sim.rocky8.server
-make 04_nfs_sim.debian13.server
-make check
-```
-
-V7 completion evidence used the NFS/ioc-runner validation hosts from a
-temporary inventory:
-
-```bash
-ANSIBLE_LOCAL_TEMP=/tmp/ansible-local ANSIBLE_SSH_CONTROL_PATH_DIR=/tmp/ansible-cp ansible-playbook -i /tmp/ansible-provision-nfs-v7.ini -e @inventory/group_vars/all.yml playbooks/04_nfs_sim.yml
-```
-
-Validated hosts:
-
-| OS | Host | Address |
-|---|---|---|
-| Rocky 8 | `testbed-rocky8-iocrunner-server` | `192.168.122.150` |
-| Debian 13 | `testbed-debian13-iocrunner-server` | `192.168.122.50` |
-
-### Status
-
-Complete for Rocky 8 and Debian 13 ioc-runner server validation hosts.
-The NFS simulation uses the `simulation` namespace, keeps the local source
-root separate from `gitsrc-nfs-sim`, and verifies root_squash behavior.
-
-## EtherCAT Validation Harness
-
-This scope is **outside the M1-M5 completion model**. It validates the
-external `ethercat-env` buildout, not the core Linux provisioning baseline,
-and runs on a Debian 13 bake + live-VM topology rather than the
-`rocky8`/`debian13` server matrix.
-
-### Components
-
-- `ethercat_base` (`playbooks/05_ethercat_base.yml`, group `ethercat_build`):
-  bake-time prerequisite layer — build toolchain, running-kernel headers,
-  dkms, and the PREEMPT_RT kernel + headers installed but never made the boot
-  default (decision D2). Applied on the transient rtbase build host and
-  flattened into the `ethercat-debian13` golden image by cloud-provision's
-  `bake_ethercat_image.bash`.
-- `app_ethercat` (`playbooks/06_ethercat.yml`, group `ethercat_nodes`): live
-  R2-12 validation — clones `ethercat-env` from a controller-side git bundle
-  and runs its pre-reboot, RT boot-default change, reboot, post-reboot, and
-  removal target sequences for real, capturing per-target logs under
-  `/opt/ethercat-validation/logs`.
-
-### Status
-
-Code present, **unverified**. Verification is an external gate: it requires
-the baked `ethercat-debian13` golden image and a live VM run, and the GRUB
-menuentry parse is flagged best-effort pending its first real run. Acceptance
-of the underlying buildout belongs to `ethercat-env` (M16/D2).
+| T | Verification | Status | Evidence or completion condition |
+| :-- | :-- | :-- | :-- |
+| T.1 | Document public defaults and site override points. | ✅ | `README.md` and `docs/ARCHITECTURE.md`. |
+| T.2 | Document all-node and server-only Make target topology. | ✅ | `README.md`, `Makefile`, and `configure/CONFIG_SITE`. |
+| T.3 | Document the raw-task contract and no-Python boundary. | ✅ | `docs/RAW_STYLE.md`. |
+| T.4 | Document standalone control-host and local-clone modes. | ✅ | `docs/STANDALONE.md`. |
+| T.5 | Document the cloud-provision responsibility boundary. | ✅ | `docs/SEAM.md`. |
+
+## M.9 Current Status Synchronization
+
+### Deliverable
+
+The canonical register, verification matrix, architecture description, fixture
+document, and linked GitHub issues describe the same current state.
+
+| T | Verification | Status | Evidence or completion condition |
+| :-- | :-- | :-- | :-- |
+| T.1 | Register GitHub #7, GitHub #8, and commits after 2026-07-05. | ✅ | Recorded in this register and the verification matrix. |
+| T.2 | Register playbooks 08 and 09 and their source-build roles. | ✅ | Recorded in the register, architecture, and status documents. |
+| T.3 | Replace stale `test_users` activation-pending claims. | ✅ | Updated the README, architecture, seam, and fixture documents. |
+| T.4 | Align EPICS-env version documentation with 1.2.2. | ✅ | `docs/ARCHITECTURE.md` and `docs/STATUS.md` now match inventory. |
+| T.5 | Run documentation checks and inspect the complete diff. | ✅ | `git diff --check`, Make help output, M/T structure counts, and playbook syntax checks passed. |
+| T.6 | Reconcile GitHub #6 and any other linked issue state. | ✅ | GitHub #6 remains open with its current gap documented and is assigned to `Backlog`, `enhancement`, and `jeonghanlee`; GitHub #7 and #8 remain closed. |
+
+## M.10 EtherCAT Verification Transfer
+
+### Deliverable
+
+The repository retains the EtherCAT roles and playbooks while live validation
+ownership and acceptance remain in the owner's separate tracker.
+
+| T | Verification | Status | Evidence or completion condition |
+| :-- | :-- | :-- | :-- |
+| T.1 | Retain `ethercat_base`, `app_ethercat`, and playbooks 05 and 06. | ✅ | Components remain in the repository. |
+| T.2 | Record that the first bake and live R2-12 run are not accepted here. | ✅ | `docs/STATUS.md` and `docs/SEAM.md` mark the path unverified. |
+| T.3 | Transfer U10 and readiness follow-ups with the work. | ✅ | User direction recorded 2026-07-05 in commit `4a93bc3`. |
+
+## M.11 Version 1.0 Release Convention
+
+### Deliverable
+
+The first repository-family 1.0 release is cut from an accepted consumer
+release-gate bake, and the next cycle starts with a fresh version-scoped
+register.
+
+| T | Verification | Status | Evidence or completion condition |
+| :-- | :-- | :-- | :-- |
+| T.1 | Satisfy the agreed 1.0 scope: A, B1, B2, C1, and C3. | ✅ | The scope is recorded as satisfied. |
+| T.2 | Run the consumer release-gate bake selected for the tag point. | 🔒 | Requires `G.4`. |
+| T.3 | Create matching bare-number tags in the repository family. | 🔒 | User-run release sequence after T.2. |
+| T.4 | Preserve the released register and open the next version-scoped register. | 🔒 | Follows T.3. |
+
+## M.12 Review Decisions and Conceptual-Integrity Closure
+
+### Deliverable
+
+Repository-wide review decisions and deliberate keep, replace, retire, or
+relocate outcomes remain discoverable after the original review session.
+
+| T | Verification | Status | Evidence or completion condition |
+| :-- | :-- | :-- | :-- |
+| T.1 | Record the ten-lens repository review outcome. | ✅ | Review session `rs20260702_083212`; convergence `conv20260702_190045`. |
+| T.2 | Complete documentation truth synchronization. | ✅ | Phase A commits `2439e6c` and `bde669f`. |
+| T.3 | Complete the required raw-task code corrections. | ✅ | Phase B commits `cc8e686`, `13d2910`, `544c487`, and `4623e35`. |
+| T.4 | Complete the fixture, de-proxy, and provenance bake work. | ✅ | Phase C commits `9910fe2`, `abe9979`, and cloud-provision `a8bdbd4`. |
+| T.5 | Record the EtherCAT transfer. | ✅ | Phase D retired by commit `4a93bc3`. |
+| T.6 | Preserve decisions U1-U10. | ✅ | Decisions remain summarized below. |
+| T.7 | Preserve all conceptual-integrity finding dispositions. | ✅ | The four finding outcomes remain summarized below. |
+
+## External Gates
+
+| G | Condition | Blocks | Status | Evidence |
+| :-- | :-- | :-- | :-- | :-- |
+| G.1 | Fresh variants from the 2026-07-28 Rocky 8 and Debian 13 iocrunner goldens | M.1/T.4, M.3/T.3-T.5, M.5/T.5 | Open | No local libvirt guests were present during the 2026-07-28 document review. |
+| G.2 | Configured Rocky 8, Rocky 10, Ubuntu 24, and Ubuntu 26 EPICS-env build hosts | M.4/T.1, M.4/T.5-T.7 | Open | Inventory entries exist; no current observed run is recorded. |
+| G.3 | GitHub issue mutation authorization | M.9/T.6 | Closed | Authorization was provided and GitHub #6 was reconciled on 2026-07-28. |
+| G.4 | Owner-selected consumer release-gate bake and release authorization | M.11/T.2-T.4 | Open | No repository tag exists as of 2026-07-28. |
+
+## Decisions
+
+| D | Decision | Decided in |
+| :-- | :-- | :-- |
+| D.1 | `M.x` identifies a deliverable; `T.k` is verification inside that milestone and is not a separate work identifier. | User direction, 2026-07-28 |
+| D.2 | Keep `04_nfs_sim` free of `app_ioc_runner`; root-principal in-place validation is incompatible with the root-squash mount. | U7 amendment, commit `3ea5c20` |
+| D.3 | Keep EtherCAT roles in this repository and track live acceptance separately. | User direction, 2026-07-05 |
+| D.4 | Use GitHub issues for cross-repository or externally referenced work, synchronized after local document review. | U4 plus User direction, 2026-07-28 |
+| D.5 | Use bare-number release tags jointly with cloud-provision at an accepted consumer release gate. | U8, 2026-07-03 |
+
+## Conceptual-Integrity Findings
+
+| Finding | Disposition | Durable rule |
+| :-- | :-- | :-- |
+| Direct CLI examples conflicted with the no-Python contract. | Resolved | Keep public ad-hoc examples on `raw`; do not reintroduce `shell` or `setup`. |
+| Pattern targets treated every playbook as valid for every node. | Resolved | Generate server-only targets from `SERVER_NODE_IDS`. |
+| IOC runner local and NFS source-root checks were coupled. | Superseded | Keep local checks in `03_epics`; keep NFS-side checks in the consumer flow. |
+| NFS paths carried a site namespace. | Resolved | Keep the public default at `simulation`; use site overlays for site names. |
+
+## Previous ID Mapping
+
+| Previous ID or row | Current location |
+| :-- | :-- |
+| Milestone 1 | M.1 |
+| Milestone 2 | M.2 |
+| Milestone 3 | M.3 |
+| Milestone 4 | M.5 |
+| Milestone 5 | M.6 |
+| EtherCAT validation rows and Phase D | M.10 |
+| `test_users`, Phase C, and provenance rows | M.7 |
+| Review phases A and B | M.8 and M.12 |
+| U1-U10 decision row | M.12 and Decisions |
+| GitHub #7 source-build work | M.4 |
+| GitHub #8 Rocky 8 package fix | M.1/T.4 |
 
 ## Update Protocol
 
-When a milestone is completed, update this document and `docs/STATUS.md`
-in the same commit as the substantive change. The commit message should
-name the milestone and the role or OS boundary that changed.
-
-Additionally (extended 2026-07-04, review rs20260702_083212):
-
-- Any commit that changes a playbook's role composition, or that
-  invalidates a statement in this register, the `docs/STATUS.md`
-  matrix or notes, or a recorded acceptance criterion, updates those
-  documents in the same commit. The structure-mirroring locations are
-  README.md (Playbook Layers, Roles), `docs/ARCHITECTURE.md`
-  (sections 2, 3, 5), and `docs/SEAM.md` (consumer register).
-- When a GitHub issue changes state, the next documentation commit
-  reflects it in the affected register rows.
+- Update this register and `docs/STATUS.md` with the substantive change when a
+  role, supported OS boundary, version selector, or verification result changes.
+- Record only observed verification. A successful syntax check, clean bake, or
+  manual package experiment does not replace an unexecuted runtime path.
+- Reconcile linked GitHub issue state after local document review and under the
+  repository Git workflow authorization rules.
+- Preserve the `M.x` deliverable and `T.k` verification distinction.
