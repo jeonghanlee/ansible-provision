@@ -25,18 +25,20 @@ GitHub issues must be reconciled to it after document review.
 - A milestone is Complete only when every required `T.k` has observed evidence.
   A clean syntax check does not replace a live execution requirement.
 
-## Now / Next (2026-07-28)
+## Now / Next (2026-07-29)
 
-- In progress: none.
-- Ready now: correct and re-verify the manifest provenance gaps in
-  `M.7/T.5-T.6`.
+- In progress: `M.7/T.5-T.6`.
+- Ready now: P009 final real-path acceptance from clean pushed commits
+  `ansible-provision` `6ced253` and `cloud-provision` `c4ba7fd`.
 - External wait: Ubuntu 26 `iocStats` compatibility for `M.4/T.5` and the
   first release gate (`G.4`).
 
-Next session entry point: correct the `M.7/T.5-T.6` manifest provenance gaps,
-then rebake and compare both supported iocrunner images.
+Next session entry point: run the final production IOC runner bakes for Rocky 8
+and Debian 13 from the clean pushed commits, then boot fresh
+`rocky8-iocrunner.server` and `debian13-iocrunner.server` consumers and compare
+their manifests against the running systems.
 
-Tally: 12 milestones - ✅ 9 · ⚠️ 1 · 🔒 2.
+Tally: 12 milestones - ✅ 9 · 🔄 1 · 🔒 2.
 
 ## Milestone Summary
 
@@ -48,7 +50,7 @@ Tally: 12 milestones - ✅ 9 · ⚠️ 1 · 🔒 2.
 | M.4 | EPICS-env source-build environment | Milestone | 🔒 | Rocky 8, Rocky 10, and Ubuntu 24 passed; Ubuntu 26 is blocked by GCC 15 errors in `iocStats`. |
 | M.5 | IOC runner deployment | Milestone | ✅ | Both fresh variants passed installed-runner local and system lifecycle suites. |
 | M.6 | NFS simulation | Milestone | ✅ | Rocky 8 and Debian 13 passed export, mount, ownership, and root-squash checks. |
-| M.7 | Test fixtures and bake provenance | Carry-forward | ⚠️ | Fixture accounts and manifest files are present; fresh comparison exposed incomplete and mismatched provenance. |
+| M.7 | Test fixtures and bake provenance | Carry-forward | 🔄 | Provenance implementation and preliminary real-path review passed; final production bakes and fresh consumer comparison remain. |
 | M.8 | Repository architecture and operating documentation | Carry-forward | ✅ | Public baseline, overlay boundary, playbook topology, and raw-task contract are documented. |
 | M.9 | Current status synchronization | Carry-forward | ✅ | Local documents and linked GitHub issue state were reconciled on 2026-07-28. |
 | M.10 | EtherCAT verification transfer | Carry-forward | ✅ (retired) | The owner moved live EtherCAT verification to separate tracking on 2026-07-05. |
@@ -163,8 +165,8 @@ site-proxy state, and records image and installed-source identities.
 | T.2 | Verify `opa` and `opb` in `ioc`, `obs` outside it, and linger for `usera` and `userb`. | ✅ | Fresh Rocky 8 and Debian 13 variants passed on 2026-07-05. |
 | T.3 | Verify no configured proxy state remains before flattening. | ✅ | The bake fails when its de-proxy scan finds a remnant. |
 | T.4 | Write `/etc/iocrunner-bake.manifest` and the image sidecar. | ✅ | In-image and sidecar manifests were verified during Phase C. |
-| T.5 | Record repository revisions, version selectors, base-image identity, and `pip3 freeze`. | ⚠️ | Fresh comparison found no explicit base-image identity, incomplete Rocky 8 application entries, and an installed-runner identity mismatch on Debian 13. |
-| T.6 | Make a dirty or untagged installed source visibly distinguishable in the manifest. | ⚠️ | GitHub #6 remains open; a commit hash alone does not record dirty state. |
+| T.5 | Record repository revisions, version selectors, base-image identity, and `pip3 freeze`. | 🔄 | Implementation committed in `ansible-provision` `6ced253` and `cloud-provision` `c4ba7fd`; preliminary Rocky 8 and Debian 13 bakes passed. Final production bake comparison remains. |
+| T.6 | Make a dirty or untagged installed source visibly distinguishable in the manifest. | 🔄 | Manifest state now records `clean-tagged`, `clean-untagged`, or `dirty`; final production bake comparison remains before closing GitHub #6. |
 
 ## M.8 Repository Architecture and Operating Documentation
 
