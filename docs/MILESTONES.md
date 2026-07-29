@@ -36,7 +36,7 @@ GitHub issues must be reconciled to it after document review.
 Next session entry point: correct the `M.7/T.5-T.6` manifest provenance gaps,
 then rebake and compare both supported iocrunner images.
 
-Tally: 12 milestones - ✅ 9 · ⚠️ 1 · 🔒 2.
+Tally: 13 milestones - ✅ 9 · ⚠️ 1 · 🔒 2 · ⬜ 1.
 
 ## Milestone Summary
 
@@ -54,6 +54,7 @@ Tally: 12 milestones - ✅ 9 · ⚠️ 1 · 🔒 2.
 | M.10 | EtherCAT verification transfer | Carry-forward | ✅ (retired) | The owner moved live EtherCAT verification to separate tracking on 2026-07-05. |
 | M.11 | Version 1.0 release convention | External gate | 🔒 | Wait for the next consumer release-gate bake and User-run tag sequence. |
 | M.12 | Review decisions and conceptual-integrity closure | Carry-forward | ✅ | Review outcomes, decisions U1-U10, and finding dispositions are recorded. |
+| M.13 | Consumer-selectable ioc-runner version | Milestone | ⬜ | GitHub #9. The role clones the default branch, so the baked runner version is set by the bake date rather than by the caller. |
 
 ## M.1 Base OS Readiness
 
@@ -242,6 +243,23 @@ relocate outcomes remain discoverable after the original review session.
 | T.5 | Record the EtherCAT transfer. | ✅ | Phase D retired by commit `4a93bc3`. |
 | T.6 | Preserve decisions U1-U10. | ✅ | Decisions remain summarized below. |
 | T.7 | Preserve all conceptual-integrity finding dispositions. | ✅ | The four finding outcomes remain summarized below. |
+
+## M.13 Consumer-Selectable IOC Runner Version
+
+### Deliverable
+
+The `app_ioc_runner` role accepts the ioc-runner version to install, so a
+golden image carries a runner the caller chose rather than whatever the default
+branch pointed at on the bake date. The bake manifest records the requested ref
+beside the resolved commit, keeping the two distinguishable. Tracked as GitHub
+#9; the consuming side is `epics-ioc-runner` #130.
+
+| T | Verification | Status | Evidence or completion condition |
+| :-- | :-- | :-- | :-- |
+| T.1 | Bake with `ioc_runner_version` unset. | ⬜ | Image content matches current behavior; the default is a no-op. |
+| T.2 | Bake with `ioc_runner_version` set to a released tag on both supported OS families. | ⬜ | `ioc-runner -V` in each baked image reports that tag's commit. |
+| T.3 | Read `/etc/iocrunner-bake.manifest` after a pinned bake. | ⬜ | The requested ref and the resolved commit are both present and distinguishable. |
+| T.4 | Bake with a ref that does not exist. | ⬜ | The bake fails with a named error instead of falling back to the default branch. |
 
 ## External Gates
 
