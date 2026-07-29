@@ -25,46 +25,57 @@ register.
 
 | Role | Playbook | Rocky 8 | Debian 13 |
 | :-- | :-- | :-: | :-: |
-| `base_os` | `01_base` | ? | ✓ |
+| `base_os` | `01_base` | ✓ | ✓ |
 | `app_con` | `02_apps` | ✓ | ✓ |
 | `app_procserv` | `02_apps` | ✓ | ✓ |
 | `app_conserver` | `02_apps` | ✓ | ✓ |
-| `app_epics` | `03_epics` | ? | ? |
-| `app_ioc_runner` | `03_epics` | ? | ? |
+| `app_epics` | `03_epics` | ✓ | ✓ |
+| `app_ioc_runner` | `03_epics` | ✓ | ✓ |
 | `nfs_sim` | `04_nfs_sim` | ✓ | ✓ |
 | `test_users` | `07_test_users` | ✓ | ✓ |
 
 ### Current-Golden Boundary
 
-Commit `1efca35` records successful Rocky 8 and Debian 13 iocrunner golden
-bakes with EPICS-env 1.2.2 on 2026-07-28. The bake proves that the selected
-distribution path exists and that the provisioning stack completes. It does
-not replace the independent login-shell, EPICS command, IOC runner, or
-generated-IOC checks in `M.1`, `M.3`, and `M.5`; the affected current-image
-cells therefore remain `?`.
+Fresh Rocky 8 and Debian 13 server variants backed by the 2026-07-28
+iocrunner goldens passed the current-image checks:
 
-Rocky 8 includes `libevent-devel` after `026f859`. Installing that package on
-the prior running golden changed the same generated IOC from link failure to
-pass, but the complete role-to-current-golden-to-generated-IOC path has not
-been observed in one run.
+- Rocky 8 `01_base` repeated with `changed=0` and `failed=0`.
+- Both login activation scripts selected EPICS-env 1.2.2, the correct OS
+  directory, and EPICS Base 7.0.10; `caget -h` returned success.
+- ServiceTestIOC commit `91d42b2` declared `pvxsIoc pvxs` and built
+  successfully on Rocky 8, closing the role-to-golden link check for
+  `libevent-devel`.
+- The installed IOC runner passed local and system lifecycle suites on both
+  operating systems. Debian 13 local log-rotation steps were optional and
+  skipped because `/usr/sbin` was outside the unprivileged user path.
+
+The golden manifests still require provenance correction. Both identify the
+ansible-provision input as `0148514-dirty`; the Rocky 8 manifest omits several
+application-source entries, neither manifest identifies the base image
+explicitly, and the Debian 13 installed runner reports `86ad4f7-dirty` while
+the manifest records source commit `d6cdde4`.
 
 ## EPICS-env Source-Build Matrix
 
 | Host OS | `epics_env_build` | `epics_env_support_build` | Evidence |
 | :-- | :-: | :-: | :-- |
-| Rocky 8 | ? | — | Commit `9dfd5a1` verified the initial path; the current vendor-install rewrite has not run on Rocky 8. |
+| Rocky 8 | ✓ | ✓ | Fresh internal-flavor layers produced 64 entries; runtime gates and `check_deps.bash` passed, and both role re-runs reported `changed=0`. |
 | Debian 13 | ✓ | ✓ | Commits `9dfd5a1` and `0148514`: layered tree built; `check_deps` exit 0. |
-| Rocky 10 | — | — | Inventory entry only. |
-| Ubuntu 24 | — | — | Inventory entry only. |
-| Ubuntu 26 | — | — | Inventory entry only. |
+| Rocky 10 | ✓ | ✓ | Fresh `gz` layers produced 64 entries; all runtime gates and `check_deps.bash` passed. |
+| Ubuntu 24 | ✓ | ✓ | Fresh `gz` layers produced 64 entries; all runtime gates and `check_deps.bash` passed. |
+| Ubuntu 26 | ✗ | — | On 2026-07-28, `08_epics_env_build.yml` with `epics_env_build_flavor=gz` exited 2: GCC 15 rejected incompatible function pointers in `iocStats` `devIocStatsAnalog.c`. |
 
 | Build property | Status | Evidence |
 | :-- | :-: | :-- |
 | Vendor libraries installed inside the release tree | ✓ | Commit `5c4f7fc`; absolute-path dependency findings reduced from 9 to 0. |
 | `internal` flavor | ✓ | Used by the recorded core-host builds. |
-| `gz` flavor | — | Code path added by `1732f77`; no observed run recorded. |
+| `gz` flavor | ✓ | Rocky 10 and Ubuntu 24 passed both source-build roles with installed `-g0 -gz=zlib` flags. |
 | Base-layer repeated-run skip | ✓ | Commit `9dfd5a1`. |
-| Support-layer repeated-run skip | — | No observed repeated run recorded after `0148514`. |
+| Support-layer repeated-run skip | ✓ | Rocky 8 emitted `EPICS_ENV_SUPPORT_BUILD_SKIPPED` with `changed=0` and `failed=0`. |
+
+The Rocky 10 and Ubuntu 24 `gz` scans found `.debug_info` only in
+`MCoreUtils-1.2.3/lib/linux-x86_64/libmcoreutils.so`. This is informational
+under the verification policy and did not change the gate results.
 
 ## NFS Simulation Evidence
 
@@ -102,10 +113,8 @@ R2-12 result is recorded in this repository.
 
 | Milestone checks | Required observation |
 | :-- | :-- |
-| `M.1/T.1`, `M.1/T.4` | Re-run `01_base` and build a generated PVXS IOC on the current Rocky 8 golden. |
-| `M.3/T.3-T.5` | Source the login environment, run `caget -h`, and verify version paths on both current goldens. |
-| `M.4/T.1`, `M.4/T.5-T.7` | Run the current Rocky 8 path, additional build hosts, `gz` flavor, and support-layer repeated-run check. |
-| `M.5/T.5` | Run IOC runner smoke and consumer lifecycle checks on both current goldens. |
+| `M.4/T.5` | Re-run Ubuntu 26 layer 1 after `iocStats` supports GCC 15, then run layer 2 and all verification gates. |
+| `M.7/T.5-T.6` | Record complete base and source identities, distinguish source state, and reconcile the manifest with installed components. |
 
 ## Update Protocol
 
