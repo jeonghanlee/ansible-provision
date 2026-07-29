@@ -28,27 +28,27 @@ GitHub issues must be reconciled to it after document review.
 ## Now / Next (2026-07-28)
 
 - In progress: none.
-- Ready now: none.
-- External wait: current-golden runtime checks (`G.1`), expanded EPICS-env build
-  hosts (`G.2`), and the first release gate (`G.4`).
+- Ready now: correct and re-verify the manifest provenance gaps in
+  `M.7/T.5-T.6`.
+- External wait: Ubuntu 26 `iocStats` compatibility for `M.4/T.5` and the
+  first release gate (`G.4`).
 
-Next session entry point: when fresh variants are available, execute the `G.1`
-checks on the current Rocky 8 and Debian 13 goldens; preserve historical
-verification dates and do not convert unexecuted checks into pass results.
+Next session entry point: correct the `M.7/T.5-T.6` manifest provenance gaps,
+then rebake and compare both supported iocrunner images.
 
-Tally: 12 milestones - ✅ 6 · ⚠️ 5 · 🔒 1.
+Tally: 12 milestones - ✅ 9 · ⚠️ 1 · 🔒 2.
 
 ## Milestone Summary
 
 | ID | Deliverable | Type | Status | Evidence or next action |
 | :-- | :-- | :-- | :-- | :-- |
-| M.1 | Base OS readiness | Milestone | ⚠️ | Run the Rocky 8 PVXS consumer link check on a golden produced with `026f859`. |
+| M.1 | Base OS readiness | Milestone | ✅ | The current Rocky 8 golden passed an idempotent base-role re-run and a generated PVXS IOC build. |
 | M.2 | Application role reliability | Milestone | ✅ | Both supported OS families passed the application role checks. |
-| M.3 | EPICS binary-distribution deployment | Milestone | ⚠️ | The 1.2.2 goldens baked successfully; independent shell and command checks remain. |
-| M.4 | EPICS-env source-build environment | Milestone | ⚠️ | The current Debian 13 layers passed; Rocky 8, the expanded matrix, and the `gz` flavor remain. |
-| M.5 | IOC runner deployment | Milestone | ⚠️ | Re-run IOC runner smoke and consumer checks on the 1.2.2 goldens. |
+| M.3 | EPICS binary-distribution deployment | Milestone | ✅ | Both fresh variants passed login activation, `caget -h`, and version-path checks. |
+| M.4 | EPICS-env source-build environment | Milestone | 🔒 | Rocky 8, Rocky 10, and Ubuntu 24 passed; Ubuntu 26 is blocked by GCC 15 errors in `iocStats`. |
+| M.5 | IOC runner deployment | Milestone | ✅ | Both fresh variants passed installed-runner local and system lifecycle suites. |
 | M.6 | NFS simulation | Milestone | ✅ | Rocky 8 and Debian 13 passed export, mount, ownership, and root-squash checks. |
-| M.7 | Test fixtures and bake provenance | Carry-forward | ⚠️ | Fixture accounts and manifest files are present; GitHub #6 acceptance is not fully closed. |
+| M.7 | Test fixtures and bake provenance | Carry-forward | ⚠️ | Fixture accounts and manifest files are present; fresh comparison exposed incomplete and mismatched provenance. |
 | M.8 | Repository architecture and operating documentation | Carry-forward | ✅ | Public baseline, overlay boundary, playbook topology, and raw-task contract are documented. |
 | M.9 | Current status synchronization | Carry-forward | ✅ | Local documents and linked GitHub issue state were reconciled on 2026-07-28. |
 | M.10 | EtherCAT verification transfer | Carry-forward | ✅ (retired) | The owner moved live EtherCAT verification to separate tracking on 2026-07-05. |
@@ -64,10 +64,10 @@ path behavior, and operator prerequisites required by the higher layers.
 
 | T | Verification | Status | Evidence or completion condition |
 | :-- | :-- | :-- | :-- |
-| T.1 | Apply `01_base` twice on Rocky 8. | ⚠️ | The 2026-07-28 golden bake applied the role after `026f859`; a recorded second run is required. |
+| T.1 | Apply `01_base` twice on Rocky 8. | ✅ | The current golden received a second real `01_base` run: `changed=0`, `failed=0`. |
 | T.2 | Apply `01_base` twice on Debian 13. | ✅ | `docs/STATUS.md` records applied and idempotent verification. |
 | T.3 | Verify `git`, `make`, `lsof`, `ss`, and `socat`. | ✅ | Verified on both supported OS families before the 2026-07-04 status snapshot. |
-| T.4 | Build a generated PVXS IOC on the current Rocky 8 golden. | ⚠️ | GitHub #8 proved the package fix on a running host; the complete role-to-golden path still needs one observed run. |
+| T.4 | Build a generated PVXS IOC on the current Rocky 8 golden. | ✅ | ServiceTestIOC `91d42b2` declares `pvxsIoc pvxs`; the real build produced its executable with exit 0. |
 | T.5 | Resolve `con` and `conserver` through the Rocky 8 sudo `secure_path`. | ✅ | Verified 2026-07-02; commit `c5b3fbe`. |
 | T.6 | Warn when no supported SSH public key exists. | ✅ | `bin/setup_host.bash` checks Ed25519 and RSA public-key paths. |
 
@@ -97,9 +97,9 @@ working login activation script on Rocky 8 and Debian 13.
 | :-- | :-- | :-- | :-- |
 | T.1 | Bake Rocky 8 with EPICS-env 1.2.2. | ✅ | Commit `1efca35` records a successful 2026-07-28 iocrunner golden bake. |
 | T.2 | Bake Debian 13 with EPICS-env 1.2.2. | ✅ | Commit `1efca35` records a successful 2026-07-28 iocrunner golden bake. |
-| T.3 | Source `/etc/profile.d/epics-env.sh` on fresh variants from both goldens. | ⚠️ | Requires `G.1`; the role's `test -f` passed during bake, but no independent login-shell result is recorded. |
-| T.4 | Run `caget -h` on both fresh variants. | ⚠️ | Requires `G.1`. |
-| T.5 | Match the installed EPICS-env, OS directory, and EPICS Base versions to inventory selectors. | ⚠️ | Requires `G.1`; expected values are 1.2.2, `rocky-8.10` or `debian-13`, and 7.0.10. |
+| T.3 | Source `/etc/profile.d/epics-env.sh` on fresh variants from both goldens. | ✅ | Real login activation succeeded on both current variants. |
+| T.4 | Run `caget -h` on both fresh variants. | ✅ | The installed `caget` returned success on both current variants. |
+| T.5 | Match the installed EPICS-env, OS directory, and EPICS Base versions to inventory selectors. | ✅ | Observed paths are 1.2.2 with `rocky-8.10` or `debian-13`, and EPICS Base 7.0.10. |
 
 ## M.4 EPICS-env Source-Build Environment
 
@@ -111,13 +111,13 @@ runtime without changing `site.yml`.
 
 | T | Verification | Status | Evidence or completion condition |
 | :-- | :-- | :-- | :-- |
-| T.1 | Build and re-run the current EPICS-env path on Rocky 8. | ⚠️ | Commit `9dfd5a1` verified the initial path; no Rocky 8 run is recorded after the vendor-install rewrite in `5c4f7fc`. |
+| T.1 | Build and re-run the current EPICS-env path on Rocky 8. | ✅ | On 2026-07-28, fresh `08_epics_env_build.yml` and `09_epics_env_support_build.yml` runs produced a 64-entry tree; the layer-1 re-run had `changed=0`, and all gates including `check_deps.bash` passed. |
 | T.2 | Build and re-run the current EPICS-env path on Debian 13. | ✅ | Commits `5c4f7fc` and `0148514`: the current layered tree passed `check_deps`. |
 | T.3 | Build vendor libraries inside the Debian 13 release tree with no absolute-path dependency findings. | ✅ | Commit `5c4f7fc`: `check_deps` reduced from 9 absolute paths to 0. |
 | T.4 | Build the EPICS-env-support layer on Debian 13. | ✅ | Commit `0148514`: full layered tree and `check_deps` exit 0. |
-| T.5 | Build the configured Rocky 10, Ubuntu 24, and Ubuntu 26 matrix hosts. | ⚠️ | Requires `G.2`; inventory entries exist but no observed run is recorded. |
-| T.6 | Build the `gz` flavor through both source-build roles. | ⚠️ | The path exists after `1732f77`; no observed run is recorded. |
-| T.7 | Re-run the support role and observe its installed-tree skip. | ⚠️ | No observed re-run is recorded after `0148514`. |
+| T.5 | Build the configured Rocky 10, Ubuntu 24, and Ubuntu 26 matrix hosts. | 🔒 | On 2026-07-28, Rocky 10 and Ubuntu 24 passed both `gz` layers and all gates. Ubuntu 26 `08_epics_env_build.yml` exited 2 in `iocStats` because GCC 15 rejects incompatible device-support function pointers; layer 2 and the gates were not run after this failure. |
+| T.6 | Build the `gz` flavor through both source-build roles. | ✅ | Rocky 10 and Ubuntu 24 passed both source-build roles with installed `-g0 -gz=zlib` flags and `check_deps.bash` exit 0. `MCoreUtils` retained `.debug_info` on both hosts as an informational finding. |
+| T.7 | Re-run the support role and observe its installed-tree skip. | ✅ | The Rocky 8 support-role re-run emitted `EPICS_ENV_SUPPORT_BUILD_SKIPPED`, with `changed=0` and `failed=0`. |
 
 ## M.5 IOC Runner Deployment
 
@@ -132,7 +132,7 @@ commands, and consumer lifecycle behavior required by `epics-ioc-runner`.
 | T.2 | Run `ioc-runner list -vv` and `ioc-runner inspect -h`. | ✅ | Verified on the prior accepted goldens. |
 | T.3 | Provide the source tree from the local source root during `03_epics`. | ✅ | The prior IOC runner deployment verification established the local path. |
 | T.4 | Exercise the NFS-side consumer path through tar-push and the consumer suite. | ✅ | The epics-ioc-runner 1.2.0 release gate passed on the accepted goldens. |
-| T.5 | Repeat the smoke and lifecycle checks on fresh EPICS-env 1.2.2 goldens. | ⚠️ | Requires `G.1`. |
+| T.5 | Repeat the smoke and lifecycle checks on fresh EPICS-env 1.2.2 goldens. | ✅ | Rocky 8: local 75/75, infrastructure 40/40, system 77/77. Debian 13: local 63/63, infrastructure 41/41, system 77/77; optional local log rotation skipped because `/usr/sbin` was outside the user path. |
 
 ## M.6 NFS Simulation
 
@@ -163,7 +163,7 @@ site-proxy state, and records image and installed-source identities.
 | T.2 | Verify `opa` and `opb` in `ioc`, `obs` outside it, and linger for `usera` and `userb`. | ✅ | Fresh Rocky 8 and Debian 13 variants passed on 2026-07-05. |
 | T.3 | Verify no configured proxy state remains before flattening. | ✅ | The bake fails when its de-proxy scan finds a remnant. |
 | T.4 | Write `/etc/iocrunner-bake.manifest` and the image sidecar. | ✅ | In-image and sidecar manifests were verified during Phase C. |
-| T.5 | Record repository revisions, version selectors, base-image identity, and `pip3 freeze`. | ✅ | The bake header and role append operations provide these fields. |
+| T.5 | Record repository revisions, version selectors, base-image identity, and `pip3 freeze`. | ⚠️ | Fresh comparison found no explicit base-image identity, incomplete Rocky 8 application entries, and an installed-runner identity mismatch on Debian 13. |
 | T.6 | Make a dirty or untagged installed source visibly distinguishable in the manifest. | ⚠️ | GitHub #6 remains open; a commit hash alone does not record dirty state. |
 
 ## M.8 Repository Architecture and Operating Documentation
@@ -247,8 +247,8 @@ relocate outcomes remain discoverable after the original review session.
 
 | G | Condition | Blocks | Status | Evidence |
 | :-- | :-- | :-- | :-- | :-- |
-| G.1 | Fresh variants from the 2026-07-28 Rocky 8 and Debian 13 iocrunner goldens | M.1/T.4, M.3/T.3-T.5, M.5/T.5 | Open | No local libvirt guests were present during the 2026-07-28 document review. |
-| G.2 | Configured Rocky 8, Rocky 10, Ubuntu 24, and Ubuntu 26 EPICS-env build hosts | M.4/T.1, M.4/T.5-T.7 | Open | Inventory entries exist; no current observed run is recorded. |
+| G.1 | Fresh variants from the 2026-07-28 Rocky 8 and Debian 13 iocrunner goldens | M.1/T.4, M.3/T.3-T.5, M.5/T.5 | Closed | Fresh server variants backed by both current goldens passed the required runtime checks on 2026-07-28. |
+| G.2 | Configured Rocky 8, Rocky 10, Ubuntu 24, and Ubuntu 26 EPICS-env build hosts | M.4/T.1, M.4/T.5-T.7 | Closed | Fresh hosts were created and current source-build runs were observed on all four operating systems on 2026-07-28. |
 | G.3 | GitHub issue mutation authorization | M.9/T.6 | Closed | Authorization was provided and GitHub #6 was reconciled on 2026-07-28. |
 | G.4 | Owner-selected consumer release-gate bake and release authorization | M.11/T.2-T.4 | Open | No repository tag exists as of 2026-07-28. |
 
