@@ -13,12 +13,26 @@
       rm -rf "${src}"
       sudo -u "${owner}" git clone "${repo}" "${src}"
     fi
-    printf '%s %s %s %s\n' app_ioc_runner "${repo}" "$(git -C "${src}" rev-parse HEAD)" "$(date -u +%FT%TZ)" >> /etc/iocrunner-bake.manifest
-    if [ "{{ ioc_runner_force_setup | bool | ternary('true', 'false') }}" = "true" ] || [ ! -x "${bin}" ] || grep -Eq "${stamp_pattern}" "${bin}"; then
+    /usr/local/sbin/record-iocrunner-source app_ioc_runner "${repo}" "${src}"
+    source_hash="$(git -C "${src}" rev-parse --short=7 HEAD)"
+    source_dirty=""
+    if [ -n "$(git -C "${src}" status --porcelain=v1 --untracked-files=normal)" ]; then
+      source_dirty="-dirty"
+    fi
+    expected_identity="${source_hash}${source_dirty}"
+    installed_identity=""
+    if [ -x "${bin}" ]; then
+      installed_identity="$("${bin}" -V 2>/dev/null | sed -n '1s/.*(\([^)]*\)).*/\1/p')"
+    fi
+    if [ "{{ ioc_runner_force_setup | bool | ternary('true', 'false') }}" = "true" ] || \
+       [ ! -x "${bin}" ] || grep -Eq "${stamp_pattern}" "${bin}" || \
+       [ "${installed_identity}" != "${expected_identity}" ]; then
       SUDO_USER="${owner}" bash "${src}/bin/setup-system-infra.bash" --full
     fi
     test -x "${bin}"
     test -d "${src}/.git"
+    installed_identity="$("${bin}" -V | sed -n '1s/.*(\([^)]*\)).*/\1/p')"
+    test "${installed_identity}" = "${expected_identity}"
   changed_when: false
 
 - name: Create shared IOC deployment directory

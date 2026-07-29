@@ -5,6 +5,8 @@
   gather_facts: false
   become: yes
   roles:
+    - role: bake_provenance
+      tags: [always, bake_provenance]
     - role: app_con
       tags: [app, con]
     - role: app_procserv
