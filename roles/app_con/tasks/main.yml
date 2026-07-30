@@ -6,8 +6,8 @@
     if [ ! -f {{ path_con_bin }} ]; then
       rm -rf {{ path_con_src }}
       git clone {{ repo_con }} {{ path_con_src }}
+      /usr/local/sbin/record-iocrunner-source app_con {{ repo_con }} {{ path_con_src }}
       cd {{ path_con_src }} && make && make install DESTDIR=/usr/local
-      printf '%s %s %s %s\n' app_con {{ repo_con }} "$(git -C {{ path_con_src }} rev-parse HEAD)" "$(date -u +%FT%TZ)" >> /etc/iocrunner-bake.manifest
       rm -rf {{ path_con_src }}
     fi
     test -x {{ path_con_bin }}

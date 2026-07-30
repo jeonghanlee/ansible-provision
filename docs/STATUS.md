@@ -10,7 +10,7 @@ close them.
 `docs/ARCHITECTURE.md`; deferred work is indexed through the milestone
 register.
 
-**Last updated:** 2026-07-28
+**Last updated:** 2026-07-29
 
 ## Status Legend
 
@@ -49,11 +49,13 @@ iocrunner goldens passed the current-image checks:
   operating systems. Debian 13 local log-rotation steps were optional and
   skipped because `/usr/sbin` was outside the unprivileged user path.
 
-The golden manifests still require provenance correction. Both identify the
-ansible-provision input as `0148514-dirty`; the Rocky 8 manifest omits several
-application-source entries, neither manifest identifies the base image
-explicitly, and the Debian 13 installed runner reports `86ad4f7-dirty` while
-the manifest records source commit `d6cdde4`.
+The provenance correction has landed in pushed commits `ansible-provision`
+`6ced253` and `cloud-provision` `c4ba7fd`; documentation follow-up commits
+`ansible-provision` `d4f09c2` and `cloud-provision` `b972dc0` were the GitHub
+`origin/master` baseline for final acceptance. Production Rocky 8 and Debian 13
+IOC runner bakes passed, fresh consumers booted, VM manifests matched the
+sidecar manifests by SHA-256, and both consumers passed
+`validate_iocrunner_bake.bash`.
 
 ## EPICS-env Source-Build Matrix
 
@@ -114,7 +116,6 @@ R2-12 result is recorded in this repository.
 | Milestone checks | Required observation |
 | :-- | :-- |
 | `M.4/T.5` | Re-run Ubuntu 26 layer 1 after `iocStats` supports GCC 15, then run layer 2 and all verification gates. |
-| `M.7/T.5-T.6` | Record complete base and source identities, distinguish source state, and reconcile the manifest with installed components. |
 
 ## Update Protocol
 
