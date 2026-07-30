@@ -27,18 +27,17 @@ GitHub issues must be reconciled to it after document review.
 
 ## Now / Next (2026-07-29)
 
-- In progress: `M.7/T.5-T.6`.
-- Ready now: P009 final real-path acceptance from clean pushed commits
-  `ansible-provision` `6ced253` and `cloud-provision` `c4ba7fd`.
+- In progress: none.
+- Completed now: `M.7/T.5-T.6` final real-path acceptance from GitHub
+  `origin/master` commits `ansible-provision` `d4f09c2` and
+  `cloud-provision` `b972dc0`.
 - External wait: Ubuntu 26 `iocStats` compatibility for `M.4/T.5` and the
   first release gate (`G.4`).
 
-Next session entry point: run the final production IOC runner bakes for Rocky 8
-and Debian 13 from the clean pushed commits, then boot fresh
-`rocky8-iocrunner.server` and `debian13-iocrunner.server` consumers and compare
-their manifests against the running systems.
+Next session entry point: reconcile GitHub #6 after issue delegation, or resume
+`M.4/T.5` / `G.4` when their external gates change.
 
-Tally: 12 milestones - ✅ 9 · 🔄 1 · 🔒 2.
+Tally: 12 milestones - ✅ 10 · 🔒 2.
 
 ## Milestone Summary
 
@@ -50,7 +49,7 @@ Tally: 12 milestones - ✅ 9 · 🔄 1 · 🔒 2.
 | M.4 | EPICS-env source-build environment | Milestone | 🔒 | Rocky 8, Rocky 10, and Ubuntu 24 passed; Ubuntu 26 is blocked by GCC 15 errors in `iocStats`. |
 | M.5 | IOC runner deployment | Milestone | ✅ | Both fresh variants passed installed-runner local and system lifecycle suites. |
 | M.6 | NFS simulation | Milestone | ✅ | Rocky 8 and Debian 13 passed export, mount, ownership, and root-squash checks. |
-| M.7 | Test fixtures and bake provenance | Carry-forward | 🔄 | Provenance implementation and preliminary real-path review passed; final production bakes and fresh consumer comparison remain. |
+| M.7 | Test fixtures and bake provenance | Carry-forward | ✅ | Final production Rocky 8 and Debian 13 IOC runner bakes passed from GitHub `origin/master`; fresh consumers passed manifest and installed-component validation. |
 | M.8 | Repository architecture and operating documentation | Carry-forward | ✅ | Public baseline, overlay boundary, playbook topology, and raw-task contract are documented. |
 | M.9 | Current status synchronization | Carry-forward | ✅ | Local documents and linked GitHub issue state were reconciled on 2026-07-28. |
 | M.10 | EtherCAT verification transfer | Carry-forward | ✅ (retired) | The owner moved live EtherCAT verification to separate tracking on 2026-07-05. |
@@ -165,8 +164,8 @@ site-proxy state, and records image and installed-source identities.
 | T.2 | Verify `opa` and `opb` in `ioc`, `obs` outside it, and linger for `usera` and `userb`. | ✅ | Fresh Rocky 8 and Debian 13 variants passed on 2026-07-05. |
 | T.3 | Verify no configured proxy state remains before flattening. | ✅ | The bake fails when its de-proxy scan finds a remnant. |
 | T.4 | Write `/etc/iocrunner-bake.manifest` and the image sidecar. | ✅ | In-image and sidecar manifests were verified during Phase C. |
-| T.5 | Record repository revisions, version selectors, base-image identity, and `pip3 freeze`. | 🔄 | Implementation committed in `ansible-provision` `6ced253` and `cloud-provision` `c4ba7fd`; preliminary Rocky 8 and Debian 13 bakes passed. Final production bake comparison remains. |
-| T.6 | Make a dirty or untagged installed source visibly distinguishable in the manifest. | 🔄 | Manifest state now records `clean-tagged`, `clean-untagged`, or `dirty`; final production bake comparison remains before closing GitHub #6. |
+| T.5 | Record repository revisions, version selectors, base-image identity, and `pip3 freeze`. | ✅ | Final production Rocky 8 and Debian 13 bakes from GitHub `origin/master` recorded `ansible-provision` `d4f09c2`, `cloud-provision` `b972dc0`, EPICS-env `1.2.2`, EPICS base `7.0.10`, base-image SHA-256 values, and non-empty `pip3` records. |
+| T.6 | Make a dirty or untagged installed source visibly distinguishable in the manifest. | ✅ | Fresh `rocky8-iocrunner.server` and `debian13-iocrunner.server` consumers passed `validate_iocrunner_bake.bash`; retained source state records matched installed `ioc-runner -V`. GitHub #6 closure remains a separate issue-reconciliation action. |
 
 ## M.8 Repository Architecture and Operating Documentation
 

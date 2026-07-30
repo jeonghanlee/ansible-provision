@@ -50,10 +50,12 @@ iocrunner goldens passed the current-image checks:
   skipped because `/usr/sbin` was outside the unprivileged user path.
 
 The provenance correction has landed in pushed commits `ansible-provision`
-`6ced253` and `cloud-provision` `c4ba7fd`. Preliminary Rocky 8 and Debian 13
-bakes passed with complete manifest validation. Final production bakes and
-fresh consumer comparison remain before the current-golden boundary can be
-marked complete for `M.7/T.5-T.6`.
+`6ced253` and `cloud-provision` `c4ba7fd`; documentation follow-up commits
+`ansible-provision` `d4f09c2` and `cloud-provision` `b972dc0` were the GitHub
+`origin/master` baseline for final acceptance. Production Rocky 8 and Debian 13
+IOC runner bakes passed, fresh consumers booted, VM manifests matched the
+sidecar manifests by SHA-256, and both consumers passed
+`validate_iocrunner_bake.bash`.
 
 ## EPICS-env Source-Build Matrix
 
@@ -114,7 +116,6 @@ R2-12 result is recorded in this repository.
 | Milestone checks | Required observation |
 | :-- | :-- |
 | `M.4/T.5` | Re-run Ubuntu 26 layer 1 after `iocStats` supports GCC 15, then run layer 2 and all verification gates. |
-| `M.7/T.5-T.6` | Run final production IOC runner bakes from clean pushed commits, boot fresh consumers, and compare the manifests with installed components. |
 
 ## Update Protocol
 
