@@ -217,6 +217,7 @@ expect_success "clean untagged checkout records" \
     run_isolated "${ETC_DIR}" direct app_con https://github.com/jeonghanlee/con "${CHECKOUT}"
 expect_record "clean untagged state is exact" "${MANIFEST}" \
     '^app_con schema=1 repo=https://github.com/jeonghanlee/con commit=[0-9a-f]{40} state=clean-untagged tag=- recorded_at=.*Z$'
+expect_field_count "unchanged application record keeps six fields" app_con 6
 
 expect_success "IOC runner records without a requested ref" \
     run_isolated "${ETC_DIR}" direct app_ioc_runner https://github.com/jeonghanlee/epics-ioc-runner "${CHECKOUT}"
@@ -243,12 +244,18 @@ expect_success "clean tagged checkout records" \
     run_isolated "${ETC_DIR}" direct app_procserv https://github.com/jeonghanlee/procServ-env "${CHECKOUT}"
 expect_record "tag selection is deterministic" "${MANIFEST}" \
     '^app_procserv .* state=clean-tagged tag=alpha recorded_at=.*Z$'
+expect_field_count "tagged application record keeps six fields" app_procserv 6
 
 printf "%s\n" "dirty" >> "${CHECKOUT}/source.txt"
 expect_success "dirty checkout records" \
     run_isolated "${ETC_DIR}" direct app_conserver https://github.com/jeonghanlee/conserver-env "${CHECKOUT}"
 expect_record "dirty state takes precedence" "${MANIFEST}" \
     '^app_conserver .* state=dirty tag=- recorded_at=.*Z$'
+expect_field_count "dirty application record keeps six fields" app_conserver 6
+
+expect_success "EPICS application records" \
+    run_isolated "${ETC_DIR}" direct app_epics https://github.com/jeonghanlee/EPICS-env-distribution "${CHECKOUT}"
+expect_field_count "EPICS application record keeps six fields" app_epics 6
 
 expect_success "repeated recording succeeds" \
     run_isolated "${ETC_DIR}" direct app_con https://github.com/jeonghanlee/con "${CHECKOUT}"
