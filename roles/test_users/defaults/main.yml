@@ -1,7 +1,7 @@
 ---
 # roles/test_users/defaults/main.yml
-# Multi-user test fixture accounts for the epics-ioc-runner docs/testplan.md
-# scenarios.
+# Multi-user test fixture accounts for the epics-ioc-runner
+# docs/RELEASE_CYCLE_RUNBOOK.md scenarios.
 # Baked into the iocrunner golden (bake step 07_test_users, activated
 # 2026-07-05 — see docs/test_users_handoff.md); never imported by
 # site.yml. Goldens baked before the activation need per-run provisioning.

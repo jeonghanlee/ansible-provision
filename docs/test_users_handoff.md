@@ -6,7 +6,9 @@ This document defines the `test_users` fixture accounts, their bake-time
 placement, ordering, and verification.
 
 **Out of scope:** product IOC accounts are created by `app_ioc_runner`;
-consumer scenarios are defined in `epics-ioc-runner/docs/testplan.md`.
+consumer scenarios are defined in
+`epics-ioc-runner/docs/RELEASE_CYCLE_RUNBOOK.md`, which verifies these
+accounts as a precondition and never creates them.
 
 ## Purpose
 

@@ -1,8 +1,8 @@
 ---
 # roles/test_users/tasks/main.yml
 # Create the multi-user test fixture accounts (epics-ioc-runner
-# docs/testplan.md). Uses the nfs_sim raw style so it runs without Python
-# on the freshly booted bake VM.
+# docs/RELEASE_CYCLE_RUNBOOK.md). Uses the nfs_sim raw style so it runs
+# without Python on the freshly booted bake VM.
 
 - name: Verify the product ioc group exists (must run after app_ioc_runner)
   ansible.builtin.raw: getent group {{ test_users_ioc_group }}
