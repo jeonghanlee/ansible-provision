@@ -25,17 +25,19 @@ GitHub issues must be reconciled to it after document review.
 - A milestone is Complete only when every required `T.k` has observed evidence.
   A clean syntax check does not replace a live execution requirement.
 
-## Now / Next (2026-07-29)
+## Now / Next (2026-07-30)
 
 - In progress: none.
-- Completed now: `M.7/T.5-T.6` final real-path acceptance from GitHub
-  `origin/master` commits `ansible-provision` `d4f09c2` and
-  `cloud-provision` `b972dc0`.
+- Completed now: `M.7/T.5-T.6` with real-path evidence from
+  `ansible-provision` `d4f09c2` and `cloud-provision` `b972dc0`; completion
+  was recorded by `3070c0a`.
+- Ready now: `M.13`, registered by `9ad8bc7` and carried into the current
+  branch by merges `88759a1` and `cbbb2e7`.
 - External wait: Ubuntu 26 `iocStats` compatibility for `M.4/T.5` and the
   first release gate (`G.4`).
 
-Next session entry point: reconcile GitHub #6 after issue delegation, or resume
-`M.4/T.5` / `G.4` when their external gates change.
+Next session entry point: draft and review the `M.13` implementation and test
+plans for caller-selectable `ioc_runner_version` before changing role code.
 
 Tally: 13 milestones - ✅ 10 · 🔒 2 · ⬜ 1.
 
@@ -166,7 +168,7 @@ site-proxy state, and records image and installed-source identities.
 | T.3 | Verify no configured proxy state remains before flattening. | ✅ | The bake fails when its de-proxy scan finds a remnant. |
 | T.4 | Write `/etc/iocrunner-bake.manifest` and the image sidecar. | ✅ | In-image and sidecar manifests were verified during Phase C. |
 | T.5 | Record repository revisions, version selectors, base-image identity, and `pip3 freeze`. | ✅ | Final production Rocky 8 and Debian 13 bakes from GitHub `origin/master` recorded `ansible-provision` `d4f09c2`, `cloud-provision` `b972dc0`, EPICS-env `1.2.2`, EPICS base `7.0.10`, base-image SHA-256 values, and non-empty `pip3` records. |
-| T.6 | Make a dirty or untagged installed source visibly distinguishable in the manifest. | ✅ | Fresh `rocky8-iocrunner.server` and `debian13-iocrunner.server` consumers passed `validate_iocrunner_bake.bash`; retained source state records matched installed `ioc-runner -V`. GitHub #6 closure remains a separate issue-reconciliation action. |
+| T.6 | Make a dirty or untagged installed source visibly distinguishable in the manifest. | ✅ | Fresh `rocky8-iocrunner.server` and `debian13-iocrunner.server` consumers passed `validate_iocrunner_bake.bash`; retained source state records matched installed `ioc-runner -V`. GitHub #6 closed at 2026-07-29 18:35 PDT; the state was observed on 2026-07-30 with `gh issue view 6`. |
 
 ## M.8 Repository Architecture and Operating Documentation
 
@@ -198,7 +200,7 @@ document, and linked GitHub issues describe the same current state.
 | T.3 | Replace stale `test_users` activation-pending claims. | ✅ | Updated the README, architecture, seam, and fixture documents. |
 | T.4 | Align EPICS-env version documentation with 1.2.2. | ✅ | `docs/ARCHITECTURE.md` and `docs/STATUS.md` now match inventory. |
 | T.5 | Run documentation checks and inspect the complete diff. | ✅ | `git diff --check`, Make help output, M/T structure counts, and playbook syntax checks passed. |
-| T.6 | Reconcile GitHub #6 and any other linked issue state. | ✅ | GitHub #6 remains open with its current gap documented and is assigned to `Backlog`, `enhancement`, and `jeonghanlee`; GitHub #7 and #8 remain closed. |
+| T.6 | Reconcile GitHub #6 and any other linked issue state. | ✅ | GitHub #6 is closed, GitHub #7 is open, and GitHub #8 is closed. These states were observed on 2026-07-31 with `gh issue view 6`, `gh issue view 7`, and `gh issue view 8`. |
 
 ## M.10 EtherCAT Verification Transfer
 
