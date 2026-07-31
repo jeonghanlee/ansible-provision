@@ -72,9 +72,10 @@ path_epics_local: "/opt/epics"
 epics_env_version:  "1.2.2"
 epics_base_version: "7.0.10"
 
-# Optional epics-ioc-runner version selector. Empty selects the repository
-# default branch (current behavior). A tag, branch, or commit pins the baked
-# runner; an invalid value fails the bake by name.
+# Optional epics-ioc-runner version selector. A tag, branch, or commit pins the
+# baked runner; an invalid value fails the bake by name. Empty selects the
+# repository default branch on a fresh host, leaves an existing checkout alone,
+# and is rejected on a host already pinned by an earlier selector.
 ioc_runner_version: ""
 
 # Testbed IOC management group members. Override in site overlays.
