@@ -251,11 +251,36 @@ relocate outcomes remain discoverable after the original review session.
 
 ### Deliverable
 
-The `app_ioc_runner` role accepts the ioc-runner version to install, so a
-golden image carries a runner the caller chose rather than whatever the default
-branch pointed at on the bake date. The bake manifest records the requested ref
-beside the resolved commit, keeping the two distinguishable. Tracked as GitHub
-#9; the consuming side is `epics-ioc-runner` #130.
+The target state for M.13 is that the `app_ioc_runner` role accepts an
+`ioc_runner_version` selector, so a golden image carries a runner the caller
+chose rather than whatever the default branch pointed at on the bake date. The
+bake manifest records the requested ref beside the resolved commit, keeping the
+two distinguishable. Completing this milestone requires coordinated changes in
+`ansible-provision` and the `cloud-provision` bake caller and validator; an
+Ansible-only change cannot pass the consumer bake validation. Tracked as GitHub
+#9; the consuming release-gate work is `epics-ioc-runner` #130.
+
+### Implementation Boundary And Plan
+
+Plan status: draft. No implementation authorization is recorded here.
+
+1. In `ansible-provision`, add the optional selector to inventory and make
+   `app_ioc_runner` resolve it to one commit before installation. An unset
+   selector remains a no-op; an invalid selector fails by name.
+2. In `ansible-provision`, extend the IOC runner provenance record with the
+   requested selector while retaining schema-1 compatibility for existing
+   application records.
+3. In `cloud-provision`, pass the selector through the bake command and update
+   the manifest validator so the requested selector and resolved commit are
+   accepted and checked as one record.
+4. Run the repository recorder and validator tests, then execute the real
+   Rocky 8 and Debian 13 bake matrix for unset, released-tag, and nonexistent
+   selector cases. Close M.13 only after both repositories and the consumer
+   release-gate evidence agree.
+
+Out of scope: changing the default behavior when the selector is unset,
+changing `epics-ioc-runner` itself, or marking any verification complete before
+the real bake path runs.
 
 | T | Verification | Status | Evidence or completion condition |
 | :-- | :-- | :-- | :-- |
