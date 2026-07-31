@@ -7,13 +7,29 @@
     src="{{ path_ioc_runner_src }}"
     repo="{{ repo_ioc_runner }}"
     bin="{{ path_ioc_runner_bin }}"
+    ref="{{ ioc_runner_version | default('', true) }}"
     stamp_pattern='RUNNER_GIT_HASH="unknown"|RUNNER_COMMIT_DATE="unknown"|RUNNER_COMMIT_DATE="unreleased"'
     install -d -o "${owner}" -g "${owner}" -m 0755 "$(dirname "${src}")"
     if [ ! -d "${src}/.git" ]; then
       rm -rf "${src}"
       sudo -u "${owner}" git clone "${repo}" "${src}"
+    elif [ -n "${ref}" ]; then
+      sudo -u "${owner}" git -C "${src}" fetch --tags --force origin
     fi
-    /usr/local/sbin/record-iocrunner-source app_ioc_runner "${repo}" "${src}"
+    if [ -n "${ref}" ]; then
+      if sudo -u "${owner}" git -C "${src}" rev-parse -q --verify "refs/tags/${ref}^{commit}" >/dev/null; then
+        target="refs/tags/${ref}"
+      elif sudo -u "${owner}" git -C "${src}" rev-parse -q --verify "refs/remotes/origin/${ref}^{commit}" >/dev/null; then
+        target="refs/remotes/origin/${ref}"
+      elif printf '%s' "${ref}" | grep -Eq '^[0-9a-f]{7,40}$' && sudo -u "${owner}" git -C "${src}" rev-parse -q --verify "${ref}^{commit}" >/dev/null; then
+        target="${ref}"
+      else
+        echo "app_ioc_runner: requested ioc_runner_version not found: ${ref}" >&2
+        exit 1
+      fi
+      sudo -u "${owner}" git -C "${src}" checkout --force --detach "${target}"
+    fi
+    /usr/local/sbin/record-iocrunner-source app_ioc_runner "${repo}" "${src}" ${ref:+"${ref}"}
     source_hash="$(git -C "${src}" rev-parse --short=7 HEAD)"
     source_dirty=""
     if [ -n "$(git -C "${src}" status --porcelain=v1 --untracked-files=normal)" ]; then

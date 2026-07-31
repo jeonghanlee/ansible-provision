@@ -74,6 +74,8 @@ function validate_manifest {
     local line_number=0
     local schema_count=0
     local key
+    local tail_value
+    local requested_value
 
     [[ ! -L "${MANIFEST}" ]] || die "manifest must not be a symbolic link"
     [[ -f "${MANIFEST}" ]] || die "manifest must be a regular file"
@@ -106,9 +108,23 @@ function validate_manifest {
                 [[ "${line}" == base_image\ schema=1\ name=*\ sha256=* ]] \
                     || die "base image record is malformed"
                 ;;
-            app_con|app_procserv|app_conserver|app_epics|app_ioc_runner)
+            app_con|app_procserv|app_conserver|app_epics)
                 [[ "${line}" == "${key} schema=1 repo="*" commit="*" state="*" tag="*" recorded_at="* ]] \
                     || die "application record is malformed at line ${line_number}"
+                tail_value="${line#* recorded_at=}"
+                [[ "${tail_value}" != *[[:space:]]* ]] \
+                    || die "application record has extra fields at line ${line_number}"
+                ;;
+            app_ioc_runner)
+                [[ "${line}" == "${key} schema=1 repo="*" commit="*" state="*" tag="*" recorded_at="* ]] \
+                    || die "application record is malformed at line ${line_number}"
+                tail_value="${line#* recorded_at=}"
+                if [[ "${tail_value}" == *[[:space:]]* ]]; then
+                    requested_value="${tail_value#* }"
+                    [[ "${requested_value}" == requested=?* \
+                        && "${requested_value}" != *[[:space:]]* ]] \
+                        || die "application record has extra fields at line ${line_number}"
+                fi
                 ;;
             pip3)
                 [[ "${line}" == "pip3 "* ]] \
@@ -128,11 +144,13 @@ trap cleanup EXIT
 trap 'exit 1' HUP INT TERM
 
 [[ "${EUID}" == "0" ]] || die "root privileges are required"
-[[ "$#" == "3" ]] || die "usage: record-iocrunner-source <app_name> <repo> <checkout>"
+[[ "$#" == "3" || "$#" == "4" ]] \
+    || die "usage: record-iocrunner-source <app_name> <repo> <checkout> [requested_ref]"
 
 readonly APP_NAME="$1"
 readonly REPO_URL="$2"
 readonly CHECKOUT="$3"
+readonly REQUESTED_REF="${4:-}"
 
 case "${APP_NAME}" in
     app_con|app_procserv|app_conserver|app_epics|app_ioc_runner) ;;
@@ -141,6 +159,14 @@ esac
 
 validate_record_value "repository URL" "${REPO_URL}"
 validate_record_value "checkout path" "${CHECKOUT}"
+
+# The requested ref records the caller's version selector beside the resolved
+# commit; only the IOC runner carries one.
+if [[ "$#" == "4" ]]; then
+    [[ "${APP_NAME}" == "app_ioc_runner" ]] \
+        || die "requested ref is only valid for app_ioc_runner: ${APP_NAME}"
+    validate_record_value "requested ref" "${REQUESTED_REF}"
+fi
 
 for command_name in awk chown chmod date git mktemp mv rm sort stat; do
     require_command "${command_name}"
@@ -184,9 +210,13 @@ TARGET_MODE="$(/usr/bin/stat -Lc '%a' -- "${MANIFEST}")"
 TEMP_FILE="$(/usr/bin/mktemp "${MANIFEST%/*}/.iocrunner-bake.manifest.tmp.XXXXXX")"
 
 /usr/bin/awk -v app="${APP_NAME}" '$1 != app {print}' "${MANIFEST}" > "${TEMP_FILE}"
-printf "%s schema=1 repo=%s commit=%s state=%s tag=%s recorded_at=%s\n" \
+printf "%s schema=1 repo=%s commit=%s state=%s tag=%s recorded_at=%s" \
     "${APP_NAME}" "${REPO_URL}" "${COMMIT}" "${STATE}" "${TAG}" "${RECORDED_AT}" \
     >> "${TEMP_FILE}"
+if [[ -n "${REQUESTED_REF}" ]]; then
+    printf " requested=%s" "${REQUESTED_REF}" >> "${TEMP_FILE}"
+fi
+printf "\n" >> "${TEMP_FILE}"
 
 /usr/bin/chown 0:0 "${TEMP_FILE}"
 /usr/bin/chmod "${TARGET_MODE}" "${TEMP_FILE}"

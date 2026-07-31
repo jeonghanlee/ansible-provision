@@ -114,6 +114,20 @@ function expect_record {
     fi
 }
 
+function expect_field_count {
+    local name="$1"
+    local app="$2"
+    local expected="$3"
+    local observed
+
+    observed="$(awk -v app="${app}" '$1 == app {print NF - 1}' "${MANIFEST}")"
+    if [[ "${observed}" == "${expected}" ]]; then
+        record_pass "${name}"
+    else
+        record_fail "${name}" "expected ${expected} fields, observed ${observed}"
+    fi
+}
+
 function test_interrupted_write {
     local etc_dir="$1"
     local manifest="${etc_dir}/iocrunner-bake.manifest"
@@ -204,6 +218,25 @@ expect_success "clean untagged checkout records" \
 expect_record "clean untagged state is exact" "${MANIFEST}" \
     '^app_con schema=1 repo=https://github.com/jeonghanlee/con commit=[0-9a-f]{40} state=clean-untagged tag=- recorded_at=.*Z$'
 
+expect_success "IOC runner records without a requested ref" \
+    run_isolated "${ETC_DIR}" direct app_ioc_runner https://github.com/jeonghanlee/epics-ioc-runner "${CHECKOUT}"
+expect_record "unselected IOC runner record omits the requested field" "${MANIFEST}" \
+    '^app_ioc_runner schema=1 repo=https://github.com/jeonghanlee/epics-ioc-runner commit=[0-9a-f]{40} state=clean-untagged tag=- recorded_at=[^ ]*Z$'
+expect_field_count "unselected IOC runner record keeps six fields" app_ioc_runner 6
+
+expect_success "IOC runner records a requested ref" \
+    run_isolated "${ETC_DIR}" direct app_ioc_runner https://github.com/jeonghanlee/epics-ioc-runner "${CHECKOUT}" release-1.2.0
+expect_record "selected IOC runner record carries the requested field" "${MANIFEST}" \
+    '^app_ioc_runner schema=1 repo=https://github.com/jeonghanlee/epics-ioc-runner commit=[0-9a-f]{40} state=clean-untagged tag=- recorded_at=[^ ]*Z requested=release-1.2.0$'
+expect_field_count "selected IOC runner record adds exactly one field" app_ioc_runner 7
+
+expect_failure "requested ref on another application is rejected" \
+    run_isolated "${ETC_DIR}" direct app_con https://github.com/jeonghanlee/con "${CHECKOUT}" release-1.2.0
+expect_failure "empty requested ref is rejected" \
+    run_isolated "${ETC_DIR}" direct app_ioc_runner https://github.com/jeonghanlee/epics-ioc-runner "${CHECKOUT}" ""
+expect_failure "whitespace requested ref is rejected" \
+    run_isolated "${ETC_DIR}" direct app_ioc_runner https://github.com/jeonghanlee/epics-ioc-runner "${CHECKOUT}" "release 1.2.0"
+
 git -C "${CHECKOUT}" tag zeta
 git -C "${CHECKOUT}" tag alpha
 expect_success "clean tagged checkout records" \
@@ -226,6 +259,27 @@ else
 fi
 
 cp "${MANIFEST}" "${WORKSPACE}/valid.manifest"
+
+sed -i 's|^app_con .*$|& requested=release-1.2.0|' "${MANIFEST}"
+expect_failure "requested field on another application record is rejected" \
+    run_isolated "${ETC_DIR}" direct app_con https://github.com/jeonghanlee/con "${CHECKOUT}"
+cp "${WORKSPACE}/valid.manifest" "${MANIFEST}"
+
+sed -i 's|^app_ioc_runner .*$|& unexpected=value|' "${MANIFEST}"
+expect_failure "unknown extra field on the IOC runner record is rejected" \
+    run_isolated "${ETC_DIR}" direct app_ioc_runner https://github.com/jeonghanlee/epics-ioc-runner "${CHECKOUT}"
+cp "${WORKSPACE}/valid.manifest" "${MANIFEST}"
+
+sed -i 's|^app_con .*$|& recorded_at=2026-07-29T00:00:00Z|' "${MANIFEST}"
+expect_failure "repeated timestamp field cannot hide extra fields" \
+    run_isolated "${ETC_DIR}" direct app_con https://github.com/jeonghanlee/con "${CHECKOUT}"
+cp "${WORKSPACE}/valid.manifest" "${MANIFEST}"
+
+sed -i 's| requested=|  requested=|' "${MANIFEST}"
+expect_failure "misaligned requested field separator is rejected" \
+    run_isolated "${ETC_DIR}" direct app_ioc_runner https://github.com/jeonghanlee/epics-ioc-runner "${CHECKOUT}"
+cp "${WORKSPACE}/valid.manifest" "${MANIFEST}"
+
 printf "%s\n" "bad header" > "${MANIFEST}"
 expect_failure "malformed header is rejected" \
     run_isolated "${ETC_DIR}" direct app_con https://github.com/jeonghanlee/con "${CHECKOUT}"
