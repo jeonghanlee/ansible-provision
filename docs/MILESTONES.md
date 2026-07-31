@@ -291,6 +291,39 @@ application-record shape glob, was examined on 2026-07-31 and deferred by owner
 decision; it predates this milestone and is unchanged by `75f16c3` and
 `ca2a9de`.
 
+### Test Plan
+
+`T.1` and `T.4` are runnable now. `T.2` and `T.3` wait for `G.5`. All three bake
+checks use the `cloud-provision` entry point, which defaults to a sibling
+`../ansible-provision` and takes `-a <dir>` when the checkouts sit elsewhere.
+
+`T.1` runs on both operating systems with `ioc_runner_version` left empty, so
+no inventory change is needed:
+
+    bash cloud-provision/bin/bake_iocrunner_image.bash -o rocky8
+    bash cloud-provision/bin/bake_iocrunner_image.bash -o debian13
+
+Each bake must pass all ten steps, including the in-image validation at step 8.
+Step 9 prints the published manifest sidecar; read the runner record from it:
+
+    awk '$1 == "app_ioc_runner" {print NF - 1}' <sidecar path>
+
+`T.1` passes when that count is 6, the record carries no `requested=` field, and
+the four other application records are unchanged.
+
+`T.4` runs on one operating system, because the failure is in the role and is
+independent of the target OS. Set `ioc_runner_version` in
+`inventory/group_vars/all.yml` to a ref that does not exist, run one bake, and
+require that step 4 stops with
+`app_ioc_runner: requested ioc_runner_version not found: <ref>`, that no image
+is published, and that no fallback to the default branch occurs. Restore the
+inventory file afterwards; it is tracked, and the probe value must not be
+committed.
+
+Do not bake with a ref that does exist until `G.5` closes. The recorder writes
+the `requested` field and the current `cloud-provision` validator rejects it, so
+the bake fails at step 8 for a reason unrelated to the selector.
+
 | T | Verification | Status | Evidence or completion condition |
 | :-- | :-- | :-- | :-- |
 | T.1 | Bake with `ioc_runner_version` unset. | ⬜ | Image content matches current behavior; the default is a no-op. Requires an owner-run bake. |
