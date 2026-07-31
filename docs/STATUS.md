@@ -10,7 +10,7 @@ close them.
 `docs/ARCHITECTURE.md`; deferred work is indexed through the milestone
 register.
 
-**Last updated:** 2026-07-29
+**Last updated:** 2026-07-31
 
 ## Status Legend
 
@@ -99,6 +99,25 @@ Fresh Rocky 8 and Debian 13 variants from the 2026-07-05 goldens verified:
 - `usera` and `userb` have systemd linger enabled.
 - The fixture survives a clean reprovision from each golden.
 
+## IOC Runner Version Selector
+
+The optional `ioc_runner_version` inventory selector is implemented in
+`app_ioc_runner`, and the provenance record carries the requested ref beside
+the resolved commit. Two local suites ran on 2026-07-31 at `ca2a9de`:
+
+- `tests/check-ioc-runner-version-selector.bash`: 22/22. The suite extracts the
+  deployed role shell body and runs it against Git fixtures, covering the unset
+  no-op, tag, branch, and commit selection, tag precedence over a same-named
+  branch, and by-name failure for an unknown ref, a ref deleted upstream, an
+  unreadable HEAD, and a cleared selector on an already-pinned checkout.
+- `tests/check-bake-provenance-recorder.bash`: 35/35, covering the unset
+  six-field application record, the selected seven-field record, and the
+  rejected malformed forms.
+
+No bake has run with a selector set. Keep `ioc_runner_version` empty in real
+bakes until `cloud-provision` accepts the `requested` field; see `G.5` in
+`docs/MILESTONES.md`.
+
 ## EtherCAT Validation
 
 EtherCAT is a separate Debian 13 bake and live-VM validation path.
@@ -116,6 +135,8 @@ R2-12 result is recorded in this repository.
 | Milestone checks | Required observation |
 | :-- | :-- |
 | `M.4/T.5` | Re-run Ubuntu 26 layer 1 after `iocStats` supports GCC 15, then run layer 2 and all verification gates. |
+| `M.13/T.1`, `M.13/T.4` | Run the Rocky 8 and Debian 13 bakes with `ioc_runner_version` unset and with a nonexistent ref. |
+| `M.13/T.2`, `M.13/T.3` | After `G.5`, bake with a released tag on both operating systems and read the resulting manifest record. |
 
 ## Update Protocol
 
