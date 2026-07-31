@@ -308,7 +308,7 @@ decision; it predates this milestone and is unchanged by `75f16c3` and
 | G.2 | Configured Rocky 8, Rocky 10, Ubuntu 24, and Ubuntu 26 EPICS-env build hosts | M.4/T.1, M.4/T.5-T.7 | Closed | Fresh hosts were created and current source-build runs were observed on all four operating systems on 2026-07-28. |
 | G.3 | GitHub issue mutation authorization | M.9/T.6 | Closed | Authorization was provided and GitHub #6 was reconciled on 2026-07-28. |
 | G.4 | Owner-selected consumer release-gate bake and release authorization | M.11/T.2-T.4 | Open | No repository tag exists as of 2026-07-28. |
-| G.5 | `cloud-provision` accepts the `requested` application-record field and passes the selector through the bake command | M.13/T.2-T.3 | Open | `bin/validate_iocrunner_bake.bash` rejects any extra application-record field, and no bake invocation passes a selector, as read on 2026-07-31. |
+| G.5 | `cloud-provision` accepts the `requested` application-record field and passes the selector through the bake command | M.13/T.2-T.3 | Open | Tracked as cloud-provision#26, filed 2026-07-31. `bin/validate_iocrunner_bake.bash` rejects any extra application-record field, and no bake invocation passes a selector, as read on 2026-07-31. |
 
 ## Decisions
 
