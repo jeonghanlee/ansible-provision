@@ -114,9 +114,10 @@ the resolved commit. Two local suites ran on 2026-07-31 at `ca2a9de`:
   six-field application record, the selected seven-field record, and the
   rejected malformed forms.
 
-No bake has run with a selector set. Keep `ioc_runner_version` empty in real
-bakes until `cloud-provision` accepts the `requested` field; see `G.5` in
-`docs/MILESTONES.md`.
+No bake has run with a selector set. The restriction that kept
+`ioc_runner_version` empty in real bakes is lifted: `cloud-provision` accepts
+the `requested` field and takes `-r <ref>` as of its `8ad180a`, and `G.5` is
+Closed. See `G.5` in `docs/MILESTONES.md`.
 
 ## EtherCAT Validation
 
@@ -136,7 +137,7 @@ R2-12 result is recorded in this repository.
 | :-- | :-- |
 | `M.4/T.5` | Re-run Ubuntu 26 layer 1 after `iocStats` supports GCC 15, then run layer 2 and all verification gates. |
 | `M.13/T.1`, `M.13/T.4` | Run the Rocky 8 and Debian 13 bakes with `ioc_runner_version` unset and with a nonexistent ref. |
-| `M.13/T.2`, `M.13/T.3` | After `G.5`, bake with a released tag on both operating systems and read the resulting manifest record. |
+| `M.13/T.2`, `M.13/T.3` | Bake with a released tag on both operating systems, passing it to the `cloud-provision` entry point as `-r <ref>`, and read the resulting manifest record. No longer gated: `G.5` completed 2026-08-01. This is the only check that observes the selector reaching a built image; neither repository's suite covers the join. |
 
 ## Update Protocol
 
