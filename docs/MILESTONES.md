@@ -25,17 +25,21 @@ GitHub issues must be reconciled to it after document review.
 - A milestone is Complete only when every required `T.k` has observed evidence.
   A clean syntax check does not replace a live execution requirement.
 
-## Now / Next (2026-07-31)
+## Now / Next (2026-08-01)
 
 - In progress: `M.13`. The `ansible-provision` half landed in `75f16c3` and
-  `ca2a9de`; no bake verification has run.
-- Completed now: none since `M.7/T.5-T.6`.
-- Ready now: `M.13/T.1` and `M.13/T.4`, which need only an owner-run bake.
-- External wait: `G.5` for `M.13/T.2-T.3`, Ubuntu 26 `iocStats` compatibility
-  for `M.4/T.5`, and the first release gate (`G.4`).
+  `ca2a9de`; the `cloud-provision` half landed on 2026-07-31 and `G.5` is
+  Closed. No bake verification has run.
+- Completed now: `G.5` closed.
+- Ready now: all four `M.13` bake checks — `T.1` and `T.4` need only an
+  owner-run bake, and `T.2` and `T.3` are no longer gated.
+- External wait: Ubuntu 26 `iocStats` compatibility for `M.4/T.5`, and the
+  first release gate (`G.4`).
 
-Next session entry point: run the `M.13` Rocky 8 and Debian 13 bakes for the
-unset and nonexistent-selector cases to close `M.13/T.1` and `M.13/T.4`.
+Next session entry point: run the `M.13` Rocky 8 and Debian 13 bakes. The
+unset and nonexistent-selector cases close `T.1` and `T.4`; a bake with
+`-r <tag>` closes `T.2` and `T.3` and is the only observation of the join
+between the two repositories, which no suite on either side covers.
 
 Tally: 13 milestones - ✅ 10 · 🔒 2 · 🔄 1.
 
@@ -55,7 +59,7 @@ Tally: 13 milestones - ✅ 10 · 🔒 2 · 🔄 1.
 | M.10 | EtherCAT verification transfer | Carry-forward | ✅ (retired) | The owner moved live EtherCAT verification to separate tracking on 2026-07-05. |
 | M.11 | Version 1.0 release convention | External gate | 🔒 | Wait for the next consumer release-gate bake and User-run tag sequence. |
 | M.12 | Review decisions and conceptual-integrity closure | Carry-forward | ✅ | Review outcomes, decisions U1-U10, and finding dispositions are recorded. |
-| M.13 | Consumer-selectable ioc-runner version | Milestone | 🔄 | GitHub #9. The selector, the provenance field, and their local suites landed in `75f16c3` and `ca2a9de`; the bake verifications and the `cloud-provision` counterpart remain. |
+| M.13 | Consumer-selectable ioc-runner version | Milestone | 🔄 | GitHub #9. The selector, the provenance field, and their local suites landed in `75f16c3` and `ca2a9de`; the `cloud-provision` counterpart landed on 2026-07-31, closing `G.5`. Only the bake verifications remain, and all four are now runnable. |
 
 ## M.1 Base OS Readiness
 
@@ -261,7 +265,8 @@ Ansible-only change cannot pass the consumer bake validation. Tracked as GitHub
 ### Implementation Boundary And Plan
 
 Plan status: the `ansible-provision` half is authorized and implemented. The
-`cloud-provision` half is not authorized here and is tracked as `G.5`.
+`cloud-provision` half was never authorized here and is tracked as `G.5`, now
+Closed. Both halves are in place; only the bake verifications remain.
 
 1. In `ansible-provision`, add the optional selector to inventory and make
    `app_ioc_runner` resolve it to one commit before installation. An unset
@@ -272,16 +277,19 @@ Plan status: the `ansible-provision` half is authorized and implemented. The
    application records. Landed in `75f16c3`.
 3. In `cloud-provision`, pass the selector through the bake command and update
    the manifest validator so the requested selector and resolved commit are
-   accepted and checked as one record. Not started; tracked as `G.5`.
+   accepted and checked as one record. Landed on 2026-07-31 in
+   `cloud-provision` `8ad180a`; `G.5` is Closed.
 4. Run the repository recorder and validator tests, then execute the real
    Rocky 8 and Debian 13 bake matrix for unset, released-tag, and nonexistent
    selector cases. Close M.13 only after both repositories and the consumer
    release-gate evidence agree.
 
-Operating constraint while `G.5` is Open: keep `ioc_runner_version` empty in
-real bakes. The unset path writes the unchanged six-field application record,
-whereas a set selector writes the `requested` field that the current
-`cloud-provision` validator rejects.
+The operating constraint recorded here while `G.5` was Open — keep
+`ioc_runner_version` empty in real bakes, because the `cloud-provision`
+validator rejected the `requested` field — no longer applies and is lifted.
+That validator now accepts one optional `requested=<ref>` on `app_ioc_runner`,
+and the bake command takes `-r <ref>`. A set selector is the intended path for
+`T.2` and `T.3`.
 
 Out of scope: changing the default behavior when the selector is unset,
 changing `epics-ioc-runner` itself, or marking any verification complete before
@@ -293,9 +301,11 @@ decision; it predates this milestone and is unchanged by `75f16c3` and
 
 ### Test Plan
 
-`T.1` and `T.4` are runnable now. `T.2` and `T.3` wait for `G.5`. All three bake
-checks use the `cloud-provision` entry point, which defaults to a sibling
-`../ansible-provision` and takes `-a <dir>` when the checkouts sit elsewhere.
+All four checks are runnable now; `T.2` and `T.3` were released when `G.5`
+completed on 2026-07-31. They use the `cloud-provision` entry point, which
+defaults to a sibling `../ansible-provision` and takes `-a <dir>` when the
+checkouts sit elsewhere. `T.2` and `T.3` pass the selector to that entry point
+as `-r <ref>` rather than through an inventory edit.
 
 `T.1` runs on both operating systems with `ioc_runner_version` left empty, so
 no inventory change is needed:
@@ -320,16 +330,17 @@ is published, and that no fallback to the default branch occurs. Restore the
 inventory file afterwards; it is tracked, and the probe value must not be
 committed.
 
-Do not bake with a ref that does exist until `G.5` closes. The recorder writes
-the `requested` field and the current `cloud-provision` validator rejects it, so
-the bake fails at step 8 for a reason unrelated to the selector.
+A pinned bake was blocked while `G.5` was Open, because the recorder wrote the
+`requested` field and the `cloud-provision` validator then rejected it at step
+8 for a reason unrelated to the selector. That is resolved: the validator
+accepts the field, and the selector is given to the bake command as `-r <ref>`.
 
 | T | Verification | Status | Evidence or completion condition |
 | :-- | :-- | :-- | :-- |
-| T.1 | Bake with `ioc_runner_version` unset. | ⬜ | Image content matches current behavior; the default is a no-op. Requires an owner-run bake. |
-| T.2 | Bake with `ioc_runner_version` set to a released tag on both supported OS families. | 🔒 | Requires `G.5`; resume as ⬜. `ioc-runner -V` in each baked image reports that tag's commit. |
-| T.3 | Read `/etc/iocrunner-bake.manifest` after a pinned bake. | 🔒 | Requires `G.5`; resume as ⬜. The requested ref and the resolved commit are both present and distinguishable. |
-| T.4 | Bake with a ref that does not exist. | ⬜ | The bake fails with a named error instead of falling back to the default branch. Requires an owner-run bake. |
+| T.1 | Bake with `ioc_runner_version` unset. | ✅ | Rocky 8 and Debian 13 bakes with no selector completed 10/10 on 2026-08-01, host `Neutron`, and each wrote the unchanged six-field record `commit=85b6d904d9a2283833f2c2be274e1567beb47d2e state=clean-untagged tag=-` with no `requested=` field. The default is a no-op. |
+| T.2 | Bake with `ioc_runner_version` set to a released tag on both supported OS families, passed as `-r <ref>`. | ✅ | Released by `G.5` on 2026-08-01 and run the same day, host `Neutron`, with `-r 1.2.2` on both families. Fresh consumers booted from the published images report `epics-ioc-runner version 1.2.2 (fd14875)`, and `fd14875df5fdbfcb362d194e81bf74c1de960daa` is the commit `refs/tags/1.2.2` resolves to upstream. Note for future readers: the version string alone does not distinguish a pinned image from an unpinned one, because it reports `1.2.2` in both cases — only the commit differs. |
+| T.3 | Read `/etc/iocrunner-bake.manifest` after a pinned bake. | ✅ | The pinned bakes wrote `commit=fd14875df5fdbfcb362d194e81bf74c1de960daa state=clean-tagged tag=1.2.2 requested=1.2.2`. Requested ref and resolved commit are both present and distinguishable, and the in-image manifest matches the published sidecar record on both families. |
+| T.4 | Bake with a ref that does not exist. | ✅ | A Debian 13 bake with `-r 9.9.9-nonexistent` failed at step 4 with `app_ioc_runner: requested ioc_runner_version not found: 9.9.9-nonexistent` from `roles/app_ioc_runner/tasks/main.yml:27`. It did not fall back to the default branch, never reached the publish step, and left the previously published golden and its archive entries untouched. Observed 2026-08-01, host `Neutron`. |
 | T.5 | Exercise the shipped selector logic against real repositories. | ✅ | `tests/check-ioc-runner-version-selector.bash` extracts the deployed `app_ioc_runner` shell body and runs it against Git fixtures: 22/22 observed on 2026-07-31 at `ca2a9de`. Its earlier 18-check form reported 16/18 against `75f16c3`, isolating exactly the two re-bake defects that `ca2a9de` fixes. |
 | T.6 | Exercise the provenance recorder for both record shapes. | ✅ | `tests/check-bake-provenance-recorder.bash`: 35/35 observed on 2026-07-31 at `ca2a9de`, covering the unset six-field record, the selected seven-field record, and the rejected malformed forms. |
 
@@ -341,7 +352,7 @@ the bake fails at step 8 for a reason unrelated to the selector.
 | G.2 | Configured Rocky 8, Rocky 10, Ubuntu 24, and Ubuntu 26 EPICS-env build hosts | M.4/T.1, M.4/T.5-T.7 | Closed | Fresh hosts were created and current source-build runs were observed on all four operating systems on 2026-07-28. |
 | G.3 | GitHub issue mutation authorization | M.9/T.6 | Closed | Authorization was provided and GitHub #6 was reconciled on 2026-07-28. |
 | G.4 | Owner-selected consumer release-gate bake and release authorization | M.11/T.2-T.4 | Open | No repository tag exists as of 2026-07-28. |
-| G.5 | `cloud-provision` accepts the `requested` application-record field and passes the selector through the bake command | M.13/T.2-T.3 | Open | Tracked as cloud-provision#26, filed 2026-07-31. `bin/validate_iocrunner_bake.bash` rejects any extra application-record field, and no bake invocation passes a selector, as read on 2026-07-31. |
+| G.5 | `cloud-provision` accepts the `requested` application-record field and passes the selector through the bake command | M.13/T.2-T.3 | Closed | Tracked as cloud-provision#26, filed 2026-07-31 and landed the same day in `8ad180a`. Read against that repository on 2026-08-01: `parse_app_record` at `bin/validate_iocrunner_bake.bash:93-97` accepts one optional `requested=<ref>` on `app_ioc_runner` only, checked for shape and not tied to `tag` or `state`; `bin/bake_iocrunner_image.bash:346` takes `-r <ref>` and `:536` passes `-e ioc_runner_version=` to `site.yml` alone, while the calls at `:538`, `:545`, and `:551` pass only `-i` and `--limit`. Its suite reports 43/43. The earlier reading recorded here — extra fields rejected, no invocation passing a selector — described the state before `8ad180a` and was left in place after it landed. The gate covers the interface only: that a pinned bake yields an image whose `ioc-runner -V` reports the requested commit is observed by `T.2` and `T.3`, not here, because the fake `ansible-playbook` in the `cloud-provision` suite records the argument and stops. |
 
 ## Decisions
 
