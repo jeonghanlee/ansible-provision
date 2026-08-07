@@ -3,14 +3,14 @@
 ## Scope
 
 This document records observed role-by-OS and source-build verification.
-`docs/MILESTONES.md` defines deliverables and the `T.k` checks required to
-close them.
+`docs/milestone-0082a56.md` defines deliverables and the `T.k` checks required
+to close them.
 
 **Out of scope:** architecture and data flow are defined in
 `docs/ARCHITECTURE.md`; deferred work is indexed through the milestone
 register.
 
-**Last updated:** 2026-07-31
+**Last updated:** 2026-08-06
 
 ## Status Legend
 
@@ -103,7 +103,8 @@ Fresh Rocky 8 and Debian 13 variants from the 2026-07-05 goldens verified:
 
 The optional `ioc_runner_version` inventory selector is implemented in
 `app_ioc_runner`, and the provenance record carries the requested ref beside
-the resolved commit. Two local suites ran on 2026-07-31 at `ca2a9de`:
+the resolved commit. The two local suites were rerun on 2026-08-06 at
+repository `0082a56`:
 
 - `tests/check-ioc-runner-version-selector.bash`: 22/22. The suite extracts the
   deployed role shell body and runs it against Git fixtures, covering the unset
@@ -114,10 +115,14 @@ the resolved commit. Two local suites ran on 2026-07-31 at `ca2a9de`:
   six-field application record, the selected seven-field record, and the
   rejected malformed forms.
 
-No bake has run with a selector set. The restriction that kept
-`ioc_runner_version` empty in real bakes is lifted: `cloud-provision` accepts
-the `requested` field and takes `-r <ref>` as of its `8ad180a`, and `G.5` is
-Closed. See `G.5` in `docs/MILESTONES.md`.
+Rocky 8 and Debian 13 bakes with an unset selector, a released tag, and a
+nonexistent selector were observed on 2026-08-01. The unset and pinned bakes
+completed 10/10; the pinned manifests carried `requested=1.2.2` beside the
+resolved `fd14875...` commit; the nonexistent selector failed before publish.
+`cloud-provision` accepts the `requested` field and takes `-r <ref>` as of
+`8ad180a`; `G.5` is Complete. GitHub #9 was closed as a duplicate of the
+independently implemented caller-side `pkg_automation` stage, so `M.13` is
+Complete in the canonical register.
 
 ## EtherCAT Validation
 
@@ -135,12 +140,10 @@ R2-12 result is recorded in this repository.
 
 | Milestone checks | Required observation |
 | :-- | :-- |
-| `M.4/T.5` | Re-run Ubuntu 26 layer 1 after `iocStats` supports GCC 15, then run layer 2 and all verification gates. |
-| `M.13/T.1`, `M.13/T.4` | Run the Rocky 8 and Debian 13 bakes with `ioc_runner_version` unset and with a nonexistent ref. |
-| `M.13/T.2`, `M.13/T.3` | Bake with a released tag on both operating systems, passing it to the `cloud-provision` entry point as `-r <ref>`, and read the resulting manifest record. No longer gated: `G.5` completed 2026-08-01. This is the only check that observes the selector reaching a built image; neither repository's suite covers the join. |
+| `M.4/T.5`, `G.6` | Resolve the Ubuntu 26 `iocStats` GCC 15 compatibility condition, then run layer 2 and all verification gates. |
 
 ## Update Protocol
 
-Update this matrix and `docs/MILESTONES.md` with the substantive change when a
+Update this matrix and `docs/milestone-0082a56.md` with the substantive change when a
 role, supported OS boundary, version selector, or observed verification result
 changes. Record a pass only when the real shipped path and fixtures ran.
