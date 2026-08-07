@@ -145,7 +145,7 @@ and local-clone recipes.
 | `01_base.yml` | `base_os` | all nodes |
 | `02_apps.yml` | `app_con`, `app_procserv`, `app_conserver` | all nodes |
 | `03_epics.yml` | `app_epics`, `app_ioc_runner` | ioc nodes |
-| `04_nfs_sim.yml` | `nfs_sim` (ioc-runner validation relocated to the consumer's tar-push + suite flow; see docs/milestone-0082a56.md) | `nfs_sim_nodes` (server-only, out-of-band, not in `site.yml`) |
+| `04_nfs_sim.yml` | `nfs_sim` (ioc-runner validation relocated to the consumer's tar-push + suite flow; see docs/milestone-a519802.md) | `nfs_sim_nodes` (server-only, out-of-band, not in `site.yml`) |
 | `05_ethercat_base.yml` | `ethercat_base` | `ethercat_build` (out-of-band: invoked by the cloud-provision ethercat bake; no make target) |
 | `06_ethercat.yml` | `app_ethercat` | `ethercat_nodes` (out-of-band: run directly with ansible-playbook; no make target) |
 | `07_test_users.yml` | `test_users` | `nfs_sim_nodes` (server-only make targets; part of the iocrunner golden bake — see docs/test_users_handoff.md) |

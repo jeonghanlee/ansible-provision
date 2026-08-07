@@ -92,4 +92,4 @@ EtherCAT: both sides now exist — `cloud-provision` carries
 `05_ethercat_base.yml` / `06_ethercat.yml`. The remaining gap is that
 no end-to-end run has been executed (bake, boot, run 06, archive
 evidence). Readiness items before that first run are tracked as
-Phase D in `docs/milestone-0082a56.md`.
+Phase D in `docs/milestone-a519802.md`.
