@@ -41,7 +41,7 @@ operation above that baseline. The first-pass validation environment uses
                  (ioc-runner validation over that root is NOT done at
                   bake time - root-principal access is impossible under
                   root_squash by design; coverage lives in the consumer's
-                  tar-push + suite flow. See docs/MILESTONES.md.)
+                  tar-push + suite flow. See docs/milestone-0082a56.md.)
 
 05_ethercat_base.yml -> ethercat_base role  (ethercat_build host;
                  invoked by the cloud-provision ethercat bake)

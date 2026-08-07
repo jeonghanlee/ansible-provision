@@ -1,16 +1,20 @@
 # ansible-provision Milestones
 
+> Historical migration source. The current canonical register is
+> [docs/milestone-0082a56.md](milestone-0082a56.md). This file is retained to
+> preserve the pre-migration register and its historical evidence.
+
 ## Scope
 
-This document is the canonical work register for `ansible-provision`. It
+This document is the pre-migration work register for `ansible-provision`. It
 records project deliverables as `M.x` milestones and the verification required
 to close each milestone as `T.k` checks.
 
 **Out of scope:** detailed operating procedures remain in the linked runbooks,
 and EtherCAT execution remains in the owner's separate tracker.
 
-Mode: register-authoritative. This file is the local source of truth; linked
-GitHub issues must be reconciled to it after document review.
+Mode: historical source. The canonical register owns current status, plans,
+verification, and linked GitHub reconciliation.
 
 ## Format
 
