@@ -3,7 +3,7 @@
 ## Scope
 
 This document records observed role-by-OS and source-build verification.
-`docs/milestone-0082a56.md` defines deliverables and the `T.k` checks required
+`docs/milestone-a519802.md` defines deliverables and the `T.k` checks required
 to close them.
 
 **Out of scope:** architecture and data flow are defined in
@@ -120,9 +120,8 @@ nonexistent selector were observed on 2026-08-01. The unset and pinned bakes
 completed 10/10; the pinned manifests carried `requested=1.2.2` beside the
 resolved `fd14875...` commit; the nonexistent selector failed before publish.
 `cloud-provision` accepts the `requested` field and takes `-r <ref>` as of
-`8ad180a`; `G.5` is Complete. GitHub #9 was closed as a duplicate of the
-independently implemented caller-side `pkg_automation` stage, so `M.13` is
-Complete in the canonical register.
+`8ad180a`; the selector work is complete and remains reachable from prior
+state commit `a519802`. It is not active work in this reset generation.
 
 ## EtherCAT Validation
 
@@ -140,10 +139,10 @@ R2-12 result is recorded in this repository.
 
 | Milestone checks | Required observation |
 | :-- | :-- |
-| `M.4/T.5`, `G.6` | Resolve the Ubuntu 26 `iocStats` GCC 15 compatibility condition, then run layer 2 and all verification gates. |
+| `M1/T5`, `G2` | Resolve the Ubuntu 26 `iocStats` GCC 15 compatibility condition, then run layer 2 and all verification gates. |
 
 ## Update Protocol
 
-Update this matrix and `docs/milestone-0082a56.md` with the substantive change when a
+Update this matrix and `docs/milestone-a519802.md` with the substantive change when a
 role, supported OS boundary, version selector, or observed verification result
 changes. Record a pass only when the real shipped path and fixtures ran.

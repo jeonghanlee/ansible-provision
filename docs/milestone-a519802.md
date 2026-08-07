@@ -1,0 +1,259 @@
+# Work Register
+
+## Scope
+
+This document is the canonical work register for the `master` release line of
+`ansible-provision` after the reset carried by prior state commit `a519802`.
+It records unfinished deliverables, external gates, accepted plans, and
+verification needed to continue the current generation.
+
+**Out of scope:** completed work remains reachable in the prior state commit;
+detailed operating procedures remain in the linked runbooks; EtherCAT execution
+remains in the owner's separate tracker.
+
+- Release line: master
+- Milestone index: a519802
+- Canonical path: `docs/milestone-a519802.md`
+- Canonical branch or ref: `master`
+- Git upstream: `origin/master`
+- Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
+
+Next session entry point: resolve `G1` or `G2`, then update the matching gate and
+dependent row in `docs/milestone-a519802.md`.
+
+Status tally: 0 Complete, 2 Blocked. External gates: 0 Complete, 2 Open.
+
+## Milestone
+
+### Work
+
+| Group | ID | Work unit | Type | Status | Ready | Deps | Done when / Evidence |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Core | M1 | EPICS-env source-build environment | Carry-forward | Blocked | No | G2 | Rocky 8, Debian 13, Rocky 10, Ubuntu 24, and Ubuntu 26 pass the complete source-build matrix; [detail](#m1---epics-env-source-build-environment) |
+| Release | M2 | Version 1.0 release convention | Carry-forward | Blocked | No | G1 | Consumer release gate, matching tags, and the next version-scoped register are complete; [detail](#m2---version-10-release-convention) |
+| Gates | G1 | Owner-selected consumer release-gate bake and release authorization | External gate | Open | No | | Owner selects the release-gate bake and authorizes the matching tag sequence; [detail](#g1---owner-selected-consumer-release-gate-bake-and-release-authorization) |
+| Gates | G2 | Ubuntu 26 `iocStats` compatibility with GCC 15 | External gate | Open | No | | A compatible `iocStats` revision or correction is selected and the complete Ubuntu 26 path passes; [detail](#g2---ubuntu-26-iocstats-compatibility-with-gcc-15) |
+
+### Decisions
+
+| ID | Decision | Source |
+| --- | --- | --- |
+| D1 | Local `T` labels identify verification inside their owning work detail and are not independent work IDs. | Prior canonical register, prior state commit `a519802` |
+| D2 | Use bare-number release tags jointly with `cloud-provision` at an accepted consumer release gate. | Prior canonical register, U8, 2026-07-03 |
+
+### Milestone Details
+
+#### M1 - EPICS-env Source-Build Environment
+
+- Origin: a519802 / M1
+- Identity History: new reset-generation identity; prior scope and evidence are reachable from commit `a519802`
+- GitHub Issue: #7, https://github.com/jeonghanlee/ansible-provision/issues/7
+- Status: Blocked
+
+##### Summary
+
+Dedicated build hosts compile EPICS-env and EPICS-env-support from source,
+install vendor libraries into the release tree, and validate the installed
+runtime without changing `site.yml`.
+
+##### Scope
+
+Run the source-build layers on Rocky 8, Debian 13, Rocky 10, Ubuntu 24, and
+Ubuntu 26, including the `gz` flavor and repeated-run checks.
+
+Out of scope: binary-distribution deployment and golden-image baking for these
+source-build hosts.
+
+##### Completion Criteria
+
+- Rocky 8, Debian 13, Rocky 10, and Ubuntu 24 pass both source-build layers and checks.
+- Ubuntu 26 passes both layers and all runtime checks after the GCC 15 compatibility condition is resolved.
+- Vendor libraries have no retained absolute-path dependency findings.
+
+##### Dependencies And Decisions
+
+- `G2` is Open; resume as `In progress` after the Ubuntu 26 compatibility condition is complete.
+- `D1` applies.
+
+##### Implementation Plan
+
+- Plan Status: accepted
+- Plan Acceptance: accepted plan preserved from prior state commit `a519802`
+- Implementation Authorization: prior owner-authorized implementation plan and verification evidence
+- Superseded Plan Artifacts: none
+
+1. Build the base and support layers on the supported source-build matrix.
+2. Keep vendor libraries inside the release tree and run dependency checks.
+3. Select or implement an `iocStats` compatibility correction for Ubuntu 26 and rerun the complete path.
+
+##### Test Plan
+
+| Label | Layer | Method | Environment | Expected Result |
+| --- | --- | --- | --- | --- |
+| T1 | Integration | Build and re-run the current EPICS-env path | Rocky 8 | Base and support layers pass; rerun is idempotent. |
+| T2 | Integration | Build and re-run the current EPICS-env path | Debian 13 | Layered tree and dependency checks pass. |
+| T3 | Integration | Build vendor libraries inside the release tree | Debian 13 | No absolute-path dependency findings remain. |
+| T4 | Integration | Build the EPICS-env-support layer | Debian 13 | Support layer and checks pass. |
+| T5 | Matrix | Build configured source-build hosts | Rocky 10, Ubuntu 24, Ubuntu 26 | Rocky 10 and Ubuntu 24 pass; Ubuntu 26 passes after `G2`. |
+| T6 | Integration | Build the `gz` flavor through both source-build roles | Rocky 10 and Ubuntu 24 | Installed flags and dependency checks pass. |
+| T7 | Idempotency | Re-run the support role | Rocky 8 | Installed-tree skip is observed with `changed=0` and `failed=0`. |
+
+##### Verification Results
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T1 | 2026-07-28 | Rocky 8 | Passed | Fresh layers, `changed=0`, and `check_deps.bash` passed |
+| T2 | 2026-07-28 | Debian 13 | Passed | Commits `5c4f7fc` and `0148514` |
+| T3 | 2026-07-28 | Debian 13 | Passed | Commit `5c4f7fc`, absolute paths reduced from 9 to 0 |
+| T4 | 2026-07-28 | Debian 13 | Passed | Commit `0148514` |
+| T5 | 2026-07-28 | Rocky 10, Ubuntu 24, Ubuntu 26 | Partial | Rocky 10 and Ubuntu 24 passed; Ubuntu 26 layer 1 exited 2 in `iocStats` under GCC 15 |
+| T6 | 2026-07-28 | Rocky 10 and Ubuntu 24 | Passed | `-g0 -gz=zlib` and `check_deps.bash` passed |
+| T7 | 2026-07-28 | Rocky 8 | Passed | `EPICS_ENV_SUPPORT_BUILD_SKIPPED`, `changed=0`, `failed=0` |
+
+##### Closure Evidence
+
+- `M1` remains Blocked by `G2`. GitHub #7 is open; its live state was observed on 2026-08-06.
+
+##### GitHub Projection
+
+- Title: `EPICS-env source-build verification matrix`
+- Labels: `enhancement`
+- GitHub Milestone: `Backlog`
+- Observed State: open
+- Observed Labels: `enhancement`
+- Observed Milestone: `Backlog`
+- Last Compared: 2026-08-06; GitHub updated 2026-07-29T00:20:45Z
+
+#### M2 - Version 1.0 Release Convention
+
+- Origin: a519802 / M2
+- Identity History: new reset-generation identity; prior scope and evidence are reachable from commit `a519802`
+- GitHub Issue: none
+- Status: Blocked
+
+##### Summary
+
+The first repository-family 1.0 release is cut from an accepted consumer
+release-gate bake, followed by a fresh version-scoped register.
+
+##### Scope
+
+Satisfy the agreed scope, run the consumer release gate, create matching
+bare-number tags, and preserve the released register.
+
+Out of scope: selecting or executing the release sequence without owner authorization.
+
+##### Completion Criteria
+
+- `G1` is Complete.
+- The consumer release gate passes, matching tags are created, and the next register is opened.
+
+##### Dependencies And Decisions
+
+- `G1` is Open; resume as `In progress` after owner release authorization.
+- `D2` applies.
+
+##### Implementation Plan
+
+- Plan Status: accepted
+- Plan Acceptance: accepted release convention preserved from prior state commit `a519802`
+- Implementation Authorization: none for the release sequence; owner authorization is required
+- Superseded Plan Artifacts: none
+
+1. Select and pass the consumer release-gate bake.
+2. Execute the matching tag sequence only after owner authorization.
+3. Preserve the released register and open the next version-scoped register.
+
+##### Test Plan
+
+| Label | Layer | Method | Environment | Expected Result |
+| --- | --- | --- | --- | --- |
+| T1 | Scope | Confirm agreed 1.0 scope A, B1, B2, C1, and C3 | Repository and consumer project | Scope is satisfied. |
+| T2 | Release gate | Run the consumer release-gate bake | Consumer environment | Bake passes. |
+| T3 | Release execution | Create matching bare-number tags | Repository family | Tags match across repositories. |
+| T4 | Release documentation | Preserve released register and open next register | Repository | New version-scoped register is available. |
+
+##### Verification Results
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T1 | 2026-07-03 | Repository and consumer project | Passed | Agreed scope recorded in prior state commit `a519802` |
+| T2 | Not run | Consumer environment | Pending | Requires `G1` |
+| T3 | Not run | Repository family | Pending | Requires `G1` and owner authorization |
+| T4 | Not run | Repository | Pending | Follows T3 |
+
+##### Closure Evidence
+
+- `M2` is Blocked by open `G1`. No release mutation is authorized in this reset generation.
+
+#### G1 - Owner-Selected Consumer Release-Gate Bake and Release Authorization
+
+- Origin: a519802 / G1
+- GitHub Issue: none
+- Status: Open
+
+##### Summary
+
+The first release gate and matching tag sequence require owner selection and
+authorization.
+
+##### Completion Criteria
+
+- Owner selects the consumer release-gate bake and authorizes the release sequence.
+- The selected bake passes and the authorization is recorded.
+
+##### Verification Results
+
+| Observed At | Result | Evidence |
+| --- | --- | --- |
+| 2026-08-06 | Pending | No repository tag or owner release authorization is recorded. |
+
+##### Closure Evidence
+
+- Gate remains Open and blocks `M2`.
+
+#### G2 - Ubuntu 26 IOCStats Compatibility With GCC 15
+
+- Origin: a519802 / G2
+- GitHub Issue: #7, https://github.com/jeonghanlee/ansible-provision/issues/7
+- Status: Open
+
+##### Summary
+
+Ubuntu 26 source-build verification is waiting for an `iocStats` compatibility
+correction that supports GCC 15.
+
+##### Completion Criteria
+
+- A selected compatible `iocStats` revision or correction builds the first layer.
+- The support layer and all remaining Ubuntu 26 checks pass.
+
+##### Verification Results
+
+| Observed At | Result | Evidence |
+| --- | --- | --- |
+| 2026-08-06 | Open | Prior run exited 2 in `iocStats` `devIocStatsAnalog.c`; GitHub #7 remains open. |
+
+##### Closure Evidence
+
+- Gate remains Open and blocks `M1`.
+
+## Backlog
+
+### Work
+
+| Group | ID | Work unit | Type | Status | Ready | Deps | Done when / Evidence |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+
+No unassigned work is currently recorded. New unassigned work belongs here;
+the release tally above excludes this section.
+
+### Backlog Details
+
+No backlog details are currently recorded.
+
+## History
+
+| Reset Date | Prior State Commit |
+| --- | --- |
+| 2026-08-06 | a51980286459dde442e7aa59ed11d2e5b46201cd |
