@@ -18,8 +18,11 @@ remains in the owner's separate tracker.
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: resolve `G1` or `G2`, then update the matching gate and
-dependent row in `docs/milestone-a519802.md`.
+Next session entry point: resume `G1` with the clean current-head bake path.
+Recheck the three source refs, use the latest released `epics-ioc-runner` tag
+as the Gate-grade baseline (`1.2.3` at this session close), obtain owner
+direction before cleaning any running `testbed-debian13-server` domain, then
+run the Rocky 8 and Debian 13 bakes and `epics-ioc-runner/gate/RUNBOOK.md`.
 
 Status tally: 1 Complete, 2 Blocked. External gates: 0 Complete, 2 Open.
 
