@@ -267,16 +267,39 @@ Out of scope: `test_users` role behavior and automatic verification of the exter
 The first release gate and matching tag sequence require owner selection and
 authorization.
 
+##### Concrete Meaning
+
+`G1` is the decision record for one specific `epics-ioc-runner` consumer
+release gate. The release-gate bake is the fresh-image acceptance run in which
+`cloud-provision` produces the `rocky8-iocrunner` and `debian13-iocrunner`
+variants, `ansible-provision` supplies the configured image contents, and the
+consumer release-gate checks run against fresh consumers.
+
+`G1` is not branch creation, tag creation, or release-register creation. It
+records which accepted bake is the Version 1.0 release basis and authorizes
+`M2` to execute the matching tag sequence.
+
+##### Required Decision Record
+
+| Field | Required content |
+| --- | --- |
+| Selected bake | Bake date, variant names, image identities, and sidecar identities |
+| Source refs | `ansible-provision`, `cloud-provision`, EPICS-env, and consumer refs used by the bake |
+| Consumer evidence | Fresh-consumer release-gate result, including the consumer suite and `validate_iocrunner_bake.bash` result |
+| Release point | The exact repository-family release point and matching bare-number tag sequence to be authorized |
+| Authorization | Owner authorization for the selected bake and the matching tag sequence |
+
 ##### Completion Criteria
 
-- Owner selects the consumer release-gate bake and authorizes the release sequence.
-- The selected bake passes and the authorization is recorded.
+- The required decision record identifies one selected consumer release-gate bake.
+- Fresh consumers from the selected bake pass the consumer release-gate checks.
+- The owner authorization for the selected bake and matching tag sequence is recorded.
 
 ##### Verification Results
 
 | Observed At | Result | Evidence |
 | --- | --- | --- |
-| 2026-08-06 | Pending | No repository tag or owner release authorization is recorded. |
+| 2026-08-06 | Pending | No selected G1 bake record or owner release authorization is recorded. |
 
 ##### Closure Evidence
 
