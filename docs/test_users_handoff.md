@@ -7,7 +7,7 @@ placement, ordering, and verification.
 
 **Out of scope:** product IOC accounts are created by `app_ioc_runner`;
 consumer scenarios are defined in
-`epics-ioc-runner/docs/RELEASE_CYCLE_RUNBOOK.md`, which verifies these
+`epics-ioc-runner/gate/RUNBOOK.md`, which verifies these
 accounts as a precondition and never creates them.
 
 ## Purpose

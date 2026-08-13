@@ -21,7 +21,7 @@ remains in the owner's separate tracker.
 Next session entry point: resolve `G1` or `G2`, then update the matching gate and
 dependent row in `docs/milestone-a519802.md`.
 
-Status tally: 0 Complete, 2 Blocked. External gates: 0 Complete, 2 Open.
+Status tally: 1 Complete, 2 Blocked. External gates: 0 Complete, 2 Open.
 
 ## Milestone
 
@@ -31,6 +31,7 @@ Status tally: 0 Complete, 2 Blocked. External gates: 0 Complete, 2 Open.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Core | M1 | EPICS-env source-build environment | Carry-forward | Blocked | No | G2 | Rocky 8, Debian 13, Rocky 10, Ubuntu 24, and Ubuntu 26 pass the complete source-build matrix; [detail](#m1---epics-env-source-build-environment) |
 | Release | M2 | Version 1.0 release convention | Carry-forward | Blocked | No | G1 | Consumer release gate, matching tags, and the next version-scoped register are complete; [detail](#m2---version-10-release-convention) |
+| Docs | M3 | epics-ioc-runner runbook reference repair | Carry-forward | Complete | No | | All three repository references name `epics-ioc-runner/gate/RUNBOOK.md`; [detail](#m3---epics-ioc-runner-runbook-reference-repair) |
 | Gates | G1 | Owner-selected consumer release-gate bake and release authorization | External gate | Open | No | | Owner selects the release-gate bake and authorizes the matching tag sequence; [detail](#g1---owner-selected-consumer-release-gate-bake-and-release-authorization) |
 | Gates | G2 | Ubuntu 26 `iocStats` compatibility with GCC 15 | External gate | Open | No | | A compatible `iocStats` revision or correction is selected and the complete Ubuntu 26 path passes; [detail](#g2---ubuntu-26-iocstats-compatibility-with-gcc-15) |
 
@@ -186,6 +187,75 @@ Out of scope: selecting or executing the release sequence without owner authoriz
 
 - `M2` is Blocked by open `G1`. No release mutation is authorized in this reset generation.
 
+#### M3 - epics-ioc-runner Runbook Reference Repair
+
+- Origin: a519802 / M3
+- Identity History: added to the current generation from GitHub issue #11 after the 2026-08-12 code comparison
+- GitHub Issue: #11, https://github.com/jeonghanlee/ansible-provision/issues/11
+- Status: Complete
+
+##### Summary
+
+The repository references the consumer runbook at its current `gate/RUNBOOK.md` path.
+
+##### Scope
+
+Update the three references in `docs/test_users_handoff.md`, `roles/test_users/tasks/main.yml`, and `roles/test_users/defaults/main.yml`.
+
+Out of scope: `test_users` role behavior and automatic verification of the external consumer repository path.
+
+##### Completion Criteria
+
+- No tracked ansible-provision file names the stale consumer runbook path.
+- The three affected files reference `epics-ioc-runner/gate/RUNBOOK.md` or its local `gate/RUNBOOK.md` suffix.
+
+##### Dependencies And Decisions
+
+- No M or G dependencies.
+- The consumer path and source commit `6b009b4` are recorded by GitHub issue #11.
+
+##### Implementation Plan
+
+- Plan Status: accepted
+- Plan Acceptance: owner selected option 1 in chat, 2026-08-12
+- Implementation Authorization: owner selected option 1 in chat, 2026-08-12
+- Superseded Plan Artifacts: none
+
+1. Replace the stale consumer runbook path in the handoff document and the two role comments.
+2. Scan the repository for the old path and confirm the three intended new references.
+3. Run the affected playbook syntax check and `git diff --check`.
+
+##### Test Plan
+
+| Label | Layer | Method | Environment | Expected Result |
+| --- | --- | --- | --- | --- |
+| T1 | Documentation | Scan tracked repository files for the old and new paths | ansible-provision | The old path is absent and three intended new references are present. |
+| T2 | Syntax | Run `ansible-playbook --syntax-check playbooks/07_test_users.yml` | Local environment | The playbook exits with status 0. |
+| T3 | Integrity | Run `git diff --check` | Repository | No whitespace errors are reported. |
+
+##### Verification Results
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T1 | 2026-08-12 | ansible-provision | Passed | The old path scan returned no matches; the new path scan returned three intended references. |
+| T2 | 2026-08-12 | Local environment | Passed | `ANSIBLE_LOCAL_TEMP=/tmp/ansible-provision-local-tmp ansible-playbook --syntax-check playbooks/07_test_users.yml` exited 0. |
+| T3 | 2026-08-12 | Repository | Passed | `git diff --check` exited 0. |
+
+##### Closure Evidence
+
+- The three local references are corrected and the affected playbook passes syntax validation.
+- GitHub #11 remains open; no GitHub mutation was authorized in this scope.
+
+##### GitHub Projection
+
+- Title: `Repoint the three epics-ioc-runner runbook references after the file moved to gate/RUNBOOK.md`
+- Labels: `documentation`
+- GitHub Milestone: `Backlog`
+- Observed State: open
+- Observed Labels: `documentation`
+- Observed Milestone: `Backlog`
+- Last Compared: 2026-08-12; GitHub updated 2026-08-01T20:34:58Z
+
 #### G1 - Owner-Selected Consumer Release-Gate Bake and Release Authorization
 
 - Origin: a519802 / G1
@@ -244,13 +314,76 @@ correction that supports GCC 15.
 
 | Group | ID | Work unit | Type | Status | Ready | Deps | Done when / Evidence |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| Gates | G3 | Owner decision on Ansible SSH master reuse | External gate | Open | No | | Owner selects a mitigation path or records a Keep verdict with evidence; [detail](#g3---owner-decision-on-ansible-ssh-master-reuse) |
 
-No unassigned work is currently recorded. New unassigned work belongs here;
-the release tally above excludes this section.
+Unassigned work belongs here; the release tally above excludes this section.
 
 ### Backlog Details
 
-No backlog details are currently recorded.
+#### G3 - Owner Decision on Ansible SSH Master Reuse
+
+- Origin: a519802 / G3
+- Identity History: added to the current generation from GitHub issue #10 after the 2026-08-12 code comparison
+- GitHub Issue: #10, https://github.com/jeonghanlee/ansible-provision/issues/10
+- Status: Open
+
+##### Summary
+
+Ansible's default SSH multiplexing can retain a control master keyed by a reused testbed address after a VM is destroyed and recreated.
+
+##### Scope
+
+Run a real testbed recreate check, then either select a configuration mitigation or record an owner-approved Keep verdict.
+
+Out of scope: `cloud-provision`, where the related operator SSH path is already handled, and the operator's own `~/.ssh/config`.
+
+##### Completion Criteria
+
+- The real destroy-and-recreate path is observed.
+- If stale-master behavior is observed, an authorized mitigation prevents the recreated host from inheriting the stale socket and the real Ansible path passes.
+- If the behavior is not observed or the exposure is accepted, the owner decision and reasoning are recorded in `docs/CLOSED_DOORS.md`.
+
+##### Dependencies And Decisions
+
+- Owner decision is required before changing `ansible.cfg` SSH behavior.
+- No D reference is required until the owner selects a Keep verdict.
+
+##### Implementation Plan
+
+- Plan Status: accepted
+- Plan Acceptance: owner selected option 1 in chat, 2026-08-12
+- Implementation Authorization: none for SSH configuration changes in this scope
+- Superseded Plan Artifacts: none
+
+1. Recreate a testbed VM at a reused address and run the real Ansible connection path.
+2. Record whether a stale control master affects the new VM.
+3. Apply an owner-selected mitigation or record the Keep verdict and its evidence.
+
+##### Test Plan
+
+| Label | Layer | Method | Environment | Expected Result |
+| --- | --- | --- | --- | --- |
+| T1 | Integration | Destroy and recreate a testbed VM at the same address, then run the affected Ansible path | Testbed VM | The connection either passes without stale-master behavior or produces observed evidence for the selected mitigation. |
+
+##### Verification Results
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T1 | 2026-08-12 | Local repository | Pending | The current `ansible.cfg` has no `[ssh_connection]` section; the real recreate test has not run. |
+
+##### Closure Evidence
+
+- Gate remains Open. The selected option 1 scope intentionally leaves SSH configuration unchanged pending the real recreate check and owner decision.
+
+##### GitHub Projection
+
+- Title: `Ansible reuses an SSH master keyed on a reused address`
+- Labels: `bug`
+- GitHub Milestone: `Backlog`
+- Observed State: open
+- Observed Labels: `bug`
+- Observed Milestone: `Backlog`
+- Last Compared: 2026-08-12; GitHub updated 2026-08-01T06:52:38Z
 
 ## History
 
