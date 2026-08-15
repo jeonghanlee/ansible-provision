@@ -8,7 +8,9 @@ ANSIBLE_LIMIT    ?=
 
 _tag_opt   = $(if $(ANSIBLE_TAGS),  --tags $(ANSIBLE_TAGS),)
 _limit_opt = $(if $(ANSIBLE_LIMIT), --limit $(ANSIBLE_LIMIT),)
-_base_opts = -i $(INVENTORY) $(ANSIBLE_OPTS) $(_tag_opt) $(_limit_opt)
+_runtime_inventory_opt = $(if $(RUNTIME_INVENTORY),-i $(RUNTIME_INVENTORY),)
+_base_opts = -i $(INVENTORY) $(_runtime_inventory_opt) $(ANSIBLE_OPTS) $(_tag_opt) $(_limit_opt)
 
 VARS_EXCLUDES += ANSIBLE_PLAYBOOK ANSIBLE_CMD SETUP_HOST ANSIBLE_OPTS
-VARS_EXCLUDES += ANSIBLE_TAGS ANSIBLE_LIMIT _tag_opt _limit_opt _base_opts
+VARS_EXCLUDES += ANSIBLE_TAGS ANSIBLE_LIMIT RUNTIME_INVENTORY
+VARS_EXCLUDES += _tag_opt _limit_opt _runtime_inventory_opt _base_opts

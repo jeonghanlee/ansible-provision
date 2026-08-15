@@ -74,7 +74,7 @@ ansible-provision/
 |   |-- RULES_ANSIBLE                (playbook targets)
 |   `-- RULES_VARS                   (env inspection)
 |-- inventory/
-|   |-- testbed.ini                  (example validation inventory)
+|   |-- testbed.ini                  (host-free testbed group relationships)
 |   `-- group_vars/
 |       |-- all.yml                  (site-independent variables)
 |       |-- rocky8.yml               (epics_os_dir: rocky-8.10)
@@ -109,33 +109,27 @@ ansible-provision/
 
 ## 4. Inventory and Network
 
-The bundled inventory is an example validation inventory. Static IPs and
-the default `vmadmin` SSH identity are testbed defaults inherited from the
-first-pass `cloud-provision` environment, not public baseline requirements.
-Production and site deployments should supply their own inventory.
+`inventory/testbed.ini` owns stable group relationships and contains no host
+rows. `cloud-provision/bin/generate_ansible_inventory.bash` receives the actual
+VM name, resolved IPv4 address, OS selector, and workload role and writes a
+temporary host inventory. Ansible receives both sources, so group variables
+remain in this repository while VM identity remains owned by cloud-provision.
 
-```
-192.168.122.10   testbed-debian13-server   [debian13, ioc_nodes]
-192.168.122.11   testbed-debian13-node1    [debian13, ioc_nodes]
-192.168.122.12   testbed-debian13-node2    [debian13, ioc_nodes]
-192.168.122.100  testbed-rocky8-server     [rocky8,   ioc_nodes]
-192.168.122.101  testbed-rocky8-node1      [rocky8,   ioc_nodes]
-192.168.122.102  testbed-rocky8-node2      [rocky8,   ioc_nodes]
-```
+Production and site deployments may provide a complete inventory instead.
 
 **Inventory groups:**
 
 | Group | Members |
 |---|---|
-| `rocky8` | server, node1, node2 |
-| `debian13` | server, node1, node2 |
+| `rocky8` | Generated Rocky 8 and Rocky 8 ioc-runner hosts |
+| `debian13` | Generated Debian 13 and Debian 13 ioc-runner hosts |
 | `ioc_nodes` | rocky8 + debian13 |
 | `all_nodes` | rocky8 + debian13 |
-| `nfs_sim_nodes` | rocky8-server, debian13-server |
-| `ethercat_nodes` | debian13-ethercat-server |
-| `ethercat_build` | debian13-rtbase-server |
-| `epics_env_core` | epics-env rocky8, debian13 |
-| `epics_env_matrix` | epics-env rocky10, ubuntu24, ubuntu26 |
+| `nfs_sim_nodes` | Generated IOC server and ioc-runner bake hosts |
+| `ethercat_nodes` | Generated `debian13-ethercat` runtime hosts |
+| `ethercat_build` | Generated `debian13-rtbase` bake hosts |
+| `epics_env_core` | Generated EPICS-env Rocky 8 and Debian 13 build hosts |
+| `epics_env_matrix` | Generated EPICS-env Rocky 10, Ubuntu 24, and Ubuntu 26 build hosts |
 | `epics_env_build` | `epics_env_core` + `epics_env_matrix` |
 
 ---
@@ -317,7 +311,7 @@ group_vars or carry its own complete group_vars tree.
 
 | Value | Plane / home |
 |---|---|
-| `INVENTORY`, `VM_PREFIX`, topology | Make / CONFIG_SITE.local |
+| `INVENTORY`, `RUNTIME_INVENTORY`, `VM_PREFIX`, topology | Make / CONFIG_SITE.local |
 | `ntp_servers` | Ansible / group_vars/all.yml |
 | `epics_ioc_engineers` | Ansible / group_vars/all.yml |
 | `path_ioc_runner_root` | Ansible / group_vars/all.yml (derived from `epics_ioc_engineers[0]`) |
@@ -331,15 +325,14 @@ user (`ansible_user`), the first IOC engineer
 `path_ioc_runner_root` lives under that account's home. Overriding one
 without the others fails late (clone/chown into the wrong home).
 
-**Known consumers that bypass the Make plane**: `ansible.cfg` pins
-`inventory/testbed.ini` for the Direct CLI workflow, and the
-cloud-provision bake scripts pass the same path literally. The current
-cloud-provision bake scripts honor `INVENTORY` and `VM_PREFIX` from their
-single configuration source.
+**Known consumers that bypass the Make plane**: `ansible.cfg` selects
+`inventory/testbed.ini` for stable group relationships. The cloud-provision
+bake and EPICS-env scripts pass that file plus one generated inventory for
+each actual VM. Direct CLI use must do the same.
 
 | Scope | File | Contents |
 |---|---|---|
 | Public baseline defaults | `group_vars/all.yml` | package lists, public GitHub repos, pool NTP |
 | Validation defaults | `group_vars/all.yml`, `roles/nfs_sim/defaults/main.yml` | EPICS versions, ioc-runner source root, NFS simulation namespace |
-| Testbed defaults | `inventory/testbed.ini`, `group_vars/all.yml` | example IPs, `vmadmin` SSH user, example IOC engineer user |
+| Testbed defaults | `inventory/testbed.ini`, `group_vars/all.yml` | group relationships and example IOC engineer user |
 | OS defaults | `group_vars/rocky8.yml`, `group_vars/debian13.yml` | OS-specific EPICS binary directory selectors; OS python package lists (sole owners) |

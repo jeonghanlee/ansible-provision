@@ -25,8 +25,9 @@ contract, and the consumer register; it does not duplicate those sections.
 |---|---|
 | Create, bake, or destroy a VM; golden image | cloud-provision |
 | VM naming convention, OS variant definition | cloud-provision |
-| Static IP allocation and network scheme | cloud-provision (read-only mirror in ansible-provision inventory) |
-| Inventory host groups | ansible-provision |
+| VM name and resolved address | cloud-provision |
+| Workload-to-group mapping and generated host inventory | cloud-provision generator |
+| Stable group relationships and group variables | ansible-provision |
 | Role or playbook that installs or configures software | ansible-provision |
 | Consumer software build logic and its own tests | the consumer repo |
 
@@ -41,14 +42,14 @@ runtime host boots that image.
 |---|---|---|---|
 | Bake source variant | cloud-provision | `<os>` base (`rocky8` / `debian13`) | `debian13-rtbase` |
 | Runtime variant (`make <variant>.server`) | cloud-provision | `<os>-iocrunner` | `debian13-ethercat` |
-| Bake-time inventory target | ansible-provision inventory | `testbed-<os>-server` | `ethercat_build` |
-| Runtime host (boots the variant) | cloud-provision naming + IP bases (iocrunner has NO inventory entry — its runtime playbook is none; the ethercat host is also listed in the ansible-provision inventory) | `testbed-<os>-iocrunner-server` | `testbed-debian13-ethercat-server` (192.168.122.70, group `ethercat_nodes`) |
+| Bake-time generated groups | cloud-provision generator | base OS + `nfs_sim_nodes` | `ethercat_build` |
+| Runtime generated groups | cloud-provision generator | base OS group when Ansible use is requested | `ethercat_nodes` |
 | Bake-time playbook | ansible-provision | `site.yml` + `04_nfs_sim.yml` | `05_ethercat_base.yml` |
 | Runtime playbook | ansible-provision | none (boots baked image) | `06_ethercat.yml` |
 
-Per cloud-provision section 11, the IP scheme in `inventory/testbed.ini`
-is a shared contract: any change requires coordinated updates in both
-repositories.
+The actual host name and address never appear in the maintained inventory.
+`inventory/testbed.ini` provides only group relationships; generated host
+inventories carry the current identity across the seam.
 
 ## Consumer Register
 

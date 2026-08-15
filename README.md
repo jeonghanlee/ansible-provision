@@ -27,38 +27,50 @@ Install ansible-core on the control host:
 make setup
 ```
 
-Validation VMs must be running via `cloud-provision` before executing the
-example inventory.
+Validation VMs must be running via `cloud-provision`. The maintained
+`inventory/testbed.ini` contains group relationships and no host rows;
+`cloud-provision/bin/generate_ansible_inventory.bash` supplies the actual VM
+name, resolved address, and workload group as a second inventory source.
+
+From the cloud-provision checkout, generate one ordinary Rocky 8 server entry:
+
+```bash
+bin/create_vm.bash -o rocky8 -n server -s | bin/generate_ansible_inventory.bash --status-input --os-type rocky8 --role nfs-sim-node > /tmp/cloud-provision-host.ini
+```
 
 ## Makefile Workflow
+
+Set `RUNTIME_INVENTORY` to a generated host inventory before running a target.
+Set `ANSIBLE_LIMIT` to the generated VM name when a per-node target must select
+an arbitrary prefix or run-specific name.
 
 ### Connectivity
 
 ```bash
-make ping
+make ping RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini
 ```
 
 ### Provision
 
 ```bash
-make all                           # site.yml on all nodes
-make 01_base                       # base OS on all nodes
-make 02_apps                       # con, procServ, conserver on all nodes
-make 03_epics                      # EPICS + ioc-runner on ioc nodes
-make 04_nfs_sim                    # NFS root_squash simulation on server nodes
+make all RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini
+make 01_base RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini
+make 02_apps RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini
+make 03_epics RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini
+make 04_nfs_sim RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini
 ```
 
 ```bash
-make 01_base.rocky8                # OS group
-make 01_base.rocky8.server         # single VM
-make 04_nfs_sim.rocky8.server      # server-only validation target
+make 01_base.rocky8 RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini
+make 01_base.rocky8.server RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini ANSIBLE_LIMIT=actual-vm-name
+make 04_nfs_sim.rocky8.server RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini ANSIBLE_LIMIT=actual-vm-name
 ```
 
 ### Dry Run
 
 ```bash
-make check                         # connectivity + templating check
-make 01_base.rocky8.server.check
+make check RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini
+make 01_base.rocky8.server.check RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini ANSIBLE_LIMIT=actual-vm-name
 ```
 
 Raw tasks are skipped in check mode: `check` validates inventory,
@@ -68,8 +80,8 @@ changes.
 ### Options
 
 ```bash
-make 01_base ANSIBLE_TAGS=base ANSIBLE_OPTS=-v
-make 02_apps ANSIBLE_LIMIT=rocky8
+make 01_base RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini ANSIBLE_TAGS=base ANSIBLE_OPTS=-v
+make 02_apps RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini ANSIBLE_LIMIT=rocky8
 ```
 
 ### Configuration
@@ -84,18 +96,18 @@ make PRINT.INVENTORY
 ## Direct CLI Workflow
 
 ```bash
-ansible all -m raw -a "uptime"
-ansible-playbook site.yml
-ansible-playbook playbooks/01_base.yml
-ansible-playbook playbooks/02_apps.yml
-ansible-playbook playbooks/03_epics.yml
+ansible all -i inventory/testbed.ini -i /tmp/cloud-provision-host.ini -m raw -a "uptime"
+ansible-playbook -i inventory/testbed.ini -i /tmp/cloud-provision-host.ini site.yml
+ansible-playbook -i inventory/testbed.ini -i /tmp/cloud-provision-host.ini playbooks/01_base.yml
+ansible-playbook -i inventory/testbed.ini -i /tmp/cloud-provision-host.ini playbooks/02_apps.yml
+ansible-playbook -i inventory/testbed.ini -i /tmp/cloud-provision-host.ini playbooks/03_epics.yml
 ```
 
 ```bash
-ansible-playbook site.yml --limit rocky8
-ansible-playbook site.yml --limit testbed-rocky8-server
-ansible-playbook site.yml --tags epics
-ansible-playbook site.yml -C
+ansible-playbook -i inventory/testbed.ini -i /tmp/cloud-provision-host.ini site.yml --limit rocky8
+ansible-playbook -i inventory/testbed.ini -i /tmp/cloud-provision-host.ini site.yml --limit actual-vm-name
+ansible-playbook -i inventory/testbed.ini -i /tmp/cloud-provision-host.ini site.yml --tags epics
+ansible-playbook -i inventory/testbed.ini -i /tmp/cloud-provision-host.ini site.yml -C
 ```
 
 ---
@@ -103,17 +115,20 @@ ansible-playbook site.yml -C
 ## Inventory
 
 ```
-inventory/testbed.ini              # Example Rocky 8 + Debian 13 validation inventory
+inventory/testbed.ini              # Host-free testbed group relationships
 inventory/group_vars/all.yml       # Baseline and validation defaults
 inventory/group_vars/rocky8.yml    # Rocky 8 specific (epics_os_dir)
 inventory/group_vars/debian13.yml  # Debian 13 specific (epics_os_dir)
 ```
 
-Override inventory path via:
+Supply a generated host inventory to Make without replacing the maintained
+group relationships:
 
 ```bash
-echo "INVENTORY=inventory/custom.ini" > configure/CONFIG_SITE.local
+make 01_base RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini
 ```
+
+`INVENTORY` remains overridable for a site-owned complete inventory.
 
 Standalone (non-testbed) VMs: see
 [docs/STANDALONE.md](docs/STANDALONE.md) for the control-host-over-ssh

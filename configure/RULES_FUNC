@@ -13,10 +13,10 @@ VARS_EXCLUDES += QUIET SHELL
 define playbook_os_targets
 .PHONY: $(1).$(2) $(1).$(2).check
 
-$(1).$(2): ## Run $(1) on $(2) nodes
+$(1).$(2): check-inventory-source ## Run $(1) on $(2) nodes
 	$(QUIET) $(ANSIBLE_PLAYBOOK) $(_base_opts) --limit $(2) $(PLAYBOOK_DIR)/$(1).yml
 
-$(1).$(2).check: ## Dry run $(1) on $(2) nodes
+$(1).$(2).check: check-inventory-source ## Dry run $(1) on $(2) nodes
 	$(QUIET) $(ANSIBLE_PLAYBOOK) $(_base_opts) --limit $(2) -C $(PLAYBOOK_DIR)/$(1).yml
 endef
 
@@ -25,13 +25,13 @@ endef
 define playbook_node_targets
 .PHONY: $(1).$(2).$(3) $(1).$(2).$(3).check
 
-$(1).$(2).$(3): ## Run $(1) on $(VM_PREFIX)-$(2)-$(3)
+$(1).$(2).$(3): check-inventory-source ## Run $(1) on $(VM_PREFIX)-$(2)-$(3)
 	$(QUIET) $(ANSIBLE_PLAYBOOK) $(_base_opts) \
-	    --limit $(VM_PREFIX)-$(2)-$(3) $(PLAYBOOK_DIR)/$(1).yml
+	    $(if $(ANSIBLE_LIMIT),,--limit $(VM_PREFIX)-$(2)-$(3)) $(PLAYBOOK_DIR)/$(1).yml
 
-$(1).$(2).$(3).check: ## Dry run $(1) on $(VM_PREFIX)-$(2)-$(3)
+$(1).$(2).$(3).check: check-inventory-source ## Dry run $(1) on $(VM_PREFIX)-$(2)-$(3)
 	$(QUIET) $(ANSIBLE_PLAYBOOK) $(_base_opts) \
-	    --limit $(VM_PREFIX)-$(2)-$(3) -C $(PLAYBOOK_DIR)/$(1).yml
+	    $(if $(ANSIBLE_LIMIT),,--limit $(VM_PREFIX)-$(2)-$(3)) -C $(PLAYBOOK_DIR)/$(1).yml
 endef
 
 # Generates group targets for a playbook (all OS groups).
