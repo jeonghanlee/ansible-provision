@@ -1,6 +1,7 @@
 .DEFAULT_GOAL := help
 
-.PHONY: help help.detail all check ping
+.PHONY: help help.detail all check ping check-inventory-source \
+	check-runtime-inventory-contract
 
 ##@ Help
 
@@ -60,16 +61,32 @@ help.detail: ## Show the full target reference
 
 ##@ Provisioning
 
-all: ## Run full playbook stack on all nodes
+check-inventory-source:
+	$(QUIET) if [ "$(INVENTORY)" = "inventory/testbed.ini" ] && \
+	    [ -z "$(RUNTIME_INVENTORY)" ]; then \
+	    printf "%s\n" "Error: RUNTIME_INVENTORY is required with inventory/testbed.ini." >&2; \
+	    exit 1; \
+	fi
+	$(QUIET) if [ -n "$(RUNTIME_INVENTORY)" ] && \
+	    [ ! -f "$(RUNTIME_INVENTORY)" ]; then \
+	    printf "Error: runtime inventory not found: %s\n" "$(RUNTIME_INVENTORY)" >&2; \
+	    exit 1; \
+	fi
+
+all: check-inventory-source ## Run full playbook stack on all nodes
 	$(QUIET) $(ANSIBLE_PLAYBOOK) $(_base_opts) $(SITE_YML)
 
-check: ## Dry run full playbook stack on all nodes
+check: check-inventory-source ## Dry run full playbook stack on all nodes
 	$(QUIET) $(ANSIBLE_PLAYBOOK) $(_base_opts) -C $(SITE_YML)
 
 ##@ Connectivity
 
-ping: ## Verify connectivity to all nodes (honors ANSIBLE_LIMIT)
-	$(QUIET) $(ANSIBLE_CMD) all -i $(INVENTORY) $(_limit_opt) -m raw -a "uptime"
+ping: check-inventory-source ## Verify connectivity to all nodes (honors ANSIBLE_LIMIT)
+	$(QUIET) $(ANSIBLE_CMD) all -i $(INVENTORY) $(_runtime_inventory_opt) \
+	    $(_limit_opt) -m raw -a "uptime"
+
+check-runtime-inventory-contract: ## Verify generated inventory Make preflight
+	$(QUIET) bash $(TOP)/tests/check-runtime-inventory-contract.bash
 
 $(foreach pb,  $(ALL_NODE_PLAYBOOKS), $(eval $(call playbook_group_targets,$(pb),all nodes)))
 $(foreach pb,  $(SERVER_ONLY_PLAYBOOKS), $(eval $(call playbook_group_targets,$(pb),server nodes)))
