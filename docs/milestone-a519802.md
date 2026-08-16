@@ -408,7 +408,7 @@ correction that supports GCC 15.
 | Group | ID | Work unit | Type | Status | Ready | Deps | Done when / Evidence |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Runtime | M5 | Configured IOC runner installation destination | Milestone | Not started | Yes | | The real role installs and verifies the default and configured alternate destinations on Debian 13 and Rocky 8; [detail](#m5---configured-ioc-runner-installation-destination) |
-| Gates | G3 | Owner decision on Ansible SSH master reuse | External gate | Open | No | | Owner selects a mitigation path or records a Keep verdict with evidence; [detail](#g3---owner-decision-on-ansible-ssh-master-reuse) |
+| Gates | G3 | Owner decision on Ansible SSH master reuse | External gate | Complete | No | | Owner records a Keep verdict after the real recreate path shows no stale master; [detail](#g3---owner-decision-on-ansible-ssh-master-reuse) |
 
 Unassigned work belongs here; the release tally above excludes this section.
 
@@ -493,7 +493,7 @@ Out of scope: consumer lifecycle-suite selection, source-mode behavior,
 - Origin: a519802 / G3
 - Identity History: added to the current generation from GitHub issue #10 after the 2026-08-12 code comparison
 - GitHub Issue: #10, https://github.com/jeonghanlee/ansible-provision/issues/10
-- Status: Open
+- Status: Complete
 
 ##### Summary
 
@@ -537,11 +537,12 @@ Out of scope: `cloud-provision`, where the related operator SSH path is already 
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
-| T1 | 2026-08-12 | Local repository | Pending | The current `ansible.cfg` has no `[ssh_connection]` section; the real recreate test has not run. |
+| T1 | 2026-08-16 | Testbed VM rocky8 `.100` | Passed | Real destroy-recreate observed; no stale master. The idle master was reaped by `ControlPersist=60s` before the recreate completed, and the reconnect reached the fresh VM (`up 2 min`, `rc=0`) through a new master. |
 
 ##### Closure Evidence
 
-- Gate remains Open. The selected option 1 scope intentionally leaves SSH configuration unchanged pending the real recreate check and owner decision.
+- Gate closed by an owner-approved Keep verdict recorded in `docs/CLOSED_DOORS.md` on 2026-08-16.
+- The real recreate path shows no stale control master; `ansible.cfg` is left unchanged. `host_key_checking=False` already neutralizes the separate reused-address `known_hosts` warning.
 
 ##### GitHub Projection
 
