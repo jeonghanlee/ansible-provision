@@ -403,10 +403,10 @@ filed as `jeonghanlee/epics-ioc-runner#147`.
 - Title: `Pass path_ioc_runner_bin to setup-system-infra.bash as IOC_RUNNER_SCRIPT_DEST`
 - Labels: `bug`
 - GitHub Milestone: `Backlog`
-- Observed State: open
+- Observed State: closed
 - Observed Labels: `bug`
 - Observed Milestone: `Backlog`
-- Last Compared: 2026-08-16; GitHub updated 2026-08-16T08:33:33Z
+- Last Compared: 2026-08-16; GitHub updated 2026-08-16T16:29:09Z
 
 #### G1 - Owner-Selected Consumer Release-Gate Bake and Release Authorization
 
