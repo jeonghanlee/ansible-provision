@@ -549,10 +549,10 @@ Out of scope: `cloud-provision`, where the related operator SSH path is already 
 - Title: `Ansible reuses an SSH master keyed on a reused address`
 - Labels: `bug`
 - GitHub Milestone: `Backlog`
-- Observed State: open
+- Observed State: closed
 - Observed Labels: `bug`
 - Observed Milestone: `Backlog`
-- Last Compared: 2026-08-16; GitHub updated 2026-08-16T08:33:26Z
+- Last Compared: 2026-08-16; GitHub updated 2026-08-16T09:40:04Z
 
 ## History
 
