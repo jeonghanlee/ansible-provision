@@ -24,7 +24,7 @@ as the Gate-grade baseline (`1.2.3` at this session close), obtain owner
 direction before cleaning any running `testbed-debian13-server` domain, then
 run the Rocky 8 and Debian 13 bakes and `epics-ioc-runner/gate/RUNBOOK.md`.
 
-Status tally: 2 Complete, 2 Blocked. External gates: 0 Complete, 2 Open.
+Status tally: 3 Complete, 2 Blocked. External gates: 0 Complete, 2 Open.
 
 ## Milestone
 
@@ -36,6 +36,7 @@ Status tally: 2 Complete, 2 Blocked. External gates: 0 Complete, 2 Open.
 | Release | M2 | Version 1.0 release convention | Carry-forward | Blocked | No | G1 | Consumer release gate, matching tags, and the next version-scoped register are complete; [detail](#m2---version-10-release-convention) |
 | Docs | M3 | epics-ioc-runner runbook reference repair | Carry-forward | Complete | No | | All three repository references name `epics-ioc-runner/gate/RUNBOOK.md`; [detail](#m3---epics-ioc-runner-runbook-reference-repair) |
 | Runtime | M4 | Generated Ansible host inventory contract | Milestone | Complete | No | | Generated runtime inventories and site-owned complete inventories both pass the shipped Make contract; [detail](#m4---generated-ansible-host-inventory-contract) |
+| Runtime | M5 | Configured IOC runner installation destination | Milestone | Complete | No | | The real role installs and verifies the default and alternate destinations on Debian 13 and Rocky 8; [detail](#m5---configured-ioc-runner-installation-destination) |
 | Gates | G1 | Owner-selected consumer release-gate bake and release authorization | External gate | Open | No | | Owner selects the release-gate bake and authorizes the matching tag sequence; [detail](#g1---owner-selected-consumer-release-gate-bake-and-release-authorization) |
 | Gates | G2 | Ubuntu 26 `iocStats` compatibility with GCC 15 | External gate | Open | No | | A compatible `iocStats` revision or correction is selected and the complete Ubuntu 26 path passes; [detail](#g2---ubuntu-26-iocstats-compatibility-with-gcc-15) |
 
@@ -326,6 +327,87 @@ changing site-owned inventory files.
 - Commit `50925d4` carries the runtime inventory contract, documentation, and shipped check.
 - The shipped check passed 3 of 3 on 2026-08-16 against the current committed tree.
 
+#### M5 - Configured IOC Runner Installation Destination
+
+- Origin: a519802 / M5
+- Identity History: added to the current generation from GitHub issue #13 after the 2026-08-16 code comparison; assigned from Backlog to Milestone on completion (see Assignment History)
+- GitHub Issue: #13, https://github.com/jeonghanlee/ansible-provision/issues/13
+- Status: Complete
+
+##### Summary
+
+The `app_ioc_runner` role passes the configured `path_ioc_runner_bin` to the
+shipped setup path as `IOC_RUNNER_SCRIPT_DEST` and ensures the destination parent
+directory exists, so the runner installs and verifies at the configured
+destination rather than only the default.
+
+##### Scope
+
+Pass `path_ioc_runner_bin` to `setup-system-infra.bash --full` as
+`IOC_RUNNER_SCRIPT_DEST`, create the destination parent directory before the
+setup call, and preserve the default destination and the installed identity
+check.
+
+Out of scope: consumer lifecycle-suite selection, source-mode behavior,
+`epics-ioc-runner/gate/RUNBOOK.md`, setup deployment semantics, and
+`cloud-provision` validation behavior. Those consumer changes belong to
+`jeonghanlee/epics-ioc-runner#145`. Setup-side parent-directory robustness is
+filed as `jeonghanlee/epics-ioc-runner#147`.
+
+##### Completion Criteria
+
+- With the default inventory value, the real role installs or retains `/usr/local/bin/ioc-runner` and verifies its `-V` identity on Debian 13 and Rocky 8.
+- With an alternate absolute `path_ioc_runner_bin`, the real role runs the shipped setup path, installs at that exact destination, and verifies its `-V` identity on Debian 13 and Rocky 8.
+- No staged or hand-copied executable substitutes for the shipped setup path during verification.
+
+##### Dependencies And Decisions
+
+- No M, G, or D dependencies block the local implementation.
+- `jeonghanlee/epics-ioc-runner#145` owns downstream consumer selection and lifecycle verification.
+- `jeonghanlee/epics-ioc-runner#147` tracks the optional setup-side parent-directory robustness follow-up.
+
+##### Implementation Plan
+
+- Plan Status: accepted
+- Plan Acceptance: owner selected the plan in chat, 2026-08-16
+- Implementation Authorization: owner authorized implementation in chat, 2026-08-16
+- Superseded Plan Artifacts: none
+
+1. Export the resolved `path_ioc_runner_bin` as `IOC_RUNNER_SCRIPT_DEST` for the shipped setup invocation.
+2. Create the destination parent directory with `install -d "$(dirname "${bin}")"` before invoking setup.
+3. Preserve the default inventory value and the existing installed identity check.
+4. Run the real role with the default and alternate destinations on Debian 13 and Rocky 8.
+
+##### Test Plan
+
+| Label | Layer | Method | Environment | Expected Result |
+| --- | --- | --- | --- | --- |
+| T1 | Integration | Run the real `app_ioc_runner` role with the default destination | Debian 13 and Rocky 8 | The role installs or retains `/usr/local/bin/ioc-runner`, and its real `-V` identity matches the retained checkout. |
+| T2 | Integration | Run the real `app_ioc_runner` role with an alternate absolute destination | Debian 13 and Rocky 8 | The shipped setup installs at the configured path, and the role verifies the real `-V` identity there. |
+
+##### Verification Results
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T1 | 2026-08-16 | Debian 13 and Rocky 8 | Passed | Real role at tag `1.2.3` (`4868a25`); `/usr/local/bin/ioc-runner -V` reports `1.2.3 (4868a25)` on both. |
+| T2 | 2026-08-16 | Debian 13 and Rocky 8 | Passed | Real role with `path_ioc_runner_bin=/opt/tools/bin/ioc-runner`; the shipped setup installs there and `-V` reports `1.2.3 (4868a25)` on both. |
+
+##### Closure Evidence
+
+- `roles/app_ioc_runner/tasks/main.yml` passes `IOC_RUNNER_SCRIPT_DEST="${bin}"` and runs `install -d "$(dirname "${bin}")"` before the shipped setup call.
+- The real role path is verified on Debian 13 and Rocky 8 at tag `1.2.3`; the default and alternate destinations both install and verify their `-V` identity.
+- T2 first surfaced a setup-side gap (missing destination parent directory), handled caller-side here and filed as `jeonghanlee/epics-ioc-runner#147` for setup robustness.
+
+##### GitHub Projection
+
+- Title: `Pass path_ioc_runner_bin to setup-system-infra.bash as IOC_RUNNER_SCRIPT_DEST`
+- Labels: `bug`
+- GitHub Milestone: `Backlog`
+- Observed State: open
+- Observed Labels: `bug`
+- Observed Milestone: `Backlog`
+- Last Compared: 2026-08-16; GitHub updated 2026-08-16T08:33:33Z
+
 #### G1 - Owner-Selected Consumer Release-Gate Bake and Release Authorization
 
 - Origin: a519802 / G1
@@ -407,46 +489,46 @@ correction that supports GCC 15.
 
 | Group | ID | Work unit | Type | Status | Ready | Deps | Done when / Evidence |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Runtime | M5 | Configured IOC runner installation destination | Milestone | Not started | Yes | | The real role installs and verifies the default and configured alternate destinations on Debian 13 and Rocky 8; [detail](#m5---configured-ioc-runner-installation-destination) |
+| Runtime | M6 | IOC runner CLI resolution at a non-default destination | Milestone | Not started | Yes | | The role's post-install verification resolves ioc-runner at a non-default `path_ioc_runner_bin` without relying on PATH; [detail](#m6---ioc-runner-cli-resolution-at-a-non-default-destination) |
 | Gates | G3 | Owner decision on Ansible SSH master reuse | External gate | Complete | No | | Owner records a Keep verdict after the real recreate path shows no stale master; [detail](#g3---owner-decision-on-ansible-ssh-master-reuse) |
 
 Unassigned work belongs here; the release tally above excludes this section.
 
 ### Backlog Details
 
-#### M5 - Configured IOC Runner Installation Destination
+#### M6 - IOC Runner CLI Resolution at a Non-Default Destination
 
-- Origin: a519802 / M5
-- Identity History: added to the current generation from GitHub issue #13 after the 2026-08-16 code comparison
-- GitHub Issue: #13, https://github.com/jeonghanlee/ansible-provision/issues/13
+- Origin: a519802 / M6
+- Identity History: added to the current generation from the M5 third-person review on 2026-08-16
+- GitHub Issue: none
 - Status: Not started
 
 ##### Summary
 
-The `app_ioc_runner` role verifies `path_ioc_runner_bin` but does not pass that
-configured destination to the shipped setup path during installation.
+The `app_ioc_runner` role's final "Verify ioc-runner command" step calls the
+bare `ioc-runner`, relying on PATH resolution. When `path_ioc_runner_bin` is a
+non-default absolute path outside PATH and no PATH-resolvable symlink is created,
+that step can fail even though the binary installed correctly at the configured
+destination.
 
 ##### Scope
 
-Pass `path_ioc_runner_bin` to `setup-system-infra.bash --full` as
-`IOC_RUNNER_SCRIPT_DEST`, while preserving the current default destination and
-the installed identity check.
+Make the role's post-install verification resolve the ioc-runner CLI at the
+configured destination for a non-default `path_ioc_runner_bin` — for example by
+invoking `${bin}` directly or ensuring a PATH-resolvable link.
 
-Out of scope: consumer lifecycle-suite selection, source-mode behavior,
-`epics-ioc-runner/gate/RUNBOOK.md`, setup deployment semantics, and
-`cloud-provision` validation behavior. Those consumer changes belong to
-`jeonghanlee/epics-ioc-runner#145`.
+Out of scope: the shipped setup's own symlink policy, which belongs to
+`epics-ioc-runner`. M5 already verifies the configured destination through the
+`${bin}` identity check; this item covers only the bare-command verification
+step.
 
 ##### Completion Criteria
 
-- With the default inventory value, the real role installs or retains `/usr/local/bin/ioc-runner` and verifies its `-V` identity on Debian 13 and Rocky 8.
-- With an alternate absolute `path_ioc_runner_bin`, the real role runs the shipped setup path, installs at that exact destination, and verifies its `-V` identity on Debian 13 and Rocky 8.
-- No staged or hand-copied executable substitutes for the shipped setup path during verification.
+- With a non-default `path_ioc_runner_bin` outside PATH and no prior default install present, the role's post-install verification passes on Debian 13 and Rocky 8.
 
 ##### Dependencies And Decisions
 
-- No M, G, or D dependencies block the local implementation.
-- `jeonghanlee/epics-ioc-runner#145` owns downstream consumer selection and lifecycle verification.
+- No M, G, or D dependencies.
 
 ##### Implementation Plan
 
@@ -455,38 +537,24 @@ Out of scope: consumer lifecycle-suite selection, source-mode behavior,
 - Implementation Authorization: none
 - Superseded Plan Artifacts: none
 
-1. Export the resolved `path_ioc_runner_bin` as `IOC_RUNNER_SCRIPT_DEST` only for the shipped setup invocation.
-2. Preserve the default inventory value and the existing installed identity check.
-3. Run the real role with the default and alternate destinations on Debian 13 and Rocky 8.
-4. Hand the verified destination contract to `jeonghanlee/epics-ioc-runner#145` for consumer coverage.
+1. Resolve the ioc-runner CLI at `${bin}` in the role's post-install verification instead of relying on the bare command.
+2. Run the real role with a non-default destination outside PATH, with no prior default install, on Debian 13 and Rocky 8.
 
 ##### Test Plan
 
 | Label | Layer | Method | Environment | Expected Result |
 | --- | --- | --- | --- | --- |
-| T1 | Integration | Run the real `app_ioc_runner` role with the default destination | Debian 13 and Rocky 8 | The role installs or retains `/usr/local/bin/ioc-runner`, and its real `-V` identity matches the retained checkout. |
-| T2 | Integration | Run the real `app_ioc_runner` role with an alternate absolute destination | Debian 13 and Rocky 8 | The shipped setup installs at the configured path, and the role verifies the real `-V` identity there. |
+| T1 | Integration | Run the real role with a non-default `path_ioc_runner_bin` outside PATH on a host with no prior default install | Debian 13 and Rocky 8 | The post-install verification resolves and passes at the configured destination. |
 
 ##### Verification Results
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
-| T1 | Not run | Debian 13 and Rocky 8 | Pending | The default path remains configured; the real role path has not been rerun for this work. |
-| T2 | Not run | Debian 13 and Rocky 8 | Pending | The setup invocation does not yet pass `IOC_RUNNER_SCRIPT_DEST`. |
+| T1 | Not run | Debian 13 and Rocky 8 | Pending | Surfaced by the M5 third-person review; not yet implemented. |
 
 ##### Closure Evidence
 
-- GitHub #13 remains open. The 2026-08-16 code comparison confirms that `roles/app_ioc_runner/tasks/main.yml` checks `path_ioc_runner_bin` but exports only `SUDO_USER` to the shipped setup invocation.
-
-##### GitHub Projection
-
-- Title: `Pass path_ioc_runner_bin to setup-system-infra.bash as IOC_RUNNER_SCRIPT_DEST`
-- Labels: `bug`
-- GitHub Milestone: `Backlog`
-- Observed State: open
-- Observed Labels: `bug`
-- Observed Milestone: `Backlog`
-- Last Compared: 2026-08-16; GitHub updated 2026-08-16T08:33:33Z
+- Surfaced by the M5 third-person review on 2026-08-16: T2 passed only because the earlier default install left `/usr/local/bin/ioc-runner` in PATH; a clean non-default-only host is not yet verified.
 
 #### G3 - Owner Decision on Ansible SSH Master Reuse
 
@@ -553,6 +621,12 @@ Out of scope: `cloud-provision`, where the related operator SSH path is already 
 - Observed Labels: `bug`
 - Observed Milestone: `Backlog`
 - Last Compared: 2026-08-16; GitHub updated 2026-08-16T09:40:04Z
+
+## Assignment History
+
+| Date | Work | From | To | Synchronization Commit |
+| --- | --- | --- | --- | --- |
+| 2026-08-16 | M5 | Backlog | Milestone | this synchronization commit |
 
 ## History
 
