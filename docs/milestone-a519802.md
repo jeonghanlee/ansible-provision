@@ -24,7 +24,7 @@ as the Gate-grade baseline (`1.2.3` at this session close), obtain owner
 direction before cleaning any running `testbed-debian13-server` domain, then
 run the Rocky 8 and Debian 13 bakes and `epics-ioc-runner/gate/RUNBOOK.md`.
 
-Status tally: 1 Complete, 2 Blocked. External gates: 0 Complete, 2 Open.
+Status tally: 2 Complete, 2 Blocked. External gates: 0 Complete, 2 Open.
 
 ## Milestone
 
@@ -35,6 +35,7 @@ Status tally: 1 Complete, 2 Blocked. External gates: 0 Complete, 2 Open.
 | Core | M1 | EPICS-env source-build environment | Carry-forward | Blocked | No | G2 | Rocky 8, Debian 13, Rocky 10, Ubuntu 24, and Ubuntu 26 pass the complete source-build matrix; [detail](#m1---epics-env-source-build-environment) |
 | Release | M2 | Version 1.0 release convention | Carry-forward | Blocked | No | G1 | Consumer release gate, matching tags, and the next version-scoped register are complete; [detail](#m2---version-10-release-convention) |
 | Docs | M3 | epics-ioc-runner runbook reference repair | Carry-forward | Complete | No | | All three repository references name `epics-ioc-runner/gate/RUNBOOK.md`; [detail](#m3---epics-ioc-runner-runbook-reference-repair) |
+| Runtime | M4 | Generated Ansible host inventory contract | Milestone | Complete | No | | Generated runtime inventories and site-owned complete inventories both pass the shipped Make contract; [detail](#m4---generated-ansible-host-inventory-contract) |
 | Gates | G1 | Owner-selected consumer release-gate bake and release authorization | External gate | Open | No | | Owner selects the release-gate bake and authorizes the matching tag sequence; [detail](#g1---owner-selected-consumer-release-gate-bake-and-release-authorization) |
 | Gates | G2 | Ubuntu 26 `iocStats` compatibility with GCC 15 | External gate | Open | No | | A compatible `iocStats` revision or correction is selected and the complete Ubuntu 26 path passes; [detail](#g2---ubuntu-26-iocstats-compatibility-with-gcc-15) |
 
@@ -116,7 +117,7 @@ source-build hosts.
 
 ##### Closure Evidence
 
-- `M1` remains Blocked by `G2`. GitHub #7 is open; its live state was observed on 2026-08-06.
+- `M1` remains Blocked by `G2`. GitHub #7 is open; its live state was observed on 2026-08-16.
 
 ##### GitHub Projection
 
@@ -126,7 +127,7 @@ source-build hosts.
 - Observed State: open
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
-- Last Compared: 2026-08-06; GitHub updated 2026-07-29T00:20:45Z
+- Last Compared: 2026-08-16; GitHub updated 2026-08-16T08:33:22Z
 
 #### M2 - Version 1.0 Release Convention
 
@@ -247,17 +248,83 @@ Out of scope: `test_users` role behavior and automatic verification of the exter
 ##### Closure Evidence
 
 - The three local references are corrected and the affected playbook passes syntax validation.
-- GitHub #11 remains open; no GitHub mutation was authorized in this scope.
+- GitHub #11 is closed; its live state was observed on 2026-08-16.
 
 ##### GitHub Projection
 
 - Title: `Repoint the three epics-ioc-runner runbook references after the file moved to gate/RUNBOOK.md`
 - Labels: `documentation`
 - GitHub Milestone: `Backlog`
-- Observed State: open
+- Observed State: closed
 - Observed Labels: `documentation`
 - Observed Milestone: `Backlog`
-- Last Compared: 2026-08-12; GitHub updated 2026-08-01T20:34:58Z
+- Last Compared: 2026-08-16; GitHub updated 2026-08-16T08:33:30Z
+
+#### M4 - Generated Ansible Host Inventory Contract
+
+- Origin: a519802 / M4
+- Identity History: added to the current generation from shipped commit `50925d4` after the 2026-08-16 code comparison
+- GitHub Issue: none
+- Status: Complete
+
+##### Summary
+
+The stable inventory owns group relationships while callers supply resolved
+host identities through a generated runtime inventory or a site-owned complete
+inventory.
+
+##### Scope
+
+Keep `inventory/testbed.ini` free of host identities, require
+`RUNTIME_INVENTORY` when that group inventory is used, preserve arbitrary host
+selection, and continue supporting a complete inventory selected through
+`INVENTORY`.
+
+Out of scope: generating runtime inventory content, changing VM identity, and
+changing site-owned inventory files.
+
+##### Completion Criteria
+
+- `inventory/testbed.ini` contains stable group relationships and no host entries.
+- Make refuses the default group inventory when `RUNTIME_INVENTORY` is absent.
+- A generated inventory and arbitrary `ANSIBLE_LIMIT` reach the requested Make target.
+- A site-owned complete inventory remains supported without `RUNTIME_INVENTORY`.
+
+##### Dependencies And Decisions
+
+- No M, G, or D dependencies.
+
+##### Implementation Plan
+
+- Plan Status: accepted
+- Plan Acceptance: owner directed reconciliation from shipped code on 2026-08-16
+- Implementation Authorization: implementation is carried by owner-authored commit `50925d4`
+- Superseded Plan Artifacts: none
+
+1. Remove fixed host entries from the stable group inventory.
+2. Add the generated runtime inventory to the Make command path and reject a missing source.
+3. Preserve explicit site-owned complete inventories and verify both paths through the shipped Make target.
+
+##### Test Plan
+
+| Label | Layer | Method | Environment | Expected Result |
+| --- | --- | --- | --- | --- |
+| T1 | Contract | Run the shipped Make check without `RUNTIME_INVENTORY` | Local Make path | The default group inventory is rejected. |
+| T2 | Integration | Run the shipped Make check with a generated inventory and arbitrary host limit | Local Make path | The requested host reaches the generated Make target. |
+| T3 | Compatibility | Run the shipped Make check with a complete inventory through `INVENTORY` | Local Make path | The complete inventory remains supported. |
+
+##### Verification Results
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T1 | 2026-08-16 | Local Make path | Passed | `make check-runtime-inventory-contract`; missing generated source was rejected. |
+| T2 | 2026-08-16 | Local Make path | Passed | `make check-runtime-inventory-contract`; generated inventory and arbitrary host limit reached the target. |
+| T3 | 2026-08-16 | Local Make path | Passed | `make check-runtime-inventory-contract`; site-owned complete inventory remained supported. |
+
+##### Closure Evidence
+
+- Commit `50925d4` carries the runtime inventory contract, documentation, and shipped check.
+- The shipped check passed 3 of 3 on 2026-08-16 against the current committed tree.
 
 #### G1 - Owner-Selected Consumer Release-Gate Bake and Release Authorization
 
@@ -340,11 +407,86 @@ correction that supports GCC 15.
 
 | Group | ID | Work unit | Type | Status | Ready | Deps | Done when / Evidence |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| Runtime | M5 | Configured IOC runner installation destination | Milestone | Not started | Yes | | The real role installs and verifies the default and configured alternate destinations on Debian 13 and Rocky 8; [detail](#m5---configured-ioc-runner-installation-destination) |
 | Gates | G3 | Owner decision on Ansible SSH master reuse | External gate | Open | No | | Owner selects a mitigation path or records a Keep verdict with evidence; [detail](#g3---owner-decision-on-ansible-ssh-master-reuse) |
 
 Unassigned work belongs here; the release tally above excludes this section.
 
 ### Backlog Details
+
+#### M5 - Configured IOC Runner Installation Destination
+
+- Origin: a519802 / M5
+- Identity History: added to the current generation from GitHub issue #13 after the 2026-08-16 code comparison
+- GitHub Issue: #13, https://github.com/jeonghanlee/ansible-provision/issues/13
+- Status: Not started
+
+##### Summary
+
+The `app_ioc_runner` role verifies `path_ioc_runner_bin` but does not pass that
+configured destination to the shipped setup path during installation.
+
+##### Scope
+
+Pass `path_ioc_runner_bin` to `setup-system-infra.bash --full` as
+`IOC_RUNNER_SCRIPT_DEST`, while preserving the current default destination and
+the installed identity check.
+
+Out of scope: consumer lifecycle-suite selection, source-mode behavior,
+`epics-ioc-runner/gate/RUNBOOK.md`, setup deployment semantics, and
+`cloud-provision` validation behavior. Those consumer changes belong to
+`jeonghanlee/epics-ioc-runner#145`.
+
+##### Completion Criteria
+
+- With the default inventory value, the real role installs or retains `/usr/local/bin/ioc-runner` and verifies its `-V` identity on Debian 13 and Rocky 8.
+- With an alternate absolute `path_ioc_runner_bin`, the real role runs the shipped setup path, installs at that exact destination, and verifies its `-V` identity on Debian 13 and Rocky 8.
+- No staged or hand-copied executable substitutes for the shipped setup path during verification.
+
+##### Dependencies And Decisions
+
+- No M, G, or D dependencies block the local implementation.
+- `jeonghanlee/epics-ioc-runner#145` owns downstream consumer selection and lifecycle verification.
+
+##### Implementation Plan
+
+- Plan Status: draft
+- Plan Acceptance: none
+- Implementation Authorization: none
+- Superseded Plan Artifacts: none
+
+1. Export the resolved `path_ioc_runner_bin` as `IOC_RUNNER_SCRIPT_DEST` only for the shipped setup invocation.
+2. Preserve the default inventory value and the existing installed identity check.
+3. Run the real role with the default and alternate destinations on Debian 13 and Rocky 8.
+4. Hand the verified destination contract to `jeonghanlee/epics-ioc-runner#145` for consumer coverage.
+
+##### Test Plan
+
+| Label | Layer | Method | Environment | Expected Result |
+| --- | --- | --- | --- | --- |
+| T1 | Integration | Run the real `app_ioc_runner` role with the default destination | Debian 13 and Rocky 8 | The role installs or retains `/usr/local/bin/ioc-runner`, and its real `-V` identity matches the retained checkout. |
+| T2 | Integration | Run the real `app_ioc_runner` role with an alternate absolute destination | Debian 13 and Rocky 8 | The shipped setup installs at the configured path, and the role verifies the real `-V` identity there. |
+
+##### Verification Results
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T1 | Not run | Debian 13 and Rocky 8 | Pending | The default path remains configured; the real role path has not been rerun for this work. |
+| T2 | Not run | Debian 13 and Rocky 8 | Pending | The setup invocation does not yet pass `IOC_RUNNER_SCRIPT_DEST`. |
+
+##### Closure Evidence
+
+- GitHub #13 remains open. The 2026-08-16 code comparison confirms that `roles/app_ioc_runner/tasks/main.yml` checks `path_ioc_runner_bin` but exports only `SUDO_USER` to the shipped setup invocation.
+
+##### GitHub Projection
+
+- Title: `Pass path_ioc_runner_bin to setup-system-infra.bash as IOC_RUNNER_SCRIPT_DEST`
+- Labels: `bug`
+- GitHub Milestone: `Backlog`
+- Observed State: open
+- Observed Labels: `bug`
+- Observed Milestone: `Backlog`
+- Last Compared: 2026-08-16; GitHub updated 2026-08-16T08:33:33Z
 
 #### G3 - Owner Decision on Ansible SSH Master Reuse
 
@@ -409,7 +551,7 @@ Out of scope: `cloud-provision`, where the related operator SSH path is already 
 - Observed State: open
 - Observed Labels: `bug`
 - Observed Milestone: `Backlog`
-- Last Compared: 2026-08-12; GitHub updated 2026-08-01T06:52:38Z
+- Last Compared: 2026-08-16; GitHub updated 2026-08-16T08:33:26Z
 
 ## History
 
