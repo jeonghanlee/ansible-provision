@@ -53,7 +53,8 @@
     if [ "{{ ioc_runner_force_setup | bool | ternary('true', 'false') }}" = "true" ] || \
        [ ! -x "${bin}" ] || grep -Eq "${stamp_pattern}" "${bin}" || \
        [ "${installed_identity}" != "${expected_identity}" ]; then
-      SUDO_USER="${owner}" bash "${src}/bin/setup-system-infra.bash" --full
+      install -d "$(dirname "${bin}")"
+      SUDO_USER="${owner}" IOC_RUNNER_SCRIPT_DEST="${bin}" bash "${src}/bin/setup-system-infra.bash" --full
     fi
     test -x "${bin}"
     test -d "${src}/.git"
