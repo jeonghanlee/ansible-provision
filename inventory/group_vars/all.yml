@@ -56,6 +56,13 @@ path_conserver_src:  "/tmp/conserver-env"
 # epics_ioc_engineers in site overlays; the path follows.
 path_ioc_runner_root: "/home/{{ epics_ioc_engineers[0] }}/gitsrc"
 path_ioc_runner_src: "{{ path_ioc_runner_root }}/epics-ioc-runner"
+# Source under the engineer home (0700, HOME_MODE 0700). Running system mode
+# (shared ioc-srv account) from this home-cloned source needs a manual
+# `chmod o+x ~engineer` before the run and `chmod 0700 ~engineer` after;
+# installed mode (path_ioc_runner_bin, world-readable) and local mode are
+# unaffected. See epics-ioc-runner gate/RUNBOOK.md "System mode and the engineer
+# home" and docs/INSTALL.md 4.1 (jeonghanlee/epics-ioc-runner@fdb9ff7).
+# Tracked as M7 / #15.
 ioc_runner_force_setup: false
 
 # Installed binary paths (idempotency check)
