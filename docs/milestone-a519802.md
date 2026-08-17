@@ -18,13 +18,12 @@ remains in the owner's separate tracker.
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: `G1` is decided — the `iocrunner-gate-1.0.0` release
-basis is the 2026-08-17 Gate-grade bake (baseline `epics-ioc-runner` `1.2.3`,
-all gate steps passed on both goldens). The next release action is `M2`: cut the
-joint `iocrunner-gate-1.0.0` annotated tag on `cloud-provision` (`2b77a97`) and
-`ansible-provision` (`3981c21`) under a release delegation, then open the next
-version-scoped register. `M1` stays blocked on `G2` (Ubuntu 26 `iocStats` under
-GCC 15). The 2026-08-17 fresh consumers at `192.168.122.150` and
+Next session entry point: the `iocrunner-gate-1.0.0` joint tag is cut and pushed
+on `ansible-provision` (`3981c21`) and `cloud-provision` (`2b77a97`); `G1` is
+Complete and the 2026-08-17 Gate-grade run passed on both goldens (baseline
+`epics-ioc-runner` `1.2.3`). The one `M2` step left is opening the next
+version-scoped register (T4). `M1` stays blocked on `G2` (Ubuntu 26 `iocStats`
+under GCC 15). The 2026-08-17 fresh consumers at `192.168.122.150` and
 `192.168.122.50` are still up for any release verification.
 
 Status tally: 4 Complete, 1 In progress, 1 Blocked. External gates: 1 Complete, 1 Open.
@@ -188,13 +187,14 @@ Out of scope: selecting or executing the release sequence without owner authoriz
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
 | T1 | 2026-07-03 | Repository and consumer project | Passed | Agreed scope recorded in prior state commit `a519802` |
-| T2 | Not run | Consumer environment | Pending | Requires `G1` |
-| T3 | Not run | Repository family | Pending | Requires `G1` and owner authorization |
-| T4 | Not run | Repository | Pending | Follows T3 |
+| T2 | 2026-08-17 | Consumer environment | Passed | Gate-grade run passed on both goldens; see `G1` Verification Results and Recorded Decision |
+| T3 | 2026-08-17 | Repository family | Passed | Annotated tag `iocrunner-gate-1.0.0` on `ansible-provision` `3981c21` and `cloud-provision` `2b77a97`, both pushed to origin |
+| T4 | Not run | Repository | Pending | Next version-scoped register not yet opened |
 
 ##### Closure Evidence
 
-- `M2` is Blocked by open `G1`. No release mutation is authorized in this reset generation.
+- `G1` is Complete; the owner authorized the `iocrunner-gate-1.0.0` release basis on 2026-08-17. The joint annotated tag is cut on `ansible-provision` (`3981c21`) and `cloud-provision` (`2b77a97`) and pushed to origin.
+- `M2` remains `In progress`: the released register is preserved in the tag, but the next version-scoped register is not yet opened (T4).
 
 #### M3 - epics-ioc-runner Runbook Reference Repair
 
