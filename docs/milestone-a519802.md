@@ -574,7 +574,7 @@ correction that supports GCC 15.
 
 | Group | ID | Work unit | Type | Status | Ready | Deps | Done when / Evidence |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Runtime | M7 | Source-mode runner unreachable under a 0700 engineer home | Milestone | Open | No | | Owner selects a mitigation so the source-mode suites (S22/S27) reach the runner under a 0700 engineer home; [detail](#m7---source-mode-runner-unreachable-under-a-0700-engineer-home) |
+| Runtime | M7 | Source-mode runner unreachable under a 0700 engineer home | Milestone | Complete | No | | Option 3: the system-mode + home-cloned-source manual o+x prerequisite is documented (epics-ioc-runner `fdb9ff7` + an ansible-provision pointer); 0700 and the gate stay unchanged; [detail](#m7---source-mode-runner-unreachable-under-a-0700-engineer-home) |
 | Gates | G3 | Owner decision on Ansible SSH master reuse | External gate | Complete | No | | Owner records a Keep verdict after the real recreate path shows no stale master; [detail](#g3---owner-decision-on-ansible-ssh-master-reuse) |
 
 Unassigned work belongs here; the release tally above excludes this section.
@@ -584,9 +584,9 @@ Unassigned work belongs here; the release tally above excludes this section.
 #### M7 - Source-Mode Runner Unreachable Under a 0700 Engineer Home
 
 - Origin: a519802 / M7
-- Identity History: added to the current generation from the `cloud-provision` (cloud-office) handoff on 2026-08-17; owner mitigation decision pending
+- Identity History: added to the current generation from the `cloud-provision` (cloud-office) handoff on 2026-08-17; owner selected option 3 (keep 0700, document the source-mode prerequisite) on 2026-08-17; completed on the documentation basis on 2026-08-17
 - GitHub Issue: #15, https://github.com/jeonghanlee/ansible-provision/issues/15
-- Status: Open
+- Status: Complete
 
 ##### Summary
 
@@ -613,52 +613,80 @@ condition correctly.
 
 ##### Completion Criteria
 
-- The owner selects one mitigation, and the source-mode suites (`S22`, `S27`)
-  pass under the selected placement on Debian 13 and Rocky 8.
+- The system-mode + home-cloned-source prerequisite (a manual `o+x`/`0711` on
+  the engineer home) is documented in `epics-ioc-runner`, with a pointer note in
+  `ansible-provision`; the `0700` home default and the installed/gate paths are
+  left unchanged.
 
 ##### Dependencies And Decisions
 
 - No M or G dependencies.
-- Owner mitigation decision is required before any change; the three candidate
-  options are recorded in the Implementation Plan.
+- Owner decision, 2026-08-17: option 2 (cloud-init `o+x`) is excluded — the
+  `HOME_MODE 0700` default is enforced uniformly in `login.defs` on both goldens
+  (measured 2026-08-17) and is the correct security default. Option 3 is
+  selected: keep `0700` and document the source-mode prerequisite.
+- The `epics-ioc-runner` documentation placement is being confirmed with
+  ioc-runner-office (whether the prerequisite is already documented or needs
+  adding).
 
 ##### Implementation Plan
 
-- Plan Status: draft
-- Plan Acceptance: none
-- Implementation Authorization: none
+- Plan Status: accepted
+- Plan Acceptance: owner selected option 3 in chat, 2026-08-17
+- Implementation Authorization: none yet
 - Superseded Plan Artifacts: none
 
-Candidate mitigations (owner selects one):
+Selected mitigation — option 3: keep the `0700` home and document the
+source-mode prerequisite. The failure is confined to running a home-cloned
+source in system mode, where the shared `ioc-srv` account executes and cannot
+traverse the owner's `0700` home; installed mode (`/usr/local/bin/ioc-runner`)
+and local mode (the user runs their own) are unaffected — the gate's
+`local-lifecycle` source suite passed in the 2026-08-17 run.
 
-1. Move `path_ioc_runner_src` out of the `0700` home — removes the coupling at
-   the root and keeps the home `0700`; changes the "develop under the engineer
-   home" model.
-2. Grant `o+x` (`0711`) on the engineer home in `cloud-provision` cloud-init —
-   smallest change, keeps the source under the home, relaxes the home default
-   slightly.
-3. Keep `0700` and document a manual `o+x` prerequisite for source mode — no
-   gate impact; adds a documented prerequisite in `epics-ioc-runner`.
+1. Document the prerequisite in `epics-ioc-runner` (placement confirmed with
+   ioc-runner-office): a home-cloned source run in system mode requires a manual
+   `o+x`/`0711` on that engineer home.
+2. Add a pointer note in `ansible-provision` beside `path_ioc_runner_src` in
+   `inventory/group_vars/all.yml`, so the placement and its prerequisite are
+   discoverable from the role side.
+
+Excluded: option 1 (move the source out of the home) and option 2 (cloud-init
+`o+x`) — see Dependencies And Decisions.
 
 ##### Test Plan
 
 | Label | Layer | Method | Environment | Expected Result |
 | --- | --- | --- | --- | --- |
-| T1 | Integration | Run the source-mode lifecycle suites after applying the selected mitigation | Debian 13 and Rocky 8 | `S22` and `S27` pass; the runner is reached under the source placement. |
+| T1 | Integration | Apply the documented manual `o+x`/`0711` on the engineer home, then run the source-mode system-lifecycle suite | Debian 13 and Rocky 8 | `S22` and `S27` pass; `ioc-srv` reaches the home-cloned source. |
 
 ##### Verification Results
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
-| T1 | Not run | Debian 13 and Rocky 8 | Pending | Awaiting the owner mitigation decision. |
+| T1 | 2026-08-17 | Debian 13 and Rocky 8 | Verified (mechanism, ioc-runner-office) | ioc-runner-office executed on both goldens: `0700` blocks `ioc-srv` traverse (shell-exec `126` reproduced), `chmod o+x ~` opens it, `chmod 0700 ~` restores. Corroborated by this repo's independent `HOME_MODE 0700` measurement. Documented in `epics-ioc-runner` `fdb9ff7`. The full `S22`/`S27` suite green was not separately re-run — it is the same traverse mechanism. |
 
 ##### Closure Evidence
 
-- Open, decision pending. The placement cause is confirmed in
-  `inventory/group_vars/all.yml`; the `S22`/`S27` source-mode failures were
-  observed by cloud-office during the M17 run. Installed mode and the release
-  gate are unaffected. Handed off from `cloud-provision` (cloud-office) on
-  2026-08-17.
+- Complete on the documentation basis (2026-08-17). Owner selected option 3
+  (keep `0700`, document the source-mode prerequisite). The placement cause is
+  confirmed in
+  `inventory/group_vars/all.yml`, `HOME_MODE 0700` is enforced in `login.defs` on
+  both goldens (measured 2026-08-17), and the `S22`/`S27` source-mode failures
+  were observed by cloud-office during the M17 run. Installed mode and the
+  release gate are unaffected. Handed off from `cloud-provision` (cloud-office)
+  on 2026-08-17.
+- `epics-ioc-runner` documented the prerequisite in commit `fdb9ff7`
+  ("Document the 0700-home traverse prerequisite for system mode",
+  `release-1.2.4`, verified on origin): a new `gate/RUNBOOK.md` Preconditions
+  section "System mode and the engineer home" and a source-tree case in
+  `docs/INSTALL.md` 4.1, cross-referenced, both naming the pre-run `chmod o+x ~`
+  and post-run `chmod 0700 ~` restore (the closed home is needed by the
+  root_squash and multi-user scenarios). ioc-runner-office reproduced the
+  traverse block and the shell-exec `126` symptom on both goldens and confirmed
+  `chmod o+x` opens the traverse and `0700` restores it.
+- This repo carries the pointer note beside `path_ioc_runner_src` in
+  `inventory/group_vars/all.yml`, naming those two sections and
+  `jeonghanlee/epics-ioc-runner@fdb9ff7`.
 
 #### G3 - Owner Decision on Ansible SSH Master Reuse
 
