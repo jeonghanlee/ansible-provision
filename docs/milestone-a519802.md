@@ -555,6 +555,7 @@ step.
 ##### Closure Evidence
 
 - Surfaced by the M5 third-person review on 2026-08-16: T2 passed only because the earlier default install left `/usr/local/bin/ioc-runner` in PATH; a clean non-default-only host is not yet verified.
+- 2026-08-17 supporting context: epics-ioc-runner M17 (#145) verified on two golden consumers that the alternate destination the role deploys is selected and run (default, alternate, and source modes; runner `1.2.3` `ddb558d-dirty`), with the default install coexisting. This is context only; M6 still requires the role's bare-command verification on a clean non-default-only host.
 
 #### G3 - Owner Decision on Ansible SSH Master Reuse
 
