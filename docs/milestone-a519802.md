@@ -574,11 +574,91 @@ correction that supports GCC 15.
 
 | Group | ID | Work unit | Type | Status | Ready | Deps | Done when / Evidence |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| Runtime | M7 | Source-mode runner unreachable under a 0700 engineer home | Milestone | Open | No | | Owner selects a mitigation so the source-mode suites (S22/S27) reach the runner under a 0700 engineer home; [detail](#m7---source-mode-runner-unreachable-under-a-0700-engineer-home) |
 | Gates | G3 | Owner decision on Ansible SSH master reuse | External gate | Complete | No | | Owner records a Keep verdict after the real recreate path shows no stale master; [detail](#g3---owner-decision-on-ansible-ssh-master-reuse) |
 
 Unassigned work belongs here; the release tally above excludes this section.
 
 ### Backlog Details
+
+#### M7 - Source-Mode Runner Unreachable Under a 0700 Engineer Home
+
+- Origin: a519802 / M7
+- Identity History: added to the current generation from the `cloud-provision` (cloud-office) handoff on 2026-08-17; owner mitigation decision pending
+- GitHub Issue: #15, https://github.com/jeonghanlee/ansible-provision/issues/15
+- Status: Open
+
+##### Summary
+
+In source mode the systemd unit runs the runner as the non-login `ioc-srv`
+account, which cannot traverse a `0700` engineer home, so it never reaches the
+source binary at `/home/<engineer>/gitsrc/epics-ioc-runner/bin/ioc-runner`.
+cloud-office observed the resulting `S22` (UDS listening) and `S27`
+(journal-less crash/init) failures during the M17 source-mode run; installed
+mode (`T1`/`T2`) and the release gate are unaffected.
+
+##### Scope
+
+Decide and apply a mitigation so the source-mode lifecycle suites reach the
+runner without weakening the release posture. The placement is set by
+`inventory/group_vars/all.yml` `path_ioc_runner_root`
+(`/home/{{ epics_ioc_engineers[0] }}/gitsrc`) and `path_ioc_runner_src`, both
+confirmed in the current tree; `path_ioc_runner_bin`
+(`/usr/local/bin/ioc-runner`, world-readable) keeps the installed path clear of
+the home.
+
+Out of scope: installed-mode behavior and the release gate, which do not
+traverse the engineer home; `epics-ioc-runner` suite code, which reports the
+condition correctly.
+
+##### Completion Criteria
+
+- The owner selects one mitigation, and the source-mode suites (`S22`, `S27`)
+  pass under the selected placement on Debian 13 and Rocky 8.
+
+##### Dependencies And Decisions
+
+- No M or G dependencies.
+- Owner mitigation decision is required before any change; the three candidate
+  options are recorded in the Implementation Plan.
+
+##### Implementation Plan
+
+- Plan Status: draft
+- Plan Acceptance: none
+- Implementation Authorization: none
+- Superseded Plan Artifacts: none
+
+Candidate mitigations (owner selects one):
+
+1. Move `path_ioc_runner_src` out of the `0700` home — removes the coupling at
+   the root and keeps the home `0700`; changes the "develop under the engineer
+   home" model.
+2. Grant `o+x` (`0711`) on the engineer home in `cloud-provision` cloud-init —
+   smallest change, keeps the source under the home, relaxes the home default
+   slightly.
+3. Keep `0700` and document a manual `o+x` prerequisite for source mode — no
+   gate impact; adds a documented prerequisite in `epics-ioc-runner`.
+
+##### Test Plan
+
+| Label | Layer | Method | Environment | Expected Result |
+| --- | --- | --- | --- | --- |
+| T1 | Integration | Run the source-mode lifecycle suites after applying the selected mitigation | Debian 13 and Rocky 8 | `S22` and `S27` pass; the runner is reached under the source placement. |
+
+##### Verification Results
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T1 | Not run | Debian 13 and Rocky 8 | Pending | Awaiting the owner mitigation decision. |
+
+##### Closure Evidence
+
+- Open, decision pending. The placement cause is confirmed in
+  `inventory/group_vars/all.yml`; the `S22`/`S27` source-mode failures were
+  observed by cloud-office during the M17 run. Installed mode and the release
+  gate are unaffected. Handed off from `cloud-provision` (cloud-office) on
+  2026-08-17.
 
 #### G3 - Owner Decision on Ansible SSH Master Reuse
 
