@@ -18,13 +18,16 @@ remains in the owner's separate tracker.
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: resume `G1` with the clean current-head bake path.
-Recheck the three source refs, use the latest released `epics-ioc-runner` tag
-as the Gate-grade baseline (`1.2.3` at this session close), obtain owner
-direction before cleaning any running `testbed-debian13-server` domain, then
-run the Rocky 8 and Debian 13 bakes and `epics-ioc-runner/gate/RUNBOOK.md`.
+Next session entry point: `G1` is decided — the `iocrunner-gate-1.0.0` release
+basis is the 2026-08-17 Gate-grade bake (baseline `epics-ioc-runner` `1.2.3`,
+all gate steps passed on both goldens). The next release action is `M2`: cut the
+joint `iocrunner-gate-1.0.0` annotated tag on `cloud-provision` (`2b77a97`) and
+`ansible-provision` (`3981c21`) under a release delegation, then open the next
+version-scoped register. `M1` stays blocked on `G2` (Ubuntu 26 `iocStats` under
+GCC 15). The 2026-08-17 fresh consumers at `192.168.122.150` and
+`192.168.122.50` are still up for any release verification.
 
-Status tally: 4 Complete, 2 Blocked. External gates: 0 Complete, 2 Open.
+Status tally: 4 Complete, 1 In progress, 1 Blocked. External gates: 1 Complete, 1 Open.
 
 ## Milestone
 
@@ -33,12 +36,12 @@ Status tally: 4 Complete, 2 Blocked. External gates: 0 Complete, 2 Open.
 | Group | ID | Work unit | Type | Status | Ready | Deps | Done when / Evidence |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Core | M1 | EPICS-env source-build environment | Carry-forward | Blocked | No | G2 | Rocky 8, Debian 13, Rocky 10, Ubuntu 24, and Ubuntu 26 pass the complete source-build matrix; [detail](#m1---epics-env-source-build-environment) |
-| Release | M2 | Version 1.0 release convention | Carry-forward | Blocked | No | G1 | Consumer release gate, matching tags, and the next version-scoped register are complete; [detail](#m2---version-10-release-convention) |
+| Release | M2 | Version 1.0 release convention | Carry-forward | In progress | No | G1 | Consumer release gate, matching tags, and the next version-scoped register are complete; [detail](#m2---version-10-release-convention) |
 | Docs | M3 | epics-ioc-runner runbook reference repair | Carry-forward | Complete | No | | All three repository references name `epics-ioc-runner/gate/RUNBOOK.md`; [detail](#m3---epics-ioc-runner-runbook-reference-repair) |
 | Runtime | M4 | Generated Ansible host inventory contract | Milestone | Complete | No | | Generated runtime inventories and site-owned complete inventories both pass the shipped Make contract; [detail](#m4---generated-ansible-host-inventory-contract) |
 | Runtime | M5 | Configured IOC runner installation destination | Milestone | Complete | No | | The real role installs and verifies the default and alternate destinations on Debian 13 and Rocky 8; [detail](#m5---configured-ioc-runner-installation-destination) |
 | Runtime | M6 | IOC runner CLI resolution at a non-default destination | Milestone | Complete | No | | The role's post-install verification resolves ioc-runner at a non-default `path_ioc_runner_bin` without relying on PATH; [detail](#m6---ioc-runner-cli-resolution-at-a-non-default-destination) |
-| Gates | G1 | Owner-selected consumer release-gate bake and release authorization | External gate | Open | No | | Owner selects the release-gate bake and authorizes the matching tag sequence; [detail](#g1---owner-selected-consumer-release-gate-bake-and-release-authorization) |
+| Gates | G1 | Owner-selected consumer release-gate bake and release authorization | External gate | Complete | No | | Owner selected the 2026-08-17 Gate-grade bake and the `iocrunner-gate-1.0.0` tag name as the Version 1.0 basis; [detail](#g1---owner-selected-consumer-release-gate-bake-and-release-authorization) |
 | Gates | G2 | Ubuntu 26 `iocStats` compatibility with GCC 15 | External gate | Open | No | | A compatible `iocStats` revision or correction is selected and the complete Ubuntu 26 path passes; [detail](#g2---ubuntu-26-iocstats-compatibility-with-gcc-15) |
 
 ### Decisions
@@ -136,7 +139,7 @@ source-build hosts.
 - Origin: a519802 / M2
 - Identity History: new reset-generation identity; prior scope and evidence are reachable from commit `a519802`
 - GitHub Issue: none
-- Status: Blocked
+- Status: In progress
 
 ##### Summary
 
@@ -157,7 +160,7 @@ Out of scope: selecting or executing the release sequence without owner authoriz
 
 ##### Dependencies And Decisions
 
-- `G1` is Open; resume as `In progress` after owner release authorization.
+- `G1` is Complete (2026-08-17); `M2` resumed `In progress` to execute the `iocrunner-gate-1.0.0` tag sequence under a release delegation.
 - `D2` applies.
 
 ##### Implementation Plan
@@ -475,7 +478,7 @@ step.
 
 - Origin: a519802 / G1
 - GitHub Issue: none
-- Status: Open
+- Status: Complete
 
 ##### Summary
 
@@ -484,11 +487,19 @@ authorization.
 
 ##### Concrete Meaning
 
-`G1` is the decision record for one specific `epics-ioc-runner` consumer
-release gate. The release-gate bake is the fresh-image acceptance run in which
+`G1` is the decision record for one `epics-ioc-runner` consumer release gate.
+The release-gate bake is the fresh-image acceptance run in which
 `cloud-provision` produces the `rocky8-iocrunner` and `debian13-iocrunner`
 variants, `ansible-provision` supplies the configured image contents, and the
 consumer release-gate checks run against fresh consumers.
+
+The `1.0.0` release names the gate environment — the pinned `cloud-provision`
+and `ansible-provision` pair that bakes the golden and runs the gate — and is
+version-agnostic in the `epics-ioc-runner` version it exercises. The
+`epics-ioc-runner` version is a separate input to that gate; the version passed
+through one run is recorded as that run's payload, not as part of the `1.0.0`
+identity. The joint tag carries the name `iocrunner-gate-1.0.0` so it stays
+distinct from other golden lines the same pair supports.
 
 `G1` is not branch creation, tag creation, or release-register creation. It
 records which accepted bake is the Version 1.0 release basis and authorizes
@@ -504,6 +515,16 @@ records which accepted bake is the Version 1.0 release basis and authorizes
 | Release point | The exact repository-family release point and matching bare-number tag sequence to be authorized |
 | Authorization | Owner authorization for the selected bake and the matching tag sequence |
 
+##### Recorded Decision (2026-08-17)
+
+| Field | Recorded content |
+| --- | --- |
+| Selected bake | 2026-08-17 golden pair: `iocrunner-rocky8-20260817T083735Z-536321164923.qcow2` (bake `08:39:32Z`, sidecar sha256 `7c3f93f4…`) and `iocrunner-debian13-20260817T084259Z-ad954136c034.qcow2` (bake `08:44:51Z`, sidecar sha256 `9000f6e6…`); baked runner `commit=4868a251 tag=1.2.3 state=clean-tagged requested=1.2.3` |
+| Source refs | `ansible-provision` `3981c21`, `cloud-provision` `2b77a97`, `epics-ioc-runner` `1.2.3` (`4868a25`); the golden carries EPICS-env `1.2.2` and EPICS base `7.0.10` |
+| Consumer evidence | `validate_iocrunner_bake.bash` valid on both; `GATE SUITES PASS hosts=2` (Debian `614 na=0`, Rocky `614 na=12`); root_squash `SQUASH REPRODUCED` with zero layout warnings on both; 14/14 multi-user scenarios on both. Evidence: `epics-ioc-runner/work/gate-suites-20260817T085522Z-3870975/` |
+| Release point | Joint bare-number tag `iocrunner-gate-1.0.0` on `cloud-provision` `2b77a97` and `ansible-provision` `3981c21`; `epics-ioc-runner` keeps `1.2.3` and is referenced through the bake manifest, not re-tagged |
+| Authorization | Owner confirmed the release basis and the `iocrunner-gate-1.0.0` tag name on 2026-08-17 and directed this record; tag execution is `M2` and requires a separate release delegation |
+
 ##### Completion Criteria
 
 - The required decision record identifies one selected consumer release-gate bake.
@@ -514,11 +535,12 @@ records which accepted bake is the Version 1.0 release basis and authorizes
 
 | Observed At | Result | Evidence |
 | --- | --- | --- |
-| 2026-08-06 | Pending | No selected G1 bake record or owner release authorization is recorded. |
+| 2026-08-17 | Pass (Gate grade) | Fresh 1.2.3-baseline goldens and fresh consumers on Rocky 8 and Debian 13; `validate_iocrunner_bake.bash` valid on both; `GATE SUITES PASS hosts=2` (Debian `SUITES OK 614 na=0`, Rocky `SUITES OK 614 na=12`); root_squash `SQUASH REPRODUCED`, layout warnings 0, bare hash `4868a25` on both; multi-user 14/14 on both. Control head `4868a251`, dirty=false. Evidence: `epics-ioc-runner/work/gate-suites-20260817T085522Z-3870975/` (Debian log sha256 `65559e31…`, Rocky log sha256 `04c81f55…`) |
 
 ##### Closure Evidence
 
-- Gate remains Open and blocks `M2`.
+- The Gate-grade run passed on both goldens (suites, root_squash, multi-user) at baseline `1.2.3`; the owner selected this bake and the `iocrunner-gate-1.0.0` tag name as the Version 1.0 release basis on 2026-08-17.
+- `G1` records the decision and authorizes `M2` to execute the matching tag sequence. The `iocrunner-gate-1.0.0` tags on `cloud-provision` and `ansible-provision` are not yet cut; that execution is `M2` and requires a separate release delegation.
 
 #### G2 - Ubuntu 26 IOCStats Compatibility With GCC 15
 
