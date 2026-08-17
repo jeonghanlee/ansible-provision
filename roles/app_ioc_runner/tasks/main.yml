@@ -78,7 +78,8 @@
 - name: Verify ioc-runner command
   ansible.builtin.raw: |
     set -e
-    ioc-runner -V
-    ioc-runner list -vv
-    ioc-runner inspect -h
+    bin="{{ path_ioc_runner_bin }}"
+    "${bin}" -V
+    "${bin}" list -vv
+    "${bin}" inspect -h
   changed_when: false
