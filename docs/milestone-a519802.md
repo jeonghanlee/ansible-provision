@@ -674,7 +674,8 @@ Excluded: option 1 (move the source out of the home) and option 2 (cloud-init
   both goldens (measured 2026-08-17), and the `S22`/`S27` source-mode failures
   were observed by cloud-office during the M17 run. Installed mode and the
   release gate are unaffected. Handed off from `cloud-provision` (cloud-office)
-  on 2026-08-17.
+  on 2026-08-17, recorded in its `docs/CLOSED_DOORS.md` at commit `a27a3c4`
+  ("Record the 0700-home traverse resolution in closed doors").
 - `epics-ioc-runner` documented the prerequisite in commit `fdb9ff7`
   ("Document the 0700-home traverse prerequisite for system mode",
   `release-1.2.4`, verified on origin): a new `gate/RUNBOOK.md` Preconditions
