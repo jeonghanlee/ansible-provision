@@ -56,6 +56,12 @@ pkg_base:
 repo_con:          "https://github.com/jeonghanlee/con"
 repo_procserv:     "https://github.com/jeonghanlee/procServ-env"
 repo_conserver:    "https://github.com/jeonghanlee/conserver-env"
+
+# Application source versions. Each accepts a branch, tag, or commit
+# hash; an empty value clones the repository default branch HEAD.
+con_version:       ""
+procserv_version:  ""
+conserver_version: ""
 repo_ioc_runner:   "https://github.com/jeonghanlee/epics-ioc-runner"
 repo_epics:        "https://github.com/jeonghanlee/EPICS-env-distribution"
 
