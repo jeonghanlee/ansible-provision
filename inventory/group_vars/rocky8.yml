@@ -43,3 +43,7 @@ pkg_standard:
 pkg_python_redhat:
   - python39
   - python39-pip
+
+# Rocky ships python3.9 as an add-on module; make it the default python.
+# The all.yml value (/usr/bin/python3, i.e. 3.6) applies to other OS groups.
+runtime_python_alt_path: "/usr/bin/python3.9"

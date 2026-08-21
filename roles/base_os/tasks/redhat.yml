@@ -37,8 +37,11 @@
   ansible.builtin.raw: "{{ pip_bin }} install {{ (pip_packages_global + pip_packages_epics) | join(' ') }}"
   changed_when: false
 
-- name: Set python alternative
-  ansible.builtin.raw: "alternatives --set {{ runtime_python_alt_name }} {{ runtime_python_alt_path }}"
+- name: Register and select the python alternative
+  ansible.builtin.raw: |
+    set -e
+    alternatives --install /usr/bin/unversioned-python {{ runtime_python_alt_name }} {{ runtime_python_alt_path }} 3900 --slave /usr/bin/{{ runtime_python_alt_name }} unversioned-python {{ runtime_python_alt_path }}
+    alternatives --set {{ runtime_python_alt_name }} {{ runtime_python_alt_path }}
   changed_when: false
 
 # RHEL-family sudo secure_path excludes /usr/local, so sudo cannot resolve
