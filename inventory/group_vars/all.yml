@@ -94,6 +94,11 @@ path_ioc_runner_bin: "/usr/local/bin/ioc-runner"
 # EPICS installation path
 path_epics_local: "/opt/epics"
 
+# Group that owns the EPICS install root, by name (not a gid). Empty
+# leaves the root owned by the IOC engineer; a group name shares write
+# via setgid so any member can deploy the distribution.
+epics_install_group: ""
+
 # EPICS-env-distribution version selectors (epics_os_dir set per OS in group_vars)
 epics_env_version:  "1.2.2"
 epics_base_version: "7.0.10"
