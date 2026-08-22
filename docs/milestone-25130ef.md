@@ -29,13 +29,15 @@ later version (see `M2` and `D2`).
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: no active blocked work in this generation. `M1`
+Next session entry point: `M3` (base_os/app role hardening) needs Debian 13
+re-verification — this session's role fixes were verified on Rocky 8
+(idev-vsrv1) but exercised the Debian path only through `--syntax-check`. `M1`
 (4-OS source-build) is Complete; `M2` (Ubuntu 26 source-build) is Deferred to
 EPICS-env 1.3.1 or later, tracked at `jeonghanlee/EPICS-env#63`; the resolving
 mechanism (the C17 bridge) already exists in EPICS-env at
 `jeonghanlee/EPICS-env#29`.
 
-Status tally: 1 Complete, 1 Deferred. No external gates.
+Status tally: 1 Complete, 1 In progress, 1 Deferred. No external gates.
 
 ## Milestone
 
@@ -45,6 +47,7 @@ Status tally: 1 Complete, 1 Deferred. No external gates.
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Core | M1 | EPICS-env 4-OS source-build environment | Carry-forward | Complete | No | | Rocky 8, Debian 13, Rocky 10, and Ubuntu 24 pass both source-build layers and checks; [detail](#m1---epics-env-4-os-source-build-environment) |
 | Core | M2 | Ubuntu 26 source-build (deferred) | Carry-forward | Deferred | No | D2 | Owner adds Ubuntu 26 back to the matrix in EPICS-env 1.3.1 or later and the complete Ubuntu 26 path passes; [detail](#m2---ubuntu-26-source-build-deferred) |
+| Core | M3 | base_os/app role hardening from idev-vsrv1 deployment | Carry-forward | In progress | No | | Rocky 8 verified on idev-vsrv1; Debian 13 re-verification pending; [detail](#m3---base_osapp-role-hardening-from-idev-vsrv1-deployment) |
 
 ### Decisions
 
@@ -204,6 +207,36 @@ Out of scope: the `iocStats` GCC 15 fix itself, which EPICS-env owns.
   1.3.1+ backlog issue `jeonghanlee/EPICS-env#63` ("Ensure the C17 bridge fires
   for iocStats on Ubuntu 26 GCC 15 in the source-build path"), whose body
   cross-references `ansible-provision#7`.
+
+#### M3 - base_os/app role hardening from idev-vsrv1 deployment
+
+##### Scope
+
+Role fixes and enhancements surfaced while provisioning a real IOC server
+(idev-vsrv1) rather than the testbed. Delivered on `master`:
+
+- `base_os` OS-family detection reads `/etc/os-release` and branches on exit
+  code, not raw stdout, which arrived empty on the first become task over a
+  local connection (`593f161`).
+- chrony.conf directives became site-overridable variables; a `trim_blocks`
+  newline drop that joined the pool lines and broke `chronyd` restart was fixed
+  with a `+%}` control (`1f1e996`, `6069b54`).
+- Rocky `python` default set to 3.9 via an `alternatives --install` of the
+  unversioned-python master link before `--set` (`9ba3b13`, Rocky-only).
+- con/procServ/conserver gained branch/tag/commit version pinning (`bf6b798`).
+- `app_epics` clones the distribution as the IOC owner, sparse and tag-pinned,
+  into a group-writable install root, so a host with no root ssh key can pull
+  from an internal remote (`88e569b`).
+
+**Out of scope:** the idev-vsrv1 deployment record and its site-specific
+overrides live in the `server-configuration` repository, not here.
+
+##### Verification Results
+
+| Check | Result | OS | Evidence |
+| --- | --- | --- | --- |
+| T1 | Verified | Rocky 8 | idev-vsrv1: `01_base`/`02_apps` completed, chrony synced (`^*`, Reach 377), `python --version` 3.9.25 from a clean 3.6.8 state, con/procServ/console/conserver installed. |
+| T2 | Not run | Debian 13 | os-detect, chrony render, version pinning, and epics owner-clone touch the shared/Debian path but were exercised only through `--syntax-check`; a Debian 13 run is pending. |
 
 ## Backlog
 
