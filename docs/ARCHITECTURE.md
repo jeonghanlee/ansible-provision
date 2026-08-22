@@ -317,6 +317,10 @@ group_vars or carry its own complete group_vars tree.
 | `path_ioc_runner_root` | Ansible / group_vars/all.yml (derived from `epics_ioc_engineers[0]`) |
 | `nfs_sim_user` / `nfs_sim_group` / `nfs_sim_namespace` | Ansible / roles/nfs_sim/defaults (override via inventory vars) |
 | `epics_env_version` / `epics_base_version` | Ansible / group_vars/all.yml |
+| `chrony_*` (`driftfile`, `makestep`, `rtcsync`, `logdir`, `minpoll`, `maxpoll`, `keyfile`, `leapsectz`) | Ansible / group_vars/all.yml (empty poll/keyfile/leapsectz omit the directive) |
+| `con_version` / `procserv_version` / `conserver_version` / `ioc_runner_version` | Ansible / group_vars/all.yml (branch, tag, or commit; empty clones default HEAD) |
+| `repo_epics` / `epics_install_group` | Ansible / group_vars/all.yml (empty group leaves the install root owned by the IOC engineer) |
+| `runtime_python_alt_path` | Ansible / group_vars per OS (`rocky8.yml` selects `/usr/bin/python3.9`) |
 
 **Identity invariant** (must hold; only partially derived): the SSH
 user (`ansible_user`), the first IOC engineer
