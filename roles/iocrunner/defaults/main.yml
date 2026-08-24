@@ -1,0 +1,15 @@
+---
+# roles/iocrunner/defaults/main.yml
+repo_ioc_runner: "https://github.com/jeonghanlee/epics-ioc-runner"
+
+# Optional epics-ioc-runner version selector. A tag, branch, or commit pins the
+# baked runner; an invalid value fails the bake by name. Empty selects the
+# repository default branch on a fresh host, leaves an existing checkout alone,
+# and is rejected on a host already pinned by an earlier selector.
+ioc_runner_version: ""
+ioc_runner_force_setup: false
+
+# Source root derived from the first IOC engineer (identity invariant).
+path_ioc_runner_root: "/home/{{ epics_ioc_engineers[0] }}/gitsrc"
+path_ioc_runner_src:  "{{ path_ioc_runner_root }}/epics-ioc-runner"
+path_ioc_runner_bin:  "/usr/local/bin/ioc-runner"

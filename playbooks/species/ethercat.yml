@@ -1,0 +1,5 @@
+---
+# playbooks/species/ethercat.yml
+# ethercat = P_ethercat |rtbase>; the consumer VM boots the rtbase golden,
+# so only the ethercat operator applies here.
+- import_playbook: ../operators/ethercat.yml

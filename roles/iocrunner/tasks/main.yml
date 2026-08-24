@@ -1,0 +1,85 @@
+---
+# roles/iocrunner/tasks/main.yml
+- name: Deploy epics-ioc-runner infrastructure
+  ansible.builtin.raw: |
+    set -e
+    owner="{{ epics_ioc_engineers[0] }}"
+    src="{{ path_ioc_runner_src }}"
+    repo="{{ repo_ioc_runner }}"
+    bin="{{ path_ioc_runner_bin }}"
+    ref="{{ ioc_runner_version | default('', true) }}"
+    stamp_pattern='RUNNER_GIT_HASH="unknown"|RUNNER_COMMIT_DATE="unknown"|RUNNER_COMMIT_DATE="unreleased"'
+    install -d -o "${owner}" -g "${owner}" -m 0755 "$(dirname "${src}")"
+    if [ ! -d "${src}/.git" ]; then
+      rm -rf "${src}"
+      sudo -u "${owner}" git clone "${repo}" "${src}"
+    elif [ -n "${ref}" ]; then
+      sudo -u "${owner}" git -C "${src}" fetch --tags --force --prune --prune-tags origin
+    fi
+    if [ -n "${ref}" ]; then
+      if sudo -u "${owner}" git -C "${src}" rev-parse -q --verify "refs/tags/${ref}^{commit}" >/dev/null; then
+        target="refs/tags/${ref}"
+      elif sudo -u "${owner}" git -C "${src}" rev-parse -q --verify "refs/remotes/origin/${ref}^{commit}" >/dev/null; then
+        target="refs/remotes/origin/${ref}"
+      elif printf '%s' "${ref}" | grep -Eq '^[0-9a-f]{7,40}$' && sudo -u "${owner}" git -C "${src}" rev-parse -q --verify "${ref}^{commit}" >/dev/null; then
+        target="${ref}"
+      else
+        echo "app_ioc_runner: requested ioc_runner_version not found: ${ref}" >&2
+        exit 1
+      fi
+      sudo -u "${owner}" git -C "${src}" checkout --force --detach "${target}"
+    else
+      head_state=0
+      sudo -u "${owner}" git -C "${src}" symbolic-ref -q HEAD >/dev/null || head_state=$?
+      if [ "${head_state}" = "1" ]; then
+        echo "app_ioc_runner: source is pinned to a commit but ioc_runner_version is unset: ${src}" >&2
+        exit 1
+      elif [ "${head_state}" != "0" ]; then
+        echo "app_ioc_runner: cannot read HEAD in ${src}" >&2
+        exit 1
+      fi
+    fi
+    /usr/local/sbin/record-iocrunner-source app_ioc_runner "${repo}" "${src}" ${ref:+"${ref}"}
+    source_hash="$(git -C "${src}" rev-parse --short=7 HEAD)"
+    source_dirty=""
+    if [ -n "$(git -C "${src}" status --porcelain=v1 --untracked-files=normal)" ]; then
+      source_dirty="-dirty"
+    fi
+    expected_identity="${source_hash}${source_dirty}"
+    installed_identity=""
+    if [ -x "${bin}" ]; then
+      installed_identity="$("${bin}" -V 2>/dev/null | sed -n '1s/.*(\([^)]*\)).*/\1/p')"
+    fi
+    if [ "{{ ioc_runner_force_setup | bool | ternary('true', 'false') }}" = "true" ] || \
+       [ ! -x "${bin}" ] || grep -Eq "${stamp_pattern}" "${bin}" || \
+       [ "${installed_identity}" != "${expected_identity}" ]; then
+      install -d "$(dirname "${bin}")"
+      SUDO_USER="${owner}" IOC_RUNNER_SCRIPT_DEST="${bin}" bash "${src}/bin/setup-system-infra.bash" --full
+    fi
+    test -x "${bin}"
+    test -d "${src}/.git"
+    installed_identity="$("${bin}" -V | sed -n '1s/.*(\([^)]*\)).*/\1/p')"
+    test "${installed_identity}" = "${expected_identity}"
+  changed_when: false
+
+- name: Create shared IOC deployment directory
+  ansible.builtin.raw: |
+    set -e
+    mkdir -p /opt/epics-iocs
+    chown root:ioc /opt/epics-iocs
+    chmod 2775 /opt/epics-iocs
+  changed_when: false
+
+- name: Add engineers to ioc group
+  ansible.builtin.raw: "usermod -aG ioc {{ item }}"
+  loop: "{{ epics_ioc_engineers }}"
+  changed_when: false
+
+- name: Verify ioc-runner command
+  ansible.builtin.raw: |
+    set -e
+    bin="{{ path_ioc_runner_bin }}"
+    "${bin}" -V
+    "${bin}" list -vv
+    "${bin}" inspect -h
+  changed_when: false

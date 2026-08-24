@@ -1,7 +1,7 @@
 # Provisioning a Standalone VM
 
 How to apply this repository to a single VM that is NOT part of the
-cloud-provision testbed. Two modes cover every case: a separate
+cloud-provision lab. Two modes cover every case: a separate
 control host driving the VM over ssh, or the VM provisioning itself
 from a local clone. Both work because every dual-OS task here is
 `ansible.builtin.raw` with `gather_facts: false` — no Python is
@@ -70,7 +70,7 @@ extras: add the host to `[nfs_sim_nodes]` and run `make 04_nfs_sim`
 and/or `make 07_test_users` when the root_squash simulation or the
 consumer test fixtures are wanted.
 
-Trust note: `ansible.cfg` disables host-key checking (testbed
+Trust note: `ansible.cfg` disables host-key checking (lab
 posture). Point this at hosts outside an isolated network only after
 reconsidering that setting.
 

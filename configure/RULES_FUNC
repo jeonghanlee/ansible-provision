@@ -8,40 +8,32 @@ endif
 
 VARS_EXCLUDES += QUIET SHELL
 
-# Generates per-playbook targets scoped to an OS group.
-# Usage: $(call playbook_os_targets, playbook, os_group)
-define playbook_os_targets
-.PHONY: $(1).$(2) $(1).$(2).check
-
-$(1).$(2): check-inventory-source ## Run $(1) on $(2) nodes
-	$(QUIET) $(ANSIBLE_PLAYBOOK) $(_base_opts) --limit $(2) $(PLAYBOOK_DIR)/$(1).yml
-
-$(1).$(2).check: check-inventory-source ## Dry run $(1) on $(2) nodes
-	$(QUIET) $(ANSIBLE_PLAYBOOK) $(_base_opts) --limit $(2) -C $(PLAYBOOK_DIR)/$(1).yml
-endef
-
-# Generates per-playbook targets scoped to a single VM.
-# Usage: $(call playbook_node_targets, playbook, os_group, node_id)
-define playbook_node_targets
-.PHONY: $(1).$(2).$(3) $(1).$(2).$(3).check
-
-$(1).$(2).$(3): check-inventory-source ## Run $(1) on $(VM_PREFIX)-$(2)-$(3)
-	$(QUIET) $(ANSIBLE_PLAYBOOK) $(_base_opts) \
-	    $(if $(ANSIBLE_LIMIT),,--limit $(VM_PREFIX)-$(2)-$(3)) $(PLAYBOOK_DIR)/$(1).yml
-
-$(1).$(2).$(3).check: check-inventory-source ## Dry run $(1) on $(VM_PREFIX)-$(2)-$(3)
-	$(QUIET) $(ANSIBLE_PLAYBOOK) $(_base_opts) \
-	    $(if $(ANSIBLE_LIMIT),,--limit $(VM_PREFIX)-$(2)-$(3)) -C $(PLAYBOOK_DIR)/$(1).yml
-endef
-
-# Generates group targets for a playbook (all OS groups).
-# Usage: $(call playbook_group_targets, playbook, topology_label)
-define playbook_group_targets
+# Generates playbook targets: bare name (vacua scope) and per-vacuum form.
+# ANSIBLE_LIMIT overrides the vacuum limit for arbitrary generated VM names.
+# Usage: $(call playbook_targets, target_name, playbook_path)
+define playbook_targets
 .PHONY: $(1) $(1).check
 
-$(1): $(addprefix $(1)., $(OS_GROUPS)) ## Run $(1) on $(2)
+$(1): check-inventory-source ## Run $(2)
+	$(QUIET) $(ANSIBLE_PLAYBOOK) $(_base_opts) $(2)
 
-$(1).check: $(addsuffix .check, $(addprefix $(1)., $(OS_GROUPS))) ## Dry run $(1) on $(2)
+$(1).check: check-inventory-source ## Dry run $(2)
+	$(QUIET) $(ANSIBLE_PLAYBOOK) $(_base_opts) -C $(2)
+
+$(foreach os,$(OS_GROUPS),$(eval $(call playbook_vacuum_targets,$(1),$(2),$(os))))
 endef
 
-VARS_EXCLUDES += playbook_os_targets playbook_node_targets playbook_group_targets
+# Usage: $(call playbook_vacuum_targets, target_name, playbook_path, vacuum)
+define playbook_vacuum_targets
+.PHONY: $(1).$(3) $(1).$(3).check
+
+$(1).$(3): check-inventory-source ## Run $(2) on the $(3) vacuum
+	$(QUIET) $(ANSIBLE_PLAYBOOK) $(_base_opts) \
+	    $(if $(ANSIBLE_LIMIT),,--limit $(3)) $(2)
+
+$(1).$(3).check: check-inventory-source ## Dry run $(2) on the $(3) vacuum
+	$(QUIET) $(ANSIBLE_PLAYBOOK) $(_base_opts) \
+	    $(if $(ANSIBLE_LIMIT),,--limit $(3)) -C $(2)
+endef
+
+VARS_EXCLUDES += playbook_targets playbook_vacuum_targets

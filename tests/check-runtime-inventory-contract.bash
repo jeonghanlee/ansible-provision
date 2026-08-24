@@ -41,7 +41,7 @@ printf "%s\n" \
 make -s -C "${TOP}" ping ANSIBLE_CMD=true \
     RUNTIME_INVENTORY="${RUNTIME_INVENTORY}"
 
-make -n -C "${TOP}" 01_base.rocky8.server \
+make -n -C "${TOP}" bare.rocky8 \
     RUNTIME_INVENTORY="${RUNTIME_INVENTORY}" \
     ANSIBLE_LIMIT=custom-prefix-rocky8-arbitrary \
     | grep -Fq -- '--limit custom-prefix-rocky8-arbitrary'

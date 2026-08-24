@@ -1,0 +1,11 @@
+---
+# playbooks/operators/provenance.yml
+# One operator, one playbook. Species assemblies import these in the
+# operator definition's order; runs are scoped with --limit.
+- name: Apply the provenance operator
+  hosts: vacua
+  gather_facts: false
+  become: yes
+  roles:
+    - role: provenance
+      tags: [provenance]

@@ -16,7 +16,7 @@ declare -ag FAILED_DETAILS=()
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 TOP="$(cd "${SCRIPT_DIR}/.." && pwd)"
-RECORDER="${TOP}/roles/bake_provenance/files/record-iocrunner-source.bash"
+RECORDER="${TOP}/roles/provenance/files/record-iocrunner-source.bash"
 
 function cleanup {
     local rc=$?

@@ -1,138 +1,19 @@
 ---
 # inventory/group_vars/all.yml
+# Values consumed by more than one operator. Everything an operator consumes
+# alone lives in that operator role's defaults; site overlays override either
+# plane through the usual variable precedence.
 
-# NTP servers
-ntp_servers:
-  - "pool.ntp.org"
+# NTP servers consumed by the common role's chrony template and readable by
+# any diagnostic play.
+# (chrony parameters live in roles/common/defaults.)
 
-# Chrony configuration. Defaults preserve the shipped behavior; override
-# per site (e.g. with extra-vars) to match a production chrony.conf.
-# An empty per-server poll or an empty keyfile/leapsectz omits that
-# directive entirely, so the default render is unchanged.
-chrony_driftfile: "/var/lib/chrony/drift"
-chrony_makestep: "1.0 3"
-chrony_rtcsync: true
-chrony_logdir: "/var/log/chrony"
-chrony_minpoll: ""
-chrony_maxpoll: ""
-chrony_keyfile: ""
-chrony_leapsectz: ""
-
-# EPICS Channel Access ports
-epics_ca_ports_tcp: ["5064", "5065"]
-epics_ca_ports_udp: ["5064", "5065"]
-
-# EPICS pvAccess ports
-epics_pva_ports_tcp: ["5075"]
-epics_pva_ports_udp: ["5075", "5076"]
-
-# Base packages (common to all OS types)
-pkg_base:
-  - git
-  - sudo
-  - vim
-  - tmux
-  - make
-  - gcc
-  - autoconf
-  - automake
-  - chrony
-  - libtool
-  - logrotate
-  - re2c
-  - graphviz
-  - cmake
-  - screen
-  - tree
-  - unzip
-  - chrpath
-  - wget
-  - sysstat
-  - acl
-  - lsof
-  - cppcheck
-
-# Application repositories
-repo_con:          "https://github.com/jeonghanlee/con"
-repo_procserv:     "https://github.com/jeonghanlee/procServ-env"
-repo_conserver:    "https://github.com/jeonghanlee/conserver-env"
-
-# Application source versions. Each accepts a branch, tag, or commit
-# hash; an empty value clones the repository default branch HEAD.
-con_version:       ""
-procserv_version:  ""
-conserver_version: ""
-repo_ioc_runner:   "https://github.com/jeonghanlee/epics-ioc-runner"
-repo_epics:        "https://github.com/jeonghanlee/EPICS-env-distribution"
-
-# Temporary build paths
-path_con_src:        "/tmp/con"
-path_procserv_src:   "/tmp/procServ-env"
-path_conserver_src:  "/tmp/conserver-env"
-
-# Testbed validation source root, derived from the first IOC engineer
-# (identity invariant: ARCHITECTURE.md section 7). Override
-# epics_ioc_engineers in site overlays; the path follows.
-path_ioc_runner_root: "/home/{{ epics_ioc_engineers[0] }}/gitsrc"
-path_ioc_runner_src: "{{ path_ioc_runner_root }}/epics-ioc-runner"
-# Source under the engineer home (0700, HOME_MODE 0700). Running system mode
-# (shared ioc-srv account) from this home-cloned source needs a manual
-# `chmod o+x ~engineer` before the run and `chmod 0700 ~engineer` after;
-# installed mode (path_ioc_runner_bin, world-readable) and local mode are
-# unaffected. See epics-ioc-runner gate/RUNBOOK.md "System mode and the engineer
-# home" and docs/INSTALL.md 4.1 (jeonghanlee/epics-ioc-runner@fdb9ff7).
-# Tracked as M7 / #15.
-ioc_runner_force_setup: false
-
-# Installed binary paths (idempotency check)
-path_con_bin:        "/usr/local/bin/con"
-path_procserv_bin:   "/usr/local/bin/procServ"
-path_conserver_bin:  "/usr/local/sbin/conserver"
-path_console_bin:    "/usr/local/bin/console"
-path_ioc_runner_bin: "/usr/local/bin/ioc-runner"
-
-# EPICS installation path
-path_epics_local: "/opt/epics"
-
-# Group that owns the EPICS install root, by name (not a gid). Empty
-# leaves the root owned by the IOC engineer; a group name shares write
-# via setgid so any member can deploy the distribution.
-epics_install_group: ""
-
-# EPICS-env-distribution version selectors (epics_os_dir set per OS in group_vars)
-epics_env_version:  "1.2.2"
-epics_base_version: "7.0.10"
-
-# Optional epics-ioc-runner version selector. A tag, branch, or commit pins the
-# baked runner; an invalid value fails the bake by name. Empty selects the
-# repository default branch on a fresh host, leaves an existing checkout alone,
-# and is rejected on a host already pinned by an earlier selector.
-ioc_runner_version: ""
-
-# Testbed IOC management group members. Override in site overlays.
+# IOC management group members, consumed by the epics, iocrunner, and
+# testusers operators. Override in site overlays.
 epics_ioc_engineers:
   - vmadmin
 
-# Python runtime
-runtime_python_alt_name: "python"
-runtime_python_alt_path: "/usr/bin/python3"
-pip_bin:                 "/usr/bin/pip3.9"
-
-pkg_python_system:
-  - python3-pyserial
-
-pip_packages_global:
-  - build
-  - numpy
-  - nose2
-  - gcovr==5.0
-  - flawfinder==2.0.8
-  - pyparsing==2.4.2
-
-pip_packages_epics:
-  - epicscorelibs
-  - softioc
-  - cothread
-
-# pkg_python_debian / pkg_python_redhat are owned by the OS group files
-# (inventory/group_vars/debian13.yml, rocky8.yml) — the sole definitions.
+# EPICS install root and build flavor, shared by the epics_build and
+# epics_support operators.
+path_epics_install:     "/opt/epics"
+epics_env_build_flavor: "internal"

@@ -1,6 +1,6 @@
 .DEFAULT_GOAL := help
 
-.PHONY: help help.detail all check ping check-inventory-source \
+.PHONY: help help.detail ping check-inventory-source \
 	check-runtime-inventory-contract
 
 ##@ Help
@@ -13,15 +13,13 @@ help: ## Show the operator workflow
 	$(info   ------------   ------------------------------------------------)
 	$(info   Host setup     make setup)
 	$(info   Connectivity   make ping)
-	$(info   Provision      make all)
-	$(info   Provision      make <pb>[.<os>[.<node>]])
-	$(info   Dry run        make check)
-	$(info   Dry run        make <pb>[.<os>[.<node>]].check)
+	$(info   Provision      make <species>[.<vacuum>])
+	$(info   Operators      make op.<operator>[.<vacuum>])
+	$(info   Dry run        make <species>[.<vacuum>].check)
 	$(info )
-	$(info   Stages (<pb>): $(PLAYBOOKS))
-	$(info   OS groups:     $(OS_GROUPS))
-	$(info   All-node pbs:  $(ALL_NODE_PLAYBOOKS))
-	$(info   Server pbs:    $(SERVER_ONLY_PLAYBOOKS))
+	$(info   Species:       $(SPECIES_PLAYBOOKS))
+	$(info   Operators:     op.<name> for $(OPERATOR_PLAYBOOKS))
+	$(info   Vacua:         $(OS_GROUPS))
 	$(info )
 	$(info Details: make help.detail)
 	$(QUIET) :
@@ -42,21 +40,16 @@ help.detail: ## Show the full target reference
 	            printf "  %-26s %s\n", t[1], msg; \
 	        } \
 	    }' $(MAKEFILE_LIST)
-	$(QUIET) printf "\n%s\n" "Per-playbook pattern targets"
-	$(QUIET) printf "  %-26s %s\n" "<pb>"                    "Run on the playbook host scope"
-	$(QUIET) printf "  %-26s %s\n" "<pb>.check"              "Dry run on the playbook host scope"
-	$(QUIET) printf "  %-26s %s\n" "<pb>.<os>"               "Run on OS group ($(OS_GROUPS))"
-	$(QUIET) printf "  %-26s %s\n" "<pb>.<os>.check"         "Dry run on OS group"
-	$(QUIET) printf "  %-26s %s\n" "<pb>.<os>.<node>"        "Run on supported node target"
-	$(QUIET) printf "  %-26s %s\n" "<pb>.<os>.<node>.check"  "Dry run on supported node target"
-	$(QUIET) printf "\n%s\n" "Playbook topology"
-	$(QUIET) printf "  %-26s %s\n" "All-node playbooks"      "$(ALL_NODE_PLAYBOOKS)"
-	$(QUIET) printf "  %-26s %s\n" "Server-only playbooks"   "$(SERVER_ONLY_PLAYBOOKS)"
+	$(QUIET) printf "\n%s\n" "Pattern targets"
+	$(QUIET) printf "  %-26s %s\n" "<species>"               "Run a species assembly (vacua scope)"
+	$(QUIET) printf "  %-26s %s\n" "<species>.<vacuum>"      "Run a species assembly on one vacuum"
+	$(QUIET) printf "  %-26s %s\n" "op.<operator>"           "Run one operator playbook"
+	$(QUIET) printf "  %-26s %s\n" "op.<operator>.<vacuum>"  "Run one operator on one vacuum"
+	$(QUIET) printf "  %-26s %s\n" "<target>.check"          "Dry-run form of any target above"
 	$(QUIET) printf "\n%s\n" "Examples"
-	$(QUIET) printf "  make 01_base\n"
-	$(QUIET) printf "  make 02_apps.rocky8.server\n"
-	$(QUIET) printf "  make 03_epics.debian13.node1.check\n"
-	$(QUIET) printf "  make 04_nfs_sim.rocky8.server.check\n"
+	$(QUIET) printf "  make bare.rocky8\n"
+	$(QUIET) printf "  make iocrunner.debian13\n"
+	$(QUIET) printf "  make epics_dev.ubuntu24 ANSIBLE_LIMIT=lab-ubuntu24-epics-dev-run\n"
 	$(QUIET) :
 
 ##@ Provisioning
@@ -73,12 +66,6 @@ check-inventory-source:
 	    exit 1; \
 	fi
 
-all: check-inventory-source ## Run full playbook stack on all nodes
-	$(QUIET) $(ANSIBLE_PLAYBOOK) $(_base_opts) $(SITE_YML)
-
-check: check-inventory-source ## Dry run full playbook stack on all nodes
-	$(QUIET) $(ANSIBLE_PLAYBOOK) $(_base_opts) -C $(SITE_YML)
-
 ##@ Connectivity
 
 ping: check-inventory-source ## Verify connectivity to all nodes (honors ANSIBLE_LIMIT)
@@ -88,15 +75,7 @@ ping: check-inventory-source ## Verify connectivity to all nodes (honors ANSIBLE
 check-runtime-inventory-contract: ## Verify generated inventory Make preflight
 	$(QUIET) bash $(TOP)/tests/check-runtime-inventory-contract.bash
 
-$(foreach pb,  $(ALL_NODE_PLAYBOOKS), $(eval $(call playbook_group_targets,$(pb),all nodes)))
-$(foreach pb,  $(SERVER_ONLY_PLAYBOOKS), $(eval $(call playbook_group_targets,$(pb),server nodes)))
-$(foreach pb,  $(PLAYBOOKS), \
-  $(foreach os,  $(OS_GROUPS), $(eval $(call playbook_os_targets,$(pb),$(os)))))
-$(foreach pb,  $(ALL_NODE_PLAYBOOKS), \
-  $(foreach os,  $(OS_GROUPS), \
-    $(foreach node, $(NODE_IDS), $(eval $(call playbook_node_targets,$(pb),$(os),$(node))))))
-$(foreach pb,  $(SERVER_ONLY_PLAYBOOKS), \
-  $(foreach os,  $(OS_GROUPS), \
-    $(foreach node, $(SERVER_NODE_IDS), $(eval $(call playbook_node_targets,$(pb),$(os),$(node))))))
+$(foreach sp,$(SPECIES_PLAYBOOKS),$(eval $(call playbook_targets,$(sp),$(PLAYBOOK_DIR)/species/$(sp).yml)))
+$(foreach op,$(OPERATOR_PLAYBOOKS),$(eval $(call playbook_targets,op.$(op),$(PLAYBOOK_DIR)/operators/$(op).yml)))
 
 FORCE:

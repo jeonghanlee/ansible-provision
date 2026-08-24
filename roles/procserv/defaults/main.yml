@@ -1,0 +1,6 @@
+---
+# roles/procserv/defaults/main.yml
+repo_procserv:     "https://github.com/jeonghanlee/procServ-env"
+procserv_version:  ""
+path_procserv_src: "/tmp/procServ-env"
+path_procserv_bin: "/usr/local/bin/procServ"

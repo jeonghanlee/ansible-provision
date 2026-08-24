@@ -1,0 +1,6 @@
+---
+# roles/con/defaults/main.yml
+repo_con:     "https://github.com/jeonghanlee/con"
+con_version:  ""
+path_con_src: "/tmp/con"
+path_con_bin: "/usr/local/bin/con"

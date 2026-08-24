@@ -1,0 +1,7 @@
+---
+# roles/conserver/defaults/main.yml
+repo_conserver:     "https://github.com/jeonghanlee/conserver-env"
+conserver_version:  ""
+path_conserver_src: "/tmp/conserver-env"
+path_conserver_bin: "/usr/local/sbin/conserver"
+path_console_bin:   "/usr/local/bin/console"

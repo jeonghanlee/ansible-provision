@@ -1,0 +1,5 @@
+---
+# playbooks/species/rtbase.yml
+# rtbase = P_rt |bare>
+- import_playbook: ../operators/common.yml
+- import_playbook: ../operators/rt.yml

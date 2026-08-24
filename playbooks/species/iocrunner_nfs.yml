@@ -1,0 +1,5 @@
+---
+# playbooks/species/iocrunner_nfs.yml
+# iocrunner-nfs = P_nfs-sim |iocrunner>
+- import_playbook: iocrunner.yml
+- import_playbook: ../operators/nfs_sim.yml

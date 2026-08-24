@@ -1,9 +1,0 @@
----
-# playbooks/01_base.yml
-- name: Apply base OS configuration
-  hosts: all_nodes
-  gather_facts: false
-  become: yes
-  roles:
-    - role: base_os
-      tags: [base]

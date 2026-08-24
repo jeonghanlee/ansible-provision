@@ -1,7 +1,9 @@
 APPNAME   := ansible-provision
 
-# Provisioning stages this project ships, in execution order.
-PLAYBOOKS := 01_base 02_apps 03_epics 04_nfs_sim 07_test_users
+# Species assemblies and operator playbooks this project ships.
+SPECIES_PLAYBOOKS  := bare iocrunner iocrunner_nfs epics_dev nfs_sim rtbase ethercat
+OPERATOR_PLAYBOOKS := common rt provenance epics epics_build epics_support \
+                      procserv conserver con nfs_sim iocrunner testusers ethercat
 
 -include $(TOP)/../RELEASE.local
 -include $(TOP)/configure/RELEASE.local

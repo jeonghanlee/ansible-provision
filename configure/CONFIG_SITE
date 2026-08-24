@@ -1,15 +1,10 @@
 INVENTORY    := inventory/lab.ini
 RUNTIME_INVENTORY ?=
 PLAYBOOK_DIR := playbooks
-SITE_YML     := site.yml
 
-# Testbed topology. Override per site via CONFIG_SITE.local.
-OS_GROUPS             := rocky8 debian13
-NODE_IDS              := server node1 node2
-SERVER_NODE_IDS       := server
-VM_PREFIX             := testbed
-ALL_NODE_PLAYBOOKS    := 01_base 02_apps 03_epics
-SERVER_ONLY_PLAYBOOKS := 04_nfs_sim 07_test_users
+# Lab topology: one OS group per vacuum. Override per site via
+# CONFIG_SITE.local.
+OS_GROUPS := debian13 rocky8 rocky10 ubuntu24 ubuntu26
 
 -include $(TOP)/../CONFIG_SITE.local
 -include $(TOP)/configure/CONFIG_SITE.local

@@ -1,0 +1,15 @@
+---
+# roles/con/tasks/main.yml
+- name: Build and install con
+  ansible.builtin.raw: |
+    set -e
+    if [ ! -f {{ path_con_bin }} ]; then
+      rm -rf {{ path_con_src }}
+      git clone {{ repo_con }} {{ path_con_src }}
+      if [ -n "{{ con_version }}" ]; then git -C {{ path_con_src }} checkout {{ con_version }}; fi
+      /usr/local/sbin/record-iocrunner-source app_con {{ repo_con }} {{ path_con_src }}
+      cd {{ path_con_src }} && make && make install DESTDIR=/usr/local
+      rm -rf {{ path_con_src }}
+    fi
+    test -x {{ path_con_bin }}
+  changed_when: false

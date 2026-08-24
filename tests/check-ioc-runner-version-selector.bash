@@ -26,7 +26,7 @@ declare -ag FAILED_DETAILS=()
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 TOP="$(cd "${SCRIPT_DIR}/.." && pwd)"
-ROLE_TASKS="${TOP}/roles/app_ioc_runner/tasks/main.yml"
+ROLE_TASKS="${TOP}/roles/iocrunner/tasks/main.yml"
 
 function cleanup {
     local rc=$?

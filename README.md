@@ -1,9 +1,9 @@
 # ansible-provision
 
-Ansible baseline for unifying Linux systems across Rocky 8 and Debian 13.
-The baseline installs common operating-system services and validates EPICS
-operations through con, procServ, conserver, EPICS, ioc-runner, and an
-NFS root_squash simulation.
+Ansible provisioning for the image operator model defined in cloud-provision
+`docs/IMAGE_WORKFLOW.md` (Operator definition): five vacua (debian13, rocky8,
+rocky10, ubuntu24, ubuntu26), one role per operator, one playbook per
+operator, and one assembly playbook per species.
 
 * First-pass VM source of truth: [cloud-provision](https://github.com/jeonghanlee/cloud-provision)
 * EPICS environment: [EPICS-env-distribution](https://github.com/jeonghanlee/EPICS-env-distribution)
@@ -16,8 +16,8 @@ full override contract (which value goes in which plane) is in
 cloud-provision procedure: see `cloud-provision/docs/RUNBOOK_BAKE.md`.
 
 Trust posture: `ansible.cfg` disables host-key checking and assumes
-passwordless become on the testbed NAT. Do not point this configuration
-at non-testbed hosts as-is.
+passwordless become on the lab NAT. Do not point this configuration
+at non-lab hosts as-is.
 
 ## Prerequisites
 
@@ -27,22 +27,16 @@ Install ansible-core on the control host:
 make setup
 ```
 
-Validation VMs must be running via `cloud-provision`. The maintained
-`inventory/testbed.ini` contains group relationships and no host rows;
+Provisioning targets must be running via `cloud-provision`. The maintained
+`inventory/lab.ini` contains group relationships and no host rows;
 `cloud-provision/bin/generate_ansible_inventory.bash` supplies the actual VM
-name, resolved address, and workload group as a second inventory source.
-
-From the cloud-provision checkout, generate one ordinary Rocky 8 server entry:
-
-```bash
-bin/create_vm.bash -o rocky8 -n server -s | bin/generate_ansible_inventory.bash --status-input --os-type rocky8 --role nfs-sim-node > /tmp/cloud-provision-host.ini
-```
+name, resolved address, and groups as a second inventory source.
 
 ## Makefile Workflow
 
 Set `RUNTIME_INVENTORY` to a generated host inventory before running a target.
-Set `ANSIBLE_LIMIT` to the generated VM name when a per-node target must select
-an arbitrary prefix or run-specific name.
+Set `ANSIBLE_LIMIT` to the generated VM name when a target must select an
+arbitrary run-specific name.
 
 ### Connectivity
 
@@ -50,39 +44,30 @@ an arbitrary prefix or run-specific name.
 make ping RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini
 ```
 
-### Provision
+### Provision a species
 
 ```bash
-make all RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini
-make 01_base RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini
-make 02_apps RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini
-make 03_epics RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini
-make 04_nfs_sim RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini
+make bare.rocky8 RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini
+make iocrunner.debian13 RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini
+make iocrunner_nfs.rocky8 RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini
+make epics_dev.ubuntu24 RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini ANSIBLE_LIMIT=actual-vm-name
 ```
 
+### Run one operator
+
 ```bash
-make 01_base.rocky8 RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini
-make 01_base.rocky8.server RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini ANSIBLE_LIMIT=actual-vm-name
-make 04_nfs_sim.rocky8.server RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini ANSIBLE_LIMIT=actual-vm-name
+make op.common.rocky10 RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini
+make op.nfs_sim.debian13 RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini
 ```
 
 ### Dry Run
 
 ```bash
-make check RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini
-make 01_base.rocky8.server.check RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini ANSIBLE_LIMIT=actual-vm-name
+make bare.rocky8.check RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini
 ```
 
 Raw tasks are skipped in check mode: `check` validates inventory,
-reachability, and template rendering only — it does not preview
-changes.
-
-### Options
-
-```bash
-make 01_base RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini ANSIBLE_TAGS=base ANSIBLE_OPTS=-v
-make 02_apps RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini ANSIBLE_LIMIT=rocky8
-```
+reachability, and template rendering only - it does not preview changes.
 
 ### Configuration
 
@@ -96,18 +81,10 @@ make PRINT.INVENTORY
 ## Direct CLI Workflow
 
 ```bash
-ansible all -i inventory/testbed.ini -i /tmp/cloud-provision-host.ini -m raw -a "uptime"
-ansible-playbook -i inventory/testbed.ini -i /tmp/cloud-provision-host.ini site.yml
-ansible-playbook -i inventory/testbed.ini -i /tmp/cloud-provision-host.ini playbooks/01_base.yml
-ansible-playbook -i inventory/testbed.ini -i /tmp/cloud-provision-host.ini playbooks/02_apps.yml
-ansible-playbook -i inventory/testbed.ini -i /tmp/cloud-provision-host.ini playbooks/03_epics.yml
-```
-
-```bash
-ansible-playbook -i inventory/testbed.ini -i /tmp/cloud-provision-host.ini site.yml --limit rocky8
-ansible-playbook -i inventory/testbed.ini -i /tmp/cloud-provision-host.ini site.yml --limit actual-vm-name
-ansible-playbook -i inventory/testbed.ini -i /tmp/cloud-provision-host.ini site.yml --tags epics
-ansible-playbook -i inventory/testbed.ini -i /tmp/cloud-provision-host.ini site.yml -C
+ansible all -i inventory/lab.ini -i /tmp/cloud-provision-host.ini -m raw -a "uptime"
+ansible-playbook -i inventory/lab.ini -i /tmp/cloud-provision-host.ini playbooks/species/bare.yml
+ansible-playbook -i inventory/lab.ini -i /tmp/cloud-provision-host.ini playbooks/species/iocrunner.yml --limit debian13
+ansible-playbook -i inventory/lab.ini -i /tmp/cloud-provision-host.ini playbooks/operators/common.yml --limit actual-vm-name
 ```
 
 ---
@@ -115,54 +92,54 @@ ansible-playbook -i inventory/testbed.ini -i /tmp/cloud-provision-host.ini site.
 ## Inventory
 
 ```
-inventory/testbed.ini              # Host-free testbed group relationships
-inventory/group_vars/all.yml       # Baseline and validation defaults
-inventory/group_vars/rocky8.yml    # Rocky 8 specific (epics_os_dir)
-inventory/group_vars/debian13.yml  # Debian 13 specific (epics_os_dir)
+inventory/lab.ini                  # Host-free lab group relationships (vacua and species)
+inventory/group_vars/all.yml       # Values shared by more than one operator
+inventory/group_vars/<vacuum>.yml  # Per-vacuum values (epics_os_dir, python overrides)
 ```
 
 Supply a generated host inventory to Make without replacing the maintained
 group relationships:
 
 ```bash
-make 01_base RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini
+make bare.rocky8 RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini
 ```
 
 `INVENTORY` remains overridable for a site-owned complete inventory.
 
-Standalone (non-testbed) VMs: see
-[docs/STANDALONE.md](docs/STANDALONE.md) for the control-host-over-ssh
-and local-clone recipes.
+Standalone (non-lab) VMs: see [docs/STANDALONE.md](docs/STANDALONE.md).
 
 ---
 
-## Roles
+## Operators
 
-| Role | Description | Source |
+One role per operator; each role's `defaults/` owns the values only it
+consumes. The operator definition in cloud-provision `docs/IMAGE_WORKFLOW.md`
+is the normative statement of content and order.
+
+| Operator | Role | Source |
 |---|---|---|
-| `base_os` | Base packages, chrony NTP | OS package manager |
-| `app_con` | con console utility | [jeonghanlee/con](https://github.com/jeonghanlee/con) |
-| `app_procserv` | procServ process manager | [jeonghanlee/procServ-env](https://github.com/jeonghanlee/procServ-env) |
-| `app_conserver` | conserver serial console server | [jeonghanlee/conserver-env](https://github.com/jeonghanlee/conserver-env) |
-| `app_epics` | EPICS binary distribution | [jeonghanlee/EPICS-env-distribution](https://github.com/jeonghanlee/EPICS-env-distribution) |
-| `app_ioc_runner` | epics-ioc-runner infrastructure | [jeonghanlee/epics-ioc-runner](https://github.com/jeonghanlee/epics-ioc-runner) |
-| `nfs_sim` | NFS root_squash simulation (loopback export + remount) | — |
-| `test_users` | Multi-user test fixture accounts applied during the iocrunner golden bake | - |
-| `ethercat_base` | EtherCAT/RT bake-time prerequisite layer (Debian 13 rtbase) | — |
-| `app_ethercat` | EtherCAT R2-12 live validation harness | [jeonghanlee/ethercat-env](https://github.com/jeonghanlee/ethercat-env) (bundle) |
-| `epics_env_build` | EPICS-env built from source (base + all modules incl. asyn) | [jeonghanlee/EPICS-env](https://github.com/jeonghanlee/EPICS-env) |
-| `epics_env_support_build` | EPICS-env-support AreaDetector modules, layered on the epics_env_build install | [jeonghanlee/EPICS-env-support](https://github.com/jeonghanlee/EPICS-env-support) |
+| P_common | `common` | OS package manager |
+| P_rt | `rt` | Debian PREEMPT_RT packages |
+| P_provenance | `provenance` | - |
+| P_epics | `epics` | [jeonghanlee/EPICS-env-distribution](https://github.com/jeonghanlee/EPICS-env-distribution) |
+| P_epics-build | `epics_build` | [jeonghanlee/EPICS-env](https://github.com/jeonghanlee/EPICS-env) |
+| P_epics-support | `epics_support` | [jeonghanlee/EPICS-env-support](https://github.com/jeonghanlee/EPICS-env-support) |
+| P_procserv | `procserv` | [jeonghanlee/procServ-env](https://github.com/jeonghanlee/procServ-env) |
+| P_conserver | `conserver` | [jeonghanlee/conserver-env](https://github.com/jeonghanlee/conserver-env) |
+| P_con | `con` | [jeonghanlee/con](https://github.com/jeonghanlee/con) |
+| P_nfs-sim | `nfs_sim` | - |
+| P_iocrunner | `iocrunner` | [jeonghanlee/epics-ioc-runner](https://github.com/jeonghanlee/epics-ioc-runner) |
+| P_testusers | `testusers` | - |
+| P_ethercat | `ethercat` | [jeonghanlee/ethercat-env](https://github.com/jeonghanlee/ethercat-env) (bundle) |
 
-## Playbook Layers
+## Species Assemblies
 
-| Playbook | Roles | Hosts |
-|---|---|---|
-| `01_base.yml` | `base_os` | all nodes |
-| `02_apps.yml` | `app_con`, `app_procserv`, `app_conserver` | all nodes |
-| `03_epics.yml` | `app_epics`, `app_ioc_runner` | ioc nodes |
-| `04_nfs_sim.yml` | `nfs_sim` (ioc-runner validation relocated to the consumer's tar-push + suite flow; see docs/milestone-a519802.md) | `nfs_sim_nodes` (server-only, out-of-band, not in `site.yml`) |
-| `05_ethercat_base.yml` | `ethercat_base` | `ethercat_build` (out-of-band: invoked by the cloud-provision ethercat bake; no make target) |
-| `06_ethercat.yml` | `app_ethercat` | `ethercat_nodes` (out-of-band: run directly with ansible-playbook; no make target) |
-| `07_test_users.yml` | `test_users` | `nfs_sim_nodes` (server-only make targets; part of the iocrunner golden bake — see docs/test_users_handoff.md) |
-| `08_epics_env_build.yml` | `epics_env_build` | `epics_env_build` (out-of-band: heavy from-source build, not in `site.yml`) |
-| `09_epics_env_support_build.yml` | `epics_env_support_build` | `epics_env_build` (out-of-band: layered on 08, not in `site.yml`) |
+| Assembly | Product |
+|---|---|
+| `species/bare.yml` | P_common |
+| `species/iocrunner.yml` | P_testusers P_iocrunner (P_con P_conserver P_procserv) P_epics P_provenance on bare |
+| `species/iocrunner_nfs.yml` | P_nfs-sim on iocrunner |
+| `species/epics_dev.yml` | P_epics-support P_epics-build on bare |
+| `species/nfs_sim.yml` | P_nfs-sim on bare |
+| `species/rtbase.yml` | P_rt on bare |
+| `species/ethercat.yml` | P_ethercat on the rtbase golden |

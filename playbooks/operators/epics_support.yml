@@ -1,0 +1,11 @@
+---
+# playbooks/operators/epics_support.yml
+# One operator, one playbook. Species assemblies import these in the
+# operator definition's order; runs are scoped with --limit.
+- name: Apply the epics_support operator
+  hosts: vacua
+  gather_facts: false
+  become: yes
+  roles:
+    - role: epics_support
+      tags: [epics_support]

@@ -14,45 +14,30 @@ operation above that baseline. The first-pass validation environment uses
 ```
 [ cloud-provision ]
      |
-     | VMs running, SSH accessible through example testbed inventory
+     | VMs running, SSH accessible through the example lab inventory
      | Static IPs assigned outside this repository
      |
      V
 [ ansible-provision ]
      |
-     | 01_base.yml  -> base_os role
-     |                 - OS packages (dnf / apt)
-     |                 - chrony NTP
+     | species assembly (playbooks/species/<species>.yml)
+     |   = operator playbooks imported in the operator definition's order
+     |     (cloud-provision docs/IMAGE_WORKFLOW.md is normative)
      |
-     | 02_apps.yml  -> app_con, app_procserv, app_conserver roles
-     |                 - Build from source via Makefile repos
-     |
-     | 03_epics.yml -> app_epics, app_ioc_runner roles
-     |                 - EPICS-env-distribution (binary, depth 1)
-     |                 - epics-ioc-runner infrastructure setup
+     | bare       -> common
+     | iocrunner  -> common, provenance, epics, con, conserver,
+     |               procserv, iocrunner, testusers
+     | iocrunner_nfs -> iocrunner + nfs_sim
+     | epics_dev  -> common, epics_build, epics_support
+     | nfs_sim    -> common, nfs_sim
+     | rtbase     -> common, rt
+     | ethercat   -> ethercat (on the rtbase golden)
      |
      V
 [ Linux nodes ready for EPICS IOC validation ]
 
-(out-of-band, not in site.yml)
-04_nfs_sim.yml -> nfs_sim role
-                 - loopback NFS export with root_squash
-                 - exposes an NFS-mounted simulation source root
-                 (ioc-runner validation over that root is NOT done at
-                  bake time - root-principal access is impossible under
-                  root_squash by design; coverage lives in the consumer's
-                  tar-push + suite flow. See docs/milestone-a519802.md.)
-
-05_ethercat_base.yml -> ethercat_base role  (ethercat_build host;
-                 invoked by the cloud-provision ethercat bake)
-06_ethercat.yml      -> app_ethercat role   (ethercat_nodes; live
-                 R2-12 validation harness, run directly)
-07_test_users.yml    -> test_users role     (nfs_sim_nodes; consumer
-                 fixtures applied during the iocrunner golden bake)
-08_epics_env_build.yml -> epics_env_build role
-                 (epics_env_build hosts; source build, out of band)
-09_epics_env_support_build.yml -> epics_env_support_build role
-                 (epics_env_build hosts; layered source build, out of band)
+Every operator also has its own playbook under playbooks/operators/
+for a single-operator run (make op.<operator>).
 ```
 
 ---
@@ -63,53 +48,39 @@ operation above that baseline. The first-pass validation environment uses
 ansible-provision/
 |-- Makefile                         (entry point)
 |-- ansible.cfg                      (defaults: inventory, become)
-|-- site.yml                         (master playbook)
 |-- configure/                       (EPICS-style Makefile system)
 |   |-- CONFIG / RULES               (aggregators)
-|   |-- RELEASE                      (appname, playbook stages)
-|   |-- CONFIG_SITE                  (inventory path, topology, .local override)
+|   |-- RELEASE                      (appname, species and operator lists)
+|   |-- CONFIG_SITE                  (inventory path, vacua, .local override)
 |   |-- CONFIG_VARS                  (ansible command variables)
 |   |-- RULES_FUNC                   (dynamic target macros)
 |   |-- RULES_SETUP                  (host setup, tool checks)
-|   |-- RULES_ANSIBLE                (playbook targets)
+|   |-- RULES_ANSIBLE                (species and operator targets)
 |   `-- RULES_VARS                   (env inspection)
 |-- inventory/
-|   |-- testbed.ini                  (host-free testbed group relationships)
+|   |-- lab.ini                      (host-free lab group relationships)
 |   `-- group_vars/
-|       |-- all.yml                  (site-independent variables)
-|       |-- rocky8.yml               (epics_os_dir: rocky-8.10)
+|       |-- all.yml                  (values shared by more than one operator)
 |       |-- debian13.yml             (epics_os_dir: debian-13)
-|       `-- epics_env_build.yml      (source-build inputs)
+|       |-- rocky8.yml               (epics_os_dir, rocky 3.9 python overrides)
+|       |-- rocky10.yml              (per-vacuum values as operators need them)
+|       |-- ubuntu24.yml             (per-vacuum values as operators need them)
+|       `-- ubuntu26.yml             (per-vacuum values as operators need them)
 |-- playbooks/
-|   |-- 01_base.yml
-|   |-- 02_apps.yml
-|   |-- 03_epics.yml
-|   |-- 04_nfs_sim.yml
-|   |-- 05_ethercat_base.yml
-|   |-- 06_ethercat.yml
-|   |-- 07_test_users.yml
-|   |-- 08_epics_env_build.yml
-|   `-- 09_epics_env_support_build.yml
-`-- roles/
-    |-- base_os/
-    |-- app_con/
-    |-- app_procserv/
-    |-- app_conserver/
-    |-- app_epics/
-    |-- app_ioc_runner/
-    |-- nfs_sim/
-    |-- test_users/
-    |-- ethercat_base/
-    |-- app_ethercat/
-    |-- epics_env_build/
-    `-- epics_env_support_build/
+|   |-- operators/                   (one playbook per operator, 13)
+|   `-- species/                     (one assembly per species, 7)
+`-- roles/                           (one role per operator)
+    |-- common/      rt/         provenance/
+    |-- epics/       epics_build/ epics_support/
+    |-- procserv/    conserver/   con/
+    `-- nfs_sim/     iocrunner/   testusers/   ethercat/
 ```
 
 ---
 
 ## 4. Inventory and Network
 
-`inventory/testbed.ini` owns stable group relationships and contains no host
+`inventory/lab.ini` owns stable group relationships and contains no host
 rows. `cloud-provision/bin/generate_ansible_inventory.bash` receives the actual
 VM name, resolved IPv4 address, OS selector, and workload role and writes a
 temporary host inventory. Ansible receives both sources, so group variables
@@ -142,7 +113,7 @@ in [`RAW_STYLE.md`](RAW_STYLE.md); roles below follow them.
 
 ### Build Pattern
 
-`app_con`, `app_procserv`, `app_conserver` follow an identical raw
+`con`, `procserv`, `conserver` follow an identical raw
 pattern (a single `ansible.builtin.raw` block; there is no
 ansible-level block/always structure):
 
@@ -155,7 +126,7 @@ existence guard: skip when the installed binary is present
 
 ### EPICS Binary Distribution
 
-`app_epics` clones a pre-built binary distribution (no compilation):
+The `epics` role clones a pre-built binary distribution (no compilation):
 
 ```
 git clone --depth 1 EPICS-env-distribution -> path_epics_local
@@ -178,18 +149,18 @@ EPICS path resolution:
 
 ### EPICS-env Source Builds
 
-`epics_env_build` and `epics_env_support_build` run outside `site.yml` on
-dedicated build hosts. The base layer installs vendor libraries inside the
+`epics_build` and `epics_support` run through the `epics_dev` species
+assembly on dedicated build hosts. The base layer installs vendor libraries inside the
 EPICS-env release tree before building EPICS Base and modules. The support
 layer then sources the installed environment and adds AreaDetector modules.
 
 ```
-08_epics_env_build.yml
+operators/epics_build.yml
   |-- package automation
   |-- uldaq and open62541 -> <release>/vendor
   `-- EPICS-env -> /opt/epics/<version>/<os>/<base>
 
-09_epics_env_support_build.yml
+operators/epics_support.yml
   `-- EPICS-env-support -> <installed environment>/modules
 ```
 
@@ -199,7 +170,7 @@ it on a repeated run.
 
 ### ioc-runner Infrastructure
 
-`app_ioc_runner` sets up system-wide IOC management:
+The `iocrunner` role sets up system-wide IOC management:
 
 ```
 setup-system-infra.bash --full
@@ -222,9 +193,8 @@ usermod -aG ioc {{ epics_ioc_engineers }}
 
 ### NFS root_squash Simulation
 
-`nfs_sim` is an out-of-band role applied only to `nfs_sim_nodes`
-(rocky8-server + debian13-server). It is not part of `site.yml`
-and is invoked via `playbooks/04_nfs_sim.yml`. The role reproduces
+`nfs_sim` is applied through `operators/nfs_sim.yml`, inside the
+`nfs_sim` and `iocrunner_nfs` species assemblies. The role reproduces
 the production NFS root_squash environment on a single host, so
 that epics-ioc-runner install and build flows can be exercised
 against the same permission shape they meet in deployment:
@@ -243,29 +213,29 @@ install nfs-utils / nfs-kernel-server
   └── ~vmadmin/gitsrc-nfs-sim -> /home/nfs/simulation/vmadmin/gitsrc
 ```
 
-After application, root-owned operations under the testbed user's
+After application, root-owned operations under the lab user's
 `gitsrc-nfs-sim` symlink are squashed to nobody by the kernel NFS client
 over the loopback mount, with no second host required. The regular
-`03_epics` path keeps the local source root from `path_ioc_runner_root`.
-`04_nfs_sim` deliberately runs NO ioc-runner pass over the mount: the
-playbook runs become-root, and under root_squash the root principal
+iocrunner path keeps the local source root from `path_ioc_runner_root`.
+The nfs_sim operator deliberately runs NO ioc-runner pass over the mount:
+the playbook runs become-root, and under root_squash the root principal
 cannot read, traverse, or execute inside the 0750 vmadmin-owned export —
 that is the fixture working as designed, so root-principal in-place
 validation is impossible by construction (3ea5c20). Consumer-side
 coverage (tar-push + suite flow in epics-ioc-runner) owns validation
 over this topology. `nfs_sim_namespace`, `nfs_sim_user`, and
 `nfs_sim_group` are validation defaults and may be overridden in site
-or testbed overlays.
+or lab overlays.
 
 ### Module-Use Boundary (EtherCAT exception)
 
 Dual-OS roles and every bake-path role are raw-only: the Rocky 8
 targets cannot support Python-backed ansible modules (the platform
 constraint behind this repository's raw style). The Debian-13-only
-LIVE validation role `app_ethercat` is the sole exception — it may use
+LIVE validation role `ethercat` is the sole exception — it may use
 target-side modules (`copy`) because its hosts boot a Debian 13 image
 where target Python is guaranteed, and it never runs on the bake path
-(`05_ethercat_base` on the pristine rtbase build host stays fully
+(the `rt` operator on the pristine rtbase build host stays fully
 raw). New roles follow the same rule: raw-only unless the role is
 Debian-13-live-only, and never modules on a bake path.
 
@@ -282,7 +252,7 @@ Debian-13-live-only, and never modules on a bake path.
 | EPICS repo   | `EPEL + PowerTools` required | standard apt |
 | Python pip   | `pip3.9` (system-wide)   | apt packages + `pip3 --break-system-packages` (EPICS only) |
 | sudo secure_path | drop-in adds `/usr/local/{sbin,bin}` | default already includes `/usr/local` |
-| Firewall | firewalld enforced, EPICS CA/PVA ports opened | no packet filter installed — permissive by design on the isolated testbed NAT |
+| Firewall | firewalld enforced, EPICS CA/PVA ports opened | no packet filter installed — permissive by design on the isolated lab NAT |
 
 ---
 
@@ -325,12 +295,12 @@ group_vars or carry its own complete group_vars tree.
 **Identity invariant** (must hold; only partially derived): the SSH
 user (`ansible_user`), the first IOC engineer
 (`epics_ioc_engineers[0]`), and the NFS simulation owner
-(`nfs_sim_user`) are the same account on the testbed, and
+(`nfs_sim_user`) are the same account on the lab, and
 `path_ioc_runner_root` lives under that account's home. Overriding one
 without the others fails late (clone/chown into the wrong home).
 
 **Known consumers that bypass the Make plane**: `ansible.cfg` selects
-`inventory/testbed.ini` for stable group relationships. The cloud-provision
+`inventory/lab.ini` for stable group relationships. The cloud-provision
 bake and EPICS-env scripts pass that file plus one generated inventory for
 each actual VM. Direct CLI use must do the same.
 
@@ -338,5 +308,5 @@ each actual VM. Direct CLI use must do the same.
 |---|---|---|
 | Public baseline defaults | `group_vars/all.yml` | package lists, public GitHub repos, pool NTP |
 | Validation defaults | `group_vars/all.yml`, `roles/nfs_sim/defaults/main.yml` | EPICS versions, ioc-runner source root, NFS simulation namespace |
-| Testbed defaults | `inventory/testbed.ini`, `group_vars/all.yml` | group relationships and example IOC engineer user |
+| Lab defaults | `inventory/lab.ini`, `group_vars/all.yml` | group relationships and example IOC engineer user |
 | OS defaults | `group_vars/rocky8.yml`, `group_vars/debian13.yml` | OS-specific EPICS binary directory selectors; OS python package lists (sole owners) |

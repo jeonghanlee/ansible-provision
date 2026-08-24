@@ -1,0 +1,5 @@
+---
+# playbooks/species/nfs_sim.yml
+# nfs-sim = P_nfs-sim |bare>
+- import_playbook: ../operators/common.yml
+- import_playbook: ../operators/nfs_sim.yml

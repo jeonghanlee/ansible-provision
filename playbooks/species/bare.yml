@@ -1,0 +1,4 @@
+---
+# playbooks/species/bare.yml
+# |bare> = P_common |0>
+- import_playbook: ../operators/common.yml

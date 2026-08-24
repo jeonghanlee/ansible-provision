@@ -1,0 +1,20 @@
+---
+# roles/epics/defaults/main.yml
+repo_epics:       "https://github.com/jeonghanlee/EPICS-env-distribution"
+path_epics_local: "/opt/epics"
+
+# Group that owns the EPICS install root, by name (not a gid). Empty
+# leaves the root owned by the IOC engineer; a group name shares write
+# via setgid so any member can deploy the distribution.
+epics_install_group: ""
+
+# EPICS-env-distribution version selectors (epics_os_dir set per vacuum
+# in group_vars).
+epics_env_version:  "1.2.2"
+epics_base_version: "7.0.10"
+
+# EPICS network ports opened in firewalld on the rocky family.
+epics_ca_ports_tcp: ["5064", "5065"]
+epics_ca_ports_udp: ["5064", "5065"]
+epics_pva_ports_tcp: ["5075"]
+epics_pva_ports_udp: ["5075", "5076"]

@@ -41,14 +41,14 @@ runtime host boots that image.
 | Field | Defined in | iocrunner | ethercat |
 |---|---|---|---|
 | Bake source variant | cloud-provision | `<os>` base (`rocky8` / `debian13`) | `debian13-rtbase` |
-| Runtime variant (`make <variant>.server`) | cloud-provision | `<os>-iocrunner` | `debian13-ethercat` |
+| Runtime variant | cloud-provision | `<os>-iocrunner` | `debian13-ethercat` |
 | Bake-time generated groups | cloud-provision generator | base OS + `nfs_sim_nodes` | `ethercat_build` |
 | Runtime generated groups | cloud-provision generator | base OS group when Ansible use is requested | `ethercat_nodes` |
-| Bake-time playbook | ansible-provision | `site.yml` + `04_nfs_sim.yml` | `05_ethercat_base.yml` |
-| Runtime playbook | ansible-provision | none (boots baked image) | `06_ethercat.yml` |
+| Bake-time assembly | ansible-provision | `species/iocrunner.yml` or `species/iocrunner_nfs.yml` (flavor flag) | `species/rtbase.yml` |
+| Runtime assembly | ansible-provision | none (boots baked image) | `species/ethercat.yml` |
 
 The actual host name and address never appear in the maintained inventory.
-`inventory/testbed.ini` provides only group relationships; generated host
+`inventory/lab.ini` provides only group relationships; generated host
 inventories carry the current identity across the seam.
 
 ## Consumer Register
@@ -60,17 +60,17 @@ conserver). The "Dedicated variant?" column tells them apart.
 
 | Consumer / workload | Installs / tests | Dedicated variant? | cloud-provision | ansible-provision | Seam status |
 |---|---|---|---|---|---|
-| epics-ioc-runner | ioc-runner install + integration test | Yes | `bake_iocrunner_image.bash`, `*-iocrunner` | `site.yml` + `04_nfs_sim.yml` (`app_ioc_runner` runs in `03_epics` inside `site.yml`; `04_nfs_sim` is nfs_sim-only since 3ea5c20) | Complete |
-| ethercat-env | EtherCAT R2-12 install + validation | Yes | `bake_ethercat_image.bash`, `debian13-ethercat` / `debian13-rtbase` — present | `05_ethercat_base.yml`, `06_ethercat.yml` (`ethercat_base`, `app_ethercat`) | Present, unverified end-to-end |
-| con | con build + install | No (base VM app role) | base variant | `02_apps.yml` (`app_con`) | Complete |
-| procServ-env | procServ build + install | No (base VM app role) | base variant | `02_apps.yml` (`app_procserv`) | Complete |
-| conserver-env | conserver build + install | No (base VM app role) | base variant | `02_apps.yml` (`app_conserver`) | Complete |
+| epics-ioc-runner | ioc-runner install + integration test | Yes | `bake_iocrunner_image.bash`, `*-iocrunner` | `species/iocrunner.yml` / `species/iocrunner_nfs.yml` (the `iocrunner` role runs inside the assembly) | Complete |
+| ethercat-env | EtherCAT R2-12 install + validation | Yes | `bake_ethercat_image.bash`, `debian13-ethercat` / `debian13-rtbase` — present | `species/rtbase.yml`, `species/ethercat.yml` (`rt`, `ethercat` roles) | Present, unverified end-to-end |
+| con | con build + install | No (operator on the base VM) | base variant | `operators/con.yml` (`con` role) | Complete |
+| procServ-env | procServ build + install | No (operator on the base VM) | base variant | `operators/procserv.yml` (`procserv` role) | Complete |
+| conserver-env | conserver build + install | No (operator on the base VM) | base variant | `operators/conserver.yml` (`conserver` role) | Complete |
 
 epics-ioc-runner's multi-user runbook scenarios extend its seam with the
-`test_users` fixture (`roles/test_users`, `playbooks/07_test_users.yml`).
-cloud-provision `bake_iocrunner_image.bash` applies the fixture after
-`04_nfs_sim.yml`; fresh Rocky 8 and Debian 13 variants verified the account
-and linger state on 2026-07-05. See `docs/test_users_handoff.md`.
+`testusers` fixture (`roles/testusers`, `playbooks/operators/testusers.yml`),
+applied inside the iocrunner species assembly; fresh Rocky 8 and Debian 13
+variants verified the account and linger state on 2026-07-05. See
+`docs/test_users_handoff.md`.
 
 Going forward, a new VM-needing project either claims a cloud-provision
 variant or rides the base VM, adds its host group and playbook in
@@ -90,7 +90,7 @@ that class of defect.
 EtherCAT: both sides now exist — `cloud-provision` carries
 `bin/bake_ethercat_image.bash` plus the `debian13-ethercat` /
 `debian13-rtbase` variants, and this repository carries
-`05_ethercat_base.yml` / `06_ethercat.yml`. The remaining gap is that
-no end-to-end run has been executed (bake, boot, run 06, archive
-evidence). Readiness items before that first run are tracked as
+`species/rtbase.yml` / `species/ethercat.yml`. The remaining gap is that
+no end-to-end run has been executed (bake, boot, run the ethercat
+assembly, archive evidence). Readiness items before that first run are tracked as
 Phase D in `docs/milestone-a519802.md`.

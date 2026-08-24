@@ -1,0 +1,10 @@
+---
+# roles/epics_support/defaults/main.yml
+repo_epics_support: "https://github.com/jeonghanlee/EPICS-env-support"
+
+# Branch or tag to build. Support changes rarely and is decoupled from
+# EPICS-env's release version, so track master.
+epics_env_support_tag: "master"
+
+# Where the support source tree is cloned and built.
+path_epics_support_src: "/opt/epics-env-support-src"
