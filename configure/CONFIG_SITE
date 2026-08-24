@@ -1,4 +1,4 @@
-INVENTORY    := inventory/testbed.ini
+INVENTORY    := inventory/lab.ini
 RUNTIME_INVENTORY ?=
 PLAYBOOK_DIR := playbooks
 SITE_YML     := site.yml

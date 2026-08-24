@@ -1,0 +1,4 @@
+---
+# inventory/group_vars/ubuntu26.yml
+# Vacuum group variables. Values arrive with the operators that consume
+# them; the common role carries its own defaults.

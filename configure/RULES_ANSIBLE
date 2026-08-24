@@ -62,9 +62,9 @@ help.detail: ## Show the full target reference
 ##@ Provisioning
 
 check-inventory-source:
-	$(QUIET) if [ "$(INVENTORY)" = "inventory/testbed.ini" ] && \
+	$(QUIET) if [ "$(INVENTORY)" = "inventory/lab.ini" ] && \
 	    [ -z "$(RUNTIME_INVENTORY)" ]; then \
-	    printf "%s\n" "Error: RUNTIME_INVENTORY is required with inventory/testbed.ini." >&2; \
+	    printf "%s\n" "Error: RUNTIME_INVENTORY is required with inventory/lab.ini." >&2; \
 	    exit 1; \
 	fi
 	$(QUIET) if [ -n "$(RUNTIME_INVENTORY)" ] && \
