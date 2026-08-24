@@ -1,0 +1,17 @@
+---
+# roles/common/tasks/debian.yml
+- name: Update apt cache
+  ansible.builtin.raw: apt update -y
+  changed_when: false
+
+- name: Install P_common packages (Debian family)
+  ansible.builtin.raw: "apt install -y {{ (common_pkg_must_debian + common_pkg_nice) | join(' ') }} locales"
+  changed_when: false
+
+- name: Enable and generate the locale
+  ansible.builtin.raw: |
+    set -e
+    sed -i 's/^# *{{ common_locale }} UTF-8/{{ common_locale }} UTF-8/' /etc/locale.gen
+    locale-gen {{ common_locale }}
+    update-locale LANG={{ common_locale }}
+  changed_when: false

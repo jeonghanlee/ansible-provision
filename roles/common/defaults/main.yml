@@ -1,0 +1,59 @@
+---
+# roles/common/defaults/main.yml
+# P_common content as stated by the operator definition in cloud-provision
+# docs/IMAGE_WORKFLOW.md: the package halves with per-family names, the
+# debian-family locale items, and the configuration content. The
+# pkg_automation per-OS lists are the reference baseline; this role owns
+# its own authored list.
+
+# Must-have half; ssl-dev and g++ carry the family-specific names.
+common_pkg_must_debian:
+  - sudo
+  - chrony
+  - git
+  - wget
+  - unzip
+  - gcc
+  - g++
+  - make
+  - autoconf
+  - automake
+  - libtool
+  - libssl-dev
+  - net-tools
+common_pkg_must_rocky:
+  - sudo
+  - chrony
+  - git
+  - wget
+  - unzip
+  - gcc
+  - gcc-c++
+  - make
+  - autoconf
+  - automake
+  - libtool
+  - openssl-devel
+  - net-tools
+
+# Nice-to-have half; both halves are P_common.
+common_pkg_nice:
+  - vim
+  - tmux
+  - screen
+  - lsof
+  - tree
+  - sysstat
+  - acl
+  - logrotate
+
+# Debian family only: locale support.
+common_locale: "en_US.UTF-8"
+
+# Chrony configuration content; consumed only by this role.
+ntp_servers:
+  - "pool.ntp.org"
+chrony_driftfile: "/var/lib/chrony/drift"
+chrony_makestep: "1.0 3"
+chrony_rtcsync: true
+chrony_logdir: "/var/log/chrony"
