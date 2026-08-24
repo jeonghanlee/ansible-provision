@@ -26,7 +26,7 @@ contract, and the consumer register; it does not duplicate those sections.
 | Create, bake, or destroy a VM; golden image | cloud-provision |
 | VM naming convention, OS variant definition | cloud-provision |
 | VM name and resolved address | cloud-provision |
-| Workload-to-group mapping and generated host inventory | cloud-provision generator |
+| Species-to-group mapping and generated host inventory | cloud-provision generator |
 | Stable group relationships and group variables | ansible-provision |
 | Role or playbook that installs or configures software | ansible-provision |
 | Consumer software build logic and its own tests | the consumer repo |
@@ -41,9 +41,9 @@ runtime host boots that image.
 | Field | Defined in | iocrunner | ethercat |
 |---|---|---|---|
 | Bake source variant | cloud-provision | `<os>` base (`rocky8` / `debian13`) | `debian13-rtbase` |
-| Runtime variant | cloud-provision | `<os>-iocrunner` | `debian13-ethercat` |
-| Bake-time generated groups | cloud-provision generator | base OS + `nfs_sim_nodes` | `ethercat_build` |
-| Runtime generated groups | cloud-provision generator | base OS group when Ansible use is requested | `ethercat_nodes` |
+| Runtime variant | cloud-provision | `<os>-iocrunner` or `<os>-iocrunner-nfs` (flavor) | `debian13-ethercat` |
+| Bake-time generated groups | cloud-provision generator | vacuum + `iocrunner` or `iocrunner_nfs` | vacuum + `rtbase` |
+| Runtime generated groups | cloud-provision generator | vacuum only (`--species bare`) when Ansible use is requested | vacuum + `ethercat` |
 | Bake-time assembly | ansible-provision | `species/iocrunner.yml` or `species/iocrunner_nfs.yml` (flavor flag) | `species/rtbase.yml` |
 | Runtime assembly | ansible-provision | none (boots baked image) | `species/ethercat.yml` |
 
@@ -92,5 +92,5 @@ EtherCAT: both sides now exist — `cloud-provision` carries
 `debian13-rtbase` variants, and this repository carries
 `species/rtbase.yml` / `species/ethercat.yml`. The remaining gap is that
 no end-to-end run has been executed (bake, boot, run the ethercat
-assembly, archive evidence). Readiness items before that first run are tracked as
-Phase D in `docs/milestone-a519802.md`.
+assembly, archive evidence). Readiness items before that first run are tracked
+in the cloud-provision work register's deferred EtherCAT acceptance entry.

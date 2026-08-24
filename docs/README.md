@@ -8,7 +8,7 @@
 | [CLOSED_DOORS.md](CLOSED_DOORS.md) | Examined candidates deliberately left unchanged |
 | [STATUS.md](STATUS.md) | Role by OS verification evidence |
 | [RAW_STYLE.md](RAW_STYLE.md) | Raw-task house conventions: set -e, trailing assertions, sentinel changed_when, atomic privileged writes |
-| [STANDALONE.md](STANDALONE.md) | Provisioning a standalone (non-testbed) VM: control-host-over-ssh and local-clone recipes |
+| [STANDALONE.md](STANDALONE.md) | Provisioning a standalone (non-lab) VM: control-host-over-ssh and local-clone recipes |
 | [SEAM.md](SEAM.md) | Seam contract with cloud-provision: responsibility boundary, naming contract, consumer register |
 | [test_users_handoff.md](test_users_handoff.md) | Multi-user fixture accounts, bake placement, ordering, and verification |
 | [../TODO.md](../TODO.md) | Pointer stub - open work lives in the canonical work register |

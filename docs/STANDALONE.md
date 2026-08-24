@@ -17,17 +17,19 @@ section 7; this page is the recipe only.
   non-interactively (`ansible.cfg`: `become_ask_pass = False`), so
   either grant NOPASSWD sudo or append
   `ANSIBLE_OPTS=--ask-become-pass` to every make command.
-- Outbound network from the target: `02_apps`/`03_epics` clone build
-  sources from GitHub. On a proxied site, apply the injection layers
+- Outbound network from the target: the app and EPICS operators clone
+  build sources from GitHub. On a proxied site, apply the injection layers
   from `cloud-provision/docs/RUNBOOK_BAKE.md` to the target VM (a
   standalone VM keeps them; the de-proxy step is a golden-bake
   concern).
-- The custom inventory MUST live under `inventory/` next to the
-  shipped `group_vars/`, or every baseline variable is silently lost
+- The custom inventory MUST either live under `inventory/` next to
+  the shipped `group_vars/` or carry its own complete `group_vars`
+  tree; otherwise every baseline variable is silently lost
   (ARCHITECTURE.md section 7, custom-inventory caveat).
 - Identity invariant: the connecting/invoking account equals
   `epics_ioc_engineers[0]`, and its home directory exists —
-  `path_ioc_runner_root` derives from it.
+  `path_ioc_runner_root` derives from it. When the NFS simulation
+  extra is used, `nfs_sim_user` must name the same account as well.
 
 ## Mode 1 — Control Host over SSH
 
@@ -40,10 +42,7 @@ On the control host: clone this repository, `make setup`
 [rocky8]
 myvm  ansible_host=10.0.0.42  ansible_user=opctrl
 
-[ioc_nodes:children]
-rocky8
-
-[all_nodes:children]
+[vacua:children]
 rocky8
 ```
 
@@ -60,15 +59,15 @@ Adjust the Ansible-plane values (at minimum `epics_ioc_engineers` in
 
 ```bash
 make ping
-make 01_base
-make 02_apps
-make 03_epics
+make iocrunner.rocky8
 ```
 
-`make all` runs the three site.yml stages in one pass. Optional
-extras: add the host to `[nfs_sim_nodes]` and run `make 04_nfs_sim`
-and/or `make 07_test_users` when the root_squash simulation or the
-consumer test fixtures are wanted.
+A species assembly chains its operator playbooks in the definition's
+order; a single operator runs as `make op.<name>.<vacuum>` (for
+example `make op.epics.rocky8`). Every operator playbook targets the
+`vacua` group, so vacuum membership alone selects the host. Optional
+extra: run `make op.nfs_sim.rocky8` when the root_squash simulation
+is wanted.
 
 Trust note: `ansible.cfg` disables host-key checking (lab
 posture). Point this at hosts outside an isolated network only after
@@ -88,10 +87,7 @@ OS repositories).
 [rocky8]
 localhost  ansible_connection=local
 
-[ioc_nodes:children]
-rocky8
-
-[all_nodes:children]
+[vacua:children]
 rocky8
 ```
 

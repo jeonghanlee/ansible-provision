@@ -82,7 +82,7 @@ ansible-provision/
 
 `inventory/lab.ini` owns stable group relationships and contains no host
 rows. `cloud-provision/bin/generate_ansible_inventory.bash` receives the actual
-VM name, resolved IPv4 address, OS selector, and workload role and writes a
+VM name, resolved IPv4 address, OS selector, and species and writes a
 temporary host inventory. Ansible receives both sources, so group variables
 remain in this repository while VM identity remains owned by cloud-provision.
 
@@ -92,16 +92,13 @@ Production and site deployments may provide a complete inventory instead.
 
 | Group | Members |
 |---|---|
-| `rocky8` | Generated Rocky 8 and Rocky 8 ioc-runner hosts |
-| `debian13` | Generated Debian 13 and Debian 13 ioc-runner hosts |
-| `ioc_nodes` | rocky8 + debian13 |
-| `all_nodes` | rocky8 + debian13 |
-| `nfs_sim_nodes` | Generated IOC server and ioc-runner bake hosts |
-| `ethercat_nodes` | Generated `debian13-ethercat` runtime hosts |
-| `ethercat_build` | Generated `debian13-rtbase` bake hosts |
-| `epics_env_core` | Generated EPICS-env Rocky 8 and Debian 13 build hosts |
-| `epics_env_matrix` | Generated EPICS-env Rocky 10, Ubuntu 24, and Ubuntu 26 build hosts |
-| `epics_env_build` | `epics_env_core` + `epics_env_matrix` |
+| `vacua` | Parent of the five vacuum groups |
+| `debian13`, `rocky8`, `rocky10`, `ubuntu24`, `ubuntu26` | Generated hosts of that vacuum |
+| `iocrunner`, `iocrunner_nfs` | Generated ioc-runner bake hosts, per golden flavor |
+| `epics_dev` | Generated EPICS build hosts |
+| `nfs_sim` | Generated NFS-simulation hosts |
+| `rtbase` | Generated `debian13-rtbase` bake hosts |
+| `ethercat` | Generated `debian13-ethercat` runtime hosts |
 
 ---
 
