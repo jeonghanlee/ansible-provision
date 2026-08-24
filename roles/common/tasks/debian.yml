@@ -5,7 +5,7 @@
   changed_when: false
 
 - name: Install P_common packages (Debian family)
-  ansible.builtin.raw: "apt install -y {{ (common_pkg_must_debian + common_pkg_nice) | join(' ') }} locales"
+  ansible.builtin.raw: "apt install -y {{ (common_pkg_must_debian + common_pkg_core) | join(' ') }} locales"
   changed_when: false
 
 - name: Enable and generate the locale

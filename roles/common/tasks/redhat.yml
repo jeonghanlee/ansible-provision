@@ -9,7 +9,7 @@
   changed_when: false
 
 - name: Install P_common packages (RedHat family)
-  ansible.builtin.raw: "dnf install -y {{ (common_pkg_must_rocky + common_pkg_nice) | join(' ') }}"
+  ansible.builtin.raw: "dnf install -y {{ (common_pkg_must_rocky + common_pkg_core) | join(' ') }}"
   changed_when: false
 
 # RHEL-family sudo secure_path excludes /usr/local, so sudo cannot resolve

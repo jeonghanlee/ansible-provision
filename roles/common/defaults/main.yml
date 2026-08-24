@@ -36,11 +36,10 @@ common_pkg_must_rocky:
   - openssl-devel
   - net-tools
 
-# Nice-to-have half; both halves are P_common.
-common_pkg_nice:
+# Core-utility half; both halves are P_common and always installed.
+common_pkg_core:
   - vim
   - tmux
-  - screen
   - lsof
   - tree
   - sysstat
