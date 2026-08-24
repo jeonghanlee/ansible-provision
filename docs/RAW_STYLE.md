@@ -10,24 +10,24 @@ edited tasks follow them; deviations need a recorded reason.
 
 1. **`set -e` in every multi-command raw block.** A raw task fails
    only on nonzero rc; without `set -e` a failed middle command is
-   masked by a succeeding tail (the historical app_con/app_procserv
-   defect).
+   masked by a succeeding tail (the defect once found in the con and
+   procserv roles).
 2. **Trailing assertion for every install/build block.** End with
    `test -x <binary>` (or `test -f`/`test -d` as appropriate) so the
    task proves its postcondition instead of implying it. Reference
-   shape: `roles/app_conserver/tasks/main.yml`.
+   shape: `roles/conserver/tasks/main.yml`.
 3. **Quoted heredocs for file payloads** (`<< 'EOF'`): Jinja templates
    the content; the target shell must not expand it.
 4. **Jinja-to-shell-variable, then quote.** Assign a templated value
    to a shell variable once and use `"${var}"` thereafter, for any
    value used more than once or containing a path
-   (`roles/app_ioc_runner/tasks/main.yml` shape).
+   (`roles/iocrunner/tasks/main.yml` shape).
 5. **Honest change reporting where change visibility matters**
    (decision U6, review rs20260702_083212): mutating blocks that an
    operator would want to see in PLAY RECAP use the sentinel pattern —
    print `changed`/`unchanged` and set
    `changed_when: "<reg>.stdout | trim == 'changed'"`
-   (see the chrony and sudoers tasks in `roles/base_os`).
+   (see the chrony and sudoers tasks in `roles/common`).
    `changed_when: false` is correct for pure probes and for
    validation-harness tasks; it is not a default for mutations.
 6. **Validated, atomic writes for privileged config.** Build in a
@@ -40,9 +40,9 @@ edited tasks follow them; deviations need a recorded reason.
 
 ## Two Playbook Species
 
-- **Convergent provisioning** (01-04, 07): idempotent; re-runs
+- **Convergent provisioning** (most operator roles): idempotent; re-runs
   converge or skip; guards protect completed work.
-- **Run-once validation harness** (06_ethercat): deliberately
+- **Run-once validation harness** (the `ethercat` role): deliberately
   non-convergent — it re-clones and re-executes by design and says so
   in its role header. Do not "fix" a harness into convergence.
 

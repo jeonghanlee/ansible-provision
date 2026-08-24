@@ -66,7 +66,7 @@
         is_redhat=0
         ;;
       *)
-        echo "epics_env_build: unsupported OS ID=${ID}" >&2
+        echo "epics_build: unsupported OS ID=${ID}" >&2
         exit 1
         ;;
     esac

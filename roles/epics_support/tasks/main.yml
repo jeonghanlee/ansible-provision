@@ -2,15 +2,15 @@
 # roles/epics_support/tasks/main.yml
 #
 # Builds EPICS-env-support (AreaDetector modules: ADCore, ADSimDetector,
-# ADGenICam, ADVimba) from source, layered on the epics_env_build install.
+# ADGenICam, ADVimba) from source, layered on the epics_build install.
 # Sources the installed EPICS-env's setEpicsEnv.bash so support's AD modules
 # install next to asyn in the shared modules directory. Run after
-# epics_env_build (08_epics_env_build.yml).
+# the epics_build operator.
 #
-# One raw task, matching epics_env_build: the build hosts boot a plain base
+# One raw task, matching epics_build: the build hosts boot a plain base
 # cloud image whose Python ansible facts cannot rely on, so the whole build
 # runs as a single raw shell step. AreaDetector system dependencies are already
-# installed by epics_env_build's pkg_automation step and are not reinstalled here.
+# installed by epics_build and are not reinstalled here.
 
 - name: Build and install EPICS-env-support from source
   ansible.builtin.raw: |
@@ -24,10 +24,10 @@
 
     # Resolve the EPICS-env install this support build layers onto. The install
     # path carries EPICS-env's OWN version, not the tag, so match any version
-    # (mirrors epics_env_build and the site-modules role).
+    # (mirrors epics_build and the site-modules role).
     env_script=$(ls "${install_root}"/*/*/*/setEpicsEnv.bash 2>/dev/null | head -1 || true)
     if [ -z "${env_script}" ]; then
-      echo "epics_env_support_build: no EPICS-env install under ${install_root}; run epics_env_build first" >&2
+      echo "epics_env_support_build: no EPICS-env install under ${install_root}; run epics_build first" >&2
       exit 1
     fi
 
@@ -39,7 +39,7 @@
     fi
 
     # areaDetector system dependencies (hdf5, tiff, jpeg, netcdf, png, xml2,
-    # libusbx) are installed by the epics_env_build pkg_automation step on
+    # libusbx) are installed by the epics_build pkg_automation step on
     # these same hosts, so they are not reinstalled here.
 
     # --- Clone EPICS-env-support and check out the pinned ref ---

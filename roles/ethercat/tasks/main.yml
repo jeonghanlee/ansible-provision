@@ -9,8 +9,9 @@
 # (not an ethercat-env target) then selects the RT kernel as the boot default
 # and reboots; the post-reboot sequence observes the DKMS rebuild on the new
 # kernel and confirms RT readiness and GRUB-parameter persistence. The
-# boot-default change and running-RT-kernel confirmation are M16-precursor
-# evidence, deliberately outside the repository's own targets (decision D2).
+# boot-default change and running-RT-kernel confirmation are deliberately
+# outside the repository's own targets: they are infrastructure evidence
+# gathered ahead of the live hardware run, which owns the real switch.
 
 - name: Create a git bundle of the buildout branch on the controller
   delegate_to: localhost
@@ -59,7 +60,7 @@
     done
   changed_when: false
 
-- name: Select the RT kernel as boot default (infra; M16-precursor, not an ethercat-env target)
+- name: Select the RT kernel as boot default (infrastructure, not an ethercat-env target)
   ansible.builtin.raw: |
     set -e
     logdir="{{ ethercat_log_dir }}"
@@ -95,7 +96,7 @@
     } 2>&1 | tee "$log"
   changed_when: false
 
-- name: Reboot into the selected RT kernel (M16-precursor evidence)
+- name: Reboot into the selected RT kernel
   ansible.builtin.reboot:
     reboot_timeout: 600
     post_reboot_delay: 15

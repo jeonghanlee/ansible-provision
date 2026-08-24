@@ -3,7 +3,7 @@
 
 # Build toolchain and kernel-module prerequisites for building the EtherCAT
 # master and its kernel modules on Debian 13. These mirror the tools the
-# ethercat-env M5 doctor treats as required (autoreconf, depmod, dkms, git,
+# ethercat-env doctor check treats as required (autoreconf, depmod, dkms, git,
 # make) plus the userspace build chain.
 ethercat_base_packages:
   - git
@@ -19,7 +19,7 @@ ethercat_base_packages:
   - grub-common
 
 # Debian 13 PREEMPT_RT kernel and headers. Installed by this role but NEVER
-# made the boot default (ethercat-env decision D2 / milestone M16): the live
-# app_ethercat run drives the boot-default change and post-reboot confirmation.
+# made the boot default: the live app_ethercat run drives the
+# boot-default change and post-reboot confirmation.
 ethercat_rt_kernel_pkg: linux-image-rt-amd64
 ethercat_rt_headers_pkg: linux-headers-rt-amd64

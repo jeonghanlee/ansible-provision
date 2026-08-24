@@ -43,7 +43,8 @@ ansible-playbook -i inventory/lab.ini -i "$RUNTIME_INVENTORY" playbooks/species/
 # Run a specific role via tag
 ansible-playbook -i inventory/lab.ini -i "$RUNTIME_INVENTORY" playbooks/species/iocrunner.yml --tags epics
 
-# Dry run (no changes applied)
+# Dry run: validates inventory, reachability, and template rendering only.
+# Raw tasks are skipped in check mode, so this is not a change preview.
 ansible-playbook -i inventory/lab.ini -i "$RUNTIME_INVENTORY" playbooks/species/iocrunner.yml -C
 
 # Verbose output

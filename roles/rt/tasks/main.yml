@@ -3,9 +3,9 @@
 #
 # Provisions the EtherCAT/RT base image layer: build toolchain, running-kernel
 # headers, dkms, and the PREEMPT_RT kernel + headers. The RT kernel is INSTALLED
-# but never selected as the boot default here (ethercat-env decision D2); the
-# live app_ethercat run sets the boot default and confirms it post-reboot (M16).
-# Applied at bake time by playbooks/05_ethercat_base.yml.
+# but never selected as the boot default here: only the live app_ethercat run
+# can confirm the RT kernel post-reboot, so it owns the boot-default switch.
+# Applied at bake time by the rtbase species assembly.
 
 - name: Update apt cache
   ansible.builtin.raw: apt-get update -y
@@ -34,7 +34,7 @@
     printf "ethercat_base: RT kernel present: %s\n" "$rt"
     # Keep booting the stock kernel by default so the live app_ethercat
     # pre-reboot build runs on the stock kernel (stock-first). This does NOT
-    # force RT as the default (D2); app_ethercat selects RT before its reboot.
+    # force RT as the default; app_ethercat selects RT before its reboot.
     # The grub.cfg parse is best-effort and may need tuning on first real run.
     if grep -q '^GRUB_DEFAULT=' "$grubfile"; then
       sed -i 's/^GRUB_DEFAULT=.*/GRUB_DEFAULT=saved/' "$grubfile"

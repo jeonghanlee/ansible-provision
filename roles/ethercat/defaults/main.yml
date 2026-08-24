@@ -15,15 +15,15 @@ ethercat_log_dir: /opt/ethercat-validation/logs
 
 # RT kernel flavor used to locate the baked RT kernel in grub for the
 # infra-driven boot-default change. This boot-default change is NOT an
-# ethercat-env target (decision D2); it is infrastructure that produces
-# M16-precursor evidence (running the RT kernel, DKMS rebuild on kernel change).
+# ethercat-env target; it is infrastructure that produces pre-live
+# evidence (running the RT kernel, DKMS rebuild on kernel change).
 ethercat_rt_kernel_flavor: rt-amd64
 ethercat_grub_file: /etc/default/grub
 ethercat_grub_cfg: /boot/grub/grub.cfg
 
 # Phase 0-4 plus RT provisioning and GRUB apply. Run for real before the
 # infra-driven reboot. Order mirrors the ethercat-env ordering constraints
-# (M5 doctor first; guards before root-affecting and destructive targets).
+# (doctor first; guards before root-affecting and destructive targets).
 ethercat_targets_pre:
   - doctor
   - init
