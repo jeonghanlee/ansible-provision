@@ -45,6 +45,7 @@ common_pkg_core:
   - sysstat
   - acl
   - logrotate
+  - socat
 
 # Debian family only: locale support.
 common_locale: "en_US.UTF-8"
