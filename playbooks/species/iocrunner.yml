@@ -1,9 +1,10 @@
 ---
 # playbooks/species/iocrunner.yml
 # iocrunner = P_testusers P_iocrunner (P_con P_conserver P_procserv)
-#             P_epics P_provenance |bare>
+#             P_epics P_python P_provenance |bare>
 - import_playbook: ../operators/common.yml
 - import_playbook: ../operators/provenance.yml
+- import_playbook: ../operators/python.yml
 - import_playbook: ../operators/epics.yml
 - import_playbook: ../operators/con.yml
 - import_playbook: ../operators/conserver.yml

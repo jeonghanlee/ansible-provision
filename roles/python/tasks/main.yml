@@ -1,0 +1,27 @@
+---
+# roles/python/tasks/main.yml
+#
+# P_python: provision the Python 3 and pip runtime that both EPICS acquisition
+# paths need - the P_epics binary distribution (which installs no Python) and
+# the P_epics-build source build. Kept as a shared prerequisite rather than
+# inside either. One raw task: build and clone hosts boot a plain base cloud
+# image without a Python ansible facts can rely on, so OS branching lives in
+# the shell via /etc/os-release.
+
+- name: Provision the Python runtime
+  ansible.builtin.raw: |
+    set -e
+    . /etc/os-release
+    case " $ID ${ID_LIKE:-} " in
+      *rhel*|*fedora*|*centos*|*rocky*)
+        dnf install -y {{ (pkg_python_redhat + pkg_python_system) | join(' ') }}
+        {{ pip_bin }} install {{ (pip_packages_global + pip_packages_epics) | join(' ') }}
+        alternatives --set {{ runtime_python_alt_name }} {{ runtime_python_alt_path }} 2>/dev/null || true
+        ;;
+      *debian*|*ubuntu*)
+        export DEBIAN_FRONTEND=noninteractive
+        apt update -y
+        apt install -y {{ pkg_python_debian | join(' ') }}
+        ;;
+    esac
+  changed_when: false

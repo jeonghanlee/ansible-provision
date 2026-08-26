@@ -1,0 +1,11 @@
+---
+# playbooks/operators/python.yml
+# One operator, one playbook. Species assemblies import these in the
+# operator definition's order; runs are scoped with --limit.
+- name: Apply the python operator
+  hosts: vacua
+  gather_facts: false
+  become: yes
+  roles:
+    - role: python
+      tags: [python]

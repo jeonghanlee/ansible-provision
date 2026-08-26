@@ -7,27 +7,9 @@
 # runpath stays $ORIGIN-relative (fully relocatable). Distinct from app_epics,
 # which clones the pre-built EPICS-env-distribution.
 #
-# One raw task: the build hosts boot a plain base cloud image without a Python
-# ansible facts can rely on, and pkg_automation is EPICS-env's own cross-OS
+# P_python provisions the Python runtime before this operator (both EPICS
+# acquisition paths depend on it). pkg_automation is EPICS-env's own cross-OS
 # installer, so OS branching lives in the shell via /etc/os-release.
-
-- name: Provision the Python runtime for the build
-  ansible.builtin.raw: |
-    set -e
-    . /etc/os-release
-    case " $ID ${ID_LIKE:-} " in
-      *rhel*|*fedora*|*centos*|*rocky*)
-        dnf install -y {{ (pkg_python_redhat + pkg_python_system) | join(' ') }}
-        {{ pip_bin }} install {{ (pip_packages_global + pip_packages_epics) | join(' ') }}
-        alternatives --set {{ runtime_python_alt_name }} {{ runtime_python_alt_path }} 2>/dev/null || true
-        ;;
-      *debian*|*ubuntu*)
-        export DEBIAN_FRONTEND=noninteractive
-        apt update -y
-        apt install -y {{ pkg_python_debian | join(' ') }}
-        ;;
-    esac
-  changed_when: false
 
 - name: Build and install EPICS-env from source
   ansible.builtin.raw: |

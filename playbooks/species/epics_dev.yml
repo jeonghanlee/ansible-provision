@@ -1,6 +1,7 @@
 ---
 # playbooks/species/epics_dev.yml
-# epics-dev = P_epics-support P_epics-build |bare>
+# epics-dev = P_epics-support P_epics-build P_python |bare>
 - import_playbook: ../operators/common.yml
+- import_playbook: ../operators/python.yml
 - import_playbook: ../operators/epics_build.yml
 - import_playbook: ../operators/epics_support.yml

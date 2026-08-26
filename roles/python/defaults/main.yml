@@ -1,0 +1,27 @@
+---
+# roles/python/defaults/main.yml
+# Python runtime provisioned before EPICS. Both the P_epics clone and the
+# P_epics-build source build depend on it.
+pkg_python_debian:
+  - python3
+  - python3-pip
+  - python3-serial
+  - python-is-python3
+  - python3-numpy
+  - python3-pyparsing
+  - python3-build
+  - python3-nose2
+  - gcovr
+  - flawfinder
+# Generic RedHat-family python; rocky8 overrides to the 3.9 module in its
+# vacuum group_vars.
+pkg_python_redhat:
+  - python3
+  - python3-pip
+pkg_python_system:
+  - python3-pyserial
+pip_bin:                 "/usr/bin/pip3"
+pip_packages_global:     ["numpy", "pyparsing"]
+pip_packages_epics:      ["nose2"]
+runtime_python_alt_name: "python"
+runtime_python_alt_path: "/usr/bin/python3"
