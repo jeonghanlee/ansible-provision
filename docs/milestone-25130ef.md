@@ -35,9 +35,12 @@ re-verification — this session's role fixes were verified on Rocky 8
 (4-OS source-build) is Complete; `M2` (Ubuntu 26 source-build) is Deferred to
 EPICS-env 1.3.1 or later, tracked at `jeonghanlee/EPICS-env#63`; the resolving
 mechanism (the C17 bridge) already exists in EPICS-env at
-`jeonghanlee/EPICS-env#29`.
+`jeonghanlee/EPICS-env#29`. `M4` (operator/species provisioning model) is newly
+registered In progress; its structure check `M4/T1` — syntax-check the species
+playbooks and confirm `configure/RELEASE` and `inventory/lab.ini` enumerate
+them — is runnable now.
 
-Status tally: 1 Complete, 1 In progress, 1 Deferred. No external gates.
+Status tally: 1 Complete, 2 In progress, 1 Deferred. 1 external gate (Open).
 
 ## Milestone
 
@@ -48,6 +51,8 @@ Status tally: 1 Complete, 1 In progress, 1 Deferred. No external gates.
 | Core | M1 | EPICS-env 4-OS source-build environment | Carry-forward | Complete | No | | Rocky 8, Debian 13, Rocky 10, and Ubuntu 24 pass both source-build layers and checks; [detail](#m1---epics-env-4-os-source-build-environment) |
 | Core | M2 | Ubuntu 26 source-build (deferred) | Carry-forward | Deferred | No | D2 | Owner adds Ubuntu 26 back to the matrix in EPICS-env 1.3.1 or later and the complete Ubuntu 26 path passes; [detail](#m2---ubuntu-26-source-build-deferred) |
 | Core | M3 | base_os/app role hardening from the production IOC server deployment | Carry-forward | In progress | No | | Rocky 8 verified on the production IOC server; Debian 13 re-verification pending; [detail](#m3---base_osapp-role-hardening-from-the production IOC server-deployment) |
+| Core | M4 | Operator/species provisioning model | Milestone | In progress | No | G1 | Vacua, single-role operators, and species assemblies replace the staged model, iocserver registered; P_proxy scoped but unbuilt and the live iocserver run blocked on G1; [detail](#m4---operatorspecies-provisioning-model) |
+| Gate | G1 | the production IOC server added to the the internal git host clone whitelist | External gate | Open | No | | Network team whitelists the production IOC server so the EPICS distribution clone and a live iocserver run reach the internal git host; blocks M4/T2 |
 
 ### Decisions
 
@@ -237,6 +242,78 @@ overrides live in the `server-configuration` repository, not here.
 | --- | --- | --- | --- |
 | T1 | Verified | Rocky 8 | the production IOC server: `01_base`/`02_apps` completed, chrony synced (`^*`, Reach 377), `python --version` 3.9.25 from a clean 3.6.8 state, con/procServ/console/conserver installed. |
 | T2 | Not run | Debian 13 | os-detect, chrony render, version pinning, and epics owner-clone touch the shared/Debian path but were exercised only through `--syntax-check`; a Debian 13 run is pending. |
+
+#### M4 - Operator/species provisioning model
+
+Origin: 25130ef / M4
+
+##### Scope
+
+The staged 01_base/02_apps/03_epics model is replaced by the operator/species
+model whose normative definition is cloud-provision `docs/OPERATOR_MODEL.md`
+(origin/master `bb64ad2`). ansible-provision implements it:
+
+- Vacua: five OS baselines (debian13, rocky8, rocky10, ubuntu24, ubuntu26) as
+  inventory groups under the `vacua` parent.
+- Single-role operators under `playbooks/operators/` (common, provenance,
+  python, epics, epics_build, epics_support, con, conserver, procserv,
+  iocrunner, testusers, rt, nfs_sim, ethercat), each importing one role.
+- Species assemblies under `playbooks/species/` (bare, iocrunner, iocrunner_nfs,
+  iocserver, epics_dev, nfs_sim, rtbase, ethercat) that import operators in
+  operator-model product order, enumerated in `configure/RELEASE` and
+  `inventory/lab.ini`.
+- iocserver: iocrunner without P_testusers, for an existing production IOC
+  server (the production IOC server) that already owns its accounts; added and registered in
+  `92f04c4`, `08ec916`, and `60d2c2c`, matched char-for-char to the SOT
+  iocserver product at `bb64ad2`.
+
+Scoped, not yet built:
+
+- P_proxy: an optional precondition operator that applies the site proxy
+  contract to an existing server by streaming cloud-provision
+  `bin/proxy_contract.bash` in apply mode, so the logic is not duplicated.
+  Design converged with the cloud-provision owner (ADR-20260820); `roles/proxy`
+  and `playbooks/operators/proxy.yml` are not yet created.
+
+**Out of scope:** the operator-model definition itself (owned by
+cloud-provision); the the production IOC server site record and overrides (the
+`server-configuration` repository); EtherCAT live execution (owner's separate
+tracker).
+
+##### Completion Criteria
+
+Every named species assembly resolves and applies in operator-model order,
+iocserver applies cleanly on the production IOC server, and P_proxy is either built and applied
+or explicitly deferred by owner decision.
+
+##### Dependencies And Decisions
+
+- `G1` (the production IOC server the internal git host whitelist) blocks the live iocserver run
+  (`T2`); resume `T2` as Not started when `G1` closes.
+- P_proxy depends on cloud-provision shipping `bin/proxy_contract.bash` as the
+  single authority; the SOT P_proxy precondition lands together with the
+  `roles/proxy` implementation.
+
+Plan Status: draft
+Plan Acceptance: none
+Implementation Authorization: none
+Superseded Plan Artifacts: none
+
+##### Test Plan
+
+| Label | Layer | Method | Environment | Expected Result |
+| --- | --- | --- | --- | --- |
+| T1 | Structure | Syntax-check every species playbook and confirm each is listed in `configure/RELEASE` and `inventory/lab.ini` | control host | Each species assembly resolves its operator imports; RELEASE and the inventory groups enumerate every species. |
+| T2 | Integration | Apply `species/iocserver.yml` on the production IOC server | Rocky 8 (the production IOC server) | The iocrunner operator set installs on the existing server with no test-user creation. |
+| T3 | Integration | Build `roles/proxy` and apply `operators/proxy.yml` on a proxied host | Debian / Rocky | The shipped `proxy_contract.bash` applies the proxy artifacts and a re-run is idempotent. |
+
+##### Verification Results
+
+| Check | Result | OS | Evidence |
+| --- | --- | --- | --- |
+| T1 | Not run | control host | Species playbooks and their registration landed (`92f04c4`, `08ec916`, `60d2c2c`); a syntax and enumeration pass is pending. |
+| T2 | Blocked | Rocky 8 (the production IOC server) | Blocked by `G1`: the production IOC server cannot reach the internal git host for the EPICS distribution clone. |
+| T3 | Not run | Debian / Rocky | `roles/proxy` and `operators/proxy.yml` are not yet created. |
 
 ## Backlog
 
