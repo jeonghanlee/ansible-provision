@@ -311,7 +311,7 @@ Superseded Plan Artifacts: none
 
 | Check | Result | OS | Evidence |
 | --- | --- | --- | --- |
-| T1 | Not run | control host | Species playbooks and their registration landed (`92f04c4`, `08ec916`, `60d2c2c`); a syntax and enumeration pass is pending. |
+| T1 | Partial | debian12 (epics_dev) | Species playbooks and registration landed (`92f04c4`, `08ec916`, `60d2c2c`). Live partial evidence: after `35f00fe`, `epics_dev` applied on a real debian12 host (PLAY RECAP `ok=15 changed=4 failed=0`), installing EPICS-env 1.3.0 / base 7.0.10 layers 1+2 at `/opt/epics/1.3.0/debian-12/7.0.10`, observed by the cloud-provision session. A full syntax and enumeration pass across every species is still pending. |
 | T2 | Blocked | Rocky 8 (the production IOC server) | Blocked by `G1`: the production IOC server cannot reach the internal git host for the EPICS distribution clone. |
 | T3 | Not run | Debian / Rocky | `roles/proxy` and `operators/proxy.yml` are not yet created. |
 
