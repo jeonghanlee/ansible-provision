@@ -65,7 +65,7 @@ sidecar manifests by SHA-256, and both consumers passed
 | Debian 13 | ✓ | ✓ | Commits `9dfd5a1` and `0148514`: layered tree built; `check_deps` exit 0. |
 | Rocky 10 | ✓ | ✓ | Fresh `gz` layers produced 64 entries; all runtime gates and `check_deps.bash` passed. |
 | Ubuntu 24 | ✓ | ✓ | Fresh `gz` layers produced 64 entries; all runtime gates and `check_deps.bash` passed. |
-| Ubuntu 26 | ✗ | — | On 2026-07-28, `08_epics_env_build.yml` with `epics_env_build_flavor=gz` exited 2: GCC 15 rejected incompatible function pointers in `iocStats` `devIocStatsAnalog.c`. |
+| Ubuntu 26 | ✗ | — | On 2026-07-28, `08_epics_env_build.yml` with `epics_env_build_flavor=gz` exited 2: GCC 15 rejected incompatible function pointers in `iocStats` `devIocStatsAnalog.c`. A 2026-08-27 re-run of the 1.3.0 `gz` build, performed outside this session, reported a clean build with `iocStats` 4.0.1 installed and did not reproduce the failure; that result is not independently verified here. |
 
 | Build property | Status | Evidence |
 | :-- | :-: | :-- |
