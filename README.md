@@ -137,9 +137,9 @@ is the normative statement of content and order.
 | Assembly | Product |
 |---|---|
 | `species/bare.yml` | P_common |
-| `species/iocrunner.yml` | P_testusers P_iocrunner (P_con P_conserver P_procserv) P_epics P_provenance on bare |
+| `species/iocrunner.yml` | P_testusers P_iocrunner (P_epics or P_epics-build) P_python (P_con P_conserver P_procserv) P_provenance on bare |
 | `species/iocrunner_nfs.yml` | P_nfs-sim on iocrunner |
-| `species/epics_dev.yml` | P_epics-support P_epics-build on bare |
+| `species/epics_dev.yml` | P_epics-support P_epics-build P_python on bare |
 | `species/nfs_sim.yml` | P_nfs-sim on bare |
 | `species/rtbase.yml` | P_rt on bare |
 | `species/ethercat.yml` | P_ethercat on the rtbase golden |

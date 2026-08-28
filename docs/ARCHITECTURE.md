@@ -25,10 +25,10 @@ operation above that baseline. The first-pass validation environment uses
      |     (cloud-provision docs/IMAGE_WORKFLOW.md is normative)
      |
      | bare       -> common
-     | iocrunner  -> common, provenance, epics, con, conserver,
-     |               procserv, iocrunner, testusers
+     | iocrunner  -> common, provenance, con, conserver, procserv,
+     |               python, epics, iocrunner, testusers
      | iocrunner_nfs -> iocrunner + nfs_sim
-     | epics_dev  -> common, epics_build, epics_support
+     | epics_dev  -> common, python, epics_build, epics_support
      | nfs_sim    -> common, nfs_sim
      | rtbase     -> common, rt
      | ethercat   -> ethercat (on the rtbase golden)
