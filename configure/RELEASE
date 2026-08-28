@@ -1,7 +1,7 @@
 APPNAME   := ansible-provision
 
 # Species assemblies and operator playbooks this project ships.
-SPECIES_PLAYBOOKS  := bare iocrunner iocrunner_nfs epics_dev nfs_sim rtbase ethercat
+SPECIES_PLAYBOOKS  := bare iocrunner iocrunner_nfs iocserver epics_dev nfs_sim rtbase ethercat
 OPERATOR_PLAYBOOKS := common rt provenance python epics epics_build epics_support \
                       procserv conserver con nfs_sim iocrunner testusers ethercat
 

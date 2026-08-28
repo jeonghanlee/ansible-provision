@@ -1,0 +1,11 @@
+---
+# playbooks/species/iocserver.yml
+# iocserver = P_iocrunner (P_epics or P_epics-build) P_python (P_con P_conserver P_procserv) P_provenance |bare>
+- import_playbook: ../operators/common.yml
+- import_playbook: ../operators/provenance.yml
+- import_playbook: ../operators/con.yml
+- import_playbook: ../operators/conserver.yml
+- import_playbook: ../operators/procserv.yml
+- import_playbook: ../operators/python.yml
+- import_playbook: ../operators/epics.yml
+- import_playbook: ../operators/iocrunner.yml

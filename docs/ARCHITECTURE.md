@@ -28,6 +28,8 @@ operation above that baseline. The first-pass validation environment uses
      | iocrunner  -> common, provenance, con, conserver, procserv,
      |               python, epics, iocrunner, testusers
      | iocrunner_nfs -> iocrunner + nfs_sim
+     | iocserver  -> common, provenance, con, conserver, procserv,
+     |               python, epics, iocrunner
      | epics_dev  -> common, python, epics_build, epics_support
      | nfs_sim    -> common, nfs_sim
      | rtbase     -> common, rt
