@@ -4,7 +4,7 @@ PLAYBOOK_DIR := playbooks
 
 # Lab topology: one OS group per vacuum. Override per site via
 # CONFIG_SITE.local.
-OS_GROUPS := debian13 rocky8 rocky10 ubuntu24 ubuntu26
+OS_GROUPS := debian12 debian13 rocky8 rocky10 ubuntu24 ubuntu26
 
 -include $(TOP)/../CONFIG_SITE.local
 -include $(TOP)/configure/CONFIG_SITE.local

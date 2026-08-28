@@ -251,10 +251,10 @@ Origin: 25130ef / M4
 
 The staged 01_base/02_apps/03_epics model is replaced by the operator/species
 model whose normative definition is cloud-provision `docs/OPERATOR_MODEL.md`
-(origin/master `bb64ad2`). ansible-provision implements it:
+(origin/master `de8e03f`). ansible-provision implements it:
 
-- Vacua: five OS baselines (debian13, rocky8, rocky10, ubuntu24, ubuntu26) as
-  inventory groups under the `vacua` parent.
+- Vacua: six OS baselines (debian12, debian13, rocky8, rocky10, ubuntu24,
+  ubuntu26) as inventory groups under the `vacua` parent.
 - Single-role operators under `playbooks/operators/` (common, provenance,
   python, epics, epics_build, epics_support, con, conserver, procserv,
   iocrunner, testusers, rt, nfs_sim, ethercat), each importing one role.

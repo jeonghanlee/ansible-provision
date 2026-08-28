@@ -1,0 +1,3 @@
+---
+# inventory/group_vars/debian12.yml
+epics_os_dir: "debian-12"

@@ -63,14 +63,15 @@ ansible-provision/
 |   |-- lab.ini                      (host-free lab group relationships)
 |   `-- group_vars/
 |       |-- all.yml                  (values shared by more than one operator)
+|       |-- debian12.yml             (epics_os_dir: debian-12)
 |       |-- debian13.yml             (epics_os_dir: debian-13)
 |       |-- rocky8.yml               (epics_os_dir, rocky 3.9 python overrides)
 |       |-- rocky10.yml              (per-vacuum values as operators need them)
 |       |-- ubuntu24.yml             (per-vacuum values as operators need them)
 |       `-- ubuntu26.yml             (per-vacuum values as operators need them)
 |-- playbooks/
-|   |-- operators/                   (one playbook per operator, 13)
-|   `-- species/                     (one assembly per species, 7)
+|   |-- operators/                   (one playbook per operator, 14)
+|   `-- species/                     (one assembly per species, 8)
 `-- roles/                           (one role per operator)
     |-- common/      rt/         provenance/
     |-- epics/       epics_build/ epics_support/
@@ -94,8 +95,8 @@ Production and site deployments may provide a complete inventory instead.
 
 | Group | Members |
 |---|---|
-| `vacua` | Parent of the five vacuum groups |
-| `debian13`, `rocky8`, `rocky10`, `ubuntu24`, `ubuntu26` | Generated hosts of that vacuum |
+| `vacua` | Parent of the six vacuum groups |
+| `debian12`, `debian13`, `rocky8`, `rocky10`, `ubuntu24`, `ubuntu26` | Generated hosts of that vacuum |
 | `iocrunner`, `iocrunner_nfs` | Generated ioc-runner bake hosts, per golden flavor |
 | `epics_dev` | Generated EPICS build hosts |
 | `nfs_sim` | Generated NFS-simulation hosts |

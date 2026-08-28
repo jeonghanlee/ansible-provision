@@ -1,8 +1,8 @@
 # ansible-provision
 
 Ansible provisioning for the image operator model defined in cloud-provision
-`docs/IMAGE_WORKFLOW.md` (Operator definition): five vacua (debian13, rocky8,
-rocky10, ubuntu24, ubuntu26), one role per operator, one playbook per
+`docs/IMAGE_WORKFLOW.md` (Operator definition): six vacua (debian12, debian13,
+rocky8, rocky10, ubuntu24, ubuntu26), one role per operator, one playbook per
 operator, and one assembly playbook per species.
 
 * First-pass VM source of truth: [cloud-provision](https://github.com/jeonghanlee/cloud-provision)
