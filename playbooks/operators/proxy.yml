@@ -1,0 +1,13 @@
+---
+# playbooks/operators/proxy.yml
+# One operator, one playbook. P_proxy is an optional precondition applied FIRST
+# (before P_common and every fetch) on sites that reach the network only through
+# a proxy. It is not a species-product member; invoke it ahead of a species run
+# on a proxied host.
+- name: Apply the proxy operator
+  hosts: vacua
+  gather_facts: false
+  become: yes
+  roles:
+    - role: proxy
+      tags: [proxy]

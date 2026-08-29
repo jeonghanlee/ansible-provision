@@ -1,0 +1,15 @@
+---
+# roles/proxy/defaults/main.yml
+
+# Single-authority proxy contract script in the control-host cloud-provision
+# checkout. The role streams this to the target and runs it in apply mode; it
+# is never vendored into this repository. Override per site if the cloud-provision
+# checkout does not sit beside this one.
+proxy_contract_path: "{{ role_path }}/../../../cloud-provision/bin/proxy_contract.bash"
+
+# Site proxy URL. No value ships here; inject it per host through an inventory
+# override or -e proxy_url=<url>. The role fails when it is unset.
+proxy_url: ""
+
+# Re-apply even when the proxy artifacts are already installed.
+proxy_force: false

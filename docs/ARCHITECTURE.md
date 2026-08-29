@@ -70,13 +70,14 @@ ansible-provision/
 |       |-- ubuntu24.yml             (per-vacuum values as operators need them)
 |       `-- ubuntu26.yml             (per-vacuum values as operators need them)
 |-- playbooks/
-|   |-- operators/                   (one playbook per operator, 14)
+|   |-- operators/                   (one playbook per operator, 15)
 |   `-- species/                     (one assembly per species, 8)
-`-- roles/                           (one role per operator)
-    |-- common/      rt/         provenance/
-    |-- epics/       epics_build/ epics_support/
+`-- roles/                           (one role per operator, 15; plus 2 legacy)
+    |-- common/      rt/          provenance/  python/
+    |-- proxy/       epics/       epics_build/ epics_support/
     |-- procserv/    conserver/   con/
-    `-- nfs_sim/     iocrunner/   testusers/   ethercat/
+    |-- nfs_sim/     iocrunner/   testusers/   ethercat/
+    `-- base_os/     app_epics/   (legacy, retired per D3; removal pending)
 ```
 
 ---
@@ -110,6 +111,32 @@ Production and site deployments may provide a complete inventory instead.
 The raw-task house conventions (set -e, trailing assertions, quoted
 heredocs, sentinel changed_when, validated atomic writes) are codified
 in [`RAW_STYLE.md`](RAW_STYLE.md); roles below follow them.
+
+### Proxy Precondition
+
+The `proxy` role is the optional `P_proxy` precondition, applied before
+`P_common` and every fetch on a site that reaches the network only through a
+proxy. It does not reimplement the proxy artifact set: it streams the
+single-authority `bin/proxy_contract.bash` from the control-host
+cloud-provision checkout to the target and runs it in apply mode.
+
+```
+raw shell (root):
+  stage /run/cloud-provision/proxy_contract.bash (0700)
+    │
+    ├── /run/cloud-provision/proxy-contract.input (0600)
+    │     schema=1 / proxy_url=<injected> / script_sha256=<staged hash>
+    │
+    └── bash proxy_contract.bash apply   (self-hash guard; os auto-detected)
+```
+
+The proxy URL is never committed; it is injected per host (`-e proxy_url=` or a
+site override) and the role fails when it is unset. Apply installs the
+ADR-20260820 artifact set (`profile.d`, `/etc/environment`, apt or dnf, sudo,
+sshd, ssh-environment, pip, gitconfig). Golden-mode seal stays on the
+cloud-provision bake side; this role is the Live/Instant apply path. The role
+skips when the `profile.d` marker is already present unless `proxy_force` is
+set.
 
 ### Build Pattern
 

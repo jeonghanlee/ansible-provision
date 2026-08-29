@@ -29,18 +29,17 @@ later version (see `M2` and `D2`).
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: `M3` (base_os/app role hardening) needs Debian 13
-re-verification — this session's role fixes were verified on Rocky 8
-(the production IOC server) but exercised the Debian path only through `--syntax-check`. `M1`
-(4-OS source-build) is Complete; `M2` (Ubuntu 26 source-build) is Deferred to
-EPICS-env 1.3.1 or later, tracked at `jeonghanlee/EPICS-env#63`; the resolving
-mechanism (the C17 bridge) already exists in EPICS-env at
-`jeonghanlee/EPICS-env#29`. `M4` (operator/species provisioning model) is newly
-registered In progress; its structure check `M4/T1` — syntax-check the species
-playbooks and confirm `configure/RELEASE` and `inventory/lab.ini` enumerate
-them — is runnable now.
+Next session entry point: `M4` (operator/species provisioning model), the active
+milestone. `M4/T1` — syntax-check the species playbooks and confirm
+`configure/RELEASE` and `inventory/lab.ini` enumerate them — is runnable now;
+`M4/T3` applies `operators/proxy.yml` on a proxied host; `M4/T2` (iocserver on
+the production IOC server) is blocked on `G1`. `M3` (base_os/app role hardening) is Deferred per
+`D3`: the old model is retired, so its Debian 13 re-verification is not pursued.
+`M1` (4-OS source-build) is Complete; `M2` (Ubuntu 26 source-build) is Deferred
+to EPICS-env 1.3.1 or later (`jeonghanlee/EPICS-env#63`; C17 bridge at
+`jeonghanlee/EPICS-env#29`).
 
-Status tally: 1 Complete, 2 In progress, 1 Deferred. 1 external gate (Open).
+Status tally: 1 Complete, 1 In progress, 2 Deferred. 1 external gate (Open).
 
 ## Milestone
 
@@ -50,8 +49,8 @@ Status tally: 1 Complete, 2 In progress, 1 Deferred. 1 external gate (Open).
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Core | M1 | EPICS-env 4-OS source-build environment | Carry-forward | Complete | No | | Rocky 8, Debian 13, Rocky 10, and Ubuntu 24 pass both source-build layers and checks; [detail](#m1---epics-env-4-os-source-build-environment) |
 | Core | M2 | Ubuntu 26 source-build (deferred) | Carry-forward | Deferred | No | D2 | Owner adds Ubuntu 26 back to the matrix in EPICS-env 1.3.1 or later and the complete Ubuntu 26 path passes; [detail](#m2---ubuntu-26-source-build-deferred) |
-| Core | M3 | base_os/app role hardening from the production IOC server deployment | Carry-forward | In progress | No | | Rocky 8 verified on the production IOC server; Debian 13 re-verification pending; [detail](#m3---base_osapp-role-hardening-from-the production IOC server-deployment) |
-| Core | M4 | Operator/species provisioning model | Milestone | In progress | No | G1 | Vacua, single-role operators, and species assemblies replace the staged model, iocserver registered; P_proxy scoped but unbuilt and the live iocserver run blocked on G1; [detail](#m4---operatorspecies-provisioning-model) |
+| Core | M3 | base_os/app role hardening from the production IOC server deployment | Carry-forward | Deferred | No | D3 | Deferred per D3 (old model retired); the base/app surface is re-verified under the operator model (M4); [detail](#m3---base_osapp-role-hardening-from-the production IOC server-deployment) |
+| Core | M4 | Operator/species provisioning model | Milestone | In progress | No | G1 | Vacua, single-role operators, and species assemblies replace the staged model, iocserver registered; P_proxy role implemented with live apply pending and the live iocserver run blocked on G1; [detail](#m4---operatorspecies-provisioning-model) |
 | Gate | G1 | the production IOC server added to the the internal git host clone whitelist | External gate | Open | No | | Network team whitelists the production IOC server so the EPICS distribution clone and a live iocserver run reach the internal git host; blocks M4/T2 |
 
 ### Decisions
@@ -60,6 +59,7 @@ Status tally: 1 Complete, 2 In progress, 1 Deferred. 1 external gate (Open).
 | --- | --- | --- |
 | D1 | Local `T` labels identify verification inside their owning work detail and are not independent work IDs. | Prior canonical register, prior state commit `25130ef` |
 | D2 | Ubuntu 26 is excluded from the current source-build matrix and deferred to EPICS-env 1.3.1 or a later version. The 1.3.0 gate matrix does not include Ubuntu 26, and the `iocStats` GCC 15 fix is owned by EPICS-env. | Owner decision, 2026-08-17 |
+| D3 | The staged old model (`01_base`/`02_apps`/`03_epics`) and its retained roles `base_os` and `app_epics` are retired; the operator/species model supersedes them. Removing the old roles and playbooks is separate follow-up work. | Owner decision, 2026-08-29 |
 
 ### Milestone Details
 
@@ -215,6 +215,12 @@ Out of scope: the `iocStats` GCC 15 fix itself, which EPICS-env owns.
 
 #### M3 - base_os/app role hardening from the production IOC server deployment
 
+Deferred 2026-08-29 per D3: the old model is retired, so the pending Debian 13
+re-verification of the old roles is not pursued. The base and app surface is
+re-verified under the operator model (M4) through the `common`, `con`,
+`conserver`, and `procserv` operator roles. The completed Rocky 8 evidence on
+the production IOC server (T1) remains valid as historical record.
+
 ##### Scope
 
 Role fixes and enhancements surfaced while provisioning a real IOC server
@@ -267,13 +273,15 @@ model whose normative definition is cloud-provision `docs/OPERATOR_MODEL.md`
   `92f04c4`, `08ec916`, and `60d2c2c`, matched char-for-char to the SOT
   iocserver product at `bb64ad2`.
 
-Scoped, not yet built:
+Implemented, live verification pending:
 
 - P_proxy: an optional precondition operator that applies the site proxy
   contract to an existing server by streaming cloud-provision
   `bin/proxy_contract.bash` in apply mode, so the logic is not duplicated.
   Design converged with the cloud-provision owner (ADR-20260820); `roles/proxy`
-  and `playbooks/operators/proxy.yml` are not yet created.
+  and `playbooks/operators/proxy.yml` are implemented (stage the shipped script
+  plus a schema-1 input, then run apply as root). A live apply on a proxied
+  host is the remaining T3 verification.
 
 **Out of scope:** the operator-model definition itself (owned by
 cloud-provision); the the production IOC server site record and overrides (the
@@ -313,7 +321,7 @@ Superseded Plan Artifacts: none
 | --- | --- | --- | --- |
 | T1 | Partial | debian12 (epics_dev) | Species playbooks and registration landed (`92f04c4`, `08ec916`, `60d2c2c`). Live partial evidence: after `35f00fe`, `epics_dev` applied on a real debian12 host (PLAY RECAP `ok=15 changed=4 failed=0`), installing EPICS-env 1.3.0 / base 7.0.10 layers 1+2 at `/opt/epics/1.3.0/debian-12/7.0.10`, observed by the cloud-provision session. A full syntax and enumeration pass across every species is still pending. |
 | T2 | Blocked | Rocky 8 (the production IOC server) | Blocked by `G1`: the production IOC server cannot reach the internal git host for the EPICS distribution clone. |
-| T3 | Not run | Debian / Rocky | `roles/proxy` and `operators/proxy.yml` are not yet created. |
+| T3 | Not run | Debian / Rocky | `roles/proxy` and `operators/proxy.yml` implemented (consume the shipped `proxy_contract.bash` in apply mode, no reimplementation). A live apply on a proxied host (the production IOC server) is pending. |
 
 ## Backlog
 

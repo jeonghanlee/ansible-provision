@@ -1,0 +1,56 @@
+---
+# roles/proxy/tasks/main.yml
+# Live/Instant proxy application. Streams the single-authority proxy contract
+# from the control-host cloud-provision checkout to the target and runs it in
+# apply mode. The contract owns the artifact set (cloud-provision
+# ADR-20260820); this role does not reimplement it. Golden-mode seal stays on
+# the cloud-provision bake side. Raw and root-only so it runs before P_common
+# on every family, including Rocky where Python-backed modules are unavailable.
+- name: Apply the site proxy contract
+  ansible.builtin.raw: |
+    set -e
+    proxy_url="{{ proxy_url }}"
+    force="{{ proxy_force | bool | ternary('1', '') }}"
+    if [ -z "${proxy_url}" ]; then
+      printf '%s\n' "Error: proxy_url must be set (inject per host, not committed)" >&2
+      exit 1
+    fi
+    marker="/etc/profile.d/95cloud-provision-proxy.sh"
+    if [ -z "${force}" ] && [ -f "${marker}" ]; then
+      printf unchanged
+      exit 0
+    fi
+    runtime="/run/cloud-provision"
+    mkdir -p "${runtime}"
+    chown root:root "${runtime}"
+    chmod 0700 "${runtime}"
+    staged="${runtime}/proxy_contract.bash"
+    stmp="$(mktemp "${runtime}/.proxy_contract.bash.XXXXXX")"
+    trap 'rm -f "${stmp}"' EXIT
+    trap 'exit 1' HUP INT TERM
+    cat > "${stmp}" << 'PROXY_CONTRACT_SCRIPT_EOF'
+    {{ lookup('ansible.builtin.file', proxy_contract_path) }}
+    PROXY_CONTRACT_SCRIPT_EOF
+    test -s "${stmp}"
+    chown root:root "${stmp}"
+    chmod 0700 "${stmp}"
+    mv -f "${stmp}" "${staged}"
+    trap - EXIT
+    sha="$(sha256sum "${staged}" | cut -d' ' -f1)"
+    input="${runtime}/proxy-contract.input"
+    itmp="$(mktemp "${runtime}/.proxy-contract.input.XXXXXX")"
+    trap 'rm -f "${itmp}"' EXIT
+    {
+      printf 'schema=1\n'
+      printf 'proxy_url=%s\n' "${proxy_url}"
+      printf 'script_sha256=%s\n' "${sha}"
+    } > "${itmp}"
+    chown root:root "${itmp}"
+    chmod 0600 "${itmp}"
+    mv -f "${itmp}" "${input}"
+    trap - EXIT
+    bash "${staged}" apply 1>&2
+    test -f "${marker}"
+    printf changed
+  register: proxy_apply
+  changed_when: "proxy_apply.stdout | trim == 'changed'"
