@@ -2,9 +2,11 @@
 # roles/epics_support/defaults/main.yml
 repo_epics_support: "https://github.com/jeonghanlee/EPICS-env-support"
 
-# Branch or tag to build. Support changes rarely and is decoupled from
-# EPICS-env's release version, so track master.
-epics_env_support_tag: "master"
+# Build ref for the release line this run targets. Resolve per run against
+# the remote: a same-number X.Y.Z tag builds that tag; with no tag, the
+# release-X.Y.Z branch; with neither, stop. Outside an open release line,
+# track master. Keep this pin matched to the release EPICS-env targets.
+epics_env_support_tag: "1.3.0"
 
 # Where the support source tree is cloned and built.
 path_epics_support_src: "/opt/epics-env-support-src"
