@@ -319,9 +319,9 @@ Superseded Plan Artifacts: none
 
 | Check | Result | OS | Evidence |
 | --- | --- | --- | --- |
-| T1 | Partial | debian12 (epics_dev) | Species playbooks and registration landed (`92f04c4`, `08ec916`, `60d2c2c`). Live partial evidence: after `35f00fe`, `epics_dev` applied on a real debian12 host (PLAY RECAP `ok=15 changed=4 failed=0`), installing EPICS-env 1.3.0 / base 7.0.10 layers 1+2 at `/opt/epics/1.3.0/debian-12/7.0.10`, observed by the cloud-provision session. A full syntax and enumeration pass across every species is still pending. |
+| T1 | Partial | debian12 (epics_dev) | Species playbooks and registration landed (`92f04c4`, `08ec916`, `60d2c2c`). Live partial evidence: after `35f00fe`, `epics_dev` applied on a real debian12 host (PLAY RECAP `ok=15 changed=4 failed=0`), installing EPICS-env 1.3.0 / base 7.0.10 layers 1+2 at `/opt/epics/1.3.0/debian-12/7.0.10`, observed by the cloud-provision session. The gz flavor of the same `epics_dev` path also passed on debian12 (`make build.gz`, PLAY RECAP `ok=15 changed=4 failed=0`), so both flavors are validated there. A full syntax and enumeration pass across every species is still pending. |
 | T2 | Blocked | Rocky 8 (the production IOC server) | Blocked by `G1`: the production IOC server cannot reach the internal git host for the EPICS distribution clone. |
-| T3 | Not run | Debian / Rocky | `roles/proxy` and `operators/proxy.yml` implemented (consume the shipped `proxy_contract.bash` in apply mode, no reimplementation). A live apply on a proxied host (the production IOC server) is pending. |
+| T3 | Not run | Debian / Rocky | `roles/proxy` and `operators/proxy.yml` implemented (consume the shipped `proxy_contract.bash` in apply mode, no reimplementation). A live apply on a proxied host (the production IOC server) is pending. The SOT P_proxy definition landed one-to-one at cloud-provision `8654990`; the shared live apply is the only open item. |
 
 ## Backlog
 
