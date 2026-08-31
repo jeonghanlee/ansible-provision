@@ -1,7 +1,7 @@
 # ansible-provision
 
 Ansible provisioning for the image operator model defined in cloud-provision
-`docs/IMAGE_WORKFLOW.md` (Operator definition): six vacua (debian12, debian13,
+[`docs/IMAGE_WORKFLOW.md`](https://github.com/jeonghanlee/cloud-provision/blob/master/docs/IMAGE_WORKFLOW.md) (Operator definition): six vacua (debian12, debian13,
 rocky8, rocky10, ubuntu24, ubuntu26), one role per operator, one playbook per
 operator, and one assembly playbook per species.
 
@@ -113,7 +113,7 @@ Standalone (non-lab) VMs: see [docs/STANDALONE.md](docs/STANDALONE.md).
 ## Operators
 
 One role per operator; each role's `defaults/` owns the values only it
-consumes. The operator definition in cloud-provision `docs/IMAGE_WORKFLOW.md`
+consumes. The operator definition in cloud-provision [`docs/IMAGE_WORKFLOW.md`](https://github.com/jeonghanlee/cloud-provision/blob/master/docs/IMAGE_WORKFLOW.md)
 is the normative statement of content and order.
 
 | Operator | Role | Source |
