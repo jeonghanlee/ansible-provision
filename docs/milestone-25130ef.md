@@ -32,10 +32,10 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
 Next session entry point: `M4` (operator/species provisioning model), the active
-milestone. `M4/T1` — syntax-check the species playbooks and confirm
-`configure/RELEASE` and `inventory/lab.ini` enumerate them — is runnable now;
-`M4/T3` applies `operators/proxy.yml` on a proxied host; `M4/T2` (iocserver on
-the production IOC server) is blocked on `G1`. `M3` (base_os/app role hardening) is Deferred per
+milestone. `M4/T1` (species syntax-check and `configure/RELEASE` / `inventory/lab.ini`
+enumeration) and `M4/T3` (P_proxy apply and full-species re-apply idempotency)
+are verified; `M4/T2` (iocserver on the production IOC server) is the only remaining check and
+is blocked on `G1`. `M3` (base_os/app role hardening) is Deferred per
 `D3`: the old model is retired, so its Debian 13 re-verification is not pursued.
 `M1` (4-OS source-build) and `M2` (Ubuntu 26 source-build) are both Complete;
 the C17 bridge (`jeonghanlee/EPICS-env#29`) fires on Ubuntu 26 and its
@@ -321,7 +321,7 @@ Superseded Plan Artifacts: none
 
 | Check | Result | OS | Evidence |
 | --- | --- | --- | --- |
-| T1 | Partial | debian12 (epics_dev) | Species playbooks and registration landed (`92f04c4`, `08ec916`, `60d2c2c`). Live partial evidence: after `35f00fe`, `epics_dev` applied on a real debian12 host (PLAY RECAP `ok=15 changed=4 failed=0`), installing EPICS-env 1.3.0 / base 7.0.10 layers 1+2 at `/opt/epics/1.3.0/debian-12/7.0.10`, observed by the cloud-provision session. The gz flavor of the same `epics_dev` path also passed on debian12 (`make build.gz`, PLAY RECAP `ok=15 changed=4 failed=0`), so both flavors are validated there. A full syntax and enumeration pass across every species is still pending. |
+| T1 | Passed | control host; debian12 (epics_dev) | All eight species playbooks (`bare`, `epics_dev`, `ethercat`, `iocrunner`, `iocrunner_nfs`, `iocserver`, `nfs_sim`, `rtbase`) pass `ansible-playbook --syntax-check`, and every species is enumerated in `configure/RELEASE` `SPECIES_PLAYBOOKS` with its `inventory/lab.ini` group present for every non-bare species (bare is vacuum-only by design); no stray non-vacuum groups. Registration landed in `92f04c4`, `08ec916`, `60d2c2c`. Live evidence: after `35f00fe`, `epics_dev` applied on a real debian12 host (PLAY RECAP `ok=15 changed=4 failed=0`) installing EPICS-env 1.3.0 / base 7.0.10 layers 1+2 at `/opt/epics/1.3.0/debian-12/7.0.10`, and the `gz` flavor of the same path also passed (`make build.gz`, `ok=15 changed=4 failed=0`), both observed by the cloud-provision session. |
 | T2 | Blocked | Rocky 8 (the production IOC server) | Blocked by `G1`: the production IOC server cannot reach the internal git host for the EPICS distribution clone. |
 | T3 | Passed | Debian 13, Rocky 8 | Apply verified 2026-08-31 via proxied iocrunner golden-image bakes: `proxy_contract.bash` applied with proxy seal `clean=true`, and the proxied `pip` installed `epicscorelibs`, `softioc`, and `cothread` (added to `P_python` in `a9a5d04`), closing #16. Full-species re-apply idempotency verified the same day: a second `species/iocrunner.yml` apply on the same VM ran `failed=0 changed=0` on both OSes, pip reported "Requirement already satisfied", the proxy artifacts were byte-identical with seal `clean=true`, and the installed-tree fingerprint (pip freeze, dpkg/rpm sets, ioc accounts, EPICS path) was identical between runs. The SOT P_proxy definition landed one-to-one at cloud-provision `8654990`. |
 
