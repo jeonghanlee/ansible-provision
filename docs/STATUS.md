@@ -10,7 +10,7 @@ to close them.
 `docs/ARCHITECTURE.md`; deferred work is indexed through the milestone
 register.
 
-**Last updated:** 2026-08-06
+**Last updated:** 2026-08-30
 
 ## Status Legend
 
@@ -65,13 +65,13 @@ sidecar manifests by SHA-256, and both consumers passed
 | Debian 13 | ✓ | ✓ | Commits `9dfd5a1` and `0148514`: layered tree built; `check_deps` exit 0. |
 | Rocky 10 | ✓ | ✓ | Fresh `gz` layers produced 64 entries; all runtime gates and `check_deps.bash` passed. |
 | Ubuntu 24 | ✓ | ✓ | Fresh `gz` layers produced 64 entries; all runtime gates and `check_deps.bash` passed. |
-| Ubuntu 26 | ✗ | — | On 2026-07-28, `08_epics_env_build.yml` with `epics_env_build_flavor=gz` exited 2: GCC 15 rejected incompatible function pointers in `iocStats` `devIocStatsAnalog.c`. A 2026-08-27 re-run of the 1.3.0 `gz` build, performed outside this session, reported a clean build with `iocStats` 4.0.1 installed and did not reproduce the failure; that result is not independently verified here. |
+| Ubuntu 26 | ✓ | ✓ | The C17 bridge (`jeonghanlee/EPICS-env#29`) writes `-std=gnu17` for `iocStats`; `jeonghanlee/EPICS-env#63` (closed 2026-08-24) confirmed it fires on the Ubuntu 26 source-build path. A 2026-08-27 `gz` build compiled `devIocStatsAnalog.c` and installed `iocStats` 4.0.1 under both `make build` and `make build.gz`. |
 
 | Build property | Status | Evidence |
 | :-- | :-: | :-- |
 | Vendor libraries installed inside the release tree | ✓ | Commit `5c4f7fc`; absolute-path dependency findings reduced from 9 to 0. |
 | `internal` flavor | ✓ | Used by the recorded core-host builds. |
-| `gz` flavor | ✓ | Rocky 10 and Ubuntu 24 passed both source-build roles with installed `-g0 -gz=zlib` flags. |
+| `gz` flavor | ✓ | Rocky 10, Ubuntu 24, and Ubuntu 26 passed both source-build roles with installed `-g0 -gz=zlib` flags. |
 | Base-layer repeated-run skip | ✓ | Commit `9dfd5a1`. |
 | Support-layer repeated-run skip | ✓ | Rocky 8 emitted `EPICS_ENV_SUPPORT_BUILD_SKIPPED` with `changed=0` and `failed=0`. |
 
@@ -139,7 +139,7 @@ R2-12 result is recorded in this repository.
 
 | Milestone checks | Required observation |
 | :-- | :-- |
-| `M1/T5`, `G2` | Resolve the Ubuntu 26 `iocStats` GCC 15 compatibility condition, then run layer 2 and all verification gates. |
+| — | The prior Ubuntu 26 `iocStats` GCC 15 item is resolved (`M2` Complete; `jeonghanlee/EPICS-env#63` closed 2026-08-24). No source-build verification is currently open. |
 
 ## Update Protocol
 

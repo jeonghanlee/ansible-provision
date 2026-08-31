@@ -18,9 +18,11 @@ runs the `epics-ioc-runner` consumer gate — was executed under the prior
 generation and, together with its completed milestones, is retained at commit
 `25130ef`.
 
-The next EPICS-env verification is the 1.3.0 gate, whose OS matrix excludes
-Ubuntu 26; Ubuntu 26 source-build is therefore deferred to EPICS-env 1.3.1 or a
-later version (see `M2` and `D2`).
+The 1.3.0 EPICS-env gate ran its source-build OS matrix. Ubuntu 26 was
+initially outside that matrix, but the C17 bridge shipped under 1.3.0
+(`jeonghanlee/EPICS-env#29`) and its firing on the Ubuntu 26 source-build path
+was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
+(see `M2` and `D4`).
 
 - Release line: master
 - Milestone index: 25130ef
@@ -35,11 +37,11 @@ milestone. `M4/T1` — syntax-check the species playbooks and confirm
 `M4/T3` applies `operators/proxy.yml` on a proxied host; `M4/T2` (iocserver on
 the production IOC server) is blocked on `G1`. `M3` (base_os/app role hardening) is Deferred per
 `D3`: the old model is retired, so its Debian 13 re-verification is not pursued.
-`M1` (4-OS source-build) is Complete; `M2` (Ubuntu 26 source-build) is Deferred
-to EPICS-env 1.3.1 or later (`jeonghanlee/EPICS-env#63`; C17 bridge at
-`jeonghanlee/EPICS-env#29`).
+`M1` (4-OS source-build) and `M2` (Ubuntu 26 source-build) are both Complete;
+the C17 bridge (`jeonghanlee/EPICS-env#29`) fires on Ubuntu 26 and its
+source-build path was confirmed (`jeonghanlee/EPICS-env#63`).
 
-Status tally: 1 Complete, 1 In progress, 2 Deferred. 1 external gate (Open).
+Status tally: 2 Complete, 1 In progress, 1 Deferred. 1 external gate (Open).
 
 ## Milestone
 
@@ -48,7 +50,7 @@ Status tally: 1 Complete, 1 In progress, 2 Deferred. 1 external gate (Open).
 | Group | ID | Work unit | Type | Status | Ready | Deps | Done when / Evidence |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Core | M1 | EPICS-env 4-OS source-build environment | Carry-forward | Complete | No | | Rocky 8, Debian 13, Rocky 10, and Ubuntu 24 pass both source-build layers and checks; [detail](#m1---epics-env-4-os-source-build-environment) |
-| Core | M2 | Ubuntu 26 source-build (deferred) | Carry-forward | Deferred | No | D2 | Owner adds Ubuntu 26 back to the matrix in EPICS-env 1.3.1 or later and the complete Ubuntu 26 path passes; [detail](#m2---ubuntu-26-source-build-deferred) |
+| Core | M2 | Ubuntu 26 source-build | Carry-forward | Complete | No | D4 | Ubuntu 26 passes the complete source-build path (both layers, `gz` flavor, repeated-run checks) with the C17 bridge active; [detail](#m2---ubuntu-26-source-build) |
 | Core | M3 | base_os/app role hardening from the production IOC server deployment | Carry-forward | Deferred | No | D3 | Deferred per D3 (old model retired); the base/app surface is re-verified under the operator model (M4); [detail](#m3---base_osapp-role-hardening-from-the production IOC server-deployment) |
 | Core | M4 | Operator/species provisioning model | Milestone | In progress | No | G1 | Vacua, single-role operators, and species assemblies replace the staged model, iocserver registered; P_proxy role implemented with live apply pending and the live iocserver run blocked on G1; [detail](#m4---operatorspecies-provisioning-model) |
 | Gate | G1 | the production IOC server added to the the internal git host clone whitelist | External gate | Open | No | | Network team whitelists the production IOC server so the EPICS distribution clone and a live iocserver run reach the internal git host; blocks M4/T2 |
@@ -60,6 +62,7 @@ Status tally: 1 Complete, 1 In progress, 2 Deferred. 1 external gate (Open).
 | D1 | Local `T` labels identify verification inside their owning work detail and are not independent work IDs. | Prior canonical register, prior state commit `25130ef` |
 | D2 | Ubuntu 26 is excluded from the current source-build matrix and deferred to EPICS-env 1.3.1 or a later version. The 1.3.0 gate matrix does not include Ubuntu 26, and the `iocStats` GCC 15 fix is owned by EPICS-env. | Owner decision, 2026-08-17 |
 | D3 | The staged old model (`01_base`/`02_apps`/`03_epics`) and its retained roles `base_os` and `app_epics` are retired; the operator/species model supersedes them. Removing the old roles and playbooks is separate follow-up work. | Owner decision, 2026-08-29 |
+| D4 | Ubuntu 26 source-build is no longer deferred. The C17 bridge shipped under milestone 1.3.0 (`jeonghanlee/EPICS-env#29`), and `jeonghanlee/EPICS-env#63` (closed 2026-08-24) confirmed it fires for `iocStats` on the Ubuntu 26 source-build path; the complete `gz` path passed on 2026-08-27. Supersedes `D2`. | Owner decision, 2026-08-30 |
 
 ### Milestone Details
 
@@ -142,76 +145,74 @@ golden-image baking for these source-build hosts.
 - Observed Milestone: `Backlog`
 - Last Compared: 2026-08-16; GitHub updated 2026-08-16T08:33:22Z
 
-#### M2 - Ubuntu 26 Source-Build (Deferred)
+#### M2 - Ubuntu 26 Source-Build
 
 - Origin: 25130ef / M2
-- Identity History: split from `M1` on 2026-08-17 by owner decision `D2`; carries the former Ubuntu 26 gate scope (prior generation `G2`).
-- GitHub Issue: #7, https://github.com/jeonghanlee/ansible-provision/issues/7. EPICS-env 1.3.1+ backlog: `jeonghanlee/EPICS-env#63`, https://github.com/jeonghanlee/EPICS-env/issues/63
-- Status: Deferred
+- Identity History: split from `M1` on 2026-08-17 by owner decision `D2`; carries the former Ubuntu 26 gate scope (prior generation `G2`). Returned to active and completed by owner decision `D4` on 2026-08-30.
+- GitHub Issue: none dedicated. The Ubuntu 26 scope was originally carried in `#7`, which was reconciled to `M1`'s four-OS scope and closed. Upstream: `jeonghanlee/EPICS-env#29` (C17 bridge), `jeonghanlee/EPICS-env#63` (bridge firing confirmed on the Ubuntu 26 source-build path).
+- Status: Complete
 
 ##### Summary
 
-Ubuntu 26 source-build is deferred. The build fails only on Ubuntu 26 because
-GCC 15 defaults to C23, which breaks the `iocStats` `devIocStatsAnalog.c`
-`DEVSUPFUN`/`DSET` initializers.
+Ubuntu 26 source-build passes. GCC 15 defaults to C23, which broke the
+`iocStats` `devIocStatsAnalog.c` `DEVSUPFUN`/`DSET` initializers; the EPICS-env
+C17 bridge writes `USR_CFLAGS += -std=gnu17` into the module and restores the
+build.
 
 ##### Scope
 
-Add Ubuntu 26 back to the source-build matrix and pass the complete Ubuntu 26
-path once EPICS-env 1.3.1 or a later version covers it.
+Build the complete Ubuntu 26 source-build path (both layers, `gz` flavor,
+repeated-run checks) with the C17 bridge active.
 
 Out of scope: the `iocStats` GCC 15 fix itself, which EPICS-env owns.
 
 ##### Completion Criteria
 
-- EPICS-env 1.3.1 or later covers Ubuntu 26, and the complete Ubuntu 26
-  source-build path (both layers, `gz` flavor, repeated-run checks) passes.
+- The complete Ubuntu 26 source-build path (both layers, `gz` flavor,
+  repeated-run checks) passes with the C17 bridge active.
 
 ##### Dependencies And Decisions
 
-- `D2` defers this row (owner decision, 2026-08-17). It is not Ready while
-  Deferred and returns to `Not started` only by owner decision when EPICS-env
-  1.3.1+ covers Ubuntu 26.
+- `D2` deferred this row (2026-08-17); `D4` (2026-08-30) supersedes it and
+  records completion. Ubuntu 26 did not require EPICS-env 1.3.1: the C17 bridge
+  shipped under 1.3.0.
 - Resolution mechanism owned by EPICS-env: the C17 bridge in
   `jeonghanlee/EPICS-env#29` (closed). `configure/RULES_MODS_CONFIG` adds
   `$(SRC_PATH_IOCSTATS)` to `MODS_C17_SRC_PATHS`, so `conf.modules.c17` writes
   `USR_CFLAGS += -std=gnu17` into the module's `CONFIG_SITE.local`; both the
   internal (`conf.modules`) and public (`conf.gz.modules`) paths depend on it.
+  `jeonghanlee/EPICS-env#63` (closed 2026-08-24) confirmed the bridge fires for
+  `iocStats` on the Ubuntu 26 source-build path.
 
 ##### Implementation Plan
 
-- Plan Status: draft
-- Plan Acceptance: none
-- Implementation Authorization: none
+- Plan Status: accepted
+- Plan Acceptance: completed under owner decision `D4`
+- Implementation Authorization: owner decision `D4`, 2026-08-30
 - Superseded Plan Artifacts: none
 
-1. When EPICS-env 1.3.1+ covers Ubuntu 26, re-add Ubuntu 26 to the source-build
-   matrix and rerun the complete path.
-2. Before treating the bridge as a source/version problem, confirm it fired:
-   check the Ubuntu 26 build tree's `iocStats/configure/CONFIG_SITE.local` for
-   `-std=gnu17`. The prior failure may have been the `MODS_C17_BRIDGE`
-   OS/compiler detection not firing rather than a missing fix.
+1. Build the complete Ubuntu 26 source-build path with the C17 bridge active and
+   confirm `iocStats/configure/CONFIG_SITE.local` carries `-std=gnu17`.
 
 ##### Test Plan
 
 | Label | Layer | Method | Environment | Expected Result |
 | --- | --- | --- | --- | --- |
-| T1 | Matrix | Build the complete source-build path with EPICS-env 1.3.1+ | Ubuntu 26 | Both layers, the `gz` flavor, and dependency/idempotency checks pass. |
+| T1 | Matrix | Build the complete source-build path with the C17 bridge | Ubuntu 26 | Both layers, the `gz` flavor, and dependency/idempotency checks pass. |
 
 ##### Verification Results
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
-| T1 | Not run | Ubuntu 26 | Deferred | Prior run exited 2 in `iocStats` `devIocStatsAnalog.c` under GCC 15; deferred to EPICS-env 1.3.1+ per `D2`. |
+| T1 | 2026-08-27 | Ubuntu 26 | Passed | C17 bridge fires (`jeonghanlee/EPICS-env#63`, closed 2026-08-24, verified on the real build path); `iocStats/configure/CONFIG_SITE.local` carries `-std=gnu17`, `devIocStatsAnalog.c` compiles, and iocStats 4.0.1 installs under both `make build` and `make build.gz`. |
 
 ##### Closure Evidence
 
-- Deferred by owner decision `D2` (2026-08-17): Ubuntu 26 is out of the 1.3.0
-  gate matrix and re-added in EPICS-env 1.3.1 or later. The `iocStats` GCC 15
-  mechanism already exists in EPICS-env (`#29`, C17 bridge). EPICS-env filed the
-  1.3.1+ backlog issue `jeonghanlee/EPICS-env#63` ("Ensure the C17 bridge fires
-  for iocStats on Ubuntu 26 GCC 15 in the source-build path"), whose body
-  cross-references `ansible-provision#7`.
+- Completed by owner decision `D4` (2026-08-30). Ubuntu 26 passes the complete
+  source-build path with the C17 bridge active; the bridge shipped under 1.3.0
+  (`jeonghanlee/EPICS-env#29`) and its firing was confirmed by
+  `jeonghanlee/EPICS-env#63` (closed 2026-08-24). Ubuntu 26 did not require
+  EPICS-env 1.3.1.
 
 #### M3 - base_os/app role hardening from the production IOC server deployment
 
