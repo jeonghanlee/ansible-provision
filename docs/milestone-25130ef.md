@@ -31,8 +31,10 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: `M4` (operator/species provisioning model), the active
-milestone. `M4/T1` (species syntax-check and `configure/RELEASE` / `inventory/lab.ini`
+Next session entry point: `M5` (restore the EPICS OS package set) — reconcile the
+per-OS EPICS package list in `work/plan-epics-os-packages.md`, land the cloud
+`docs/IMAGE_WORKFLOW.md` change with LAB-cloud, then implement in `roles/epics`.
+`M4` (operator/species provisioning model) remains active. `M4/T1` (species syntax-check and `configure/RELEASE` / `inventory/lab.ini`
 enumeration) and `M4/T3` (P_proxy apply and full-species re-apply idempotency)
 are verified; `M4/T2` (iocserver on the production IOC server) is the only remaining check and
 is blocked on `G1`. `M3` (base_os/app role hardening) is Deferred per
@@ -41,7 +43,7 @@ is blocked on `G1`. `M3` (base_os/app role hardening) is Deferred per
 the C17 bridge (`jeonghanlee/EPICS-env#29`) fires on Ubuntu 26 and its
 source-build path was confirmed (`jeonghanlee/EPICS-env#63`).
 
-Status tally: 2 Complete, 1 In progress, 1 Deferred. 1 external gate (Open).
+Status tally: 2 Complete, 1 In progress, 1 Deferred, 1 Not started. 1 external gate (Open).
 
 ## Milestone
 
@@ -53,6 +55,7 @@ Status tally: 2 Complete, 1 In progress, 1 Deferred. 1 external gate (Open).
 | Core | M2 | Ubuntu 26 source-build | Carry-forward | Complete | No | D4 | Ubuntu 26 passes the complete source-build path (both layers, `gz` flavor, repeated-run checks) with the C17 bridge active; [detail](#m2---ubuntu-26-source-build) |
 | Core | M3 | base_os/app role hardening from the production IOC server deployment | Carry-forward | Deferred | No | D3 | Deferred per D3 (old model retired); the base/app surface is re-verified under the operator model (M4); [detail](#m3---base_osapp-role-hardening-from-the production IOC server-deployment) |
 | Core | M4 | Operator/species provisioning model | Milestone | In progress | No | G1 | Vacua, single-role operators, and species assemblies replace the staged model, iocserver registered; P_proxy role implemented and verified (apply and full-species re-apply idempotency), and the live iocserver run blocked on G1; [detail](#m4---operatorspecies-provisioning-model) |
+| Core | M5 | Restore the EPICS OS package set into the operator model | Milestone | Not started | Yes | D5 | Per-OS EPICS package list installed by `roles/epics` and `roles/epics_build` (pkg_automation call removed); `ServiceTestIOC` links; verified on fresh images across the six vacua; [detail](#m5---restore-the-epics-os-package-set-into-the-operator-model) |
 | Gate | G1 | the production IOC server added to the the internal git host clone whitelist | External gate | Open | No | | Network team whitelists the production IOC server so the EPICS distribution clone and a live iocserver run reach the internal git host; blocks M4/T2 |
 
 ### Decisions
@@ -63,6 +66,7 @@ Status tally: 2 Complete, 1 In progress, 1 Deferred. 1 external gate (Open).
 | D2 | Ubuntu 26 is excluded from the current source-build matrix and deferred to EPICS-env 1.3.1 or a later version. The 1.3.0 gate matrix does not include Ubuntu 26, and the `iocStats` GCC 15 fix is owned by EPICS-env. | Owner decision, 2026-08-17 |
 | D3 | The staged old model (`01_base`/`02_apps`/`03_epics`) and its retained roles `base_os` and `app_epics` are retired; the operator/species model supersedes them. Removing the old roles and playbooks is separate follow-up work. | Owner decision, 2026-08-29 |
 | D4 | Ubuntu 26 source-build is no longer deferred. The C17 bridge shipped under milestone 1.3.0 (`jeonghanlee/EPICS-env#29`), and `jeonghanlee/EPICS-env#63` (closed 2026-08-24) confirmed it fires for `iocStats` on the Ubuntu 26 source-build path; the complete `gz` path passed on 2026-08-27. Supersedes `D2`. | Owner decision, 2026-08-30 |
+| D5 | The EPICS OS package regression (`M5`) is fixed across all six vacua, `pkg_automation` is removed from `roles/epics_build` in the same change, ansible-provision drafts the cloud `docs/IMAGE_WORKFLOW.md` change for LAB-cloud to land, and the milestone and GitHub issue are recorded before implementation begins. | Owner decision, 2026-08-31 |
 
 ### Milestone Details
 
@@ -324,6 +328,84 @@ Superseded Plan Artifacts: none
 | T1 | Passed | control host; debian12 (epics_dev) | All eight species playbooks (`bare`, `epics_dev`, `ethercat`, `iocrunner`, `iocrunner_nfs`, `iocserver`, `nfs_sim`, `rtbase`) pass `ansible-playbook --syntax-check`, and every species is enumerated in `configure/RELEASE` `SPECIES_PLAYBOOKS` with its `inventory/lab.ini` group present for every non-bare species (bare is vacuum-only by design); no stray non-vacuum groups. Registration landed in `92f04c4`, `08ec916`, `60d2c2c`. Live evidence: after `35f00fe`, `epics_dev` applied on a real debian12 host (PLAY RECAP `ok=15 changed=4 failed=0`) installing EPICS-env 1.3.0 / base 7.0.10 layers 1+2 at `/opt/epics/1.3.0/debian-12/7.0.10`, and the `gz` flavor of the same path also passed (`make build.gz`, `ok=15 changed=4 failed=0`), both observed by the cloud-provision session. |
 | T2 | Blocked | Rocky 8 (the production IOC server) | Blocked by `G1`: the production IOC server cannot reach the internal git host for the EPICS distribution clone. |
 | T3 | Passed | Debian 13, Rocky 8 | Apply verified 2026-08-31 via proxied iocrunner golden-image bakes: `proxy_contract.bash` applied with proxy seal `clean=true`, and the proxied `pip` installed `epicscorelibs`, `softioc`, and `cothread` (added to `P_python` in `a9a5d04`), closing #16. Full-species re-apply idempotency verified the same day: a second `species/iocrunner.yml` apply on the same VM ran `failed=0 changed=0` on both OSes, pip reported "Requirement already satisfied", the proxy artifacts were byte-identical with seal `clean=true`, and the installed-tree fingerprint (pip freeze, dpkg/rpm sets, ioc accounts, EPICS path) was identical between runs. The SOT P_proxy definition landed one-to-one at cloud-provision `8654990`. |
+
+#### M5 - Restore the EPICS OS package set into the operator model
+
+- Origin: 25130ef / M5
+- GitHub Issue: #18, https://github.com/jeonghanlee/ansible-provision/issues/18
+- Status: Not started
+
+##### Summary
+
+The operator rewrite (`724b381`) retired `base_os` and dropped its `pkg_standard`
+OS package list, so the iocrunner distribution path (`roles/epics`) installs none
+of the EPICS OS build/link dependencies. A fresh Rocky 8 IOC runner image cannot
+link an IOC against Net-SNMP (`-lnetsnmp` unresolved). Restore the full EPICS OS
+package set into the operator model as ansible-managed per-OS lists, and retire
+the `pkg_automation.bash` call from `roles/epics_build`.
+
+##### Scope
+
+Declare a per-OS EPICS package list for all six vacua (rocky8, rocky10, debian12,
+debian13, ubuntu24, ubuntu26), reconciled from the retired `pkg_standard` and the
+pkg_automation `pkg-<os>/{common,epics,extra}` lists. Install it in `roles/epics`
+(distribution path) and `roles/epics_build` (source path), removing the
+`pkg_automation.bash` invocation. The normative operator definition in
+cloud-provision `docs/IMAGE_WORKFLOW.md` states the requirement first (LAB-cloud
+writes it).
+
+Out of scope: EPICS-env's own internal invocation of pkg_automation (EPICS-env
+repo); the source-build tag pins (`M1`/`M2`).
+
+##### Completion Criteria
+
+- A fresh image on each of the six vacua installs the EPICS OS package set via
+  ansible; `net-snmp-devel` is present (with `/usr/lib64/libnetsnmp.so` on the
+  rpm OSes).
+- `ServiceTestIOC` links successfully against the installed EPICS environment.
+- `roles/epics_build` no longer calls `pkg_automation.bash`; its OS deps come
+  from the ansible list.
+- Verified on a fresh image and a fresh consumer VM, with no post-bake package
+  additions.
+
+##### Dependencies And Decisions
+
+- Owner decisions `D5` (2026-08-31): all six vacua; remove pkg_automation in the
+  same change; ansible-provision drafts the cloud `docs/IMAGE_WORKFLOW.md` change
+  for LAB-cloud; record the milestone and issue before starting.
+- Cloud-first ordering: the normative operator definition (cloud-provision
+  `docs/IMAGE_WORKFLOW.md`, LAB-cloud single-writer) lands before the ansible
+  implementation.
+
+##### Implementation Plan
+
+- Plan Status: accepted
+- Plan Acceptance: owner decisions 2026-08-31 (`D5`)
+- Implementation Authorization: owner, 2026-08-31
+- Superseded Plan Artifacts: none
+
+1. Reconcile the per-OS EPICS package list (`work/plan-epics-os-packages.md`, Phase 0).
+2. Draft the cloud `docs/IMAGE_WORKFLOW.md` change; LAB-cloud lands it.
+3. Install the list in `roles/epics`; remove `pkg_automation.bash` from `roles/epics_build`.
+4. Re-bake per OS via LAB-cloud; verify.
+
+##### Test Plan
+
+| Label | Layer | Method | Environment | Expected Result |
+| --- | --- | --- | --- | --- |
+| T1 | Integration | Fresh proxied bake, inspect installed packages | each of the six vacua | The EPICS OS package set is present; `net-snmp-devel` installed; the `pkg_automation.bash` call is gone. |
+| T2 | Integration | Build `ServiceTestIOC` against the installed EPICS env | Rocky 8 | The link stage resolves `-lnetsnmp` and completes. |
+
+##### Verification Results
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T1 | Not run | six vacua | Pending | — |
+| T2 | Not run | Rocky 8 | Pending | — |
+
+##### Closure Evidence
+
+- Pending.
 
 ## Backlog
 
