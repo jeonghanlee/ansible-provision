@@ -43,3 +43,5 @@ epics_os_packages:
   - libcurl-devel
   - libevent-devel
   - rpcgen
+  - cmake
+  - re2c

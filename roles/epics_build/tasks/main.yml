@@ -36,7 +36,12 @@
     . /etc/os-release
     case "${ID}" in
       rocky|rhel|centos)
-        dnf update -y
+        # Keep this SSH session alive through the update: the kernel is
+        # reboot-only and not needed to build, so exclude it; NetworkManager
+        # is updated but the running service is not restarted (RHEL does not
+        # auto-restart on upgrade), so the live connection survives and the
+        # new version applies on the next reboot.
+        dnf update -y --exclude='kernel*'
         dnf install -y git tree make sudo bash wget unzip python3-pip libusbx-devel {{ epics_os_packages | join(' ') }}
         pip3 install numpy nose
         is_redhat=1
