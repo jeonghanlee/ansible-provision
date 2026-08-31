@@ -52,7 +52,7 @@ Status tally: 2 Complete, 1 In progress, 1 Deferred. 1 external gate (Open).
 | Core | M1 | EPICS-env 4-OS source-build environment | Carry-forward | Complete | No | | Rocky 8, Debian 13, Rocky 10, and Ubuntu 24 pass both source-build layers and checks; [detail](#m1---epics-env-4-os-source-build-environment) |
 | Core | M2 | Ubuntu 26 source-build | Carry-forward | Complete | No | D4 | Ubuntu 26 passes the complete source-build path (both layers, `gz` flavor, repeated-run checks) with the C17 bridge active; [detail](#m2---ubuntu-26-source-build) |
 | Core | M3 | base_os/app role hardening from the production IOC server deployment | Carry-forward | Deferred | No | D3 | Deferred per D3 (old model retired); the base/app surface is re-verified under the operator model (M4); [detail](#m3---base_osapp-role-hardening-from-the production IOC server-deployment) |
-| Core | M4 | Operator/species provisioning model | Milestone | In progress | No | G1 | Vacua, single-role operators, and species assemblies replace the staged model, iocserver registered; P_proxy role implemented and its apply verified via proxied bakes (idempotent re-run pending), and the live iocserver run blocked on G1; [detail](#m4---operatorspecies-provisioning-model) |
+| Core | M4 | Operator/species provisioning model | Milestone | In progress | No | G1 | Vacua, single-role operators, and species assemblies replace the staged model, iocserver registered; P_proxy role implemented and verified (apply and full-species re-apply idempotency), and the live iocserver run blocked on G1; [detail](#m4---operatorspecies-provisioning-model) |
 | Gate | G1 | the production IOC server added to the the internal git host clone whitelist | External gate | Open | No | | Network team whitelists the production IOC server so the EPICS distribution clone and a live iocserver run reach the internal git host; blocks M4/T2 |
 
 ### Decisions
@@ -274,7 +274,7 @@ model whose normative definition is cloud-provision `docs/OPERATOR_MODEL.md`
   `92f04c4`, `08ec916`, and `60d2c2c`, matched char-for-char to the SOT
   iocserver product at `bb64ad2`.
 
-Implemented, apply verified (idempotent re-run pending):
+Implemented and verified:
 
 - P_proxy: an optional precondition operator that applies the site proxy
   contract to an existing server by streaming cloud-provision
@@ -282,8 +282,8 @@ Implemented, apply verified (idempotent re-run pending):
   Design converged with the cloud-provision owner (ADR-20260820); `roles/proxy`
   and `playbooks/operators/proxy.yml` are implemented (stage the shipped script
   plus a schema-1 input, then run apply as root). Apply was verified on 2026-08-31
-  through proxied Debian 13 and Rocky 8 golden-image bakes; the idempotent re-run
-  is the remaining T3 item.
+  through proxied Debian 13 and Rocky 8 golden-image bakes, and a second full-species
+  apply on the same VMs confirmed idempotency (`changed=0`, installed tree identical).
 
 **Out of scope:** the operator-model definition itself (owned by
 cloud-provision); the the production IOC server site record and overrides (the
@@ -323,7 +323,7 @@ Superseded Plan Artifacts: none
 | --- | --- | --- | --- |
 | T1 | Partial | debian12 (epics_dev) | Species playbooks and registration landed (`92f04c4`, `08ec916`, `60d2c2c`). Live partial evidence: after `35f00fe`, `epics_dev` applied on a real debian12 host (PLAY RECAP `ok=15 changed=4 failed=0`), installing EPICS-env 1.3.0 / base 7.0.10 layers 1+2 at `/opt/epics/1.3.0/debian-12/7.0.10`, observed by the cloud-provision session. The gz flavor of the same `epics_dev` path also passed on debian12 (`make build.gz`, PLAY RECAP `ok=15 changed=4 failed=0`), so both flavors are validated there. A full syntax and enumeration pass across every species is still pending. |
 | T2 | Blocked | Rocky 8 (the production IOC server) | Blocked by `G1`: the production IOC server cannot reach the internal git host for the EPICS distribution clone. |
-| T3 | Partial | Debian 13, Rocky 8 | Apply verified 2026-08-31: fresh proxied iocrunner golden-image bakes on Debian 13 and Rocky 8 (build VMs behind the site proxy) applied `proxy_contract.bash` with proxy seal `clean=true`, and the proxied `pip` installed `epicscorelibs`, `softioc`, and `cothread` (added to `P_python` in `a9a5d04`), observed by the cloud-provision session and closing #16. The SOT P_proxy definition landed one-to-one at cloud-provision `8654990`. Idempotent re-run is not separately exercised yet. |
+| T3 | Passed | Debian 13, Rocky 8 | Apply verified 2026-08-31 via proxied iocrunner golden-image bakes: `proxy_contract.bash` applied with proxy seal `clean=true`, and the proxied `pip` installed `epicscorelibs`, `softioc`, and `cothread` (added to `P_python` in `a9a5d04`), closing #16. Full-species re-apply idempotency verified the same day: a second `species/iocrunner.yml` apply on the same VM ran `failed=0 changed=0` on both OSes, pip reported "Requirement already satisfied", the proxy artifacts were byte-identical with seal `clean=true`, and the installed-tree fingerprint (pip freeze, dpkg/rpm sets, ioc accounts, EPICS path) was identical between runs. The SOT P_proxy definition landed one-to-one at cloud-provision `8654990`. |
 
 ## Backlog
 
