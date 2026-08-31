@@ -23,5 +23,7 @@ pkg_python_system:
 pip_bin:                 "/usr/bin/pip3"
 pip_packages_global:     ["numpy", "pyparsing"]
 pip_packages_epics:      ["nose2"]
+# EPICS Python IOC stack: pip-only, no apt equivalent, installed on every OS.
+pip_packages_pyioc:      ["epicscorelibs", "softioc", "cothread"]
 runtime_python_alt_name: "python"
 runtime_python_alt_path: "/usr/bin/python3"

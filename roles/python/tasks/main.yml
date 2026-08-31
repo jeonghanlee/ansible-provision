@@ -15,13 +15,14 @@
     case " $ID ${ID_LIKE:-} " in
       *rhel*|*fedora*|*centos*|*rocky*)
         dnf install -y {{ (pkg_python_redhat + pkg_python_system) | join(' ') }}
-        {{ pip_bin }} install {{ (pip_packages_global + pip_packages_epics) | join(' ') }}
+        {{ pip_bin }} install {{ (pip_packages_global + pip_packages_epics + pip_packages_pyioc) | join(' ') }}
         alternatives --set {{ runtime_python_alt_name }} {{ runtime_python_alt_path }} 2>/dev/null || true
         ;;
       *debian*|*ubuntu*)
         export DEBIAN_FRONTEND=noninteractive
         apt update -y
         apt install -y {{ pkg_python_debian | join(' ') }}
+        {{ pip_bin }} install --break-system-packages {{ pip_packages_pyioc | join(' ') }}
         ;;
     esac
   changed_when: false
