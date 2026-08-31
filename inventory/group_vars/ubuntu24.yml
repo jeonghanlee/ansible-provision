@@ -2,3 +2,48 @@
 # inventory/group_vars/ubuntu24.yml
 # Vacuum group variables. Values arrive with the operators that consume
 # them; the common role carries its own defaults.
+
+# EPICS OS build dependencies, mirrored verbatim from the normative source
+# cloud-provision configure/epics-packages. Installed by the epics and
+# epics_build roles (both EPICS acquisition paths compile IOCs).
+epics_os_packages:
+  - build-essential
+  - libreadline-dev
+  - libxt-dev
+  - libxmu-headers
+  - libxmu-dev
+  - libxmu6
+  - libxpm-dev
+  - libxmuu-dev
+  - libxmuu1
+  - libsnmp-dev
+  - re2c
+  - libnetcdf-dev
+  - libhdf5-dev
+  - libpng-dev
+  - libbz2-dev
+  - libxml2-dev
+  - libusb-dev
+  - libusb-1.0-0-dev
+  - remake
+  - libudev-dev
+  - libsystemd-dev
+  - linux-source
+  - libblosc-dev
+  - libtiff-dev
+  - libjpeg-dev
+  - libz-dev
+  - libevent-dev
+  - libboost-dev
+  - libboost-regex-dev
+  - libboost-filesystem-dev
+  - libopencv-dev
+  - libraw1394-11
+  - libtirpc-dev
+  - tclx8.4
+  - libhidapi-dev
+  - libhidapi-libusb0
+  - libusb-1.0-0
+  - cmake
+  - libssh2-1
+  - libssh2-1-dev

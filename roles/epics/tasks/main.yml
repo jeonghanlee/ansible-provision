@@ -1,5 +1,25 @@
 ---
 # roles/epics/tasks/main.yml
+# IOCs are compiled on the distribution image, so it carries the EPICS OS build
+# dependencies too. The set is the normative one in cloud-provision
+# configure/epics-packages, mirrored per vacuum as epics_os_packages; the
+# epics_build role installs the same list from the same source.
+- name: Install the EPICS OS build dependencies
+  ansible.builtin.raw: |
+    set -e
+    . /etc/os-release
+    case " $ID ${ID_LIKE:-} " in
+      *rhel*|*fedora*|*centos*|*rocky*)
+        dnf install -y {{ epics_os_packages | join(' ') }}
+        ;;
+      *debian*|*ubuntu*)
+        export DEBIAN_FRONTEND=noninteractive
+        apt update -y
+        apt install -y {{ epics_os_packages | join(' ') }}
+        ;;
+    esac
+  changed_when: false
+
 - name: Prepare the EPICS install root
   ansible.builtin.raw: |
     set -e

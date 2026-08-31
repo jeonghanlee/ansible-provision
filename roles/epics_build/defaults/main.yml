@@ -13,6 +13,5 @@ epics_env_tag: "release-1.3.0"
 path_epics_source_src: "/opt/epics-env-src"
 
 # Vendor dependency repositories built before EPICS-env.
-repo_pkg_automation: "https://github.com/jeonghanlee/pkg_automation"
 repo_uldaq_env:      "https://github.com/jeonghanlee/uldaq-env"
 repo_open62541_env:  "https://github.com/jeonghanlee/open62541-env"

@@ -9,3 +9,37 @@ pkg_python_redhat:
   - python39-pip
 runtime_python_alt_path: "/usr/bin/python3.9"
 pip_bin:                 "/usr/bin/pip3.9"
+
+# EPICS OS build dependencies, mirrored verbatim from the normative source
+# cloud-provision configure/epics-packages. Installed by the epics and
+# epics_build roles (both EPICS acquisition paths compile IOCs).
+epics_os_packages:
+  - readline-devel
+  - libXt-devel
+  - libXmu-devel
+  - libXpm-devel
+  - motif-devel
+  - net-snmp-devel
+  - libusb-devel
+  - libusbx-devel
+  - systemd-devel
+  - libxml2-devel
+  - hdf5-devel
+  - netcdf-devel
+  - libtiff-devel
+  - libjpeg-turbo-devel
+  - libpng-devel
+  - libtirpc-devel
+  - libtirpc
+  - boost-devel
+  - libssh2-devel
+  - libssh2
+  - flex-devel
+  - ncurses-devel
+  - perl-devel
+  - net-snmp
+  - net-snmp-utils
+  - pcre-devel
+  - libcurl-devel
+  - libevent-devel
+  - rpcgen

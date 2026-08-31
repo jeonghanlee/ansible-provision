@@ -2,3 +2,40 @@
 # inventory/group_vars/rocky10.yml
 # Vacuum group variables. Values arrive with the operators that consume
 # them; the common role carries its own defaults.
+
+# EPICS OS build dependencies, mirrored verbatim from the normative source
+# cloud-provision configure/epics-packages. Installed by the epics and
+# epics_build roles (both EPICS acquisition paths compile IOCs).
+epics_os_packages:
+  - patch
+  - readline-devel
+  - libXt-devel
+  - libXmu-devel
+  - libXpm-devel
+  - ncurses-devel
+  - perl-devel
+  - net-snmp
+  - net-snmp-utils
+  - net-snmp-devel
+  - libzip-devel
+  - boost-devel
+  - libcurl-devel
+  - libxml2-devel
+  - hdf5-devel
+  - netcdf-devel
+  - libtiff-devel
+  - libjpeg-turbo-devel
+  - zlib-devel
+  - libpng-devel
+  - libusb1-devel
+  - systemd-devel
+  - libtirpc-devel
+  - libtirpc
+  - rpcgen
+  - re2c
+  - perl-FindBin
+  - perl-Sys-Hostname
+  - libevent-devel
+  - cmake
+  - libssh2-devel
+  - libssh2

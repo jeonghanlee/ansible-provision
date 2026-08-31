@@ -1,3 +1,50 @@
 ---
 # inventory/group_vars/debian12.yml
 epics_os_dir: "debian-12"
+
+# EPICS OS build dependencies, mirrored verbatim from the normative source
+# cloud-provision configure/epics-packages. Installed by the epics and
+# epics_build roles (both EPICS acquisition paths compile IOCs).
+epics_os_packages:
+  - build-essential
+  - libreadline-dev
+  - libxt-dev
+  - libxmu-headers
+  - libxmu-dev
+  - libxmu6
+  - libxpm-dev
+  - libxmuu-dev
+  - libxmuu1
+  - libpcre3-dev
+  - libmotif-dev
+  - libsnmp-dev
+  - re2c
+  - darcs
+  - libbz2-dev
+  - libusb-dev
+  - libusb-1.0-0-dev
+  - remake
+  - libudev-dev
+  - libsystemd-dev
+  - linux-source
+  - libxml2-dev
+  - libnetcdf-dev
+  - libhdf5-dev
+  - libblosc-dev
+  - libtiff-dev
+  - libjpeg-dev
+  - libz-dev
+  - libevent-dev
+  - libboost-dev
+  - libboost-regex-dev
+  - libboost-filesystem-dev
+  - libraw1394-11
+  - libopencv-dev
+  - libpng-dev
+  - libtirpc-dev
+  - libhidapi-libusb0
+  - libhidapi-dev
+  - libusb-1.0-0
+  - libssh2-1-dev
+  - libssh2-1
+  - libssl3

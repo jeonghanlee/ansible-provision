@@ -39,8 +39,9 @@
     fi
 
     # areaDetector system dependencies (hdf5, tiff, jpeg, netcdf, png, xml2,
-    # libusbx) are installed by the epics_build pkg_automation step on
-    # these same hosts, so they are not reinstalled here.
+    # libusbx) are provided by the shared EPICS OS build dependencies
+    # (epics_os_packages) the epics_build role installs, so they are not
+    # reinstalled here.
 
     # --- Clone EPICS-env-support and check out the pinned ref ---
     # Support changes rarely and is decoupled from EPICS-env's release version
