@@ -44,7 +44,7 @@ is blocked on `G1`. `M3` (base_os/app role hardening) is Deferred per
 the C17 bridge (`jeonghanlee/EPICS-env#29`) fires on Ubuntu 26 and its
 source-build path was confirmed (`jeonghanlee/EPICS-env#63`).
 
-Status tally: 3 Complete, 1 In progress, 1 Deferred, 2 Not started. 1 external gate (Open).
+Status tally: 3 Complete, 2 In progress, 1 Deferred, 1 Not started. 1 external gate (Open).
 
 ## Milestone
 
@@ -57,7 +57,7 @@ Status tally: 3 Complete, 1 In progress, 1 Deferred, 2 Not started. 1 external g
 | Core | M3 | base_os/app role hardening from the production IOC server deployment | Carry-forward | Deferred | No | D3 | Deferred per D3 (old model retired); the base/app surface is re-verified under the operator model (M4); [detail](#m3---base_osapp-role-hardening-from-the production IOC server-deployment) |
 | Core | M4 | Operator/species provisioning model | Milestone | In progress | No | G1 | Vacua, single-role operators, and species assemblies replace the staged model, iocserver registered; P_proxy role implemented and verified (apply and full-species re-apply idempotency), and the live iocserver run blocked on G1; [detail](#m4---operatorspecies-provisioning-model) |
 | Core | M5 | Restore the EPICS OS package set into the operator model | Milestone | Complete | No | D5 | `epics_os_packages` installed by `roles/epics` and `roles/epics_build`, `pkg_automation.bash` retired; verified on the golden pair (rocky8, debian13) across both acquisition paths; four non-golden vacua moved to `M6`; [detail](#m5---restore-the-epics-os-package-set-into-the-operator-model) |
-| Core | M6 | Convergence-verify EPICS OS build dependencies on the four non-golden vacua | Milestone | Not started | Yes | D6 | rocky10, debian12, ubuntu24, ubuntu26 install `epics_os_packages` and link a sample IOC, convergence-verified by Live-mode species apply per vacuum (the role-assurance step before golden promotion); [detail](#m6---convergence-verify-epics-os-build-dependencies-on-the-four-non-golden-vacua) |
+| Core | M6 | Convergence-verify EPICS OS build dependencies on the four non-golden vacua | Milestone | In progress | No | D6 | rocky10, debian12, ubuntu24, ubuntu26 convergence-verified by Live-mode apply on both paths — distribution (`iocrunner`, where the tree exists) and source build (`epics_dev`); the role-assurance step before golden promotion; [detail](#m6---convergence-verify-epics-os-build-dependencies-on-the-four-non-golden-vacua) |
 | Core | M7 | Harden the epics_build source build against a dropped connection | Milestone | Not started | Yes | D7 | The `epics_build` raw build survives or cleanly resumes an SSH drop without leaving a half-built tree; [detail](#m7---harden-the-epics_build-source-build-against-a-dropped-connection) |
 | Gate | G1 | the production IOC server added to the the internal git host clone whitelist | External gate | Open | No | | Network team whitelists the production IOC server so the EPICS distribution clone and a live iocserver run reach the internal git host; blocks M4/T2 |
 
@@ -416,48 +416,64 @@ repo); the source-build tag pins (`M1`/`M2`).
 #### M6 - Convergence-verify EPICS OS build dependencies on the four non-golden vacua
 
 - Origin: 25130ef / M6
-- Status: Not started
+- Status: In progress
 
 ##### Summary
 
-The EPICS OS build dependencies (`M5`) are declared for all six vacua and installed
-by `roles/epics` and `roles/epics_build`. rocky8 and debian13 are golden-verified end
-to end; the four non-golden vacua (rocky10, debian12, ubuntu24, ubuntu26) have no
-iocrunner golden pipeline yet. Verify them by Live-mode species apply per vacuum — a
-convergence check that the operators reach the state on each OS. This is convergence
-verification, not image verification: Live keeps the running host and the proxy, with
-no manifest, proxy seal, published image, or consumer boot.
+The EPICS OS build dependencies (`M5`) are declared for all six vacua and installed by
+`roles/epics` (distribution, `P_epics`) and `roles/epics_build` (source build,
+`P_epics-build`). rocky8 and debian13 are golden-verified end to end. The four
+non-golden vacua (rocky10, debian12, ubuntu24, ubuntu26) have no iocrunner golden
+pipeline yet; convergence-verify them by Live-mode species apply per vacuum across both
+acquisition paths. This is convergence verification, not image verification: Live keeps
+the running host and the proxy, with no manifest, proxy seal, published image, or
+consumer boot.
 
 ##### Scope
 
-For each of rocky10, debian12, ubuntu24, ubuntu26: apply the iocrunner species live
-to a fresh proxied VM, confirm the EPICS OS build dependencies install (net-snmp dev
-package + `libnetsnmp.so` present) and a sample IOC (`ServiceTestIOC` with the snmp
-module) links, then discard the VM. This proves operator convergence on the OS, not a
-shippable image.
+Both paths, because `M5` changed both — the distribution role installs the set, and the
+source-build role installs it AND is where `pkg_automation` was retired:
 
-Long-term goal: these four ship as golden images too. Golden promotion — adding them
-to the cloud bake matrix, the consumer-boot paths, and validation — is a separate
-cloud-provision milestone that reuses these roles and species as-is; it needs no
-ansible-provision change in principle, only a fix if an OS-specific bake exposes a
-role bug (as the rocky8/debian13 source-build arc did). This `M6` convergence check
-de-risks that promotion by proving the operators converge first.
+- Distribution path (`iocrunner` species, `P_epics`): apply Live to a fresh proxied VM,
+  confirm the EPICS OS build dependencies install (net-snmp dev package + `libnetsnmp.so`)
+  and a sample IOC (`ServiceTestIOC` with the snmp module) links. Needs the published
+  EPICS-env-distribution tree for the OS.
+- Source-build path (`epics_dev` species, `P_epics-build`): apply Live to a fresh proxied
+  VM, confirm EPICS-env builds and installs from source with `pkg_automation` gone and
+  `epics_os_packages` providing the deps. Needs no distribution tree.
 
-Out of scope: the golden bake-matrix expansion itself (cloud-provision).
+Per OS: rocky10 and ubuntu24 have distribution trees at 1.2.2 (`rocky-10.2`,
+`ubuntu-24.04`), so both paths apply. debian12 and ubuntu26 have no distribution tree at
+1.2.2 (`debian-12`, `ubuntu-26.04` absent), so their distribution path stays blocked
+upstream (EPICS-env-distribution) and they are convergence-verified by the source-build
+path only.
+
+Long-term goal: these four ship as golden images too. Golden promotion — the cloud bake
+matrix, consumer-boot paths, and validation — is a separate cloud-provision milestone
+that reuses these roles and species as-is. This `M6` convergence check de-risks it.
+
+Out of scope: the golden bake-matrix expansion itself (cloud-provision); the
+EPICS-env-distribution publishing of the `debian-12` / `ubuntu-26.04` trees (upstream).
 
 ##### Completion Criteria
 
-- Each of the four vacua is convergence-verified: `epics_os_packages` install on a
-  fresh Live-mode apply and a sample IOC links against the installed EPICS environment.
-- Recorded as convergence-verified, not image-verified; golden shipping of these four
-  stays the separate cloud-provision milestone.
+- Distribution path convergence-verified on rocky10 and ubuntu24 (the two with published
+  trees): `epics_os_packages` install and a sample IOC links.
+- Source-build path convergence-verified on all four (rocky10, debian12, ubuntu24,
+  ubuntu26): EPICS-env builds and installs from source with `pkg_automation` gone.
+- Recorded as convergence-verified, not image-verified. The debian12/ubuntu26
+  distribution path and golden shipping stay separate upstream/cloud items.
 
 ##### Dependencies And Decisions
 
 - Origin decision `D6` (2026-08-31): split from `M5` at its close.
-- The package lists and role code are already in place (`M5`); names dry-run-verified
-  by LAB-cloud on 2026-08-31 (rocky10 needs `P_common`'s EPEL+CRB, which the species
-  order provides).
+- `epics_os_dir` was missing for rocky10/ubuntu24/ubuntu26 and added in `25c2e6c`, so
+  `P_epics` can resolve the distribution sparse path.
+- The EPICS-env-distribution 1.2.2 tag has no `debian-12` or `ubuntu-26.04` tree, so the
+  distribution path for debian12/ubuntu26 is blocked upstream; the source-build path is
+  their verification route until the distribution ships those trees.
+- Package names dry-run-verified by LAB-cloud on 2026-08-31 (rocky10 needs `P_common`'s
+  EPEL+CRB, which the species order provides).
 
 ##### Implementation Plan
 
@@ -466,22 +482,25 @@ Out of scope: the golden bake-matrix expansion itself (cloud-provision).
 - Implementation Authorization: none
 - Superseded Plan Artifacts: none
 
-1. LAB-cloud pre-checks package names by dry-run per OS (done 2026-08-31).
-2. LAB-cloud applies the iocrunner species Live to a fresh VM per vacuum and checks
-   net-snmp evidence + IOC link, then discards the VM.
-3. Record per-vacuum verification here.
+1. Distribution path: LAB-cloud Live-applies the `iocrunner` species per OS with a
+   published tree (rocky10, ubuntu24), checks net-snmp + IOC link, discards the VM.
+2. Source-build path: LAB-cloud Live-applies the `epics_dev` species per OS (all four),
+   confirms the source build completes with `pkg_automation` gone, discards the VM.
+3. Record per-vacuum, per-path verification here.
 
 ##### Test Plan
 
 | Label | Layer | Method | Environment | Expected Result |
 | --- | --- | --- | --- | --- |
-| T1 | Integration | Live-mode iocrunner species apply, inspect packages + IOC link | rocky10, debian12, ubuntu24, ubuntu26 | `epics_os_packages` install; a sample IOC links against the installed EPICS environment. |
+| T1 | Integration | Live `iocrunner` species (distribution, `P_epics`) | rocky10, ubuntu24 | `epics_os_packages` install; a sample IOC links against the installed distribution. |
+| T2 | Integration | Live `epics_dev` species (source build, `P_epics-build`) | rocky10, debian12, ubuntu24, ubuntu26 | EPICS-env builds and installs from source with `pkg_automation` gone; `epics_os_packages` provide the deps. |
 
 ##### Verification Results
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
-| T1 | Not run | four vacua | Pending | Names dry-run-verified 2026-08-31 (rocky10 32, debian12 43, ubuntu24 40, ubuntu26 40); live apply pending. |
+| T1 | 2026-08-31 | rocky10 | Passed | Live `iocrunner` on a fresh rocky10 VM (`25c2e6c`): recap `ok=30 changed=5 failed=0`; net-snmp-devel + `libnetsnmp.so` present; `setEpicsEnv.bash` at `/opt/epics/1.2.2/rocky-10.2/7.0.10`; ServiceTestIOC links. ubuntu24 pending. |
+| T2 | Not run | four vacua | Pending | Source-build Live apply pending on all four. |
 
 ##### Closure Evidence
 
