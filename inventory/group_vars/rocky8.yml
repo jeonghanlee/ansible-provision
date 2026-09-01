@@ -45,3 +45,4 @@ epics_os_packages:
   - rpcgen
   - cmake
   - re2c
+  - patch
