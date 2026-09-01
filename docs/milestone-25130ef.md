@@ -31,8 +31,9 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: `M7` (harden the epics_build source build) — restructure the
-long raw build so a dropped connection cannot leave a half-built tree. `M6` (four
+Next session entry point: `M7` (harden the epics_build source build) — In progress:
+plan accepted (2026-09-01, detached systemd unit + poll), implementing the
+restructure so a dropped connection cannot leave a half-built tree. `M6` (four
 non-golden vacua) is Complete: both acquisition paths convergence-verified (distribution
 on rocky10/ubuntu24, source build on all four); debian12/ubuntu26 distribution stays
 blocked upstream (jeonghanlee/EPICS-env-distribution#4). `M4` (operator/species
@@ -45,7 +46,7 @@ is blocked on `G1`. `M3` (base_os/app role hardening) is Deferred per
 the C17 bridge (`jeonghanlee/EPICS-env#29`) fires on Ubuntu 26 and its
 source-build path was confirmed (`jeonghanlee/EPICS-env#63`).
 
-Status tally: 4 Complete, 1 In progress, 1 Deferred, 1 Not started. 1 external gate (Open).
+Status tally: 4 Complete, 2 In progress, 1 Deferred. 1 external gate (Open).
 
 ## Milestone
 
@@ -59,7 +60,7 @@ Status tally: 4 Complete, 1 In progress, 1 Deferred, 1 Not started. 1 external g
 | Core | M4 | Operator/species provisioning model | Milestone | In progress | No | G1 | Vacua, single-role operators, and species assemblies replace the staged model, iocserver registered; P_proxy role implemented and verified (apply and full-species re-apply idempotency), and the live iocserver run blocked on G1; [detail](#m4---operatorspecies-provisioning-model) |
 | Core | M5 | Restore the EPICS OS package set into the operator model | Milestone | Complete | No | D5 | `epics_os_packages` installed by `roles/epics` and `roles/epics_build`, `pkg_automation.bash` retired; verified on the golden pair (rocky8, debian13) across both acquisition paths; four non-golden vacua moved to `M6`; [detail](#m5---restore-the-epics-os-package-set-into-the-operator-model) |
 | Core | M6 | Convergence-verify EPICS OS build dependencies on the four non-golden vacua | Milestone | Complete | No | D6 | rocky10, debian12, ubuntu24, ubuntu26 convergence-verified by Live-mode apply on both paths — distribution (`iocrunner`, where the tree exists) and source build (`epics_dev`); the role-assurance step before golden promotion; [detail](#m6---convergence-verify-epics-os-build-dependencies-on-the-four-non-golden-vacua) |
-| Core | M7 | Harden the epics_build source build against a dropped connection | Milestone | Not started | Yes | D7 | The `epics_build` raw build survives or cleanly resumes an SSH drop without leaving a half-built tree; [detail](#m7---harden-the-epics_build-source-build-against-a-dropped-connection) |
+| Core | M7 | Harden the epics_build source build against a dropped connection | Milestone | In progress | Yes | D7 | The `epics_build` raw build survives or cleanly resumes an SSH drop without leaving a half-built tree; [detail](#m7---harden-the-epics_build-source-build-against-a-dropped-connection) |
 | Gate | G1 | the production IOC server added to the the internal git host clone whitelist | External gate | Open | No | | Network team whitelists the production IOC server so the EPICS distribution clone and a live iocserver run reach the internal git host; blocks M4/T2 |
 
 ### Decisions
@@ -511,7 +512,8 @@ EPICS-env-distribution publishing of the `debian-12` / `ubuntu-26.04` trees (ups
 #### M7 - Harden the epics_build source build against a dropped connection
 
 - Origin: 25130ef / M7
-- Status: Not started
+- GitHub Issue: #19, https://github.com/jeonghanlee/ansible-provision/issues/19
+- Status: In progress
 
 ##### Summary
 
@@ -548,14 +550,29 @@ distribution path (`roles/epics`), which has no long build.
 
 ##### Implementation Plan
 
-- Plan Status: draft
-- Plan Acceptance: none
-- Implementation Authorization: none
+- Plan Status: accepted
+- Plan Acceptance: 2026-09-01 (owner accepted the detached/resumable structure)
+- Implementation Authorization: 2026-09-01
 - Superseded Plan Artifacts: none
 
-1. Choose the structure (detached/resumable unit vs clean-on-retry guard).
-2. Implement in `roles/epics_build`.
-3. Verify with a real source-build run, including a simulated connection drop.
+Structure: run the source build as a detached `systemd` transient unit that
+ansible polls, so a dropped SSH connection cannot leave a half-built tree or let
+a retry race a surviving shell. Chosen over the inline clean-on-retry guard
+because the detached unit removes the surviving-shell race at the root, matching
+`D7`'s intent; LAB-cloud validated the direction by manually detaching the build
+to survive kills during `M5` verification. All six vacua are systemd-based.
+
+1. Move the inline build body (`roles/epics_build/tasks/main.yml`, the
+   `ansible.builtin.raw` build block) into a remote build script at
+   `/usr/local/sbin/epics-env-build.sh` (0755) that records a success sentinel
+   only after `make check.env` passes.
+2. Launch it idempotently: skip when an install tree already exists; leave a
+   running unit alone (no second build); otherwise clean partial state and start
+   it with `systemd-run --unit=epics-env-build --collect`.
+3. Poll to completion with a short `raw` task under ansible `until` — a running
+   unit (active or activating) retries, a success sentinel or an existing
+   install tree means done, and a stopped unit with neither is a failure that
+   surfaces `journalctl` and stops.
 
 ##### Test Plan
 
