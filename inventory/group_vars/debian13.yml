@@ -40,3 +40,5 @@ epics_os_packages:
   - libopencv-dev
   - libhidapi-dev
   - libhidapi-libusb0
+  - cmake
+  - re2c

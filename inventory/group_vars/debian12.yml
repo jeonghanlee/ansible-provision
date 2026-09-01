@@ -48,3 +48,4 @@ epics_os_packages:
   - libssh2-1-dev
   - libssh2-1
   - libssl3
+  - cmake
