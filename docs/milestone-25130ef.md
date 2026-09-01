@@ -31,10 +31,11 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: `M5` (restore the EPICS OS package set) — reconcile the
-per-OS EPICS package list in `work/plan-epics-os-packages.md`, land the cloud
-`docs/IMAGE_WORKFLOW.md` change with LAB-cloud, then implement in `roles/epics`.
-`M4` (operator/species provisioning model) remains active. `M4/T1` (species syntax-check and `configure/RELEASE` / `inventory/lab.ini`
+Next session entry point: `M6` (verify the four non-golden vacua) — LAB-cloud
+applies the iocrunner species Live per vacuum and reports; record each per-vacuum
+result. `M5` (EPICS OS package set) is Complete: the golden pair is verified on
+both acquisition paths and `pkg_automation` is retired. `M4` (operator/species
+provisioning model) remains active. `M4/T1` (species syntax-check and `configure/RELEASE` / `inventory/lab.ini`
 enumeration) and `M4/T3` (P_proxy apply and full-species re-apply idempotency)
 are verified; `M4/T2` (iocserver on the production IOC server) is the only remaining check and
 is blocked on `G1`. `M3` (base_os/app role hardening) is Deferred per
@@ -43,7 +44,7 @@ is blocked on `G1`. `M3` (base_os/app role hardening) is Deferred per
 the C17 bridge (`jeonghanlee/EPICS-env#29`) fires on Ubuntu 26 and its
 source-build path was confirmed (`jeonghanlee/EPICS-env#63`).
 
-Status tally: 2 Complete, 1 In progress, 1 Deferred, 1 Not started. 1 external gate (Open).
+Status tally: 3 Complete, 1 In progress, 1 Deferred, 2 Not started. 1 external gate (Open).
 
 ## Milestone
 
@@ -55,7 +56,9 @@ Status tally: 2 Complete, 1 In progress, 1 Deferred, 1 Not started. 1 external g
 | Core | M2 | Ubuntu 26 source-build | Carry-forward | Complete | No | D4 | Ubuntu 26 passes the complete source-build path (both layers, `gz` flavor, repeated-run checks) with the C17 bridge active; [detail](#m2---ubuntu-26-source-build) |
 | Core | M3 | base_os/app role hardening from the production IOC server deployment | Carry-forward | Deferred | No | D3 | Deferred per D3 (old model retired); the base/app surface is re-verified under the operator model (M4); [detail](#m3---base_osapp-role-hardening-from-the production IOC server-deployment) |
 | Core | M4 | Operator/species provisioning model | Milestone | In progress | No | G1 | Vacua, single-role operators, and species assemblies replace the staged model, iocserver registered; P_proxy role implemented and verified (apply and full-species re-apply idempotency), and the live iocserver run blocked on G1; [detail](#m4---operatorspecies-provisioning-model) |
-| Core | M5 | Restore the EPICS OS package set into the operator model | Milestone | Not started | Yes | D5 | Per-OS EPICS package list installed by `roles/epics` and `roles/epics_build` (pkg_automation call removed); `ServiceTestIOC` links; verified on fresh images across the six vacua; [detail](#m5---restore-the-epics-os-package-set-into-the-operator-model) |
+| Core | M5 | Restore the EPICS OS package set into the operator model | Milestone | Complete | No | D5 | `epics_os_packages` installed by `roles/epics` and `roles/epics_build`, `pkg_automation.bash` retired; verified on the golden pair (rocky8, debian13) across both acquisition paths; four non-golden vacua moved to `M6`; [detail](#m5---restore-the-epics-os-package-set-into-the-operator-model) |
+| Core | M6 | Verify EPICS OS build dependencies on the four non-golden vacua | Milestone | Not started | Yes | D6 | rocky10, debian12, ubuntu24, ubuntu26 install `epics_os_packages` and link a sample IOC, verified by Live-mode species apply per vacuum; [detail](#m6---verify-epics-os-build-dependencies-on-the-four-non-golden-vacua) |
+| Core | M7 | Harden the epics_build source build against a dropped connection | Milestone | Not started | Yes | D7 | The `epics_build` raw build survives or cleanly resumes an SSH drop without leaving a half-built tree; [detail](#m7---harden-the-epics_build-source-build-against-a-dropped-connection) |
 | Gate | G1 | the production IOC server added to the the internal git host clone whitelist | External gate | Open | No | | Network team whitelists the production IOC server so the EPICS distribution clone and a live iocserver run reach the internal git host; blocks M4/T2 |
 
 ### Decisions
@@ -67,6 +70,8 @@ Status tally: 2 Complete, 1 In progress, 1 Deferred, 1 Not started. 1 external g
 | D3 | The staged old model (`01_base`/`02_apps`/`03_epics`) and its retained roles `base_os` and `app_epics` are retired; the operator/species model supersedes them. Removing the old roles and playbooks is separate follow-up work. | Owner decision, 2026-08-29 |
 | D4 | Ubuntu 26 source-build is no longer deferred. The C17 bridge shipped under milestone 1.3.0 (`jeonghanlee/EPICS-env#29`), and `jeonghanlee/EPICS-env#63` (closed 2026-08-24) confirmed it fires for `iocStats` on the Ubuntu 26 source-build path; the complete `gz` path passed on 2026-08-27. Supersedes `D2`. | Owner decision, 2026-08-30 |
 | D5 | The EPICS OS package regression (`M5`) is fixed across all six vacua, `pkg_automation` is removed from `roles/epics_build` in the same change, ansible-provision drafts the cloud `docs/IMAGE_WORKFLOW.md` change for LAB-cloud to land, and the milestone and GitHub issue are recorded before implementation begins. | Owner decision, 2026-08-31 |
+| D6 | `M5` closes on the golden pair (rocky8, debian13), verified on both acquisition paths. The four non-golden vacua (rocky10, debian12, ubuntu24, ubuntu26) have no iocrunner golden pipeline; they carry the same package lists (names dry-run-verified) and move to `M6` for Live-mode verification. The cloud-side golden bake-matrix expansion stays a separate cloud-provision item. | Owner decision, 2026-08-31 |
+| D7 | The `epics_build` source-build fragility surfaced during `M5` verification (LAB-cloud Finding B) is hardened as `M7`, not accepted. `M5`'s fix removed the known trigger (the NetworkManager restart); `M7` addresses the underlying structure so a dropped connection cannot leave a half-built tree. | Owner decision, 2026-08-31 |
 
 ### Milestone Details
 
@@ -333,7 +338,7 @@ Superseded Plan Artifacts: none
 
 - Origin: 25130ef / M5
 - GitHub Issue: #18, https://github.com/jeonghanlee/ansible-provision/issues/18
-- Status: Not started
+- Status: Complete
 
 ##### Summary
 
@@ -359,14 +364,15 @@ repo); the source-build tag pins (`M1`/`M2`).
 
 ##### Completion Criteria
 
-- A fresh image on each of the six vacua installs the EPICS OS package set via
-  ansible; `net-snmp-devel` is present (with `/usr/lib64/libnetsnmp.so` on the
-  rpm OSes).
-- `ServiceTestIOC` links successfully against the installed EPICS environment.
+- The golden pair (rocky8, debian13) installs `epics_os_packages` via ansible on
+  both the distribution (`roles/epics`) and source-build (`roles/epics_build`)
+  paths; `net-snmp-devel` and `libnetsnmp.so` present.
+- `ServiceTestIOC` links successfully against the installed EPICS environment on
+  the golden pair.
 - `roles/epics_build` no longer calls `pkg_automation.bash`; its OS deps come
   from the ansible list.
-- Verified on a fresh image and a fresh consumer VM, with no post-bake package
-  additions.
+- The four non-golden vacua carry the same lists (names dry-run-verified); their
+  live verification is `M6`.
 
 ##### Dependencies And Decisions
 
@@ -400,8 +406,136 @@ repo); the source-build tag pins (`M1`/`M2`).
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
-| T1 | Not run | six vacua | Pending | — |
-| T2 | Not run | Rocky 8 | Pending | — |
+| T1 | 2026-08-31 | rocky8, debian13 | Passed | Distribution: iocrunner golden bakes install the set (`net-snmp-devel` + `libnetsnmp.so` on the fresh VM). Source: `epics_dev` builds and installs EPICS-env clean with `pkg_automation` removed (rocky8 `24c9dc9`, debian13 `0d08692`, recap `failed=0`). |
+| T2 | 2026-08-31 | rocky8, debian13 | Passed | `ServiceTestIOC` built with the snmp module links: `-lnetsnmp` resolves against the installed `libnetsnmp.so`; no "cannot find -lnetsnmp" on either OS. |
+
+##### Closure Evidence
+
+- Complete 2026-08-31. Golden pair verified on both acquisition paths; `pkg_automation` retired from `roles/epics_build`. Along the way the rocky8 list gained `cmake`, `re2c`, `patch` and the debian lines `cmake`/`re2c` (source-build tools the old `pkg_standard` seed lacked), and the `epics_build` OS update excludes `kernel*` and `NetworkManager*` to keep the SSH session alive during a source build. The four non-golden vacua carry the same lists and move to `M6`.
+
+#### M6 - Verify EPICS OS build dependencies on the four non-golden vacua
+
+- Origin: 25130ef / M6
+- Status: Not started
+
+##### Summary
+
+The EPICS OS build dependencies (`M5`) are declared for all six vacua and installed
+by `roles/epics` and `roles/epics_build`. rocky8 and debian13 are verified end to
+end; the four non-golden vacua (rocky10, debian12, ubuntu24, ubuntu26) have no
+iocrunner golden pipeline, so verify them by Live-mode species apply per vacuum.
+
+##### Scope
+
+For each of rocky10, debian12, ubuntu24, ubuntu26: apply the iocrunner species live
+to a fresh proxied VM, confirm the EPICS OS build dependencies install (net-snmp dev
+package + `libnetsnmp.so` present) and a sample IOC (`ServiceTestIOC` with the snmp
+module) links, then discard the VM.
+
+Out of scope: the cloud-provision iocrunner golden bake-matrix expansion (bake,
+publish, consumer boot, validation) for these OSes — a separate cloud-provision
+milestone.
+
+##### Completion Criteria
+
+- Each of the four vacua installs `epics_os_packages` on a fresh Live-mode apply.
+- A sample IOC links against the installed EPICS environment on each.
+
+##### Dependencies And Decisions
+
+- Origin decision `D6` (2026-08-31): split from `M5` at its close.
+- The package lists and role code are already in place (`M5`); names dry-run-verified
+  by LAB-cloud on 2026-08-31 (rocky10 needs `P_common`'s EPEL+CRB, which the species
+  order provides).
+
+##### Implementation Plan
+
+- Plan Status: draft
+- Plan Acceptance: none
+- Implementation Authorization: none
+- Superseded Plan Artifacts: none
+
+1. LAB-cloud pre-checks package names by dry-run per OS (done 2026-08-31).
+2. LAB-cloud applies the iocrunner species Live to a fresh VM per vacuum and checks
+   net-snmp evidence + IOC link, then discards the VM.
+3. Record per-vacuum verification here.
+
+##### Test Plan
+
+| Label | Layer | Method | Environment | Expected Result |
+| --- | --- | --- | --- | --- |
+| T1 | Integration | Live-mode iocrunner species apply, inspect packages + IOC link | rocky10, debian12, ubuntu24, ubuntu26 | `epics_os_packages` install; a sample IOC links against the installed EPICS environment. |
+
+##### Verification Results
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T1 | Not run | four vacua | Pending | Names dry-run-verified 2026-08-31 (rocky10 32, debian12 43, ubuntu24 40, ubuntu26 40); live apply pending. |
+
+##### Closure Evidence
+
+- Pending.
+
+#### M7 - Harden the epics_build source build against a dropped connection
+
+- Origin: 25130ef / M7
+- Status: Not started
+
+##### Summary
+
+`roles/epics_build` runs the whole EPICS-env source build as one long
+`ansible.builtin.raw` task over SSH. During `M5` verification (LAB-cloud Finding
+B), a dropped SSH connection left the remote shell still running on the VM — the
+build kept progressing while ansible reported the task failed — so a failed run
+can leave a half-built tree, and a same-VM retry can race the surviving shell or
+see partial state. `M5`'s fix (`1c1cabc`, excluding `kernel*`/`NetworkManager*`
+from the update) removed the known trigger, but the underlying structure remains
+fragile.
+
+##### Scope
+
+Restructure the `epics_build` source build so a dropped connection cannot leave
+an inconsistent tree: e.g. run it as a detached, resumable unit that ansible
+polls, or make partial state clean-on-retry with no surviving-shell race.
+
+Out of scope: the dnf-update SSH-drop trigger (fixed under `M5`); the
+distribution path (`roles/epics`), which has no long build.
+
+##### Completion Criteria
+
+- A connection drop during the source build does not leave a half-built tree
+  that a retry mistakes for progress, and does not race a surviving shell.
+- The build completes (or cleanly resumes) and the result is verified on a real
+  source-build run.
+
+##### Dependencies And Decisions
+
+- Origin decision `D7` (2026-08-31): harden rather than accept (LAB-cloud Finding
+  B). `M5`'s `1c1cabc` removed the known trigger; this row addresses the
+  structure.
+
+##### Implementation Plan
+
+- Plan Status: draft
+- Plan Acceptance: none
+- Implementation Authorization: none
+- Superseded Plan Artifacts: none
+
+1. Choose the structure (detached/resumable unit vs clean-on-retry guard).
+2. Implement in `roles/epics_build`.
+3. Verify with a real source-build run, including a simulated connection drop.
+
+##### Test Plan
+
+| Label | Layer | Method | Environment | Expected Result |
+| --- | --- | --- | --- | --- |
+| T1 | Integration | Source build with a mid-build connection drop, then retry | rocky8 or debian13 | No half-built tree survives; the build completes or cleanly resumes with no surviving-shell race. |
+
+##### Verification Results
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T1 | Not run | golden pair | Pending | — |
 
 ##### Closure Evidence
 
