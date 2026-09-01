@@ -3,6 +3,12 @@
 # Vacuum group variables. Values arrive with the operators that consume
 # them; the common role carries its own defaults.
 
+# EPICS distribution OS directory: the epics role sparse-checks out
+# {epics_env_version}/<this>/{epics_base_version} from EPICS-env-distribution.
+# The ubuntu-26.04 tree is not published in the distribution yet, so the
+# iocrunner (P_epics) path stays blocked upstream until it ships.
+epics_os_dir: "ubuntu-26.04"
+
 # EPICS OS build dependencies, mirrored verbatim from the normative source
 # cloud-provision configure/epics-packages. Installed by the epics and
 # epics_build roles (both EPICS acquisition paths compile IOCs).
