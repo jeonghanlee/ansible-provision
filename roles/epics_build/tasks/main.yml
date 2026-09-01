@@ -11,10 +11,21 @@
 # acquisition paths depend on it). The EPICS OS build dependencies come from the
 # normative cloud-provision configure/epics-packages, mirrored per vacuum as
 # epics_os_packages; OS branching lives in the shell via /etc/os-release.
+#
+# The build runs as a detached systemd transient unit (systemd-run), not inline
+# over the SSH session: a dropped connection cannot leave a half-built tree that
+# a retry mistakes for progress, and a retry attaches to the running unit instead
+# of racing a surviving shell. The launch step is idempotent (skip installed,
+# leave a running unit alone, else clean-start); ansible then polls the unit to
+# completion via a success sentinel. See docs/milestone-25130ef.md M7.
 
-- name: Build and install EPICS-env from source
+- name: Install the detached EPICS-env build script
   ansible.builtin.raw: |
+    cat > /usr/local/sbin/epics-env-build.sh <<'EPICS_BUILD_SCRIPT'
+    #!/bin/bash
     set -e
+
+    sentinel=/var/tmp/epics-env-build.done
 
     tag="{{ epics_env_tag }}"
     src="{{ path_epics_source_src }}"
@@ -24,22 +35,15 @@
     repo_open62541="{{ repo_open62541_env }}"
     flavor="{{ epics_env_build_flavor | default('internal') }}"
 
-    # Idempotency: skip when an EPICS-env tree is already installed. The install
-    # path carries EPICS-env's own version, not the tag, so match any version.
-    installed=$(ls "${install_root}"/*/*/*/setEpicsEnv.bash 2>/dev/null | head -1 || true)
-    if [ -n "${installed}" ]; then
-      echo "EPICS_ENV_BUILD_SKIPPED: already installed at ${installed%/*}"
-      exit 0
-    fi
-
     # --- Install required packages ---
     . /etc/os-release
     case "${ID}" in
       rocky|rhel|centos)
-        # Keep this SSH session alive through the update: exclude the kernel
+        # The build is detached, but its dnf update still restarts services on
+        # the same host as the polling connection: exclude the kernel
         # (reboot-only, not needed to build) and NetworkManager (its upgrade
-        # restarts the service and drops the connection mid-build). Both take
-        # effect on the next reboot / image finalize; everything else updates.
+        # restart drops connectivity). Both take effect on the next reboot /
+        # image finalize; everything else updates.
         dnf update -y --exclude='kernel*' --exclude='NetworkManager*'
         dnf install -y git tree make sudo bash wget unzip python3-pip libusbx-devel {{ epics_os_packages | join(' ') }}
         pip3 install numpy nose
@@ -70,11 +74,11 @@
     git -C "${src}/EPICS-env" checkout "refs/tags/${tag}" 2>/dev/null || git -C "${src}/EPICS-env" checkout "${tag}"
     printf 'INSTALL_LOCATION=%s\n' "${install_root}" > "${src}/EPICS-env/configure/CONFIG_SITE.local"
 
-    # Vendor libraries install INTO the release tree's vendor/, so their runpaths
-    # stay $ORIGIN-relative. Derive the tree path from EPICS-env's own location.
+    # Vendor libraries install INTO the release tree vendor/, so their runpaths
+    # stay $ORIGIN-relative. Derive the tree path from the EPICS-env location.
     vendor_lib="$(cd "${src}/EPICS-env" && make print-INSTALL_LOCATION_EPICS)/vendor"
 
-    # --- Vendor libraries: build and install into the tree's vendor/ ---
+    # --- Vendor libraries: build and install into the tree vendor/ ---
     # (install.bash _prep_vendor: distclean/init/conf[.rocky8]/build/install, NOT
     # 'make github'. Re-write CONFIG_SITE.local after distclean, which removes *.local.)
     for vdir in uldaq-env open62541-env; do
@@ -110,8 +114,82 @@
 
     # --- EPICS Environment Check ---
     make check.env
-  register: epics_env_build_result
-  changed_when: "'EPICS_ENV_BUILD_SKIPPED' not in epics_env_build_result.stdout"
+
+    # Success sentinel: reached only when set -e let every step above pass. The
+    # poll step reads this to tell a finished build from a failed one.
+    touch "${sentinel}"
+    EPICS_BUILD_SCRIPT
+    chmod 0755 /usr/local/sbin/epics-env-build.sh
+  changed_when: false
+
+- name: Launch the detached EPICS-env build unit
+  ansible.builtin.raw: |
+    set -e
+    install_root="{{ path_epics_install }}"
+    sentinel=/var/tmp/epics-env-build.done
+    unit=epics-env-build.service
+
+    # Already fully installed (setEpicsEnv.bash present): nothing to build. The
+    # install path carries the EPICS-env version, not the tag, so match any.
+    if ls "${install_root}"/*/*/*/setEpicsEnv.bash >/dev/null 2>&1; then
+      echo "EPICS_ENV_BUILD_SKIPPED: already installed"
+      exit 0
+    fi
+
+    # A build unit is already running (e.g. it survived a dropped SSH
+    # connection): leave it in place; the poll step waits for it. Never start a
+    # second build against the same tree.
+    # A running unit is any non-final state, not just "active": is-active alone
+    # misses the brief "activating" window right after a start, so match the
+    # running states explicitly. Leave such a unit in place (the poll waits).
+    state=$(systemctl is-active "${unit}" 2>/dev/null || true)
+    case "${state}" in
+      active|activating|deactivating|reloading)
+        echo "EPICS_ENV_BUILD_RUNNING: existing unit"
+        exit 0
+        ;;
+    esac
+
+    # Not installed and no running unit: clear any stale unit result and the
+    # previous success sentinel, then start a fresh detached build. The build
+    # script self-cleans partial source state (rm -rf EPICS-env, make distclean).
+    systemctl reset-failed "${unit}" 2>/dev/null || true
+    rm -f "${sentinel}"
+    systemd-run --unit="${unit}" --collect --setenv=HOME=/root --setenv=DEBIAN_FRONTEND=noninteractive /usr/local/sbin/epics-env-build.sh
+    echo "EPICS_ENV_BUILD_STARTED"
+  register: epics_env_build_launch
+  changed_when: "'EPICS_ENV_BUILD_STARTED' in epics_env_build_launch.stdout"
+
+- name: Wait for the detached EPICS-env build to finish
+  ansible.builtin.raw: |
+    unit=epics-env-build.service
+    sentinel=/var/tmp/epics-env-build.done
+    install_root="{{ path_epics_install }}"
+    # Still running in any non-final state ("activating" included, which a bare
+    # is-active would miss): keep polling.
+    state=$(systemctl is-active "${unit}" 2>/dev/null || true)
+    case "${state}" in
+      active|activating|deactivating|reloading)
+        echo "BUILDING"
+        exit 1
+        ;;
+    esac
+    # Done on either signal: the success sentinel from a build we launched, or
+    # an install tree already present (an idempotent re-apply that skipped the
+    # build in the launch step). Only a stopped unit with neither is a failure.
+    if [ -f "${sentinel}" ] || ls "${install_root}"/*/*/*/setEpicsEnv.bash >/dev/null 2>&1; then
+      echo "DONE"
+      exit 0
+    fi
+    echo "FAILED: build unit exited without a success sentinel or install tree" >&2
+    journalctl -u "${unit}" --no-pager 2>/dev/null | tail -n 80 >&2
+    exit 2
+  register: epics_env_build_wait
+  until: epics_env_build_wait.rc != 1
+  retries: 120
+  delay: 30
+  changed_when: false
+  failed_when: epics_env_build_wait.rc == 2
 
 - name: Show the installed EPICS-env location
   ansible.builtin.raw: |
