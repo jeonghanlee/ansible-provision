@@ -31,10 +31,11 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: `M6` (verify the four non-golden vacua) — LAB-cloud
-applies the iocrunner species Live per vacuum and reports; record each per-vacuum
-result. `M5` (EPICS OS package set) is Complete: the golden pair is verified on
-both acquisition paths and `pkg_automation` is retired. `M4` (operator/species
+Next session entry point: `M7` (harden the epics_build source build) — restructure the
+long raw build so a dropped connection cannot leave a half-built tree. `M6` (four
+non-golden vacua) is Complete: both acquisition paths convergence-verified (distribution
+on rocky10/ubuntu24, source build on all four); debian12/ubuntu26 distribution stays
+blocked upstream (jeonghanlee/EPICS-env-distribution#4). `M4` (operator/species
 provisioning model) remains active. `M4/T1` (species syntax-check and `configure/RELEASE` / `inventory/lab.ini`
 enumeration) and `M4/T3` (P_proxy apply and full-species re-apply idempotency)
 are verified; `M4/T2` (iocserver on the production IOC server) is the only remaining check and
@@ -44,7 +45,7 @@ is blocked on `G1`. `M3` (base_os/app role hardening) is Deferred per
 the C17 bridge (`jeonghanlee/EPICS-env#29`) fires on Ubuntu 26 and its
 source-build path was confirmed (`jeonghanlee/EPICS-env#63`).
 
-Status tally: 3 Complete, 2 In progress, 1 Deferred, 1 Not started. 1 external gate (Open).
+Status tally: 4 Complete, 1 In progress, 1 Deferred, 1 Not started. 1 external gate (Open).
 
 ## Milestone
 
@@ -57,7 +58,7 @@ Status tally: 3 Complete, 2 In progress, 1 Deferred, 1 Not started. 1 external g
 | Core | M3 | base_os/app role hardening from the production IOC server deployment | Carry-forward | Deferred | No | D3 | Deferred per D3 (old model retired); the base/app surface is re-verified under the operator model (M4); [detail](#m3---base_osapp-role-hardening-from-the production IOC server-deployment) |
 | Core | M4 | Operator/species provisioning model | Milestone | In progress | No | G1 | Vacua, single-role operators, and species assemblies replace the staged model, iocserver registered; P_proxy role implemented and verified (apply and full-species re-apply idempotency), and the live iocserver run blocked on G1; [detail](#m4---operatorspecies-provisioning-model) |
 | Core | M5 | Restore the EPICS OS package set into the operator model | Milestone | Complete | No | D5 | `epics_os_packages` installed by `roles/epics` and `roles/epics_build`, `pkg_automation.bash` retired; verified on the golden pair (rocky8, debian13) across both acquisition paths; four non-golden vacua moved to `M6`; [detail](#m5---restore-the-epics-os-package-set-into-the-operator-model) |
-| Core | M6 | Convergence-verify EPICS OS build dependencies on the four non-golden vacua | Milestone | In progress | No | D6 | rocky10, debian12, ubuntu24, ubuntu26 convergence-verified by Live-mode apply on both paths — distribution (`iocrunner`, where the tree exists) and source build (`epics_dev`); the role-assurance step before golden promotion; [detail](#m6---convergence-verify-epics-os-build-dependencies-on-the-four-non-golden-vacua) |
+| Core | M6 | Convergence-verify EPICS OS build dependencies on the four non-golden vacua | Milestone | Complete | No | D6 | rocky10, debian12, ubuntu24, ubuntu26 convergence-verified by Live-mode apply on both paths — distribution (`iocrunner`, where the tree exists) and source build (`epics_dev`); the role-assurance step before golden promotion; [detail](#m6---convergence-verify-epics-os-build-dependencies-on-the-four-non-golden-vacua) |
 | Core | M7 | Harden the epics_build source build against a dropped connection | Milestone | Not started | Yes | D7 | The `epics_build` raw build survives or cleanly resumes an SSH drop without leaving a half-built tree; [detail](#m7---harden-the-epics_build-source-build-against-a-dropped-connection) |
 | Gate | G1 | the production IOC server added to the the internal git host clone whitelist | External gate | Open | No | | Network team whitelists the production IOC server so the EPICS distribution clone and a live iocserver run reach the internal git host; blocks M4/T2 |
 
@@ -416,7 +417,7 @@ repo); the source-build tag pins (`M1`/`M2`).
 #### M6 - Convergence-verify EPICS OS build dependencies on the four non-golden vacua
 
 - Origin: 25130ef / M6
-- Status: In progress
+- Status: Complete
 
 ##### Summary
 
@@ -500,12 +501,12 @@ EPICS-env-distribution publishing of the `debian-12` / `ubuntu-26.04` trees (ups
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
-| T1 | 2026-08-31 | rocky10 | Passed | Live `iocrunner` on a fresh rocky10 VM (`25c2e6c`): recap `ok=30 changed=5 failed=0`; net-snmp-devel + `libnetsnmp.so` present; `setEpicsEnv.bash` at `/opt/epics/1.2.2/rocky-10.2/7.0.10`; ServiceTestIOC links. ubuntu24 pending. |
-| T2 | Not run | four vacua | Pending | Source-build Live apply pending on all four. |
+| T1 | 2026-08-31 | rocky10, ubuntu24 | Passed | Live `iocrunner` on fresh VMs (`25c2e6c`): rocky10 recap `ok=30 changed=5 failed=0`, ubuntu24 all operators `failed=0`; net-snmp dev package + `libnetsnmp.so` present, `setEpicsEnv.bash` at `/opt/epics/1.2.2/<os>/7.0.10`, ServiceTestIOC links. debian12/ubuntu26 have no distribution tree at 1.2.2 — blocked upstream, jeonghanlee/EPICS-env-distribution#4. |
+| T2 | 2026-08-31 | rocky10, debian12, ubuntu24, ubuntu26 | Passed | Live `epics_dev` source build on fresh VMs (`a920af2`), each `failed=0`: EPICS-env builds and installs from source with `pkg_automation` gone and `epics_os_packages` providing the deps; `setEpicsEnv.bash` present, softIocPVX runs, AreaDetector modules built. ubuntu26 needed `python3-dev` for the pyioc pip C-extension build. |
 
 ##### Closure Evidence
 
-- Pending.
+- Complete 2026-09-01. Both acquisition paths convergence-verified: distribution (`iocrunner`) on rocky10 and ubuntu24 (the two OSes with a published distribution tree), source build (`epics_dev`) on all four. `pkg_automation` retired; `epics_os_packages` provide the deps. M6 surfaced and fixed two role gaps along the way: the missing `epics_os_dir` for rocky10/ubuntu24/ubuntu26 (`25c2e6c`) and `python3-dev` for the pyioc pip C-extension build (`a920af2`). debian12/ubuntu26 distribution stays blocked upstream (jeonghanlee/EPICS-env-distribution#4) and golden shipping stays the separate cloud milestone.
 
 #### M7 - Harden the epics_build source build against a dropped connection
 
