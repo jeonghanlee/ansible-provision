@@ -470,8 +470,9 @@ EPICS-env-distribution publishing of the `debian-12` / `ubuntu-26.04` trees (ups
 - `epics_os_dir` was missing for rocky10/ubuntu24/ubuntu26 and added in `25c2e6c`, so
   `P_epics` can resolve the distribution sparse path.
 - The EPICS-env-distribution 1.2.2 tag has no `debian-12` or `ubuntu-26.04` tree, so the
-  distribution path for debian12/ubuntu26 is blocked upstream; the source-build path is
-  their verification route until the distribution ships those trees.
+  distribution path for debian12/ubuntu26 is blocked upstream (tracked at
+  jeonghanlee/EPICS-env-distribution#4); the source-build path is their verification
+  route until the distribution ships those trees.
 - Package names dry-run-verified by LAB-cloud on 2026-08-31 (rocky10 needs `P_common`'s
   EPEL+CRB, which the species order provides).
 
