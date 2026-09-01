@@ -66,9 +66,9 @@ ansible-provision/
 |       |-- debian12.yml             (epics_os_dir: debian-12)
 |       |-- debian13.yml             (epics_os_dir: debian-13)
 |       |-- rocky8.yml               (epics_os_dir, rocky 3.9 python overrides)
-|       |-- rocky10.yml              (per-vacuum values as operators need them)
-|       |-- ubuntu24.yml             (per-vacuum values as operators need them)
-|       `-- ubuntu26.yml             (per-vacuum values as operators need them)
+|       |-- rocky10.yml              (epics_os_dir: rocky-10.2)
+|       |-- ubuntu24.yml             (epics_os_dir: ubuntu-24.04)
+|       `-- ubuntu26.yml             (epics_os_dir: ubuntu-26.04)
 |-- playbooks/
 |   |-- operators/                   (one playbook per operator, 15)
 |   `-- species/                     (one assembly per species, 8)
@@ -336,4 +336,4 @@ each actual VM. Direct CLI use must do the same.
 | Public baseline defaults | `group_vars/all.yml` | package lists, public GitHub repos, pool NTP |
 | Validation defaults | `group_vars/all.yml`, `roles/nfs_sim/defaults/main.yml` | EPICS versions, ioc-runner source root, NFS simulation namespace |
 | Lab defaults | `inventory/lab.ini`, `group_vars/all.yml` | group relationships and example IOC engineer user |
-| OS defaults | `group_vars/rocky8.yml`, `group_vars/debian13.yml` | OS-specific EPICS binary directory selectors; OS python package lists (sole owners) |
+| OS defaults | `group_vars/<vacuum>.yml` | `epics_os_dir` (EPICS binary directory selector); `epics_os_packages` (EPICS OS build dependencies, mirrored per vacuum from cloud-provision `configure/epics-packages`); OS python package lists |
