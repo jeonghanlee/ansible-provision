@@ -68,10 +68,12 @@
     fi
     tmp="$(mktemp)"
     cat > "$tmp" << 'CHRONYEOF'
-    {% for server in ntp_servers %}pool {{ server }} iburst
+    {% for server in ntp_servers %}pool {{ server }} iburst{% if chrony_minpoll != '' %} minpoll {{ chrony_minpoll }}{% endif %}{% if chrony_maxpoll != '' %} maxpoll {{ chrony_maxpoll }}{% endif +%}
     {% endfor %}driftfile {{ chrony_driftfile }}
     makestep {{ chrony_makestep }}
     {% if chrony_rtcsync %}rtcsync
+    {% endif %}{% if chrony_keyfile != '' %}keyfile {{ chrony_keyfile }}
+    {% endif %}{% if chrony_leapsectz != '' %}leapsectz {{ chrony_leapsectz }}
     {% endif %}logdir {{ chrony_logdir }}
     CHRONYEOF
     if [ -f "$target" ] && cmp -s "$tmp" "$target"; then
