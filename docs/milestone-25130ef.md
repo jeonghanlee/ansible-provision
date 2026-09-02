@@ -47,9 +47,14 @@ is blocked on `G1`. `M3` (base_os/app role hardening) is Deferred per
 `D3`: the old model is retired, so its Debian 13 re-verification is not pursued.
 `M1` (4-OS source-build) and `M2` (Ubuntu 26 source-build) are both Complete;
 the C17 bridge (`jeonghanlee/EPICS-env#29`) fires on Ubuntu 26 and its
-source-build path was confirmed (`jeonghanlee/EPICS-env#63`).
+source-build path was confirmed (`jeonghanlee/EPICS-env#63`). `M8` (restore the
+chrony poll/key/leap directives dropped by the operator rewrite) has its code
+shipped and byte-verified against the pre-rewrite original; its production
+render is confirmed on the next the production IOC server `species/iocserver.yml` apply, where
+`/etc/chrony.conf` must carry the site `minpoll`/`maxpoll`, `keyfile`, and
+`leapsectz` directives.
 
-Status tally: 5 Complete, 1 In progress, 1 Deferred. 1 external gate (Open).
+Status tally: 5 Complete, 2 In progress, 1 Deferred. 1 external gate (Open).
 
 ## Milestone
 
@@ -64,6 +69,7 @@ Status tally: 5 Complete, 1 In progress, 1 Deferred. 1 external gate (Open).
 | Core | M5 | Restore the EPICS OS package set into the operator model | Milestone | Complete | No | D5 | `epics_os_packages` installed by `roles/epics` and `roles/epics_build`, `pkg_automation.bash` retired; verified on the golden pair (rocky8, debian13) across both acquisition paths; four non-golden vacua moved to `M6`; [detail](#m5---restore-the-epics-os-package-set-into-the-operator-model) |
 | Core | M6 | Convergence-verify EPICS OS build dependencies on the four non-golden vacua | Milestone | Complete | No | D6 | rocky10, debian12, ubuntu24, ubuntu26 convergence-verified by Live-mode apply on both paths — distribution (`iocrunner`, where the tree exists) and source build (`epics_dev`); the role-assurance step before golden promotion; [detail](#m6---convergence-verify-epics-os-build-dependencies-on-the-four-non-golden-vacua) |
 | Core | M7 | Harden the epics_build source build against a dropped connection | Milestone | Complete | Yes | D7 | The `epics_build` raw build survives or cleanly resumes an SSH drop without leaving a half-built tree; [detail](#m7---harden-the-epics_build-source-build-against-a-dropped-connection) |
+| Core | M8 | Restore chrony poll/key/leap directives dropped by the operator rewrite | Milestone | In progress | No | D8 | `roles/common` renders per-server `minpoll`/`maxpoll` and `keyfile`/`leapsectz` when set and omits them when empty; production render verified on the production IOC server; [detail](#m8---restore-chrony-pollkeyleap-directives-dropped-by-the-operator-rewrite) |
 | Gate | G1 | the production IOC server added to the the internal git host clone whitelist | External gate | Open | No | | Network team whitelists the production IOC server so the EPICS distribution clone and a live iocserver run reach the internal git host; blocks M4/T2 |
 
 ### Decisions
@@ -77,6 +83,7 @@ Status tally: 5 Complete, 1 In progress, 1 Deferred. 1 external gate (Open).
 | D5 | The EPICS OS package regression (`M5`) is fixed across all six vacua, `pkg_automation` is removed from `roles/epics_build` in the same change, ansible-provision drafts the cloud `docs/IMAGE_WORKFLOW.md` change for LAB-cloud to land, and the milestone and GitHub issue are recorded before implementation begins. | Owner decision, 2026-08-31 |
 | D6 | `M5` closes on the golden pair (rocky8, debian13), verified on both acquisition paths. The four non-golden vacua (rocky10, debian12, ubuntu24, ubuntu26) have no iocrunner golden pipeline; they carry the same package lists (names dry-run-verified) and move to `M6` for Live-mode verification. The cloud-side golden bake-matrix expansion stays a separate cloud-provision item. | Owner decision, 2026-08-31 |
 | D7 | The `epics_build` source-build fragility surfaced during `M5` verification (LAB-cloud Finding B) is hardened as `M7`, not accepted. `M5`'s fix removed the known trigger (the NetworkManager restart); `M7` addresses the underlying structure so a dropped connection cannot leave a half-built tree. | Owner decision, 2026-08-31 |
+| D8 | The chrony per-server `minpoll`/`maxpoll` and `keyfile`/`leapsectz` directives dropped by the operator rewrite (`724b381`) are restored into `roles/common`, mirroring the `M5` EPICS-package regression from the same rewrite. Empty defaults keep the baseline render unchanged; site overrides (the production IOC server) render the production directives. | Owner decision, 2026-09-02 |
 
 ### Milestone Details
 
@@ -598,6 +605,74 @@ to survive kills during `M5` verification. All six vacua are systemd-based.
   hanging, a full source build completes with the install tree and success
   sentinel present, and a re-apply is idempotent (changed=0).
 - GitHub issue #19: closed via the completion commit (Closes #19).
+
+#### M8 - Restore chrony poll/key/leap directives dropped by the operator rewrite
+
+- Origin: 25130ef / M8
+- GitHub Issue: #20, https://github.com/jeonghanlee/ansible-provision/issues/20
+- Status: In progress
+
+##### Summary
+
+The operator rewrite (`724b381`) re-authored the `base_os` chrony configuration
+into `roles/common` and, in the move, dropped the per-server `minpoll`/`maxpoll`
+selectors and the `keyfile`/`leapsectz` directives together with their four
+site-overridable variables. A production IOC server whose site `chrony.conf`
+depends on those directives (the production IOC server) silently loses them under the operator
+model. This is the same class of collateral regression as `M5` (the EPICS OS
+package set dropped by the same rewrite).
+
+##### Scope
+
+Restore the four conditionals into the `roles/common` chrony deploy task and
+add their empty-string defaults. The restored block is byte-identical to the
+pre-rewrite original (`724b381^`); empty defaults keep the baseline render
+unchanged.
+
+Out of scope: any other chrony directive; the the production IOC server site override values
+(the `server-configuration` repository); the broader `iocserver` species run.
+
+##### Completion Criteria
+
+- `roles/common` renders `minpoll`/`maxpoll` and `keyfile`/`leapsectz` when set
+  and omits each when its variable is empty.
+- The baseline render (no site override) is unchanged from before the restore.
+- On a real render, a host carrying the the production IOC server override produces the
+  production `chrony.conf` directives and `chronyd` syncs.
+
+##### Dependencies And Decisions
+
+- Owner decision `D8` (2026-09-02): restore rather than accept the regression.
+
+##### Implementation Plan
+
+- Plan Status: accepted
+- Plan Acceptance: 2026-09-02
+- Implementation Authorization: 2026-09-02
+- Superseded Plan Artifacts: none
+
+1. Restore the four conditionals into `roles/common/tasks/main.yml`'s chrony
+   block, byte-identical to `724b381^`.
+2. Add `chrony_minpoll`/`maxpoll`/`keyfile`/`leapsectz` empty-string defaults to
+   `roles/common/defaults/main.yml`.
+
+##### Test Plan
+
+| Label | Layer | Method | Environment | Expected Result |
+| --- | --- | --- | --- | --- |
+| T1 | Regression | Diff the restored block against the shipped `724b381^` original; confirm baseline defaults omit the directives | control host | Block byte-identical; empty defaults render no `minpoll`/`maxpoll`/`keyfile`/`leapsectz`. |
+| T2 | Integration | Apply the `common` operator with the the production IOC server override and inspect `/etc/chrony.conf` | rocky8 (the production IOC server) | `chrony.conf` carries `pool ... minpoll 4 maxpoll 4`, `keyfile`, `leapsectz`; `chronyd` restarts and syncs. |
+
+##### Verification Results
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T1 | 2026-09-02 | control host | Passed | Restored `pool`/conditional and `keyfile`/`leapsectz` lines diff-clean against `724b381^:roles/base_os/tasks/main.yml`; baseline defaults empty, so the four directives are omitted and the pre-restore render is unchanged. |
+| T2 | — | rocky8 (the production IOC server) | Pending | Verified on the next `species/iocserver.yml` apply on the production IOC server. |
+
+##### Closure Evidence
+
+- Pending `T2`: the production render on the production IOC server.
 
 ## Backlog
 
