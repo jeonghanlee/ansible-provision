@@ -37,6 +37,13 @@ edited tasks follow them; deviations need a recorded reason.
 7. **Explicit failure paths.** On a guard or validation failure, print
    one clear line to stderr and `exit 1`; never `|| true` away a
    mutating command's failure.
+8. **Keep the single-quote count even in every raw block.** The
+   free-form `raw` argument passes through ansible's `split_args`,
+   which counts `'` across the whole block; an odd count - a lone
+   prose apostrophe in a comment (`tree's`) included - fails the parse
+   with "failed at splitting arguments, either an unbalanced jinja2
+   block or quotes" at `--syntax-check`. Drop or reword the stray
+   apostrophe; confirm even parity before commit.
 
 ## Two Playbook Species
 
