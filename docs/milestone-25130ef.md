@@ -31,9 +31,12 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: `M7` (harden the epics_build source build) — In progress:
-plan accepted (2026-09-01, detached systemd unit + poll), implementing the
-restructure so a dropped connection cannot leave a half-built tree. `M6` (four
+Next session entry point: no milestone is Ready — `M4/T2` (installed-system
+verification on the production IOC server) stays Blocked on external gate `G1` (the internal git host
+whitelist), and `M3` is Deferred. `M7` (harden the epics_build source build) is
+Complete: verified on rocky8 2026-09-01 (T1) — the detached systemd unit survives
+a dropped connection, a retry attaches without a second build, and a real source
+build completes and is idempotent. `M6` (four
 non-golden vacua) is Complete: both acquisition paths convergence-verified (distribution
 on rocky10/ubuntu24, source build on all four); debian12/ubuntu26 distribution stays
 blocked upstream (jeonghanlee/EPICS-env-distribution#4). `M4` (operator/species
@@ -46,7 +49,7 @@ is blocked on `G1`. `M3` (base_os/app role hardening) is Deferred per
 the C17 bridge (`jeonghanlee/EPICS-env#29`) fires on Ubuntu 26 and its
 source-build path was confirmed (`jeonghanlee/EPICS-env#63`).
 
-Status tally: 4 Complete, 2 In progress, 1 Deferred. 1 external gate (Open).
+Status tally: 5 Complete, 1 In progress, 1 Deferred. 1 external gate (Open).
 
 ## Milestone
 
@@ -60,7 +63,7 @@ Status tally: 4 Complete, 2 In progress, 1 Deferred. 1 external gate (Open).
 | Core | M4 | Operator/species provisioning model | Milestone | In progress | No | G1 | Vacua, single-role operators, and species assemblies replace the staged model, iocserver registered; P_proxy role implemented and verified (apply and full-species re-apply idempotency), and the live iocserver run blocked on G1; [detail](#m4---operatorspecies-provisioning-model) |
 | Core | M5 | Restore the EPICS OS package set into the operator model | Milestone | Complete | No | D5 | `epics_os_packages` installed by `roles/epics` and `roles/epics_build`, `pkg_automation.bash` retired; verified on the golden pair (rocky8, debian13) across both acquisition paths; four non-golden vacua moved to `M6`; [detail](#m5---restore-the-epics-os-package-set-into-the-operator-model) |
 | Core | M6 | Convergence-verify EPICS OS build dependencies on the four non-golden vacua | Milestone | Complete | No | D6 | rocky10, debian12, ubuntu24, ubuntu26 convergence-verified by Live-mode apply on both paths — distribution (`iocrunner`, where the tree exists) and source build (`epics_dev`); the role-assurance step before golden promotion; [detail](#m6---convergence-verify-epics-os-build-dependencies-on-the-four-non-golden-vacua) |
-| Core | M7 | Harden the epics_build source build against a dropped connection | Milestone | In progress | Yes | D7 | The `epics_build` raw build survives or cleanly resumes an SSH drop without leaving a half-built tree; [detail](#m7---harden-the-epics_build-source-build-against-a-dropped-connection) |
+| Core | M7 | Harden the epics_build source build against a dropped connection | Milestone | Complete | Yes | D7 | The `epics_build` raw build survives or cleanly resumes an SSH drop without leaving a half-built tree; [detail](#m7---harden-the-epics_build-source-build-against-a-dropped-connection) |
 | Gate | G1 | the production IOC server added to the the internal git host clone whitelist | External gate | Open | No | | Network team whitelists the production IOC server so the EPICS distribution clone and a live iocserver run reach the internal git host; blocks M4/T2 |
 
 ### Decisions
@@ -513,7 +516,7 @@ EPICS-env-distribution publishing of the `debian-12` / `ubuntu-26.04` trees (ups
 
 - Origin: 25130ef / M7
 - GitHub Issue: #19, https://github.com/jeonghanlee/ansible-provision/issues/19
-- Status: In progress
+- Status: Complete
 
 ##### Summary
 
@@ -584,11 +587,17 @@ to survive kills during `M5` verification. All six vacua are systemd-based.
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
-| T1 | Not run | golden pair | Pending | — |
+| T1 | 2026-09-01 | rocky8 (lab-rocky8-epics-dev-t1) | Passed | Real path on a fresh rocky8 VM at master fd8e7b2: after the build unit went active, killing the local ansible process left the detached unit still building (single unit, no orphan); a retry reported `EPICS_ENV_BUILD_RUNNING` (changed=false, no second build); a genuine dnf failure was reported `FAILED rc=2` without hanging; a full `epics_dev` run completed (`ok=18 changed=6 failed=0`, Wait `DONE`, install tree `/opt/epics/1.3.0/rocky-8.10/7.0.10/setEpicsEnv.bash`, success sentinel present); a re-apply was idempotent (`ok=4 changed=0`). |
 
 ##### Closure Evidence
 
-- Pending.
+- T1 passed 2026-09-01 on a fresh rocky8 VM (lab-rocky8-epics-dev-t1, provisioned
+  by LAB-cloud) against ansible-provision master fd8e7b2 (role commit 802348c):
+  the detached systemd unit survives an ansible/SSH kill, a retry attaches to the
+  running unit without starting a second build, a real failure is reported without
+  hanging, a full source build completes with the install tree and success
+  sentinel present, and a re-apply is idempotent (changed=0).
+- GitHub issue #19: closed via the completion commit (Closes #19).
 
 ## Backlog
 
