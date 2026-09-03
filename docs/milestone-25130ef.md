@@ -48,13 +48,11 @@ is blocked on `G1`. `M3` (base_os/app role hardening) is Deferred per
 `M1` (4-OS source-build) and `M2` (Ubuntu 26 source-build) are both Complete;
 the C17 bridge (`jeonghanlee/EPICS-env#29`) fires on Ubuntu 26 and its
 source-build path was confirmed (`jeonghanlee/EPICS-env#63`). `M8` (restore the
-chrony poll/key/leap directives dropped by the operator rewrite) has its code
-shipped and byte-verified against the pre-rewrite original; its production
-render is confirmed on the next the production IOC server `species/iocserver.yml` apply, where
-`/etc/chrony.conf` must carry the site `minpoll`/`maxpoll`, `keyfile`, and
-`leapsectz` directives.
+chrony poll/key/leap directives dropped by the operator rewrite) is Complete:
+verified on the production IOC server 2026-09-03, `/etc/chrony.conf` renders the five site
+pools with `minpoll 4`/`maxpoll 4`, `keyfile`, and `leapsectz`.
 
-Status tally: 5 Complete, 2 In progress, 1 Deferred. 1 external gate (Open).
+Status tally: 6 Complete, 1 In progress, 1 Deferred. 1 external gate (Open).
 
 ## Milestone
 
@@ -64,13 +62,13 @@ Status tally: 5 Complete, 2 In progress, 1 Deferred. 1 external gate (Open).
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Core | M1 | EPICS-env 4-OS source-build environment | Carry-forward | Complete | No | | Rocky 8, Debian 13, Rocky 10, and Ubuntu 24 pass both source-build layers and checks; [detail](#m1---epics-env-4-os-source-build-environment) |
 | Core | M2 | Ubuntu 26 source-build | Carry-forward | Complete | No | D4 | Ubuntu 26 passes the complete source-build path (both layers, `gz` flavor, repeated-run checks) with the C17 bridge active; [detail](#m2---ubuntu-26-source-build) |
-| Core | M3 | base_os/app role hardening from the production IOC server deployment | Carry-forward | Deferred | No | D3 | Deferred per D3 (old model retired); the base/app surface is re-verified under the operator model (M4); [detail](#m3---base_osapp-role-hardening-from-the production IOC server-deployment) |
+| Core | M3 | base_os/app role hardening from production deployment | Carry-forward | Deferred | No | D3 | Deferred per D3 (old model retired); the base/app surface is re-verified under the operator model (M4); [detail](#m3---base_osapp-role-hardening-from-production-deployment) |
 | Core | M4 | Operator/species provisioning model | Milestone | In progress | No | G1 | Vacua, single-role operators, and species assemblies replace the staged model, iocserver registered; P_proxy role implemented and verified (apply and full-species re-apply idempotency), and the live iocserver run blocked on G1; [detail](#m4---operatorspecies-provisioning-model) |
 | Core | M5 | Restore the EPICS OS package set into the operator model | Milestone | Complete | No | D5 | `epics_os_packages` installed by `roles/epics` and `roles/epics_build`, `pkg_automation.bash` retired; verified on the golden pair (rocky8, debian13) across both acquisition paths; four non-golden vacua moved to `M6`; [detail](#m5---restore-the-epics-os-package-set-into-the-operator-model) |
 | Core | M6 | Convergence-verify EPICS OS build dependencies on the four non-golden vacua | Milestone | Complete | No | D6 | rocky10, debian12, ubuntu24, ubuntu26 convergence-verified by Live-mode apply on both paths — distribution (`iocrunner`, where the tree exists) and source build (`epics_dev`); the role-assurance step before golden promotion; [detail](#m6---convergence-verify-epics-os-build-dependencies-on-the-four-non-golden-vacua) |
 | Core | M7 | Harden the epics_build source build against a dropped connection | Milestone | Complete | Yes | D7 | The `epics_build` raw build survives or cleanly resumes an SSH drop without leaving a half-built tree; [detail](#m7---harden-the-epics_build-source-build-against-a-dropped-connection) |
-| Core | M8 | Restore chrony poll/key/leap directives dropped by the operator rewrite | Milestone | In progress | No | D8 | `roles/common` renders per-server `minpoll`/`maxpoll` and `keyfile`/`leapsectz` when set and omits them when empty; production render verified on the production IOC server; [detail](#m8---restore-chrony-pollkeyleap-directives-dropped-by-the-operator-rewrite) |
-| Gate | G1 | the production IOC server added to the the internal git host clone whitelist | External gate | Open | No | | Network team whitelists the production IOC server so the EPICS distribution clone and a live iocserver run reach the internal git host; blocks M4/T2 |
+| Core | M8 | Restore chrony poll/key/leap directives dropped by the operator rewrite | Milestone | Complete | No | D8 | `roles/common` renders per-server `minpoll`/`maxpoll` and `keyfile`/`leapsectz` when set and omits them when empty; production render verified on the production IOC server 2026-09-03; [detail](#m8---restore-chrony-pollkeyleap-directives-dropped-by-the-operator-rewrite) |
+| Gate | G1 | the production IOC server added to the internal git host clone whitelist | External gate | Open | No | | Network team whitelists the production IOC server so the EPICS distribution clone and a live iocserver run reach the internal git host; blocks M4/T2 |
 
 ### Decisions
 
@@ -235,7 +233,7 @@ Out of scope: the `iocStats` GCC 15 fix itself, which EPICS-env owns.
   `jeonghanlee/EPICS-env#63` (closed 2026-08-24). Ubuntu 26 did not require
   EPICS-env 1.3.1.
 
-#### M3 - base_os/app role hardening from the production IOC server deployment
+#### M3 - base_os/app role hardening from production deployment
 
 Deferred 2026-08-29 per D3: the old model is retired, so the pending Debian 13
 re-verification of the old roles is not pursued. The base and app surface is
@@ -261,7 +259,7 @@ Role fixes and enhancements surfaced while provisioning a real IOC server
   into a group-writable install root, so a host with no root ssh key can pull
   from an internal remote (`88e569b`).
 
-**Out of scope:** the the production IOC server deployment record and its site-specific
+**Out of scope:** the production IOC server deployment record and its site-specific
 overrides live in the `server-configuration` repository, not here.
 
 ##### Verification Results
@@ -307,7 +305,7 @@ Implemented and verified:
   apply on the same VMs confirmed idempotency (`changed=0`, installed tree identical).
 
 **Out of scope:** the operator-model definition itself (owned by
-cloud-provision); the the production IOC server site record and overrides (the
+cloud-provision); the production IOC server site record and overrides (the
 `server-configuration` repository); EtherCAT live execution (owner's separate
 tracker).
 
@@ -610,7 +608,7 @@ to survive kills during `M5` verification. All six vacua are systemd-based.
 
 - Origin: 25130ef / M8
 - GitHub Issue: #20, https://github.com/jeonghanlee/ansible-provision/issues/20
-- Status: In progress
+- Status: Complete
 
 ##### Summary
 
@@ -629,7 +627,7 @@ add their empty-string defaults. The restored block is byte-identical to the
 pre-rewrite original (`724b381^`); empty defaults keep the baseline render
 unchanged.
 
-Out of scope: any other chrony directive; the the production IOC server site override values
+Out of scope: any other chrony directive; the production IOC server site override values
 (the `server-configuration` repository); the broader `iocserver` species run.
 
 ##### Completion Criteria
@@ -637,7 +635,7 @@ Out of scope: any other chrony directive; the the production IOC server site ove
 - `roles/common` renders `minpoll`/`maxpoll` and `keyfile`/`leapsectz` when set
   and omits each when its variable is empty.
 - The baseline render (no site override) is unchanged from before the restore.
-- On a real render, a host carrying the the production IOC server override produces the
+- On a real render, a host carrying the production IOC server override produces the
   production `chrony.conf` directives and `chronyd` syncs.
 
 ##### Dependencies And Decisions
@@ -661,18 +659,23 @@ Out of scope: any other chrony directive; the the production IOC server site ove
 | Label | Layer | Method | Environment | Expected Result |
 | --- | --- | --- | --- | --- |
 | T1 | Regression | Diff the restored block against the shipped `724b381^` original; confirm baseline defaults omit the directives | control host | Block byte-identical; empty defaults render no `minpoll`/`maxpoll`/`keyfile`/`leapsectz`. |
-| T2 | Integration | Apply the `common` operator with the the production IOC server override and inspect `/etc/chrony.conf` | rocky8 (the production IOC server) | `chrony.conf` carries `pool ... minpoll 4 maxpoll 4`, `keyfile`, `leapsectz`; `chronyd` restarts and syncs. |
+| T2 | Integration | Apply the `common` operator with the production IOC server override and inspect `/etc/chrony.conf` | rocky8 (the production IOC server) | `chrony.conf` carries `pool ... minpoll 4 maxpoll 4`, `keyfile`, `leapsectz`; `chronyd` restarts and syncs. |
 
 ##### Verification Results
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
 | T1 | 2026-09-02 | control host | Passed | Restored `pool`/conditional and `keyfile`/`leapsectz` lines diff-clean against `724b381^:roles/base_os/tasks/main.yml`; baseline defaults empty, so the four directives are omitted and the pre-restore render is unchanged. |
-| T2 | — | rocky8 (the production IOC server) | Pending | Verified on the next `species/iocserver.yml` apply on the production IOC server. |
+| T2 | 2026-09-03 | rocky8 (the production IOC server) | Passed | Live `species/iocserver.yml` apply on the production IOC server: `/etc/chrony.conf` renders all five site pools with `minpoll 4 maxpoll 4`, plus `keyfile /etc/chrony.keys` and `leapsectz right/UTC`. Re-check: `grep -E 'minpoll\|maxpoll\|keyfile\|leapsectz' /etc/chrony.conf`. |
 
 ##### Closure Evidence
 
-- Pending `T2`: the production render on the production IOC server.
+- Complete 2026-09-03. `roles/common` restores the four conditionals
+  byte-identical to the pre-rewrite original (`724b381^`); empty defaults leave
+  the baseline render unchanged, and the production IOC server override renders the
+  production directives. Verified on the production IOC server: `/etc/chrony.conf` carries all
+  five site pools with `minpoll 4 maxpoll 4`, `keyfile /etc/chrony.keys`, and
+  `leapsectz right/UTC`. GitHub issue #20 closed at verification.
 
 ## Backlog
 
