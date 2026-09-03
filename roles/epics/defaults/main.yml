@@ -14,7 +14,18 @@ epics_env_version:  "1.2.2"
 epics_base_version: "7.0.10"
 
 # EPICS network ports opened in firewalld on the rocky family.
-epics_ca_ports_tcp: ["5064", "5065"]
+# CA: server 5064 (TCP+UDP), repeater/beacon 5065 (UDP) — no TCP 5065.
+# PVA: server 5075 (TCP+UDP), broadcast/beacon 5076 (UDP) — no TCP 5076.
+epics_ca_ports_tcp: ["5064"]
 epics_ca_ports_udp: ["5064", "5065"]
 epics_pva_ports_tcp: ["5075"]
 epics_pva_ports_udp: ["5075", "5076"]
+
+# Firewalld zones for the EPICS ports. Empty targets the default zone
+# (single-homed hosts, the public baseline); a multi-homed IOC server
+# overrides per site to route CA and PVA onto their interfaces' zones.
+# A named zone must already exist (site-created, bound to its interface);
+# the role adds ports to it and does not create the zone. Set them like the
+# other site values here: a group_vars overlay or an extra-vars file (-e @).
+epics_ca_zone:  ""
+epics_pva_zone: ""

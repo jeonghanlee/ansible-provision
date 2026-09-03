@@ -73,9 +73,19 @@
     set -e
     dnf install -y firewalld
     systemctl enable --now firewalld
+    ca_zone="{{ epics_ca_zone }}"; ca_opt=""; if [ -n "${ca_zone}" ]; then ca_opt="--zone=${ca_zone}"; fi
+    pva_zone="{{ epics_pva_zone }}"; pva_opt=""; if [ -n "${pva_zone}" ]; then pva_opt="--zone=${pva_zone}"; fi
+    for z in "${ca_zone}" "${pva_zone}"; do
+      if [ -n "$z" ]; then
+        firewall-cmd --permanent --get-zones | tr ' ' '\n' | grep -qx "$z" || { printf 'error: firewalld zone does not exist: %s\n' "$z" >&2; exit 1; }
+      fi
+    done
     firewall-cmd --permanent --add-service=ntp || true
-    for port in {% for p in epics_ca_ports_tcp %}{{ p }}/tcp {% endfor %}{% for p in epics_ca_ports_udp %}{{ p }}/udp {% endfor %}{% for p in epics_pva_ports_tcp %}{{ p }}/tcp {% endfor %}{% for p in epics_pva_ports_udp %}{{ p }}/udp {% endfor %}; do
-      firewall-cmd --permanent --add-port=$port || true
+    for port in {% for p in epics_ca_ports_tcp %}{{ p }}/tcp {% endfor %}{% for p in epics_ca_ports_udp %}{{ p }}/udp {% endfor %}; do
+      firewall-cmd --permanent ${ca_opt} --add-port=$port
+    done
+    for port in {% for p in epics_pva_ports_tcp %}{{ p }}/tcp {% endfor %}{% for p in epics_pva_ports_udp %}{{ p }}/udp {% endfor %}; do
+      firewall-cmd --permanent ${pva_opt} --add-port=$port
     done
     firewall-cmd --reload
   when: epics_family_redhat.rc == 0
