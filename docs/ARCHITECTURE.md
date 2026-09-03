@@ -174,6 +174,47 @@ EPICS path resolution:
 | `epics_env_version` | `1.2.2` | `1.2.2` |
 | `epics_base_version` | `7.0.10` | `7.0.10` |
 
+### Shared Install-Root Ownership
+
+When `epics_install_group` is set, the `epics` role treats the install root
+(`path_epics_local`, e.g. `/opt/epics`) as a group-shared tree that one server
+deploys and many hosts read:
+
+```
+Prepare the install root (<group> = epics_install_group):
+  chgrp <group>; chmod 2775            root:<group>, setgid
+  setfacl -d -m g:<group>:rwx          default ACL (local disk)
+  setfacl -d -m o::rx
+  git config --system safe.directory <path_epics_local>
+```
+
+- Group members deploy through the setgid group bit and the default ACL. Git
+  creates content in an ACL-bearing directory bypassing the deployer's umask, so
+  the ACL grants the group write on newly cloned content — cloned files carry
+  effective group `rw`, directories `rwx` — and a second deployer can update a
+  first deployer's tree.
+- The system-wide `safe.directory` lets any group member run git on the single
+  shared repository despite git's repository-owner check. It is set only on the
+  deploy server, not on read-only clients.
+- `o+rx` lets any account, including the `ioc-srv` service account, read and
+  traverse the tree to link against its shared libraries.
+
+Deployment (`git clone`/`pull`) runs on the one host that owns the local
+filesystem — the NFS server when the tree is exported. Other hosts mount it
+read-only. Default ACLs apply only on local disk; a tree that is itself an NFS
+mount cannot carry them and relies on the setgid group and a group-write umask
+(`002`).
+
+Site prerequisites (owned by the site provisioning record in
+`server-configuration`, not this role):
+
+| Prerequisite | Why |
+|---|---|
+| Consistent `<group>` GID on every host | An NFS-shared tree resolves group ownership by GID; a mismatched GID breaks group access on clients |
+| `root_squash` export pins deploy to the fs server | Client root is squashed, so git writes must run on the filesystem-owning server |
+| NFSv4 idmapping domain consistency | Mismatched idmapd domains render owners as `nobody` |
+| World-readable tree | `o+rx` exposes the EPICS tree to every user on every client; accepted because the environment is not secret |
+
 ### EPICS-env Source Builds
 
 `epics_build` and `epics_support` run through the `epics_dev` species
