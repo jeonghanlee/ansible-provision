@@ -31,28 +31,33 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: no milestone is Ready — `M4/T2` (installed-system
-verification on the production IOC server) stays Blocked on external gate `G1` (the internal git host
-whitelist), and `M3` is Deferred. `M7` (harden the epics_build source build) is
+Next session entry point: every milestone in this generation is Complete except
+`M3` (Deferred per `D3`), and no external gate is Open; the next entry is a new
+milestone or a reset. `M7` (harden the epics_build source build) is
 Complete: verified on rocky8 2026-09-01 (T1) — the detached systemd unit survives
 a dropped connection, a retry attaches without a second build, and a real source
 build completes and is idempotent. `M6` (four
 non-golden vacua) is Complete: both acquisition paths convergence-verified (distribution
 on rocky10/ubuntu24, source build on all four); debian12/ubuntu26 distribution stays
 blocked upstream (jeonghanlee/EPICS-env-distribution#4). `M4` (operator/species
-provisioning model) remains active. `M4/T1` (species syntax-check and `configure/RELEASE` / `inventory/lab.ini`
-enumeration) and `M4/T3` (P_proxy apply and full-species re-apply idempotency)
-are verified; `M4/T2` (iocserver on the production IOC server) is the only remaining check and
-is blocked on `G1`. `M3` (base_os/app role hardening) is Deferred per
+provisioning model) is Complete: `M4/T1` (species syntax-check and enumeration)
+and `M4/T3` (P_proxy apply and re-apply idempotency) were verified earlier, and
+`M4/T2` (iocserver on the production IOC server) passed 2026-09-03 once the
+internal git host became reachable over the site proxy's CONNECT tunnel (`G1`
+Complete). `M3` (base_os/app role hardening) is Deferred per
 `D3`: the old model is retired, so its Debian 13 re-verification is not pursued.
 `M1` (4-OS source-build) and `M2` (Ubuntu 26 source-build) are both Complete;
 the C17 bridge (`jeonghanlee/EPICS-env#29`) fires on Ubuntu 26 and its
 source-build path was confirmed (`jeonghanlee/EPICS-env#63`). `M8` (restore the
 chrony poll/key/leap directives dropped by the operator rewrite) is Complete:
 verified on the production IOC server 2026-09-03, `/etc/chrony.conf` renders the five site
-pools with `minpoll 4`/`maxpoll 4`, `keyfile`, and `leapsectz`.
+pools with `minpoll 4`/`maxpoll 4`, `keyfile`, and `leapsectz`. `M9` (share the
+EPICS install root safely across group deployers) is Complete: verified on the
+production IOC server 2026-09-03 — the root-owned shared root carries a default
+ACL and a system-wide git `safe.directory`, and a group member's clone completes
+with group-writable content.
 
-Status tally: 6 Complete, 1 In progress, 1 Deferred. 1 external gate (Open).
+Status tally: 8 Complete, 0 In progress, 1 Deferred. 1 external gate (Complete).
 
 ## Milestone
 
@@ -63,12 +68,13 @@ Status tally: 6 Complete, 1 In progress, 1 Deferred. 1 external gate (Open).
 | Core | M1 | EPICS-env 4-OS source-build environment | Carry-forward | Complete | No | | Rocky 8, Debian 13, Rocky 10, and Ubuntu 24 pass both source-build layers and checks; [detail](#m1---epics-env-4-os-source-build-environment) |
 | Core | M2 | Ubuntu 26 source-build | Carry-forward | Complete | No | D4 | Ubuntu 26 passes the complete source-build path (both layers, `gz` flavor, repeated-run checks) with the C17 bridge active; [detail](#m2---ubuntu-26-source-build) |
 | Core | M3 | base_os/app role hardening from production deployment | Carry-forward | Deferred | No | D3 | Deferred per D3 (old model retired); the base/app surface is re-verified under the operator model (M4); [detail](#m3---base_osapp-role-hardening-from-production-deployment) |
-| Core | M4 | Operator/species provisioning model | Milestone | In progress | No | G1 | Vacua, single-role operators, and species assemblies replace the staged model, iocserver registered; P_proxy role implemented and verified (apply and full-species re-apply idempotency), and the live iocserver run blocked on G1; [detail](#m4---operatorspecies-provisioning-model) |
+| Core | M4 | Operator/species provisioning model | Milestone | Complete | No | G1 | Vacua, single-role operators, and species assemblies replace the staged model, iocserver registered; P_proxy verified (apply and full-species re-apply idempotency); `species/iocserver.yml` applies cleanly on the production IOC server (2026-09-03); [detail](#m4---operatorspecies-provisioning-model) |
 | Core | M5 | Restore the EPICS OS package set into the operator model | Milestone | Complete | No | D5 | `epics_os_packages` installed by `roles/epics` and `roles/epics_build`, `pkg_automation.bash` retired; verified on the golden pair (rocky8, debian13) across both acquisition paths; four non-golden vacua moved to `M6`; [detail](#m5---restore-the-epics-os-package-set-into-the-operator-model) |
 | Core | M6 | Convergence-verify EPICS OS build dependencies on the four non-golden vacua | Milestone | Complete | No | D6 | rocky10, debian12, ubuntu24, ubuntu26 convergence-verified by Live-mode apply on both paths — distribution (`iocrunner`, where the tree exists) and source build (`epics_dev`); the role-assurance step before golden promotion; [detail](#m6---convergence-verify-epics-os-build-dependencies-on-the-four-non-golden-vacua) |
 | Core | M7 | Harden the epics_build source build against a dropped connection | Milestone | Complete | Yes | D7 | The `epics_build` raw build survives or cleanly resumes an SSH drop without leaving a half-built tree; [detail](#m7---harden-the-epics_build-source-build-against-a-dropped-connection) |
 | Core | M8 | Restore chrony poll/key/leap directives dropped by the operator rewrite | Milestone | Complete | No | D8 | `roles/common` renders per-server `minpoll`/`maxpoll` and `keyfile`/`leapsectz` when set and omits them when empty; production render verified on the production IOC server 2026-09-03; [detail](#m8---restore-chrony-pollkeyleap-directives-dropped-by-the-operator-rewrite) |
-| Gate | G1 | the production IOC server added to the internal git host clone whitelist | External gate | Open | No | | Network team whitelists the production IOC server so the EPICS distribution clone and a live iocserver run reach the internal git host; blocks M4/T2 |
+| Core | M9 | Share the EPICS install root safely across group deployers | Milestone | Complete | No | D9 | `roles/epics` prepares a group-shared install root (`root:<group>` `2775`, default ACL, system-wide git `safe.directory`) so any group member can clone and write; verified on the production IOC server 2026-09-03; [detail](#m9---share-the-epics-install-root-safely-across-group-deployers) |
+| Gate | G1 | the production IOC server reaches the internal git host | External gate | Complete | No | | Reachability achieved through the site HTTP proxy's CONNECT tunnel (an ssh `ProxyCommand` over the proxy), not a firewall whitelist: the owner's key authenticates and `git ls-remote` returns the refs; confirmed 2026-09-03 by the successful iocserver clone (M4/T2) |
 
 ### Decisions
 
@@ -82,6 +88,7 @@ Status tally: 6 Complete, 1 In progress, 1 Deferred. 1 external gate (Open).
 | D6 | `M5` closes on the golden pair (rocky8, debian13), verified on both acquisition paths. The four non-golden vacua (rocky10, debian12, ubuntu24, ubuntu26) have no iocrunner golden pipeline; they carry the same package lists (names dry-run-verified) and move to `M6` for Live-mode verification. The cloud-side golden bake-matrix expansion stays a separate cloud-provision item. | Owner decision, 2026-08-31 |
 | D7 | The `epics_build` source-build fragility surfaced during `M5` verification (LAB-cloud Finding B) is hardened as `M7`, not accepted. `M5`'s fix removed the known trigger (the NetworkManager restart); `M7` addresses the underlying structure so a dropped connection cannot leave a half-built tree. | Owner decision, 2026-08-31 |
 | D8 | The chrony per-server `minpoll`/`maxpoll` and `keyfile`/`leapsectz` directives dropped by the operator rewrite (`0012e2d`) are restored into `roles/common`, mirroring the `M5` EPICS-package regression from the same rewrite. Empty defaults keep the baseline render unchanged; site overrides (the production IOC server) render the production directives. | Owner decision, 2026-09-02 |
+| D9 | With `epics_install_group` set, the EPICS install root stays `root:<group>` `2775` (setgid) and gains a default ACL on local disk plus a system-wide git `safe.directory` on the deploy server, so any group member can run git on the single shared repository and write into it. Owner-owned roots (one deployer only), per-user `safe.directory` (per-member setup), a per-member subdirectory layout (the ioc-runner per-engineer model, unsuited to a single distribution tree), and a dedicated deploy account were rejected for the one-server-deploys/many-hosts-read topology. Site prerequisites (consistent group GID, `root_squash` pinning deploy to the filesystem server, NFSv4 idmapping) stay in the site provisioning record. | Owner decision, 2026-09-02 |
 
 ### Milestone Details
 
@@ -317,15 +324,16 @@ or explicitly deferred by owner decision.
 
 ##### Dependencies And Decisions
 
-- `G1` (the production IOC server the internal git host whitelist) blocks the live iocserver run
-  (`T2`); resume `T2` as Not started when `G1` closes.
+- `G1` (internal-git reachability) is Complete: the site HTTP proxy's CONNECT
+  tunnel carries ssh to the internal git host, so the live iocserver run (`T2`)
+  ran and passed.
 - P_proxy depends on cloud-provision shipping `bin/proxy_contract.bash` as the
   single authority; the SOT P_proxy precondition lands together with the
   `roles/proxy` implementation.
 
-Plan Status: draft
-Plan Acceptance: none
-Implementation Authorization: none
+Plan Status: accepted
+Plan Acceptance: owner decision `D3` (2026-08-29) established the operator/species model
+Implementation Authorization: owner-directed; T1–T3 implemented and verified
 Superseded Plan Artifacts: none
 
 ##### Test Plan
@@ -341,8 +349,16 @@ Superseded Plan Artifacts: none
 | Check | Result | OS | Evidence |
 | --- | --- | --- | --- |
 | T1 | Passed | control host; debian12 (epics_dev) | All eight species playbooks (`bare`, `epics_dev`, `ethercat`, `iocrunner`, `iocrunner_nfs`, `iocserver`, `nfs_sim`, `rtbase`) pass `ansible-playbook --syntax-check`, and every species is enumerated in `configure/RELEASE` `SPECIES_PLAYBOOKS` with its `inventory/lab.ini` group present for every non-bare species (bare is vacuum-only by design); no stray non-vacuum groups. Registration landed in `6fbbf71`, `79fba36`, `5b0ac04`. Live evidence: after `c3b4612`, `epics_dev` applied on a real debian12 host (PLAY RECAP `ok=15 changed=4 failed=0`) installing EPICS-env 1.3.0 / base 7.0.10 layers 1+2 at `/opt/epics/1.3.0/debian-12/7.0.10`, and the `gz` flavor of the same path also passed (`make build.gz`, `ok=15 changed=4 failed=0`), both observed by the cloud-provision session. |
-| T2 | Blocked | Rocky 8 (the production IOC server) | Blocked by `G1`: the production IOC server cannot reach the internal git host for the EPICS distribution clone. |
+| T2 | Passed | Rocky 8 (the production IOC server) | 2026-09-03: `species/iocserver.yml` applied with `ok=25 failed=0` — the EPICS distribution cloned from the internal git host as the IOC owner (sparse, tag-pinned 1.2.2) over the proxy CONNECT tunnel, and the iocrunner operator set installed with no test-user creation. |
 | T3 | Passed | Debian 13, Rocky 8 | Apply verified 2026-08-31 via proxied iocrunner golden-image bakes: `proxy_contract.bash` applied with proxy seal `clean=true`, and the proxied `pip` installed `epicscorelibs`, `softioc`, and `cothread` (added to `P_python` in `2fc1065`), closing #16. Full-species re-apply idempotency verified the same day: a second `species/iocrunner.yml` apply on the same VM ran `failed=0 changed=0` on both OSes, pip reported "Requirement already satisfied", the proxy artifacts were byte-identical with seal `clean=true`, and the installed-tree fingerprint (pip freeze, dpkg/rpm sets, ioc accounts, EPICS path) was identical between runs. The SOT P_proxy definition landed one-to-one at cloud-provision `8654990`. |
+
+##### Closure Evidence
+
+- Complete 2026-09-03. Every species assembly resolves and applies in
+  operator-model order (T1), P_proxy applies and re-applies idempotently (T3),
+  and `species/iocserver.yml` applies cleanly on the production IOC server (T2)
+  once the internal git host became reachable over the site proxy's CONNECT
+  tunnel (`G1` Complete). The same apply verified `M8` and `M9`.
 
 #### M5 - Restore the EPICS OS package set into the operator model
 
@@ -676,6 +692,89 @@ Out of scope: any other chrony directive; the production IOC server site overrid
   production directives. Verified on the production IOC server: `/etc/chrony.conf` carries all
   five site pools with `minpoll 4 maxpoll 4`, `keyfile /etc/chrony.keys`, and
   `leapsectz right/UTC`. GitHub issue #20 closed at verification.
+
+#### M9 - Share the EPICS install root safely across group deployers
+
+- Origin: 38560eb / M9
+- GitHub Issue: #21, https://github.com/jeonghanlee/ansible-provision/issues/21
+- Status: Complete
+
+##### Summary
+
+With `epics_install_group` set, `roles/epics` prepared the install root as
+`root:<group>` `2775` and then cloned the distribution as the IOC owner into
+that root-owned directory. Git refuses to operate on a repository whose top
+directory is owned by another user ("dubious ownership"), so the owner's clone
+failed on a production IOC server, and a second group member could not have
+written into the tree either. The role now prepares a group-shared root that
+any group member can deploy into: a default ACL grants the group write on newly
+cloned content, and a system-wide git `safe.directory` lets any member run git
+on the single shared repository. The model is recorded in
+`docs/ARCHITECTURE.md` "Shared Install-Root Ownership" (`e8f100b`).
+
+##### Scope
+
+`roles/epics` "Prepare the EPICS install root", group path only: keep
+`root:<group>` `2775`, add `setfacl -d` group `rwx` and other `rx` defaults,
+and register `path_epics_local` as a system-wide `safe.directory` idempotently.
+Delivered in `810eacf`.
+
+Out of scope: the non-group path (owner-owned root, unchanged); creating the
+group, firewalld zones, or the NFS export; the site values (group GID,
+`root_squash`, idmapping), which live in the site provisioning record.
+
+##### Completion Criteria
+
+- A group member's clone into the root-owned shared root completes without
+  git's owner check failing.
+- Newly cloned content carries effective group write (`rw` on files, `rwx` on
+  directories) regardless of the deployer's umask.
+- The root is `root:<group>` `2775` with the default ACL and is listed in the
+  system-wide git `safe.directory`.
+
+##### Dependencies And Decisions
+
+- Owner decision `D9` (2026-09-02): the group-shared model and the rejected
+  alternatives.
+- Reference model: epics-ioc-runner `docs/INSTALL.md` "Shared Deployment
+  Directory Setup" (`root:group` `2775` plus default ACLs on local disk).
+- Surfaced by the first `species/iocserver.yml` apply on the production IOC
+  server once `M4`'s internal-git reachability was resolved.
+
+##### Implementation Plan
+
+- Plan Status: accepted
+- Plan Acceptance: 2026-09-02
+- Implementation Authorization: 2026-09-02
+- Superseded Plan Artifacts: none
+
+1. In the group branch of "Prepare the EPICS install root", add the default
+   ACLs and the idempotent system-wide `safe.directory` registration, assign
+   the templated values to shell variables once, and end with a `test -d`
+   postcondition.
+2. Record the ownership model in `docs/ARCHITECTURE.md`.
+
+##### Test Plan
+
+| Label | Layer | Method | Environment | Expected Result |
+| --- | --- | --- | --- | --- |
+| T1 | Mechanism | Real `git clone` into a directory carrying the default ACL; inspect a cloned file with `getfacl` | control host | The file's effective group permission is `rw` (mask `rw-`), so the ACL grants group write regardless of umask. |
+| T2 | Integration | Live `species/iocserver.yml` apply, then `stat`, `getfacl`, `git config --system --get-all safe.directory`, and `getfacl` on a cloned file | rocky8 (the production IOC server) | Clone completes; root is `root:<group> 2775` with the default ACL; the root is a `safe.directory`; the cloned file carries effective group `rw`. |
+
+##### Verification Results
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T1 | 2026-09-02 | control host | Passed | Real clone into an ACL-bearing directory: `mask::rw-`, `group:<group>:rwx #effective:rw-`, file mode `-rw-rw-r--+`. |
+| T2 | 2026-09-03 | rocky8 (the production IOC server) | Passed | Apply `ok=25 failed=0` (the clone no longer fails on dubious ownership); `stat` → `root:<group> 2775`; `getfacl` → `default:group:<group>:rwx`, `default:other::r-x`; `safe.directory` lists the root; cloned `setEpicsEnv.bash` → `group:<group>:rwx #effective:rw-`, `mask::rw-`. Re-check: `stat -c '%U:%G %a' <root>`, `getfacl -p <root>`, `git config --system --get-all safe.directory`. |
+
+##### Closure Evidence
+
+- Complete 2026-09-03. `roles/epics` (`810eacf`) prepares the group-shared
+  root with the default ACL and the system-wide `safe.directory`; verified on
+  the production IOC server (T2) after the mechanism was proven on a real
+  clone (T1). The model is documented in `docs/ARCHITECTURE.md` "Shared
+  Install-Root Ownership" (`e8f100b`).
 
 ## Backlog
 
