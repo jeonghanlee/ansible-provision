@@ -17,7 +17,7 @@
 # a retry mistakes for progress, and a retry attaches to the running unit instead
 # of racing a surviving shell. The launch step is idempotent (skip installed,
 # leave a running unit alone, else clean-start); ansible then polls the unit to
-# completion via a success sentinel. See docs/milestone-25130ef.md M7.
+# completion via a success sentinel. See docs/milestone-38560eb.md M7.
 
 - name: Install the detached EPICS-env build script
   ansible.builtin.raw: |

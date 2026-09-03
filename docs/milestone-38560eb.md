@@ -3,7 +3,7 @@
 ## Scope
 
 This document is the canonical work register for the `master` release line of
-`ansible-provision` after the reset carried by prior state commit `25130ef`.
+`ansible-provision` after the reset carried by prior state commit `38560eb`.
 It records unfinished deliverables, external gates, accepted plans, and
 verification needed to continue the current generation.
 
@@ -13,10 +13,10 @@ remains in the owner's separate tracker.
 
 The prior generation's Version 1.0 release convention — the joint
 `iocrunner-gate-1.0.0` tag on `cloud-provision` (`2b77a97`) and
-`ansible-provision` (`3981c21`), naming the gate environment that bakes and
+`ansible-provision` (`69158cc`), naming the gate environment that bakes and
 runs the `epics-ioc-runner` consumer gate — was executed under the prior
 generation and, together with its completed milestones, is retained at commit
-`25130ef`.
+`38560eb`.
 
 The 1.3.0 EPICS-env gate ran its source-build OS matrix. Ubuntu 26 was
 initially outside that matrix, but the C17 bridge shipped under 1.3.0
@@ -25,8 +25,8 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 (see `M2` and `D4`).
 
 - Release line: master
-- Milestone index: 25130ef
-- Canonical path: `docs/milestone-25130ef.md`
+- Milestone index: 38560eb
+- Canonical path: `docs/milestone-38560eb.md`
 - Canonical branch or ref: `master`
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
@@ -74,21 +74,21 @@ Status tally: 6 Complete, 1 In progress, 1 Deferred. 1 external gate (Open).
 
 | ID | Decision | Source |
 | --- | --- | --- |
-| D1 | Local `T` labels identify verification inside their owning work detail and are not independent work IDs. | Prior canonical register, prior state commit `25130ef` |
+| D1 | Local `T` labels identify verification inside their owning work detail and are not independent work IDs. | Prior canonical register, prior state commit `38560eb` |
 | D2 | Ubuntu 26 is excluded from the current source-build matrix and deferred to EPICS-env 1.3.1 or a later version. The 1.3.0 gate matrix does not include Ubuntu 26, and the `iocStats` GCC 15 fix is owned by EPICS-env. | Owner decision, 2026-08-17 |
 | D3 | The staged old model (`01_base`/`02_apps`/`03_epics`) and its retained roles `base_os` and `app_epics` are retired; the operator/species model supersedes them. Removing the old roles and playbooks is separate follow-up work. | Owner decision, 2026-08-29 |
 | D4 | Ubuntu 26 source-build is no longer deferred. The C17 bridge shipped under milestone 1.3.0 (`jeonghanlee/EPICS-env#29`), and `jeonghanlee/EPICS-env#63` (closed 2026-08-24) confirmed it fires for `iocStats` on the Ubuntu 26 source-build path; the complete `gz` path passed on 2026-08-27. Supersedes `D2`. | Owner decision, 2026-08-30 |
 | D5 | The EPICS OS package regression (`M5`) is fixed across all six vacua, `pkg_automation` is removed from `roles/epics_build` in the same change, ansible-provision drafts the cloud `docs/IMAGE_WORKFLOW.md` change for LAB-cloud to land, and the milestone and GitHub issue are recorded before implementation begins. | Owner decision, 2026-08-31 |
 | D6 | `M5` closes on the golden pair (rocky8, debian13), verified on both acquisition paths. The four non-golden vacua (rocky10, debian12, ubuntu24, ubuntu26) have no iocrunner golden pipeline; they carry the same package lists (names dry-run-verified) and move to `M6` for Live-mode verification. The cloud-side golden bake-matrix expansion stays a separate cloud-provision item. | Owner decision, 2026-08-31 |
 | D7 | The `epics_build` source-build fragility surfaced during `M5` verification (LAB-cloud Finding B) is hardened as `M7`, not accepted. `M5`'s fix removed the known trigger (the NetworkManager restart); `M7` addresses the underlying structure so a dropped connection cannot leave a half-built tree. | Owner decision, 2026-08-31 |
-| D8 | The chrony per-server `minpoll`/`maxpoll` and `keyfile`/`leapsectz` directives dropped by the operator rewrite (`724b381`) are restored into `roles/common`, mirroring the `M5` EPICS-package regression from the same rewrite. Empty defaults keep the baseline render unchanged; site overrides (the production IOC server) render the production directives. | Owner decision, 2026-09-02 |
+| D8 | The chrony per-server `minpoll`/`maxpoll` and `keyfile`/`leapsectz` directives dropped by the operator rewrite (`0012e2d`) are restored into `roles/common`, mirroring the `M5` EPICS-package regression from the same rewrite. Empty defaults keep the baseline render unchanged; site overrides (the production IOC server) render the production directives. | Owner decision, 2026-09-02 |
 
 ### Milestone Details
 
 #### M1 - EPICS-env 4-OS Source-Build Environment
 
-- Origin: 25130ef / M1
-- Identity History: new reset-generation identity; prior scope and evidence are reachable from commit `25130ef`. Ubuntu 26 was split out to `M2` (Deferred) by owner decision `D2` on 2026-08-17, narrowing this row to the four passing OSes.
+- Origin: 38560eb / M1
+- Identity History: new reset-generation identity; prior scope and evidence are reachable from commit `38560eb`. Ubuntu 26 was split out to `M2` (Deferred) by owner decision `D2` on 2026-08-17, narrowing this row to the four passing OSes.
 - GitHub Issue: #7, https://github.com/jeonghanlee/ansible-provision/issues/7
 - Status: Complete
 
@@ -119,7 +119,7 @@ golden-image baking for these source-build hosts.
 ##### Implementation Plan
 
 - Plan Status: accepted
-- Plan Acceptance: accepted plan preserved from prior state commit `25130ef`
+- Plan Acceptance: accepted plan preserved from prior state commit `38560eb`
 - Implementation Authorization: prior owner-authorized implementation plan and verification evidence
 - Superseded Plan Artifacts: none
 
@@ -143,9 +143,9 @@ golden-image baking for these source-build hosts.
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
 | T1 | 2026-07-28 | Rocky 8 | Passed | Fresh layers, `changed=0`, and `check_deps.bash` passed |
-| T2 | 2026-07-28 | Debian 13 | Passed | Commits `5c4f7fc` and `0148514` |
-| T3 | 2026-07-28 | Debian 13 | Passed | Commit `5c4f7fc`, absolute paths reduced from 9 to 0 |
-| T4 | 2026-07-28 | Debian 13 | Passed | Commit `0148514` |
+| T2 | 2026-07-28 | Debian 13 | Passed | Commits `fc030f8` and `829369e` |
+| T3 | 2026-07-28 | Debian 13 | Passed | Commit `fc030f8`, absolute paths reduced from 9 to 0 |
+| T4 | 2026-07-28 | Debian 13 | Passed | Commit `829369e` |
 | T5 | 2026-07-28 | Rocky 10, Ubuntu 24 | Passed | Rocky 10 and Ubuntu 24 passed |
 | T6 | 2026-07-28 | Rocky 10 and Ubuntu 24 | Passed | `-g0 -gz=zlib` and `check_deps.bash` passed |
 | T7 | 2026-07-28 | Rocky 8 | Passed | `EPICS_ENV_SUPPORT_BUILD_SKIPPED`, `changed=0`, `failed=0` |
@@ -166,7 +166,7 @@ golden-image baking for these source-build hosts.
 
 #### M2 - Ubuntu 26 Source-Build
 
-- Origin: 25130ef / M2
+- Origin: 38560eb / M2
 - Identity History: split from `M1` on 2026-08-17 by owner decision `D2`; carries the former Ubuntu 26 gate scope (prior generation `G2`). Returned to active and completed by owner decision `D4` on 2026-08-30.
 - GitHub Issue: none dedicated. The Ubuntu 26 scope was originally carried in `#7`, which was reconciled to `M1`'s four-OS scope and closed. Upstream: `jeonghanlee/EPICS-env#29` (C17 bridge), `jeonghanlee/EPICS-env#63` (bridge firing confirmed on the Ubuntu 26 source-build path).
 - Status: Complete
@@ -248,16 +248,16 @@ Role fixes and enhancements surfaced while provisioning a real IOC server
 
 - `base_os` OS-family detection reads `/etc/os-release` and branches on exit
   code, not raw stdout, which arrived empty on the first become task over a
-  local connection (`593f161`).
+  local connection (`c900b5e`).
 - chrony.conf directives became site-overridable variables; a `trim_blocks`
   newline drop that joined the pool lines and broke `chronyd` restart was fixed
-  with a `+%}` control (`1f1e996`, `6069b54`).
+  with a `+%}` control (`dc1bfea`, `0b8ec0a`).
 - Rocky `python` default set to 3.9 via an `alternatives --install` of the
-  unversioned-python master link before `--set` (`9ba3b13`, Rocky-only).
-- con/procServ/conserver gained branch/tag/commit version pinning (`bf6b798`).
+  unversioned-python master link before `--set` (`6ba1278`, Rocky-only).
+- con/procServ/conserver gained branch/tag/commit version pinning (`0996270`).
 - `app_epics` clones the distribution as the IOC owner, sparse and tag-pinned,
   into a group-writable install root, so a host with no root ssh key can pull
-  from an internal remote (`88e569b`).
+  from an internal remote (`7c55229`).
 
 **Out of scope:** the production IOC server deployment record and its site-specific
 overrides live in the `server-configuration` repository, not here.
@@ -271,7 +271,7 @@ overrides live in the `server-configuration` repository, not here.
 
 #### M4 - Operator/species provisioning model
 
-Origin: 25130ef / M4
+Origin: 38560eb / M4
 
 ##### Scope
 
@@ -290,7 +290,7 @@ model whose normative definition is cloud-provision `docs/OPERATOR_MODEL.md`
   `inventory/lab.ini`.
 - iocserver: iocrunner without P_testusers, for an existing production IOC
   server (the production IOC server) that already owns its accounts; added and registered in
-  `92f04c4`, `08ec916`, and `60d2c2c`, matched char-for-char to the SOT
+  `6fbbf71`, `79fba36`, and `5b0ac04`, matched char-for-char to the SOT
   iocserver product at `bb64ad2`.
 
 Implemented and verified:
@@ -340,19 +340,19 @@ Superseded Plan Artifacts: none
 
 | Check | Result | OS | Evidence |
 | --- | --- | --- | --- |
-| T1 | Passed | control host; debian12 (epics_dev) | All eight species playbooks (`bare`, `epics_dev`, `ethercat`, `iocrunner`, `iocrunner_nfs`, `iocserver`, `nfs_sim`, `rtbase`) pass `ansible-playbook --syntax-check`, and every species is enumerated in `configure/RELEASE` `SPECIES_PLAYBOOKS` with its `inventory/lab.ini` group present for every non-bare species (bare is vacuum-only by design); no stray non-vacuum groups. Registration landed in `92f04c4`, `08ec916`, `60d2c2c`. Live evidence: after `35f00fe`, `epics_dev` applied on a real debian12 host (PLAY RECAP `ok=15 changed=4 failed=0`) installing EPICS-env 1.3.0 / base 7.0.10 layers 1+2 at `/opt/epics/1.3.0/debian-12/7.0.10`, and the `gz` flavor of the same path also passed (`make build.gz`, `ok=15 changed=4 failed=0`), both observed by the cloud-provision session. |
+| T1 | Passed | control host; debian12 (epics_dev) | All eight species playbooks (`bare`, `epics_dev`, `ethercat`, `iocrunner`, `iocrunner_nfs`, `iocserver`, `nfs_sim`, `rtbase`) pass `ansible-playbook --syntax-check`, and every species is enumerated in `configure/RELEASE` `SPECIES_PLAYBOOKS` with its `inventory/lab.ini` group present for every non-bare species (bare is vacuum-only by design); no stray non-vacuum groups. Registration landed in `6fbbf71`, `79fba36`, `5b0ac04`. Live evidence: after `c3b4612`, `epics_dev` applied on a real debian12 host (PLAY RECAP `ok=15 changed=4 failed=0`) installing EPICS-env 1.3.0 / base 7.0.10 layers 1+2 at `/opt/epics/1.3.0/debian-12/7.0.10`, and the `gz` flavor of the same path also passed (`make build.gz`, `ok=15 changed=4 failed=0`), both observed by the cloud-provision session. |
 | T2 | Blocked | Rocky 8 (the production IOC server) | Blocked by `G1`: the production IOC server cannot reach the internal git host for the EPICS distribution clone. |
-| T3 | Passed | Debian 13, Rocky 8 | Apply verified 2026-08-31 via proxied iocrunner golden-image bakes: `proxy_contract.bash` applied with proxy seal `clean=true`, and the proxied `pip` installed `epicscorelibs`, `softioc`, and `cothread` (added to `P_python` in `a9a5d04`), closing #16. Full-species re-apply idempotency verified the same day: a second `species/iocrunner.yml` apply on the same VM ran `failed=0 changed=0` on both OSes, pip reported "Requirement already satisfied", the proxy artifacts were byte-identical with seal `clean=true`, and the installed-tree fingerprint (pip freeze, dpkg/rpm sets, ioc accounts, EPICS path) was identical between runs. The SOT P_proxy definition landed one-to-one at cloud-provision `8654990`. |
+| T3 | Passed | Debian 13, Rocky 8 | Apply verified 2026-08-31 via proxied iocrunner golden-image bakes: `proxy_contract.bash` applied with proxy seal `clean=true`, and the proxied `pip` installed `epicscorelibs`, `softioc`, and `cothread` (added to `P_python` in `2fc1065`), closing #16. Full-species re-apply idempotency verified the same day: a second `species/iocrunner.yml` apply on the same VM ran `failed=0 changed=0` on both OSes, pip reported "Requirement already satisfied", the proxy artifacts were byte-identical with seal `clean=true`, and the installed-tree fingerprint (pip freeze, dpkg/rpm sets, ioc accounts, EPICS path) was identical between runs. The SOT P_proxy definition landed one-to-one at cloud-provision `8654990`. |
 
 #### M5 - Restore the EPICS OS package set into the operator model
 
-- Origin: 25130ef / M5
+- Origin: 38560eb / M5
 - GitHub Issue: #18, https://github.com/jeonghanlee/ansible-provision/issues/18
 - Status: Complete
 
 ##### Summary
 
-The operator rewrite (`724b381`) retired `base_os` and dropped its `pkg_standard`
+The operator rewrite (`0012e2d`) retired `base_os` and dropped its `pkg_standard`
 OS package list, so the iocrunner distribution path (`roles/epics`) installs none
 of the EPICS OS build/link dependencies. A fresh Rocky 8 IOC runner image cannot
 link an IOC against Net-SNMP (`-lnetsnmp` unresolved). Restore the full EPICS OS
@@ -416,7 +416,7 @@ repo); the source-build tag pins (`M1`/`M2`).
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
-| T1 | 2026-08-31 | rocky8, debian13 | Passed | Distribution: iocrunner golden bakes install the set (`net-snmp-devel` + `libnetsnmp.so` on the fresh VM). Source: `epics_dev` builds and installs EPICS-env clean with `pkg_automation` removed (rocky8 `24c9dc9`, debian13 `0d08692`, recap `failed=0`). |
+| T1 | 2026-08-31 | rocky8, debian13 | Passed | Distribution: iocrunner golden bakes install the set (`net-snmp-devel` + `libnetsnmp.so` on the fresh VM). Source: `epics_dev` builds and installs EPICS-env clean with `pkg_automation` removed (rocky8 `b553562`, debian13 `d2bb866`, recap `failed=0`). |
 | T2 | 2026-08-31 | rocky8, debian13 | Passed | `ServiceTestIOC` built with the snmp module links: `-lnetsnmp` resolves against the installed `libnetsnmp.so`; no "cannot find -lnetsnmp" on either OS. |
 
 ##### Closure Evidence
@@ -425,7 +425,7 @@ repo); the source-build tag pins (`M1`/`M2`).
 
 #### M6 - Convergence-verify EPICS OS build dependencies on the four non-golden vacua
 
-- Origin: 25130ef / M6
+- Origin: 38560eb / M6
 - Status: Complete
 
 ##### Summary
@@ -477,7 +477,7 @@ EPICS-env-distribution publishing of the `debian-12` / `ubuntu-26.04` trees (ups
 ##### Dependencies And Decisions
 
 - Origin decision `D6` (2026-08-31): split from `M5` at its close.
-- `epics_os_dir` was missing for rocky10/ubuntu24/ubuntu26 and added in `25c2e6c`, so
+- `epics_os_dir` was missing for rocky10/ubuntu24/ubuntu26 and added in `8350954`, so
   `P_epics` can resolve the distribution sparse path.
 - The EPICS-env-distribution 1.2.2 tag has no `debian-12` or `ubuntu-26.04` tree, so the
   distribution path for debian12/ubuntu26 is blocked upstream (tracked at
@@ -510,16 +510,16 @@ EPICS-env-distribution publishing of the `debian-12` / `ubuntu-26.04` trees (ups
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
-| T1 | 2026-08-31 | rocky10, ubuntu24 | Passed | Live `iocrunner` on fresh VMs (`25c2e6c`): rocky10 recap `ok=30 changed=5 failed=0`, ubuntu24 all operators `failed=0`; net-snmp dev package + `libnetsnmp.so` present, `setEpicsEnv.bash` at `/opt/epics/1.2.2/<os>/7.0.10`, ServiceTestIOC links. debian12/ubuntu26 have no distribution tree at 1.2.2 — blocked upstream, jeonghanlee/EPICS-env-distribution#4. |
-| T2 | 2026-08-31 | rocky10, debian12, ubuntu24, ubuntu26 | Passed | Live `epics_dev` source build on fresh VMs (`a920af2`), each `failed=0`: EPICS-env builds and installs from source with `pkg_automation` gone and `epics_os_packages` providing the deps; `setEpicsEnv.bash` present, softIocPVX runs, AreaDetector modules built. ubuntu26 needed `python3-dev` for the pyioc pip C-extension build. |
+| T1 | 2026-08-31 | rocky10, ubuntu24 | Passed | Live `iocrunner` on fresh VMs (`8350954`): rocky10 recap `ok=30 changed=5 failed=0`, ubuntu24 all operators `failed=0`; net-snmp dev package + `libnetsnmp.so` present, `setEpicsEnv.bash` at `/opt/epics/1.2.2/<os>/7.0.10`, ServiceTestIOC links. debian12/ubuntu26 have no distribution tree at 1.2.2 — blocked upstream, jeonghanlee/EPICS-env-distribution#4. |
+| T2 | 2026-08-31 | rocky10, debian12, ubuntu24, ubuntu26 | Passed | Live `epics_dev` source build on fresh VMs (`bff06f7`), each `failed=0`: EPICS-env builds and installs from source with `pkg_automation` gone and `epics_os_packages` providing the deps; `setEpicsEnv.bash` present, softIocPVX runs, AreaDetector modules built. ubuntu26 needed `python3-dev` for the pyioc pip C-extension build. |
 
 ##### Closure Evidence
 
-- Complete 2026-09-01. Both acquisition paths convergence-verified: distribution (`iocrunner`) on rocky10 and ubuntu24 (the two OSes with a published distribution tree), source build (`epics_dev`) on all four. `pkg_automation` retired; `epics_os_packages` provide the deps. M6 surfaced and fixed two role gaps along the way: the missing `epics_os_dir` for rocky10/ubuntu24/ubuntu26 (`25c2e6c`) and `python3-dev` for the pyioc pip C-extension build (`a920af2`). debian12/ubuntu26 distribution stays blocked upstream (jeonghanlee/EPICS-env-distribution#4) and golden shipping stays the separate cloud milestone.
+- Complete 2026-09-01. Both acquisition paths convergence-verified: distribution (`iocrunner`) on rocky10 and ubuntu24 (the two OSes with a published distribution tree), source build (`epics_dev`) on all four. `pkg_automation` retired; `epics_os_packages` provide the deps. M6 surfaced and fixed two role gaps along the way: the missing `epics_os_dir` for rocky10/ubuntu24/ubuntu26 (`8350954`) and `python3-dev` for the pyioc pip C-extension build (`bff06f7`). debian12/ubuntu26 distribution stays blocked upstream (jeonghanlee/EPICS-env-distribution#4) and golden shipping stays the separate cloud milestone.
 
 #### M7 - Harden the epics_build source build against a dropped connection
 
-- Origin: 25130ef / M7
+- Origin: 38560eb / M7
 - GitHub Issue: #19, https://github.com/jeonghanlee/ansible-provision/issues/19
 - Status: Complete
 
@@ -530,7 +530,7 @@ EPICS-env-distribution publishing of the `debian-12` / `ubuntu-26.04` trees (ups
 B), a dropped SSH connection left the remote shell still running on the VM — the
 build kept progressing while ansible reported the task failed — so a failed run
 can leave a half-built tree, and a same-VM retry can race the surviving shell or
-see partial state. `M5`'s fix (`1c1cabc`, excluding `kernel*`/`NetworkManager*`
+see partial state. `M5`'s fix (`4b272a8`, excluding `kernel*`/`NetworkManager*`
 from the update) removed the known trigger, but the underlying structure remains
 fragile.
 
@@ -553,7 +553,7 @@ distribution path (`roles/epics`), which has no long build.
 ##### Dependencies And Decisions
 
 - Origin decision `D7` (2026-08-31): harden rather than accept (LAB-cloud Finding
-  B). `M5`'s `1c1cabc` removed the known trigger; this row addresses the
+  B). `M5`'s `4b272a8` removed the known trigger; this row addresses the
   structure.
 
 ##### Implementation Plan
@@ -592,12 +592,12 @@ to survive kills during `M5` verification. All six vacua are systemd-based.
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
-| T1 | 2026-09-01 | rocky8 (lab-rocky8-epics-dev-t1) | Passed | Real path on a fresh rocky8 VM at master fd8e7b2: after the build unit went active, killing the local ansible process left the detached unit still building (single unit, no orphan); a retry reported `EPICS_ENV_BUILD_RUNNING` (changed=false, no second build); a genuine dnf failure was reported `FAILED rc=2` without hanging; a full `epics_dev` run completed (`ok=18 changed=6 failed=0`, Wait `DONE`, install tree `/opt/epics/1.3.0/rocky-8.10/7.0.10/setEpicsEnv.bash`, success sentinel present); a re-apply was idempotent (`ok=4 changed=0`). |
+| T1 | 2026-09-01 | rocky8 (lab-rocky8-epics-dev-t1) | Passed | Real path on a fresh rocky8 VM at master 72fa9a9: after the build unit went active, killing the local ansible process left the detached unit still building (single unit, no orphan); a retry reported `EPICS_ENV_BUILD_RUNNING` (changed=false, no second build); a genuine dnf failure was reported `FAILED rc=2` without hanging; a full `epics_dev` run completed (`ok=18 changed=6 failed=0`, Wait `DONE`, install tree `/opt/epics/1.3.0/rocky-8.10/7.0.10/setEpicsEnv.bash`, success sentinel present); a re-apply was idempotent (`ok=4 changed=0`). |
 
 ##### Closure Evidence
 
 - T1 passed 2026-09-01 on a fresh rocky8 VM (lab-rocky8-epics-dev-t1, provisioned
-  by LAB-cloud) against ansible-provision master fd8e7b2 (role commit 802348c):
+  by LAB-cloud) against ansible-provision master 72fa9a9 (role commit 91a9470):
   the detached systemd unit survives an ansible/SSH kill, a retry attaches to the
   running unit without starting a second build, a real failure is reported without
   hanging, a full source build completes with the install tree and success
@@ -606,13 +606,13 @@ to survive kills during `M5` verification. All six vacua are systemd-based.
 
 #### M8 - Restore chrony poll/key/leap directives dropped by the operator rewrite
 
-- Origin: 25130ef / M8
+- Origin: 38560eb / M8
 - GitHub Issue: #20, https://github.com/jeonghanlee/ansible-provision/issues/20
 - Status: Complete
 
 ##### Summary
 
-The operator rewrite (`724b381`) re-authored the `base_os` chrony configuration
+The operator rewrite (`0012e2d`) re-authored the `base_os` chrony configuration
 into `roles/common` and, in the move, dropped the per-server `minpoll`/`maxpoll`
 selectors and the `keyfile`/`leapsectz` directives together with their four
 site-overridable variables. A production IOC server whose site `chrony.conf`
@@ -624,7 +624,7 @@ package set dropped by the same rewrite).
 
 Restore the four conditionals into the `roles/common` chrony deploy task and
 add their empty-string defaults. The restored block is byte-identical to the
-pre-rewrite original (`724b381^`); empty defaults keep the baseline render
+pre-rewrite original (`0012e2d^`); empty defaults keep the baseline render
 unchanged.
 
 Out of scope: any other chrony directive; the production IOC server site override values
@@ -650,7 +650,7 @@ Out of scope: any other chrony directive; the production IOC server site overrid
 - Superseded Plan Artifacts: none
 
 1. Restore the four conditionals into `roles/common/tasks/main.yml`'s chrony
-   block, byte-identical to `724b381^`.
+   block, byte-identical to `0012e2d^`.
 2. Add `chrony_minpoll`/`maxpoll`/`keyfile`/`leapsectz` empty-string defaults to
    `roles/common/defaults/main.yml`.
 
@@ -658,20 +658,20 @@ Out of scope: any other chrony directive; the production IOC server site overrid
 
 | Label | Layer | Method | Environment | Expected Result |
 | --- | --- | --- | --- | --- |
-| T1 | Regression | Diff the restored block against the shipped `724b381^` original; confirm baseline defaults omit the directives | control host | Block byte-identical; empty defaults render no `minpoll`/`maxpoll`/`keyfile`/`leapsectz`. |
+| T1 | Regression | Diff the restored block against the shipped `0012e2d^` original; confirm baseline defaults omit the directives | control host | Block byte-identical; empty defaults render no `minpoll`/`maxpoll`/`keyfile`/`leapsectz`. |
 | T2 | Integration | Apply the `common` operator with the production IOC server override and inspect `/etc/chrony.conf` | rocky8 (the production IOC server) | `chrony.conf` carries `pool ... minpoll 4 maxpoll 4`, `keyfile`, `leapsectz`; `chronyd` restarts and syncs. |
 
 ##### Verification Results
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
-| T1 | 2026-09-02 | control host | Passed | Restored `pool`/conditional and `keyfile`/`leapsectz` lines diff-clean against `724b381^:roles/base_os/tasks/main.yml`; baseline defaults empty, so the four directives are omitted and the pre-restore render is unchanged. |
+| T1 | 2026-09-02 | control host | Passed | Restored `pool`/conditional and `keyfile`/`leapsectz` lines diff-clean against `0012e2d^:roles/base_os/tasks/main.yml`; baseline defaults empty, so the four directives are omitted and the pre-restore render is unchanged. |
 | T2 | 2026-09-03 | rocky8 (the production IOC server) | Passed | Live `species/iocserver.yml` apply on the production IOC server: `/etc/chrony.conf` renders all five site pools with `minpoll 4 maxpoll 4`, plus `keyfile /etc/chrony.keys` and `leapsectz right/UTC`. Re-check: `grep -E 'minpoll\|maxpoll\|keyfile\|leapsectz' /etc/chrony.conf`. |
 
 ##### Closure Evidence
 
 - Complete 2026-09-03. `roles/common` restores the four conditionals
-  byte-identical to the pre-rewrite original (`724b381^`); empty defaults leave
+  byte-identical to the pre-rewrite original (`0012e2d^`); empty defaults leave
   the baseline render unchanged, and the production IOC server override renders the
   production directives. Verified on the production IOC server: `/etc/chrony.conf` carries all
   five site pools with `minpoll 4 maxpoll 4`, `keyfile /etc/chrony.keys`, and
@@ -691,4 +691,4 @@ release tally above excludes this section.
 
 | Reset Date | Prior State Commit |
 | --- | --- |
-| 2026-08-17 | 25130eff4adb5b0101d9ce68c4e8e10eef232cb6 |
+| 2026-08-17 | 38560eb9a1d2d761420d0f313328020e548c45c7 |

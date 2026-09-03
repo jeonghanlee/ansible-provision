@@ -4,7 +4,7 @@
 |---|---|
 | [ARCHITECTURE.md](ARCHITECTURE.md) | Provisioning flow, role architecture, inventory, OS differences, variable scoping |
 | [ANSIBLE_CLI.md](ANSIBLE_CLI.md) | ansible-playbook, ad-hoc, inventory inspection, and Makefile wrapper reference |
-| [milestone-25130ef.md](milestone-25130ef.md) | Canonical work register, verification, external gates, and decisions |
+| [milestone-38560eb.md](milestone-38560eb.md) | Canonical work register, verification, external gates, and decisions |
 | [CLOSED_DOORS.md](CLOSED_DOORS.md) | Examined candidates deliberately left unchanged |
 | [STATUS.md](STATUS.md) | Role by OS verification evidence |
 | [RAW_STYLE.md](RAW_STYLE.md) | Raw-task house conventions: set -e, trailing assertions, sentinel changed_when, atomic privileged writes |

@@ -1,7 +1,7 @@
 # ansible-provision Milestones
 
 > Historical migration source. The current canonical register is
-> [docs/milestone-25130ef.md](milestone-25130ef.md). This file is retained to
+> [docs/milestone-38560eb.md](milestone-38560eb.md). This file is retained to
 > preserve the pre-migration register and its historical evidence.
 
 ## Scope

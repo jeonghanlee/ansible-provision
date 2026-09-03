@@ -3,7 +3,7 @@
 ## Scope
 
 This document records observed role-by-OS and source-build verification.
-`docs/milestone-25130ef.md` defines deliverables and the `T.k` checks required
+`docs/milestone-38560eb.md` defines deliverables and the `T.k` checks required
 to close them.
 
 **Out of scope:** architecture and data flow are defined in
@@ -143,6 +143,6 @@ R2-12 result is recorded in this repository.
 
 ## Update Protocol
 
-Update this matrix and `docs/milestone-25130ef.md` with the substantive change when a
+Update this matrix and `docs/milestone-38560eb.md` with the substantive change when a
 role, supported OS boundary, version selector, or observed verification result
 changes. Record a pass only when the real shipped path and fixtures ran.
