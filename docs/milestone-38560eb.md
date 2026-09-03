@@ -31,9 +31,11 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: every milestone in this generation is Complete except
-`M3` (Deferred per `D3`), and no external gate is Open; the next entry is a new
-milestone or a reset. `M7` (harden the epics_build source build) is
+Next session entry point: `M10/T2` — set `epics_ca_zone` and `epics_pva_zone` in
+the site override, re-apply `species/iocserver.yml` twice on the production IOC
+server, and confirm the second run is idempotent and the PVA zone carries UDP
+5075. Every other milestone is Complete except `M3` (Deferred per `D3`); no
+external gate is Open. `M7` (harden the epics_build source build) is
 Complete: verified on rocky8 2026-09-01 (T1) — the detached systemd unit survives
 a dropped connection, a retry attaches without a second build, and a real source
 build completes and is idempotent. `M6` (four
@@ -55,9 +57,12 @@ pools with `minpoll 4`/`maxpoll 4`, `keyfile`, and `leapsectz`. `M9` (share the
 EPICS install root safely across group deployers) is Complete: verified on the
 production IOC server 2026-09-03 — the root-owned shared root carries a default
 ACL and a system-wide git `safe.directory`, and a group member's clone completes
-with group-writable content.
+with group-writable content. `M10` (route EPICS firewall ports to per-service
+zones on a multi-homed IOC server) is In progress: the mechanism is verified and
+`0df0c08` is on master; the production re-apply with the zones set (`T2`) is the
+remaining check.
 
-Status tally: 8 Complete, 0 In progress, 1 Deferred. 1 external gate (Complete).
+Status tally: 8 Complete, 1 In progress, 1 Deferred. 1 external gate (Complete).
 
 ## Milestone
 
@@ -74,6 +79,7 @@ Status tally: 8 Complete, 0 In progress, 1 Deferred. 1 external gate (Complete).
 | Core | M7 | Harden the epics_build source build against a dropped connection | Milestone | Complete | Yes | D7 | The `epics_build` raw build survives or cleanly resumes an SSH drop without leaving a half-built tree; [detail](#m7---harden-the-epics_build-source-build-against-a-dropped-connection) |
 | Core | M8 | Restore chrony poll/key/leap directives dropped by the operator rewrite | Milestone | Complete | No | D8 | `roles/common` renders per-server `minpoll`/`maxpoll` and `keyfile`/`leapsectz` when set and omits them when empty; production render verified on the production IOC server 2026-09-03; [detail](#m8---restore-chrony-pollkeyleap-directives-dropped-by-the-operator-rewrite) |
 | Core | M9 | Share the EPICS install root safely across group deployers | Milestone | Complete | No | D9 | `roles/epics` prepares a group-shared install root (`root:<group>` `2775`, default ACL, system-wide git `safe.directory`) so any group member can clone and write; verified on the production IOC server 2026-09-03; [detail](#m9---share-the-epics-install-root-safely-across-group-deployers) |
+| Core | M10 | Route EPICS firewall ports to per-service zones on a multi-homed IOC server | Milestone | In progress | No | D10 | `roles/epics` opens the CA and PVA port sets each in a site-configurable firewalld zone (empty keeps the default zone), validates the zone exists, and carries the protocol-correct port set; mechanism verified, production re-apply pending; [detail](#m10---route-epics-firewall-ports-to-per-service-zones-on-a-multi-homed-ioc-server) |
 | Gate | G1 | the production IOC server reaches the internal git host | External gate | Complete | No | | Reachability achieved through the site HTTP proxy's CONNECT tunnel (an ssh `ProxyCommand` over the proxy), not a firewall whitelist: the owner's key authenticates and `git ls-remote` returns the refs; confirmed 2026-09-03 by the successful iocserver clone (M4/T2) |
 
 ### Decisions
@@ -89,6 +95,7 @@ Status tally: 8 Complete, 0 In progress, 1 Deferred. 1 external gate (Complete).
 | D7 | The `epics_build` source-build fragility surfaced during `M5` verification (LAB-cloud Finding B) is hardened as `M7`, not accepted. `M5`'s fix removed the known trigger (the NetworkManager restart); `M7` addresses the underlying structure so a dropped connection cannot leave a half-built tree. | Owner decision, 2026-08-31 |
 | D8 | The chrony per-server `minpoll`/`maxpoll` and `keyfile`/`leapsectz` directives dropped by the operator rewrite (`0012e2d`) are restored into `roles/common`, mirroring the `M5` EPICS-package regression from the same rewrite. Empty defaults keep the baseline render unchanged; site overrides (the production IOC server) render the production directives. | Owner decision, 2026-09-02 |
 | D9 | With `epics_install_group` set, the EPICS install root stays `root:<group>` `2775` (setgid) and gains a default ACL on local disk plus a system-wide git `safe.directory` on the deploy server, so any group member can run git on the single shared repository and write into it. Owner-owned roots (one deployer only), per-user `safe.directory` (per-member setup), a per-member subdirectory layout (the ioc-runner per-engineer model, unsuited to a single distribution tree), and a dedicated deploy account were rejected for the one-server-deploys/many-hosts-read topology. Site prerequisites (consistent group GID, `root_squash` pinning deploy to the filesystem server, NFSv4 idmapping) stay in the site provisioning record. | Owner decision, 2026-09-02 |
+| D10 | EPICS firewall ports are opened per service in site-configurable firewalld zones (`epics_ca_zone`, `epics_pva_zone`; empty keeps the default zone for single-homed hosts) because a multi-homed IOC server binds CA and PVA to different interfaces and zones, where the default zone carries no interface. The role validates that a named zone exists and fails loudly rather than silently skipping; it does not create zones (site infrastructure). The port sets follow the protocol constants — CA 5064 TCP+UDP and 5065 UDP, PVA 5075 TCP+UDP and 5076 UDP — dropping the previously opened 5065/TCP, which is not an EPICS port. | Owner decision, 2026-09-03 |
 
 ### Milestone Details
 
@@ -775,6 +782,85 @@ group, firewalld zones, or the NFS export; the site values (group GID,
   the production IOC server (T2) after the mechanism was proven on a real
   clone (T1). The model is documented in `docs/ARCHITECTURE.md` "Shared
   Install-Root Ownership" (`e8f100b`).
+
+#### M10 - Route EPICS firewall ports to per-service zones on a multi-homed IOC server
+
+- Origin: 38560eb / M10
+- GitHub Issue: #22, https://github.com/jeonghanlee/ansible-provision/issues/22
+- Status: In progress
+
+##### Summary
+
+`roles/epics` opened every EPICS port in firewalld's default zone. On a
+multi-homed IOC server, CA and PVA sit on different interfaces bound to
+different zones, and the default zone carries no interface, so the opening was
+ineffective there: the CA zone was already complete but the PVA zone lacked UDP
+5075 (name search). The role also opened 5065/TCP, which is not an EPICS port.
+The role now opens the CA and PVA port sets each in a site-configurable zone,
+validates the zone exists, and carries the protocol-correct port set.
+
+##### Scope
+
+`roles/epics` firewalld task and defaults: add `epics_ca_zone` and
+`epics_pva_zone` (empty keeps the default zone), open the CA set in the CA
+zone and the PVA set in the PVA zone, validate each named zone against the
+permanent zone list and fail loudly if absent, and correct the port lists to
+the protocol. Delivered in `0df0c08`.
+
+Out of scope: creating firewalld zones or binding interfaces (site
+infrastructure, recorded in the site provisioning record); the Debian family,
+which the task does not configure; the `ntp` service, which stays in the
+default zone as an outbound client.
+
+##### Completion Criteria
+
+- With both zone values empty, the ports open in the default zone as before.
+- With the zones set, the CA set opens in the CA zone and the PVA set in the
+  PVA zone, and a missing zone fails the task with a clear error.
+- On the production IOC server, a second apply is idempotent (`failed=0`) and
+  the PVA zone carries UDP 5075.
+
+##### Dependencies And Decisions
+
+- Owner decision `D10` (2026-09-03).
+- Port constants verified against the EPICS base source
+  (`configure/CONFIG_ENV`: `EPICS_CA_SERVER_PORT=5064`,
+  `EPICS_CA_REPEATER_PORT=5065`; pva2pva: `EPICS_PVA_SERVER_PORT=5075`,
+  `EPICS_PVA_BROADCAST_PORT=5076`).
+- Surfaced by the post-apply firewall check on the production IOC server
+  (`M4/T2`).
+
+##### Implementation Plan
+
+- Plan Status: accepted
+- Plan Acceptance: 2026-09-03
+- Implementation Authorization: 2026-09-03
+- Superseded Plan Artifacts: none
+
+1. Add the two zone variables and correct the port lists in
+   `roles/epics/defaults/main.yml`.
+2. Split the firewalld task into a CA loop and a PVA loop, each with its
+   optional `--zone`; validate named zones against
+   `firewall-cmd --permanent --get-zones`; drop the `|| true` on the port adds
+   so a failure aborts the task.
+
+##### Test Plan
+
+| Label | Layer | Method | Environment | Expected Result |
+| --- | --- | --- | --- | --- |
+| T1 | Mechanism | Syntax-check; POSIX `sh -e` simulation of the task body with empty zones, valid zones, and a misspelled zone | control host | Empty zones yield no `--zone`; valid zones yield `--zone=<zone>` per service; a misspelled zone prints a clear error and aborts. |
+| T2 | Integration | Set the two zones in the site override and re-apply `species/iocserver.yml` twice; inspect both zones | rocky8 (the production IOC server) | Second run `failed=0`; the CA zone carries 5064 TCP+UDP and 5065 UDP; the PVA zone carries 5075 TCP+UDP and 5076 UDP. |
+
+##### Verification Results
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T1 | 2026-09-03 | control host | Passed | `ansible-playbook --syntax-check` passes; `sh -e` simulation: empty zones → `ca_opt=[] pva_opt=[]`, valid zones → `--zone=` per service, misspelled zone → `error: firewalld zone does not exist: <zone>` and abort. |
+| T2 | — | rocky8 (the production IOC server) | Pending | Site override with the two zones, then two applies; re-check: `firewall-cmd --zone=<ca-zone> --list-ports`, `firewall-cmd --zone=<pva-zone> --list-ports`. |
+
+##### Closure Evidence
+
+- Pending `T2`: the production re-apply with the per-service zones set.
 
 ## Backlog
 
