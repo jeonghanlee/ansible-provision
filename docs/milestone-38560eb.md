@@ -31,11 +31,9 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: `M10/T2` — set `epics_ca_zone` and `epics_pva_zone` in
-the site override, re-apply `species/iocserver.yml` twice on the production IOC
-server, and confirm the second run is idempotent and the PVA zone carries UDP
-5075. Every other milestone is Complete except `M3` (Deferred per `D3`); no
-external gate is Open. `M7` (harden the epics_build source build) is
+Next session entry point: none — every milestone is Complete except `M3`
+(Deferred per `D3`); no external gate is Open. New work starts a new milestone
+row. `M7` (harden the epics_build source build) is
 Complete: verified on rocky8 2026-09-01 (T1) — the detached systemd unit survives
 a dropped connection, a retry attaches without a second build, and a real source
 build completes and is idempotent. `M6` (four
@@ -58,11 +56,12 @@ EPICS install root safely across group deployers) is Complete: verified on the
 production IOC server 2026-09-03 — the root-owned shared root carries a default
 ACL and a system-wide git `safe.directory`, and a group member's clone completes
 with group-writable content. `M10` (route EPICS firewall ports to per-service
-zones on a multi-homed IOC server) is In progress: the mechanism is verified and
-`0df0c08` is on master; the production re-apply with the zones set (`T2`) is the
-remaining check.
+zones on a multi-homed IOC server) is Complete: verified on the production IOC
+server 2026-09-03 — with the two zones set in the site override the second
+apply is idempotent (`failed=0`), the CA zone carries exactly 5064 TCP+UDP and
+5065 UDP, and the PVA zone carries 5075 TCP+UDP and 5076 UDP.
 
-Status tally: 8 Complete, 1 In progress, 1 Deferred. 1 external gate (Complete).
+Status tally: 9 Complete, 0 In progress, 1 Deferred. 1 external gate (Complete).
 
 ## Milestone
 
@@ -79,7 +78,7 @@ Status tally: 8 Complete, 1 In progress, 1 Deferred. 1 external gate (Complete).
 | Core | M7 | Harden the epics_build source build against a dropped connection | Milestone | Complete | Yes | D7 | The `epics_build` raw build survives or cleanly resumes an SSH drop without leaving a half-built tree; [detail](#m7---harden-the-epics_build-source-build-against-a-dropped-connection) |
 | Core | M8 | Restore chrony poll/key/leap directives dropped by the operator rewrite | Milestone | Complete | No | D8 | `roles/common` renders per-server `minpoll`/`maxpoll` and `keyfile`/`leapsectz` when set and omits them when empty; production render verified on the production IOC server 2026-09-03; [detail](#m8---restore-chrony-pollkeyleap-directives-dropped-by-the-operator-rewrite) |
 | Core | M9 | Share the EPICS install root safely across group deployers | Milestone | Complete | No | D9 | `roles/epics` prepares a group-shared install root (`root:<group>` `2775`, default ACL, system-wide git `safe.directory`) so any group member can clone and write; verified on the production IOC server 2026-09-03; [detail](#m9---share-the-epics-install-root-safely-across-group-deployers) |
-| Core | M10 | Route EPICS firewall ports to per-service zones on a multi-homed IOC server | Milestone | In progress | No | D10 | `roles/epics` opens the CA and PVA port sets each in a site-configurable firewalld zone (empty keeps the default zone), validates the zone exists, and carries the protocol-correct port set; mechanism verified, production re-apply pending; [detail](#m10---route-epics-firewall-ports-to-per-service-zones-on-a-multi-homed-ioc-server) |
+| Core | M10 | Route EPICS firewall ports to per-service zones on a multi-homed IOC server | Milestone | Complete | No | D10 | `roles/epics` opens the CA and PVA port sets each in a site-configurable firewalld zone (empty keeps the default zone), validates the zone exists, and carries the protocol-correct port set; verified on the production IOC server 2026-09-03 (second apply `failed=0`, PVA zone carries UDP 5075); [detail](#m10---route-epics-firewall-ports-to-per-service-zones-on-a-multi-homed-ioc-server) |
 | Gate | G1 | the production IOC server reaches the internal git host | External gate | Complete | No | | Reachability achieved through the site HTTP proxy's CONNECT tunnel (an ssh `ProxyCommand` over the proxy), not a firewall whitelist: the owner's key authenticates and `git ls-remote` returns the refs; confirmed 2026-09-03 by the successful iocserver clone (M4/T2) |
 
 ### Decisions
@@ -787,7 +786,7 @@ group, firewalld zones, or the NFS export; the site values (group GID,
 
 - Origin: 38560eb / M10
 - GitHub Issue: #22, https://github.com/jeonghanlee/ansible-provision/issues/22
-- Status: In progress
+- Status: Complete
 
 ##### Summary
 
@@ -856,11 +855,16 @@ default zone as an outbound client.
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
 | T1 | 2026-09-03 | control host | Passed | `ansible-playbook --syntax-check` passes; `sh -e` simulation: empty zones → `ca_opt=[] pva_opt=[]`, valid zones → `--zone=` per service, misspelled zone → `error: firewalld zone does not exist: <zone>` and abort. |
-| T2 | — | rocky8 (the production IOC server) | Pending | Site override with the two zones, then two applies; re-check: `firewall-cmd --zone=<ca-zone> --list-ports`, `firewall-cmd --zone=<pva-zone> --list-ports`. |
+| T2 | 2026-09-03 | rocky8 (the production IOC server) | Passed | Site override with the two zones, `git pull` to `0df0c08`, two applies; second recap `ok=25 changed=0 failed=0`. `--zone=<ca-zone> --list-ports`: `5064/tcp 5064/udp 5065/udp` (exactly the CA set). `--zone=<pva-zone> --list-ports`: `5075/tcp 5075/udp 5076/udp` present, alongside site-opened CA ports and `5076/tcp` that the role did not add. |
 
 ##### Closure Evidence
 
-- Pending `T2`: the production re-apply with the per-service zones set.
+- Complete 2026-09-03. `T2` passed on the production IOC server: with the two
+  zones set in the site override, the second apply reported `failed=0` with no
+  changes, the CA zone carries exactly 5064 TCP+UDP and 5065 UDP, and the PVA
+  zone carries 5075 TCP+UDP and 5076 UDP. The PVA zone also lists CA ports and
+  5076/TCP opened by the site before this change; the role does not add or
+  remove them, so they stay a site matter. Delivered in `0df0c08`.
 
 ## Backlog
 
