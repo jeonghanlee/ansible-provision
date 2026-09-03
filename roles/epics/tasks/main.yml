@@ -23,13 +23,19 @@
 - name: Prepare the EPICS install root
   ansible.builtin.raw: |
     set -e
-    install -d {{ path_epics_local }}
-    if [ -n "{{ epics_install_group }}" ]; then
-      chgrp {{ epics_install_group }} {{ path_epics_local }}
-      chmod 2775 {{ path_epics_local }}
+    p="{{ path_epics_local }}"
+    g="{{ epics_install_group }}"
+    install -d "${p}"
+    if [ -n "${g}" ]; then
+      chgrp "${g}" "${p}"
+      chmod 2775 "${p}"
+      setfacl -d -m g:"${g}":rwx "${p}"
+      setfacl -d -m o::rx "${p}"
+      git config --system --get-all safe.directory | grep -Fxq "${p}" || git config --system --add safe.directory "${p}"
     else
-      chown {{ epics_ioc_engineers[0] }} {{ path_epics_local }}
+      chown "{{ epics_ioc_engineers[0] }}" "${p}"
     fi
+    test -d "${p}"
   changed_when: false
 
 - name: Clone the EPICS distribution as the IOC owner (sparse, tag-pinned)
