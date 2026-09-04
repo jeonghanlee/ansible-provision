@@ -358,6 +358,7 @@ group_vars or carry its own complete group_vars tree.
 | `chrony_*` (`driftfile`, `makestep`, `rtcsync`, `logdir`, `minpoll`, `maxpoll`, `keyfile`, `leapsectz`) | Ansible / group_vars/all.yml (empty poll/keyfile/leapsectz omit the directive) |
 | `con_version` / `procserv_version` / `conserver_version` / `ioc_runner_version` | Ansible / group_vars/all.yml (branch, tag, or commit; empty clones default HEAD) |
 | `repo_epics` / `epics_install_group` | Ansible / group_vars/all.yml (empty group leaves the install root owned by the IOC engineer) |
+| `epics_clone_mode` | Ansible / group_vars/all.yml (default `minimal` is a shallow single-OS checkout for a Docker or single-OS host; `full` on a production NFS server clones every OS tree under the pinned version) |
 | `epics_ca_zone` / `epics_pva_zone` | Ansible / group_vars/all.yml (empty opens the EPICS ports in the default firewalld zone; a named zone must already exist and is never created by the role) |
 | `runtime_python_alt_path` | Ansible / group_vars per OS (`rocky8.yml` selects `/usr/bin/python3.9`) |
 
