@@ -38,16 +38,37 @@
     test -d "${p}"
   changed_when: false
 
-- name: Clone the EPICS distribution as the IOC owner (sparse, tag-pinned)
+- name: Check out the EPICS distribution at the requested version
   ansible.builtin.raw: |
     set -e
     owner="{{ epics_ioc_engineers[0] }}"
-    if [ ! -d {{ path_epics_local }}/.git ]; then
-      sudo -u "${owner}" git clone --depth 1 --filter=blob:none --sparse --branch {{ epics_env_version }} {{ repo_epics }} {{ path_epics_local }}
-      sudo -u "${owner}" git -C {{ path_epics_local }} sparse-checkout set {{ epics_env_version }}/{{ epics_os_dir }}/{{ epics_base_version }}
-      /usr/local/sbin/record-iocrunner-source app_epics {{ repo_epics }} {{ path_epics_local }}
+    local="{{ path_epics_local }}"
+    repo="{{ repo_epics }}"
+    tag="{{ epics_env_version }}"
+    tree="{{ epics_env_version }}/{{ epics_os_dir }}/{{ epics_base_version }}"
+    mode="{{ epics_clone_mode }}"
+    case "${mode}" in
+      minimal|full) ;;
+      *) printf 'error: epics_clone_mode must be minimal or full, got: %s\n' "${mode}" >&2; exit 1 ;;
+    esac
+    clone_opt=""; fetch_opt=""
+    if [ "${mode}" != "full" ]; then
+      clone_opt="--depth 1 --filter=blob:none --sparse"
+      fetch_opt="--depth 1 --filter=blob:none"
     fi
-    test -d {{ path_epics_local }}/.git
+    if [ ! -d "${local}/.git" ]; then
+      sudo -u "${owner}" git clone ${clone_opt} --branch "${tag}" "${repo}" "${local}"
+    else
+      sudo -u "${owner}" git -C "${local}" fetch ${fetch_opt} --force origin "refs/tags/${tag}:refs/tags/${tag}"
+      sudo -u "${owner}" git -C "${local}" checkout --force "refs/tags/${tag}"
+    fi
+    if [ "${mode}" = "full" ]; then
+      sudo -u "${owner}" git -C "${local}" sparse-checkout disable
+    else
+      sudo -u "${owner}" git -C "${local}" sparse-checkout set "${tree}"
+    fi
+    /usr/local/sbin/record-iocrunner-source app_epics "${repo}" "${local}"
+    test -d "${local}/${tag}"
   changed_when: false
 
 - name: Deploy EPICS environment activation script

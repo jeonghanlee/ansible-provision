@@ -13,6 +13,13 @@ epics_install_group: ""
 epics_env_version:  "1.2.2"
 epics_base_version: "7.0.10"
 
+# EPICS distribution clone mode. Default "minimal" suits a single-OS host or an
+# external Docker image: a shallow, blob-filtered, sparse checkout of just this
+# host's OS tree. A production NFS server serving several OS clients sets this to
+# "full" in the site override for a plain full clone of every OS tree under the
+# pinned env version. Either mode re-checks out the requested version in place.
+epics_clone_mode: "minimal"
+
 # EPICS network ports opened in firewalld on the rocky family.
 # CA: server 5064 (TCP+UDP), repeater/beacon 5065 (UDP) — no TCP 5065.
 # PVA: server 5075 (TCP+UDP), broadcast/beacon 5076 (UDP) — no TCP 5076.
