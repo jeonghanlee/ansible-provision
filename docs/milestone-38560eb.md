@@ -31,11 +31,9 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: `M11/T2` - a live apply on a target that bumps a
-version selector and confirms the installed version is replaced, plus `full`
-mode's multi-OS tree on a production NFS server. Every other milestone is
-Complete except `M3` (Deferred per `D3`); no external gate is Open. `M7`
-(harden the epics_build source build) is
+Next session entry point: none - every milestone is Complete except `M3`
+(Deferred per `D3`); no external gate is Open. New work starts a new milestone
+row. `M7` (harden the epics_build source build) is
 Complete: verified on rocky8 2026-09-01 (T1) — the detached systemd unit survives
 a dropped connection, a retry attaches without a second build, and a real source
 build completes and is idempotent. `M6` (four
@@ -62,13 +60,14 @@ zones on a multi-homed IOC server) is Complete: verified on the production IOC
 server 2026-09-03 — with the two zones set in the site override the second
 apply is idempotent (`failed=0`), the CA zone carries exactly 5064 TCP+UDP and
 5065 UDP, and the PVA zone carries 5075 TCP+UDP and 5076 UDP. `M11` (install
-the requested version in the app and EPICS roles) is In progress: the
-install-once guard is removed so a re-apply installs the requested version,
-`epics_clone_mode` picks a minimal single-OS or a full multi-OS checkout, and
-the mechanism is execution-verified with the reviews converged; a live
-version-replace apply (`T2`) is pending. Delivered in `fd4ff1c` and `13bc8e6`.
+the requested version in the app and EPICS roles) is Complete: the install-once
+guard is removed so a re-apply installs the requested version and
+`epics_clone_mode` picks a minimal single-OS or a full multi-OS checkout;
+verified on the production IOC server 2026-09-04 (con 1.1.0 replaced by 1.2.0,
+full mode carries every OS tree, second apply `failed=0`). Delivered in
+`fd4ff1c` and `13bc8e6`.
 
-Status tally: 9 Complete, 1 In progress, 1 Deferred. 1 external gate (Complete).
+Status tally: 10 Complete, 0 In progress, 1 Deferred. 1 external gate (Complete).
 
 ## Milestone
 
@@ -86,7 +85,7 @@ Status tally: 9 Complete, 1 In progress, 1 Deferred. 1 external gate (Complete).
 | Core | M8 | Restore chrony poll/key/leap directives dropped by the operator rewrite | Milestone | Complete | No | D8 | `roles/common` renders per-server `minpoll`/`maxpoll` and `keyfile`/`leapsectz` when set and omits them when empty; production render verified on the production IOC server 2026-09-03; [detail](#m8---restore-chrony-pollkeyleap-directives-dropped-by-the-operator-rewrite) |
 | Core | M9 | Share the EPICS install root safely across group deployers | Milestone | Complete | No | D9 | `roles/epics` prepares a group-shared install root (`root:<group>` `2775`, default ACL, system-wide git `safe.directory`) so any group member can clone and write; verified on the production IOC server 2026-09-03; [detail](#m9---share-the-epics-install-root-safely-across-group-deployers) |
 | Core | M10 | Route EPICS firewall ports to per-service zones on a multi-homed IOC server | Milestone | Complete | No | D10 | `roles/epics` opens the CA and PVA port sets each in a site-configurable firewalld zone (empty keeps the default zone), validates the zone exists, and carries the protocol-correct port set; verified on the production IOC server 2026-09-03 (second apply `failed=0`, PVA zone carries UDP 5075); [detail](#m10---route-epics-firewall-ports-to-per-service-zones-on-a-multi-homed-ioc-server) |
-| Core | M11 | Install the requested version in the app and EPICS roles | Milestone | In progress | No | D11 | The con/procServ/conserver and EPICS roles drop the install-once guard and install the requested version on every apply (EPICS re-checks out the tag; `epics_clone_mode` picks minimal single-OS or full multi-OS); mechanism execution-verified and reviews converged, a live version-replace apply pending; delivered in `fd4ff1c`/`13bc8e6`; [detail](#m11---install-the-requested-version-in-the-app-and-epics-roles) |
+| Core | M11 | Install the requested version in the app and EPICS roles | Milestone | Complete | No | D11 | The con/procServ/conserver and EPICS roles drop the install-once guard and install the requested version on every apply (EPICS re-checks out the tag; `epics_clone_mode` picks minimal single-OS or full multi-OS); verified on the production IOC server 2026-09-04 (con 1.1.0 replaced by 1.2.0, full mode carries every OS tree, second apply `failed=0`); delivered in `fd4ff1c`/`13bc8e6`; [detail](#m11---install-the-requested-version-in-the-app-and-epics-roles) |
 | Gate | G1 | the production IOC server reaches the internal git host | External gate | Complete | No | | Reachability achieved through the site HTTP proxy's CONNECT tunnel (an ssh `ProxyCommand` over the proxy), not a firewall whitelist: the owner's key authenticates and `git ls-remote` returns the refs; confirmed 2026-09-03 by the successful iocserver clone (M4/T2) |
 
 ### Decisions
@@ -878,7 +877,7 @@ default zone as an outbound client.
 #### M11 - Install the requested version in the app and EPICS roles
 
 - Origin: 38560eb / M11
-- Status: In progress
+- Status: Complete
 
 ##### Summary
 
@@ -952,15 +951,16 @@ minimal-origin clone's shallow history to full.
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
 | T1 | 2026-09-04 | control host | Passed | `--syntax-check` passes; RAW_STYLE audit (set -e, trailing assertion, shell-variable assignment, even single-quote count) holds; con checked out 1.2.0 and re-checked out 1.1.0 against the real con repository; on a tag-and-tree-identical fixture, minimal produced a single-OS tree, full produced every OS tree, a 1.2.0-to-1.2.2 re-checkout switched in place, and a minimal-to-full switch expanded to every OS after `sparse-checkout disable`; the mode guard accepted `minimal`/`full` and aborted on other values. First-, second-, and third-person reviews converged. |
-| T2 | - | a target host | Pending | Bump a version selector and re-apply; on a production NFS server set full mode and confirm the multi-OS tree |
+| T2 | 2026-09-04 | the production IOC server (rocky8) | Passed | `con_version` bumped to 1.2.0 and re-applied: `con -V` went 1.1.0 to 1.2.0 (site verify tool PASS). `epics_clone_mode: full` re-applied: `/opt/epics` is a plain full clone carrying every OS tree (1.2.2/debian-13, 1.2.2/rocky-8.10, plus other env trees and repo files), not a single-OS sparse checkout. Second apply idempotent: PLAY RECAP `ok=25 changed=0 failed=0`. Site verify tool: 23 pass / 0 fail / 1 skip (conserver wrapper ref, not compared by design) |
 
 ##### Closure Evidence
 
-- Pending `T2`: a live version-replace apply on a target. The build and install
-  commands the roles run are unchanged from the roles already verified applying
-  on the production IOC server under `M4`, `M8`, and `M9`; this change only
-  removes the guard that skipped them. Delivered in `fd4ff1c` (roles) and
-  `13bc8e6` (ARCHITECTURE).
+- Complete 2026-09-04. `T2` passed on the production IOC server: `con_version`
+  1.2.0 re-applied and `con -V` went 1.1.0 to 1.2.0 (the install-once bug is
+  gone); `epics_clone_mode: full` produced a plain full clone of every OS tree;
+  the second apply reported `ok=25 changed=0 failed=0`. The site verify tool
+  scored 23 pass / 0 fail / 1 skip (the conserver wrapper ref, not compared by
+  design). Delivered in `fd4ff1c` (roles) and `13bc8e6` (ARCHITECTURE).
 
 ## Backlog
 
