@@ -107,3 +107,11 @@ make bare.rocky8 RUNTIME_INVENTORY="$RUNTIME_INVENTORY" ANSIBLE_OPTS=-v
 make iocrunner RUNTIME_INVENTORY="$RUNTIME_INVENTORY" ANSIBLE_TAGS=con
 make iocrunner.debian13 RUNTIME_INVENTORY="$RUNTIME_INVENTORY" ANSIBLE_LIMIT="$TARGET_HOST"
 ```
+
+```bash
+# Host without passwordless sudo: ansible.cfg keeps become_ask_pass off, so a
+# cold sudo timestamp stalls the first become task on the local connection.
+# Pass --ask-become-pass to prompt once for the sudo password at the start.
+# Keep every option inside one ANSIBLE_OPTS value; a second assignment replaces it.
+make iocserver.rocky8 RUNTIME_INVENTORY="$RUNTIME_INVENTORY" ANSIBLE_OPTS="--ask-become-pass"
+```
