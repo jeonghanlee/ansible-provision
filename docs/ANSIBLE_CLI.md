@@ -109,9 +109,12 @@ make iocrunner.debian13 RUNTIME_INVENTORY="$RUNTIME_INVENTORY" ANSIBLE_LIMIT="$T
 ```
 
 ```bash
-# Host without passwordless sudo: ansible.cfg keeps become_ask_pass off, so a
-# cold sudo timestamp stalls the first become task on the local connection.
-# Pass --ask-become-pass to prompt once for the sudo password at the start.
-# Keep every option inside one ANSIBLE_OPTS value; a second assignment replaces it.
-make iocserver.rocky8 RUNTIME_INVENTORY="$RUNTIME_INVENTORY" ANSIBLE_OPTS="--ask-become-pass"
+# Host without passwordless sudo: do NOT rely on --ask-become-pass on a local
+# connection. A long apply lets the sudo timestamp expire mid-run, and
+# ansible-core's local become-prompt handshake then fails intermittently
+# (privilege output closed; see docs/CLOSED_DOORS.md). Instead run the command
+# through bin/sudo_keepalive.bash: it authenticates once, then a background
+# keepalive holds the sudo credential so sudo never re-prompts and no become
+# password is passed to ansible.
+bin/sudo_keepalive.bash make iocserver.rocky8 RUNTIME_INVENTORY="$RUNTIME_INVENTORY"
 ```

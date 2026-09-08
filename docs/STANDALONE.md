@@ -14,9 +14,12 @@ section 7; this page is the recipe only.
 
 - Target OS: Rocky 8 or Debian 13.
 - A sudo-capable account on the target. The stack runs become
-  non-interactively (`ansible.cfg`: `become_ask_pass = False`), so
-  either grant NOPASSWD sudo or append
-  `ANSIBLE_OPTS=--ask-become-pass` to every make command.
+  non-interactively (`ansible.cfg`: `become_ask_pass = False`).
+  Either grant NOPASSWD sudo, or, when a password is required, run
+  the apply through `bin/sudo_keepalive.bash` so a background
+  keepalive holds the sudo credential and no mid-run re-prompt
+  occurs. Avoid plain `--ask-become-pass` on a local connection
+  (see `docs/CLOSED_DOORS.md`).
 - Outbound network from the target: the app and EPICS operators clone
   build sources from GitHub. On a proxied site, apply the injection layers
   from `cloud-provision/docs/RUNBOOK_BAKE.md` to the target VM (a
