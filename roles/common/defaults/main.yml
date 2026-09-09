@@ -46,6 +46,10 @@ common_pkg_core:
   - acl
   - logrotate
   - socat
+  # rsync is absent from the cloud-provision baseline; the distribution ship
+  # step retrieves verified trees from the guest over rsync, and under proxy
+  # injection this role is the only installer that reaches the guest.
+  - rsync
 
 # Debian family only: locale support.
 common_locale: "en_US.UTF-8"
