@@ -47,6 +47,15 @@
         dnf update -y --exclude='kernel*' --exclude='NetworkManager*'
         dnf install -y git tree make sudo bash wget unzip python3-pip libusbx-devel {{ epics_os_packages | join(' ') }}
         pip3 install numpy nose
+        # The rebuilt cloud-init ships /usr/lib/tmpfiles.d/cloud-init.conf with
+        # "d /run/cloud-init 0700"; the in-place dnf upgrade above fires that rule
+        # through the rpm tmpfiles trigger, no cloud-init stage loosens it again
+        # until the next boot, so an unprivileged 'cloud-init status' fails. Shadow
+        # the vendor rule with an /etc override and apply it now, so the directory
+        # is 0755 immediately and stays so after any later systemd-tmpfiles --create.
+        # Rocky family only; debian ships no such tmpfiles rule.
+        printf 'd /run/cloud-init 0755 root root - -\n' > /etc/tmpfiles.d/cloud-init.conf
+        systemd-tmpfiles --create /etc/tmpfiles.d/cloud-init.conf
         is_redhat=1
         ;;
       debian|ubuntu)
