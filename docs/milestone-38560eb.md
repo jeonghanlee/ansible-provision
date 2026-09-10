@@ -969,7 +969,7 @@ minimal-origin clone's shallow history to full.
 #### M12 - Keep /run/cloud-init world-readable after the in-build cloud-init upgrade
 
 - Origin: 38560eb / M12
-- GitHub Issue: pending
+- GitHub Issue: #24, https://github.com/jeonghanlee/ansible-provision/issues/24
 - Status: In progress
 
 ##### Summary
