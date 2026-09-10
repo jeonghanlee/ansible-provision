@@ -31,9 +31,10 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: none - every milestone is Complete except `M3`
-(Deferred per `D3`); no external gate is Open. New work starts a new milestone
-row. `M7` (harden the epics_build source build) is
+Next session entry point: `roles/epics_build/tasks/main.yml` - file the
+GitHub issue for `M12`, then live-verify its `T2` (a rocky epics-dev guest keeps
+`/run/cloud-init` at 0755 after the in-place cloud-init upgrade). Every other
+milestone is Complete except `M3` (Deferred per `D3`); no external gate is Open. `M7` (harden the epics_build source build) is
 Complete: verified on rocky8 2026-09-01 (T1) — the detached systemd unit survives
 a dropped connection, a retry attaches without a second build, and a real source
 build completes and is idempotent. `M6` (four
@@ -67,7 +68,7 @@ verified on the production IOC server 2026-09-04 (con 1.1.0 replaced by 1.2.0,
 full mode carries every OS tree, second apply `failed=0`). Delivered in
 `fd4ff1c` and `13bc8e6`.
 
-Status tally: 10 Complete, 0 In progress, 1 Deferred. 1 external gate (Complete).
+Status tally: 10 Complete, 1 In progress, 1 Deferred. 1 external gate (Complete).
 
 ## Milestone
 
@@ -86,6 +87,7 @@ Status tally: 10 Complete, 0 In progress, 1 Deferred. 1 external gate (Complete)
 | Core | M9 | Share the EPICS install root safely across group deployers | Milestone | Complete | No | D9 | `roles/epics` prepares a group-shared install root (`root:<group>` `2775`, default ACL, system-wide git `safe.directory`) so any group member can clone and write; verified on the production IOC server 2026-09-03; [detail](#m9---share-the-epics-install-root-safely-across-group-deployers) |
 | Core | M10 | Route EPICS firewall ports to per-service zones on a multi-homed IOC server | Milestone | Complete | No | D10 | `roles/epics` opens the CA and PVA port sets each in a site-configurable firewalld zone (empty keeps the default zone), validates the zone exists, and carries the protocol-correct port set; verified on the production IOC server 2026-09-03 (second apply `failed=0`, PVA zone carries UDP 5075); [detail](#m10---route-epics-firewall-ports-to-per-service-zones-on-a-multi-homed-ioc-server) |
 | Core | M11 | Install the requested version in the app and EPICS roles | Milestone | Complete | No | D11 | The con/procServ/conserver and EPICS roles drop the install-once guard and install the requested version on every apply (EPICS re-checks out the tag; `epics_clone_mode` picks minimal single-OS or full multi-OS); verified on the production IOC server 2026-09-04 (con 1.1.0 replaced by 1.2.0, full mode carries every OS tree, second apply `failed=0`); delivered in `fd4ff1c`/`13bc8e6`; [detail](#m11---install-the-requested-version-in-the-app-and-epics-roles) |
+| Core | M12 | Keep /run/cloud-init world-readable after the in-build cloud-init upgrade | Milestone | In progress | No | D12 | After `roles/epics_build` runs on a rocky epics-dev guest, `/run/cloud-init` is 0755 and an unprivileged `cloud-init status --long` prints, both immediately and after a later `systemd-tmpfiles --create`; debian/ubuntu unaffected; [detail](#m12---keep-runcloud-init-world-readable-after-the-in-build-cloud-init-upgrade) |
 | Gate | G1 | the production IOC server reaches the internal git host | External gate | Complete | No | | Reachability achieved through the site HTTP proxy's CONNECT tunnel (an ssh `ProxyCommand` over the proxy), not a firewall whitelist: the owner's key authenticates and `git ls-remote` returns the refs; confirmed 2026-09-03 by the successful iocserver clone (M4/T2) |
 
 ### Decisions
@@ -103,6 +105,7 @@ Status tally: 10 Complete, 0 In progress, 1 Deferred. 1 external gate (Complete)
 | D9 | With `epics_install_group` set, the EPICS install root stays `root:<group>` `2775` (setgid) and gains a default ACL on local disk plus a system-wide git `safe.directory` on the deploy server, so any group member can run git on the single shared repository and write into it. Owner-owned roots (one deployer only), per-user `safe.directory` (per-member setup), a per-member subdirectory layout (the ioc-runner per-engineer model, unsuited to a single distribution tree), and a dedicated deploy account were rejected for the one-server-deploys/many-hosts-read topology. Site prerequisites (consistent group GID, `root_squash` pinning deploy to the filesystem server, NFSv4 idmapping) stay in the site provisioning record. | Owner decision, 2026-09-02 |
 | D11 | The con, procServ, and conserver roles and the EPICS role drop the install-once guard so a re-apply installs the requested version, replacing the installed one; whether the installed version matches the requested one is verified by the separate site verification tool, not by these roles. `con_version` is a git tag on the con repository, while `procserv_version` and `conserver_version` select a wrapper-repo ref whose upstream daemon version is pinned inside the wrapper (`configure/RELEASE` `SRC_TAG`), so the role controls the wrapper ref only. The EPICS distribution checkout adds `epics_clone_mode`: `minimal` (default) is a shallow, blob-filtered, single-OS sparse checkout for a Docker or single-OS host; `full` is a plain clone of every OS tree for a production NFS server. Both modes re-check out the requested tag in place, full disables sparse so a mode switch expands correctly, and an unknown mode value fails loudly. The roles keep `changed_when: false`. | Owner decision, 2026-09-04 |
 | D10 | EPICS firewall ports are opened per service in site-configurable firewalld zones (`epics_ca_zone`, `epics_pva_zone`; empty keeps the default zone for single-homed hosts) because a multi-homed IOC server binds CA and PVA to different interfaces and zones, where the default zone carries no interface. The role validates that a named zone exists and fails loudly rather than silently skipping; it does not create zones (site infrastructure). The port sets follow the protocol constants — CA 5064 TCP+UDP and 5065 UDP, PVA 5075 TCP+UDP and 5076 UDP — dropping the previously opened 5065/TCP, which is not an EPICS port. | Owner decision, 2026-09-03 |
+| D12 | The rocky-family in-place cloud-init upgrade run by `roles/epics_build`'s `dnf update` fires rpm's tmpfiles trigger, which resets `/run/cloud-init` to 0700 until the next boot and breaks an unprivileged `cloud-init status`. The fix lands in the role that causes it, not cloud-provision's cloud-init templates: cloud-provision recorded a Closed Door (2026-09-08, commit `47c1bb5`) because a template runcmd would move the proxy apply out of last position (proxy ADR D018). The role writes an `/etc/tmpfiles.d/cloud-init.conf` override (`d /run/cloud-init 0755 root root - -`) that shadows the vendor rule and applies it immediately with `systemd-tmpfiles --create`, chosen over a one-shot `chmod` because the override also survives a later `systemd-tmpfiles --create`. Rocky family only; debian ships no such rule. Mirrors the 2026-08-17 vmadmin-home 0700 precedent, fixed in ansible-provision. | Owner decision, 2026-09-09 |
 
 ### Milestone Details
 
@@ -962,6 +965,80 @@ minimal-origin clone's shallow history to full.
   the second apply reported `ok=25 changed=0 failed=0`. The site verify tool
   scored 23 pass / 0 fail / 1 skip (the conserver wrapper ref, not compared by
   design). Delivered in `fd4ff1c` (roles) and `13bc8e6` (ARCHITECTURE).
+
+#### M12 - Keep /run/cloud-init world-readable after the in-build cloud-init upgrade
+
+- Origin: 38560eb / M12
+- GitHub Issue: pending
+- Status: In progress
+
+##### Summary
+
+On the rocky family the rebuilt cloud-init ships
+`/usr/lib/tmpfiles.d/cloud-init.conf` as `d /run/cloud-init 0700 root root`. A
+booted guest is 0755 because cloud-init recreates the directory at that mode
+every boot, but an in-place package upgrade fires rpm's tmpfiles trigger
+(`systemd-tmpfiles --create`), which applies 0700, and no cloud-init stage runs
+again until the next reboot. In that window an unprivileged `cloud-init status`
+and any unprivileged read of `/run/cloud-init/*` fail with a permission error.
+In this stack the only in-place cloud-init upgrade is the rocky branch of
+`roles/epics_build`'s detached build (`dnf update`), so the guest-config fix
+belongs in that role.
+
+##### Scope
+
+`roles/epics_build/tasks/main.yml`, the rocky/rhel/centos branch of the detached
+build script, after the `dnf update`. The role writes
+`/etc/tmpfiles.d/cloud-init.conf` containing `d /run/cloud-init 0755 root root - -`
+(a same-named file in `/etc` shadows the `/usr/lib` vendor rule) and runs
+`systemd-tmpfiles --create /etc/tmpfiles.d/cloud-init.conf` so the running system
+is 0755 immediately, not only after the next reboot.
+
+Out of scope: the debian/ubuntu branch (no such tmpfiles rule; the directory is
+already 0755); cloud-provision's cloud-init templates (Closed Door on that side,
+proxy ADR D018); the operator-path mitigation cloud-provision already shipped
+(reading status under sudo).
+
+##### Completion Criteria
+
+- After the role runs on a rocky epics-dev guest, `stat -c %a /run/cloud-init`
+  is 755.
+- An unprivileged `cloud-init status --long` prints a status, both immediately
+  and after a subsequent `systemd-tmpfiles --create`.
+- The debian/ubuntu path is unaffected.
+
+##### Dependencies And Decisions
+
+- Owner decision `D12` (2026-09-09).
+- Delegated by the cloud-provision session; root cause verified here - the
+  trigger is the rocky-branch `dnf update`, and cloud-provision recorded a
+  Closed Door (2026-09-08, commit `47c1bb5`) declining a template change.
+- Mirrors the 2026-08-17 vmadmin-home 0700 precedent, fixed in
+  ansible-provision, not cloud-provision.
+
+##### Implementation Plan
+
+- Plan Status: accepted
+- Plan Acceptance: 2026-09-09
+- Implementation Authorization: 2026-09-09
+- Superseded Plan Artifacts: none
+
+1. After the rocky `dnf update`, write the `/etc` tmpfiles override that shadows
+   the vendor rule and apply it with `systemd-tmpfiles --create`.
+
+##### Test Plan
+
+| Label | Layer | Method | Environment | Expected Result |
+| --- | --- | --- | --- | --- |
+| T1 | Mechanism | ansible `--syntax-check`; RAW_STYLE audit (even single-quote count) | control host | Syntax passes; RAW_STYLE holds |
+| T2 | Integration | On a rocky epics-dev guest, trigger the in-place cloud-init upgrade, then check the directory mode and an unprivileged `cloud-init status`, before and after a repeated `systemd-tmpfiles --create` | a rocky epics-dev guest | `/run/cloud-init` is 0755 and unprivileged `cloud-init status --long` prints, both immediately and after the repeated `systemd-tmpfiles --create` |
+
+##### Verification Results
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T1 | 2026-09-09 | control host | Passed | ansible `--syntax-check` on the epics_build operator playbook passes; the RAW_STYLE even single-quote count holds (build block 34) |
+| T2 | - | a rocky epics-dev guest | Pending | - |
 
 ## Backlog
 
