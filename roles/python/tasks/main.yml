@@ -16,7 +16,11 @@
       *rhel*|*fedora*|*centos*|*rocky*)
         dnf install -y {{ (pkg_python_redhat + pkg_python_system) | join(' ') }}
         {{ pip_bin }} install {{ (pip_packages_global + pip_packages_epics + pip_packages_pyioc) | join(' ') }}
-        alternatives --set {{ runtime_python_alt_name }} {{ runtime_python_alt_path }} 2>/dev/null || true
+        for _pair in {% for a in runtime_python_alts %}{{ a.name }}:{{ a.path }} {% endfor %}; do
+          _name=${_pair%%:*}
+          _path=${_pair#*:}
+          alternatives --display "$_name" >/dev/null 2>&1 && alternatives --set "$_name" "$_path"
+        done
         ;;
       *debian*|*ubuntu*)
         export DEBIAN_FRONTEND=noninteractive

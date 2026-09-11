@@ -30,5 +30,8 @@ pip_packages_global:     ["numpy", "pyparsing"]
 pip_packages_epics:      ["nose2"]
 # EPICS Python IOC stack: pip-only, no apt equivalent, installed on every OS.
 pip_packages_pyioc:      ["epicscorelibs", "softioc", "cothread"]
-runtime_python_alt_name: "python"
-runtime_python_alt_path: "/usr/bin/python3"
+# Python command alternatives set on the RedHat family, as name -> target path.
+# Each entry is applied only if its alternatives group exists; a present group
+# that fails to set aborts loudly. Debian uses the python-is-python3 package.
+runtime_python_alts:
+  - { name: python, path: /usr/bin/python3 }
