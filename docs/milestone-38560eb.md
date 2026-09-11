@@ -31,13 +31,12 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: `M13` - the RedHat python fix is implemented (dev
-headers `python3-devel`/`python39-devel`, plus a `runtime_python_alts` loop,
-`if`-guarded so an absent alternatives group is skipped). T1 passes and rocky8
-T2 is a clean PASS (the operator sets `python3` -> 3.9 and pyDevSup builds). The
-remaining step is the rocky10 clean re-run after the loop fix; then close
-issue #25. Every other milestone
-is Complete except `M3` (Deferred per `D3`); no external gate is Open. `M12` (keep
+Next session entry point: no Ready work here - `M13` (RedHat python provisioning
+for EPICS source builds) is Complete: rocky8 and rocky10 clean operator runs,
+pyDevSup builds on both, full public gz matrix 6/6 (issue #25). `M14` (middleware
+server provisioning) is Blocked on `G2` (cloud-provision ships the middleware
+package baseline and the middleware VM). Every other milestone is Complete
+except `M3` (Deferred per `D3`); the one open external gate is `G2`. `M12` (keep
 `/run/cloud-init` at 0755 after the in-build cloud-init upgrade)
 is Complete: verified on a rocky10 epics-dev guest 2026-09-09 - the `/etc`
 tmpfiles override holds the directory at 0755 immediately and after a repeated
@@ -76,7 +75,7 @@ verified on the production IOC server 2026-09-04 (con 1.1.0 replaced by 1.2.0,
 full mode carries every OS tree, second apply `failed=0`). Delivered in
 `fd4ff1c` and `13bc8e6`.
 
-Status tally: 11 Complete, 1 In progress, 0 Not started, 1 Deferred, 1 Blocked. 2 external gates (1 Complete, 1 Open).
+Status tally: 12 Complete, 0 In progress, 0 Not started, 1 Deferred, 1 Blocked. 2 external gates (1 Complete, 1 Open).
 
 ## Milestone
 
@@ -96,7 +95,7 @@ Status tally: 11 Complete, 1 In progress, 0 Not started, 1 Deferred, 1 Blocked. 
 | Core | M10 | Route EPICS firewall ports to per-service zones on a multi-homed IOC server | Milestone | Complete | No | D10 | `roles/epics` opens the CA and PVA port sets each in a site-configurable firewalld zone (empty keeps the default zone), validates the zone exists, and carries the protocol-correct port set; verified on the production IOC server 2026-09-03 (second apply `failed=0`, PVA zone carries UDP 5075); [detail](#m10---route-epics-firewall-ports-to-per-service-zones-on-a-multi-homed-ioc-server) |
 | Core | M11 | Install the requested version in the app and EPICS roles | Milestone | Complete | No | D11 | The con/procServ/conserver and EPICS roles drop the install-once guard and install the requested version on every apply (EPICS re-checks out the tag; `epics_clone_mode` picks minimal single-OS or full multi-OS); verified on the production IOC server 2026-09-04 (con 1.1.0 replaced by 1.2.0, full mode carries every OS tree, second apply `failed=0`); delivered in `fd4ff1c`/`13bc8e6`; [detail](#m11---install-the-requested-version-in-the-app-and-epics-roles) |
 | Core | M12 | Keep /run/cloud-init world-readable after the in-build cloud-init upgrade | Milestone | Complete | No | D12 | After `roles/epics_build` runs on a rocky epics-dev guest, `/run/cloud-init` is 0755 and an unprivileged `cloud-init status --long` prints, both immediately and after a later `systemd-tmpfiles --create`; debian/ubuntu unaffected; [detail](#m12---keep-runcloud-init-world-readable-after-the-in-build-cloud-init-upgrade) |
-| Core | M13 | Fix RedHat python provisioning for EPICS source builds | Milestone | In progress | No | D13, D14 | The RedHat python operator installs Python dev headers and makes `python3` resolve to the intended version, so `Python.h` is present and pyDevSup compiles on rocky8/rocky10; debian unaffected; [detail](#m13---fix-redhat-python-provisioning-for-epics-source-builds) |
+| Core | M13 | Fix RedHat python provisioning for EPICS source builds | Milestone | Complete | No | D13, D14 | The RedHat python operator installs Python dev headers and makes `python3` resolve to the intended version, so `Python.h` is present and pyDevSup compiles on rocky8/rocky10; debian unaffected; [detail](#m13---fix-redhat-python-provisioning-for-epics-source-builds) |
 | Core | M14 | Middleware server provisioning (pinned Java/Maven, Phoebus) | Milestone | Blocked | No | G2 | A middleware species provisions a pinned non-system OpenJDK/Maven and the Phoebus middleware on a middleware host, layered on the common+epics base, with internal specifics supplied through the site override layer; blocked until the cloud-provision package baseline and middleware VM land (G2); [detail](#m14---middleware-server-provisioning-pinned-javamaven-phoebus) |
 | Gate | G1 | the production IOC server reaches the internal git host | External gate | Complete | No | | Reachability achieved through the site HTTP proxy's CONNECT tunnel (an ssh `ProxyCommand` over the proxy), not a firewall whitelist: the owner's key authenticates and `git ls-remote` returns the refs; confirmed 2026-09-03 by the successful iocserver clone (M4/T2) |
 | Gate | G2 | cloud-provision ships the middleware package baseline and the middleware VM | External gate | Open | No | | The middleware OS package set (pinned Java/Maven dependencies, Phoebus build dependencies) originates in cloud-provision as the normative source and a middleware VM is provisionable there, before ansible-provision mirrors the set and layers its roles; owned by the cloud-provision session |
@@ -1058,7 +1057,7 @@ proxy ADR D018); the operator-path mitigation cloud-provision already shipped
 
 - Origin: 38560eb / M13
 - GitHub Issue: #25, https://github.com/jeonghanlee/ansible-provision/issues/25
-- Status: In progress
+- Status: Complete
 
 ##### Summary
 
@@ -1140,7 +1139,12 @@ the target python version per OS beyond the current selections.
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
 | T1 | 2026-09-11 | control host | Passed | `--syntax-check` exits 0; all edited files valid YAML; the `runtime_python_alts` loop renders `python:/usr/bin/python3 python3:/usr/bin/python3.9` on rocky8; RAW_STYLE single-quote parity holds (raw block 8, even) |
-| T2 | 2026-09-11 | rocky8 epics-dev guest (EPICS-env session) | Partial | rocky8 clean PASS: the operator set `python3` -> 3.9 itself (no manual override) and pyDevSup built against 3.9 (`check_deps` exit 0). rocky10 pending: its clean run surfaced that rocky10 has no `python` alternatives group, so the loop now guards each set with an `if` (absent group skips cleanly, a present group that fails to set still aborts loudly); rocky10 clean re-run pending on that fix |
+| T2 | 2026-09-11 | rocky8 and rocky10 epics-dev guests (EPICS-env session) | Passed | Both clean PASS, no manual override. rocky8: the operator set `python3` -> 3.9 and pyDevSup built against 3.9. rocky10: python3 is native 3.12, the absent `python` alternatives group skips cleanly (op.python rc 0), and pyDevSup built against 3.12. Both: MCoreUtils `libmcoreutils.so` has 0 `.debug_info`, `check_deps` exit 0; full public gz matrix 6/6 |
+
+##### Closure Evidence
+
+- Delivered in af239dd (dev headers), 37829b5 (python3 alternatives), and 54b32c6 (absent-group if-guard).
+- T2 Passed 2026-09-11 (EPICS-env session): rocky8 and rocky10 clean operator runs with no manual override, pyDevSup built on both; full public gz matrix 6/6.
 
 #### M14 - Middleware server provisioning (pinned Java/Maven, Phoebus)
 
