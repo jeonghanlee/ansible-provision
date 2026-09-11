@@ -19,7 +19,11 @@
         for _pair in {% for a in runtime_python_alts %}{{ a.name }}:{{ a.path }} {% endfor %}; do
           _name=${_pair%%:*}
           _path=${_pair#*:}
-          alternatives --display "$_name" >/dev/null 2>&1 && alternatives --set "$_name" "$_path"
+          # Apply only where the alternatives group exists; an absent group
+          # skips, a present group that fails to set aborts loudly.
+          if alternatives --display "$_name" >/dev/null 2>&1; then
+            alternatives --set "$_name" "$_path"
+          fi
         done
         ;;
       *debian*|*ubuntu*)
