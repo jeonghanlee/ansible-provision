@@ -20,6 +20,9 @@ pkg_python_debian:
 pkg_python_redhat:
   - python3
   - python3-pip
+  # Dev headers (Python.h): source-built C extensions (pip_packages_pyioc,
+  # pyDevSup) need them, same as python3-dev on debian.
+  - python3-devel
 pkg_python_system:
   - python3-pyserial
 pip_bin:                 "/usr/bin/pip3"

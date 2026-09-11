@@ -7,6 +7,8 @@ epics_os_dir: "rocky-8.10"
 pkg_python_redhat:
   - python39
   - python39-pip
+  # Dev headers (Python.h) for the 3.9 module; mirrors python3-devel on the default.
+  - python39-devel
 runtime_python_alt_path: "/usr/bin/python3.9"
 pip_bin:                 "/usr/bin/pip3.9"
 
