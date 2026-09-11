@@ -33,8 +33,10 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 
 Next session entry point: `M13` - the RedHat python dev-header fix is implemented
 (`python3-devel` in the default `pkg_python_redhat`, `python39-devel` in the
-`rocky8.yml` override) and T1 passes; the remaining step is T2 live verification
-(`Python.h` presence and a pyDevSup build) on a rocky8/rocky10 guest (issue #25). Every other milestone
+`rocky8.yml` override) and T1 passes; the rocky8 package/header path is confirmed
+live (`python39-devel` -> `/usr/include/python3.9/Python.h`). The remaining step
+is T2 - the `python` operator apply, the rocky10 `python3-devel` header, and a
+pyDevSup build on rocky8/rocky10 epics-dev guests (issue #25). Every other milestone
 is Complete except `M3` (Deferred per `D3`); no external gate is Open. `M12` (keep
 `/run/cloud-init` at 0755 after the in-build cloud-init upgrade)
 is Complete: verified on a rocky10 epics-dev guest 2026-09-09 - the `/etc`
@@ -1117,7 +1119,7 @@ rocky10 system python3).
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
 | T1 | 2026-09-11 | control host | Passed | `ansible-playbook -i inventory/lab.ini playbooks/operators/python.yml --syntax-check` exits 0; both edited var files parse as valid YAML - `python3-devel` in the default `pkg_python_redhat`, `python39-devel` in the rocky8 override |
-| T2 | - | - | Pending | Needs a rocky8 and a rocky10 epics-dev guest to confirm the dnf names resolve, `Python.h` is present, and pyDevSup compiles |
+| T2 | 2026-09-11 (partial) | a rocky8-family host | Pending | Partial: `rpm -ql python39-devel` resolves `/usr/include/python3.9/Python.h`, confirming the rocky8 package name and header path. Still pending: the `python` operator apply on clean rocky8/rocky10 epics-dev guests, the rocky10 `python3-devel` header, and a pyDevSup `gz` build |
 
 ## Backlog
 
