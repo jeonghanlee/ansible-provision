@@ -32,11 +32,11 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
 Next session entry point: `M13` - the RedHat python fix is implemented (dev
-headers `python3-devel`/`python39-devel`, plus a `runtime_python_alts` loop that
-makes rocky8 `python3` resolve to 3.9) and T1 passes. The remaining step is T2 -
-a clean `python` operator run on rocky8/rocky10 epics-dev guests confirming
-`python3` resolves correctly, `Python.h` is present, and pyDevSup builds
-(issue #25). Every other milestone
+headers `python3-devel`/`python39-devel`, plus a `runtime_python_alts` loop,
+`if`-guarded so an absent alternatives group is skipped). T1 passes and rocky8
+T2 is a clean PASS (the operator sets `python3` -> 3.9 and pyDevSup builds). The
+remaining step is the rocky10 clean re-run after the loop fix; then close
+issue #25. Every other milestone
 is Complete except `M3` (Deferred per `D3`); no external gate is Open. `M12` (keep
 `/run/cloud-init` at 0755 after the in-build cloud-init upgrade)
 is Complete: verified on a rocky10 epics-dev guest 2026-09-09 - the `/etc`
@@ -1137,7 +1137,7 @@ the target python version per OS beyond the current selections.
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
 | T1 | 2026-09-11 | control host | Passed | `--syntax-check` exits 0; all edited files valid YAML; the `runtime_python_alts` loop renders `python:/usr/bin/python3 python3:/usr/bin/python3.9` on rocky8; RAW_STYLE single-quote parity holds (raw block 8, even) |
-| T2 | 2026-09-11 (partial) | a rocky8-family host | Pending | Partial: `rpm -ql python39-devel` resolves `/usr/include/python3.9/Python.h` (rocky8 header path), and the EPICS-env session confirmed pyDevSup builds once `python3` is forced to 3.9. Still pending: a clean operator run confirming the operator itself sets `python3` -> 3.9 (the partial used a manual `alternatives --set`), the rocky10 `python3-devel` header, and a pyDevSup `gz` build on both |
+| T2 | 2026-09-11 | rocky8 epics-dev guest (EPICS-env session) | Partial | rocky8 clean PASS: the operator set `python3` -> 3.9 itself (no manual override) and pyDevSup built against 3.9 (`check_deps` exit 0). rocky10 pending: its clean run surfaced that rocky10 has no `python` alternatives group, so the loop now guards each set with an `if` (absent group skips cleanly, a present group that fails to set still aborts loudly); rocky10 clean re-run pending on that fix |
 
 ## Backlog
 
