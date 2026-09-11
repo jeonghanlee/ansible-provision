@@ -31,12 +31,12 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: `M13` - the RedHat python dev-header fix is implemented
-(`python3-devel` in the default `pkg_python_redhat`, `python39-devel` in the
-`rocky8.yml` override) and T1 passes; the rocky8 package/header path is confirmed
-live (`python39-devel` -> `/usr/include/python3.9/Python.h`). The remaining step
-is T2 - the `python` operator apply, the rocky10 `python3-devel` header, and a
-pyDevSup build on rocky8/rocky10 epics-dev guests (issue #25). Every other milestone
+Next session entry point: `M13` - the RedHat python fix is implemented (dev
+headers `python3-devel`/`python39-devel`, plus a `runtime_python_alts` loop that
+makes rocky8 `python3` resolve to 3.9) and T1 passes. The remaining step is T2 -
+a clean `python` operator run on rocky8/rocky10 epics-dev guests confirming
+`python3` resolves correctly, `Python.h` is present, and pyDevSup builds
+(issue #25). Every other milestone
 is Complete except `M3` (Deferred per `D3`); no external gate is Open. `M12` (keep
 `/run/cloud-init` at 0755 after the in-build cloud-init upgrade)
 is Complete: verified on a rocky10 epics-dev guest 2026-09-09 - the `/etc`
@@ -96,7 +96,7 @@ Status tally: 11 Complete, 1 In progress, 0 Not started, 1 Deferred. 1 external 
 | Core | M10 | Route EPICS firewall ports to per-service zones on a multi-homed IOC server | Milestone | Complete | No | D10 | `roles/epics` opens the CA and PVA port sets each in a site-configurable firewalld zone (empty keeps the default zone), validates the zone exists, and carries the protocol-correct port set; verified on the production IOC server 2026-09-03 (second apply `failed=0`, PVA zone carries UDP 5075); [detail](#m10---route-epics-firewall-ports-to-per-service-zones-on-a-multi-homed-ioc-server) |
 | Core | M11 | Install the requested version in the app and EPICS roles | Milestone | Complete | No | D11 | The con/procServ/conserver and EPICS roles drop the install-once guard and install the requested version on every apply (EPICS re-checks out the tag; `epics_clone_mode` picks minimal single-OS or full multi-OS); verified on the production IOC server 2026-09-04 (con 1.1.0 replaced by 1.2.0, full mode carries every OS tree, second apply `failed=0`); delivered in `fd4ff1c`/`13bc8e6`; [detail](#m11---install-the-requested-version-in-the-app-and-epics-roles) |
 | Core | M12 | Keep /run/cloud-init world-readable after the in-build cloud-init upgrade | Milestone | Complete | No | D12 | After `roles/epics_build` runs on a rocky epics-dev guest, `/run/cloud-init` is 0755 and an unprivileged `cloud-init status --long` prints, both immediately and after a later `systemd-tmpfiles --create`; debian/ubuntu unaffected; [detail](#m12---keep-runcloud-init-world-readable-after-the-in-build-cloud-init-upgrade) |
-| Core | M13 | Install Python dev headers on the RedHat family so source builds compile | Milestone | In progress | No | D13 | The default `pkg_python_redhat` and the rocky8 override carry the Python dev-header package so `Python.h` is present on rocky8/rocky10 and pyDevSup compiles on the Rocky `gz` path; debian unaffected; [detail](#m13---install-python-dev-headers-on-the-redhat-family-so-source-builds-compile) |
+| Core | M13 | Fix RedHat python provisioning for EPICS source builds | Milestone | In progress | No | D13, D14 | The RedHat python operator installs Python dev headers and makes `python3` resolve to the intended version, so `Python.h` is present and pyDevSup compiles on rocky8/rocky10; debian unaffected; [detail](#m13---fix-redhat-python-provisioning-for-epics-source-builds) |
 | Gate | G1 | the production IOC server reaches the internal git host | External gate | Complete | No | | Reachability achieved through the site HTTP proxy's CONNECT tunnel (an ssh `ProxyCommand` over the proxy), not a firewall whitelist: the owner's key authenticates and `git ls-remote` returns the refs; confirmed 2026-09-03 by the successful iocserver clone (M4/T2) |
 
 ### Decisions
@@ -116,6 +116,7 @@ Status tally: 11 Complete, 1 In progress, 0 Not started, 1 Deferred. 1 external 
 | D10 | EPICS firewall ports are opened per service in site-configurable firewalld zones (`epics_ca_zone`, `epics_pva_zone`; empty keeps the default zone for single-homed hosts) because a multi-homed IOC server binds CA and PVA to different interfaces and zones, where the default zone carries no interface. The role validates that a named zone exists and fails loudly rather than silently skipping; it does not create zones (site infrastructure). The port sets follow the protocol constants — CA 5064 TCP+UDP and 5065 UDP, PVA 5075 TCP+UDP and 5076 UDP — dropping the previously opened 5065/TCP, which is not an EPICS port. | Owner decision, 2026-09-03 |
 | D12 | The rocky-family in-place cloud-init upgrade run by `roles/epics_build`'s `dnf update` fires rpm's tmpfiles trigger, which resets `/run/cloud-init` to 0700 until the next boot and breaks an unprivileged `cloud-init status`. The fix lands in the role that causes it, not cloud-provision's cloud-init templates: cloud-provision recorded a Closed Door (2026-09-08, commit `47c1bb5`) because a template runcmd would move the proxy apply out of last position (proxy ADR D018). The role writes an `/etc/tmpfiles.d/cloud-init.conf` override (`d /run/cloud-init 0755 root root - -`) that shadows the vendor rule and applies it immediately with `systemd-tmpfiles --create`, chosen over a one-shot `chmod` because the override also survives a later `systemd-tmpfiles --create`. Rocky family only; debian ships no such rule. Mirrors the 2026-08-17 vmadmin-home 0700 precedent, fixed in ansible-provision. | Owner decision, 2026-09-09 |
 | D13 | The RedHat-family python provisioning gap - no Python dev headers, so a pyDevSup C extension fails with `Python.h` missing on Rocky - is fixed in `roles/python` by mirroring the Debian `python3-dev`: add `python3-devel` to the default `pkg_python_redhat` (reaching rocky10 and any generic RedHat vacuum) and `python39-devel` to the rocky8 override (matching its 3.9 module). The milestone and GitHub issue (#25) are recorded before the code change; implementation status and live rocky verification (T2) are tracked in the M13 detail. | Owner decision, 2026-09-10 |
+| D14 | The rocky8 python operator set only the unversioned `python` alternative, leaving `python3` at the system 3.6, so pyDevSup built against absent 3.6 headers. The operator now sets a `runtime_python_alts` list of name -> path pairs, applying each only when its alternatives group exists and failing loudly when a present group cannot be set (replacing the silent `\|\| true`). rocky8 sets `python3 -> /usr/bin/python3.9` (the versioned target pyDevSup reads) and `python -> /usr/bin/python3` (which then follows python3 to 3.9); setting `python -> python3.9` directly is avoided because the unversioned `python` group does not reliably register `python3.9`. The system python 3.6 is kept, not removed: RHEL8 platform-python depends on it, so the supported switch is alternatives. | Owner decision, 2026-09-11 |
 
 ### Milestone Details
 
@@ -1050,7 +1051,7 @@ proxy ADR D018); the operator-path mitigation cloud-provision already shipped
 | T1 | 2026-09-09 | control host | Passed | ansible `--syntax-check` on the epics_build operator playbook passes; the RAW_STYLE even single-quote count holds (build block 34) |
 | T2 | 2026-09-09 | a rocky10 epics-dev guest | Passed | Pre-state already showed the post-upgrade bug: `/run/cloud-init` at 0700, the vendor rule 0700, no `/etc` override, and an unprivileged `cloud-init status --long` aborting with a permission traceback. Running the role's verbatim override step as root (write `/etc/tmpfiles.d/cloud-init.conf` as `d /run/cloud-init 0755 root root - -`; `systemd-tmpfiles --create /etc/tmpfiles.d/cloud-init.conf`) took the directory to 0755 and `cloud-init status --long` then printed `status: done`. A subsequent full `systemd-tmpfiles --create` - the rpm tmpfiles trigger - left it at 0755 with status still printing; the `/etc` override shadows the `/usr/lib` vendor rule. `dnf update` was not re-run because the guest already carried the post-upgrade 0700 state. |
 
-#### M13 - Install Python dev headers on the RedHat family so source builds compile
+#### M13 - Fix RedHat python provisioning for EPICS source builds
 
 - Origin: 38560eb / M13
 - GitHub Issue: #25, https://github.com/jeonghanlee/ansible-provision/issues/25
@@ -1058,40 +1059,54 @@ proxy ADR D018); the operator-path mitigation cloud-provision already shipped
 
 ##### Summary
 
-The `python` operator installs Python dev headers (`Python.h`) on the Debian
-family (`pkg_python_debian` carries `python3-dev`) but not on the RedHat family:
-`roles/python/tasks/main.yml` installs `pkg_python_redhat + pkg_python_system`
-and neither list carries a `*-devel` package. Any EPICS component that compiles
-a C extension against Python fails on Rocky. Surfaced by re-adding pyDevSup on a
-rocky8 epics-dev guest (EPICS-env release-1.4.0, `make build.gz`, Layer 1):
-`fatal error: Python.h: No such file or directory`.
+The `python` operator leaves the RedHat family unable to build EPICS Python
+components, in two ways. First, it installs Python dev headers (`Python.h`) on
+Debian (`pkg_python_debian` carries `python3-dev`) but not on RedHat:
+`roles/python/tasks/main.yml` installs `pkg_python_redhat + pkg_python_system`,
+and neither list carried a `*-devel` package. Second, on rocky8 the operator set
+only the unversioned `python` alternative, not `python3`, so `python3` stayed the
+system 3.6 and pyDevSup's makehelper compiled against the absent 3.6 headers.
+Both surfaced by re-adding pyDevSup on a rocky8 epics-dev guest (EPICS-env
+release-1.4.0, `make build.gz`, Layer 1): `fatal error: Python.h: No such file
+or directory`.
 
 ##### Scope
 
-`roles/python/defaults/main.yml` (default `pkg_python_redhat`) and
-`inventory/group_vars/rocky8.yml` (the rocky8 `pkg_python_redhat` override). Add
-`python3-devel` to the default (reaching rocky10 and any generic RedHat vacuum)
-and `python39-devel` to the rocky8 override (matching its python 3.9 module).
+Dev headers: `roles/python/defaults/main.yml` (default `pkg_python_redhat`, add
+`python3-devel` for rocky10 and any generic RedHat vacuum) and
+`inventory/group_vars/rocky8.yml` (rocky8 override, add `python39-devel` for its
+3.9 module).
 
-Out of scope: the debian family (already carries `python3-dev`); the target
-python version per OS beyond the current selections (rocky8 python 3.9 module,
-rocky10 system python3).
+Alternatives: `roles/python/tasks/main.yml` sets the python command alternatives
+from a `runtime_python_alts` list of name -> path pairs, applying each only when
+its alternatives group exists and failing loudly when a present group cannot be
+set. The default sets `python -> /usr/bin/python3`; rocky8 adds
+`python3 -> /usr/bin/python3.9` and keeps `python -> /usr/bin/python3`, which
+then follows python3 to 3.9.
+
+Out of scope: the debian family (already carries `python3-dev` and
+`python-is-python3`); removing the system python 3.6 on rocky8 (RHEL8
+platform-python depends on it, so the switch is via alternatives, not removal);
+the target python version per OS beyond the current selections.
 
 ##### Completion Criteria
 
-- `Python.h` is present on rocky8 and rocky10 epics-dev guests after the
-  `python` operator runs.
+- After the `python` operator runs on a rocky8 guest, `python3` resolves to 3.9
+  and `Python.h` is present under that version's include dir.
+- On rocky10 (and generic RedHat), `python3-devel` provides `Python.h` for the
+  system python3.
 - pyDevSup compiles on the Rocky `gz` build path.
 - The debian path is unaffected.
 
 ##### Dependencies And Decisions
 
-- Owner decision `D13` (2026-09-10).
-- Delegated by the EPICS-env session (jeonghanlee/EPICS-env#71); the RedHat
-  provisioning gap verified here against `roles/python` and the rocky
-  group_vars.
-- The code fix is implemented; T2 live rocky verification follows on VM
-  availability (needs a rocky8 and a rocky10 epics-dev guest).
+- Owner decisions `D13` (dev headers, 2026-09-10) and `D14` (python
+  alternatives, 2026-09-11).
+- Delegated by the EPICS-env session (jeonghanlee/EPICS-env#71); both defects
+  verified here against `roles/python` and the rocky group_vars, the
+  alternatives defect confirmed by that session on a rocky8 guest.
+- The code for both fixes is implemented; T2 live rocky verification follows on
+  VM availability (needs a rocky8 and a rocky10 epics-dev guest).
 
 ##### Implementation Plan
 
@@ -1104,22 +1119,25 @@ rocky10 system python3).
    `roles/python/defaults/main.yml`.
 2. Add `python39-devel` to the `pkg_python_redhat` override in
    `inventory/group_vars/rocky8.yml`.
-3. Verify the exact dnf package names on a live rocky8/rocky10 guest before
-   claiming the fix.
+3. Replace the single `alternatives --set` with a `runtime_python_alts`
+   name -> path list looped in `roles/python/tasks/main.yml`: set each only if
+   its group exists, fail loudly otherwise; rocky8 adds `python3 -> 3.9`.
+4. Verify on a live rocky8/rocky10 guest that `python3` resolves correctly,
+   `Python.h` is present, and pyDevSup builds.
 
 ##### Test Plan
 
 | Label | Layer | Method | Environment | Expected Result |
 | --- | --- | --- | --- | --- |
-| T1 | Mechanism | ansible `--syntax-check` on the python operator; both edited var files parse as valid YAML | control host | Syntax passes; the two var files are well-formed |
-| T2 | Integration | Run the `python` operator on rocky8 and rocky10 epics-dev guests, then check `Python.h` presence and a pyDevSup `gz` build | rocky8 and rocky10 epics-dev guests | `Python.h` present under the target python include dir; pyDevSup compiles; debian unaffected |
+| T1 | Mechanism | ansible `--syntax-check` on the python operator; all edited files parse as valid YAML; the `runtime_python_alts` loop renders the expected `name:path` tokens; RAW_STYLE single-quote parity holds | control host | Syntax passes; files well-formed; rocky8 renders `python:/usr/bin/python3 python3:/usr/bin/python3.9` |
+| T2 | Integration | Run the `python` operator on rocky8 and rocky10 epics-dev guests, then check that `python3` resolves to the intended version, `Python.h` is present, and pyDevSup builds `gz` | rocky8 and rocky10 epics-dev guests | rocky8 `python3` -> 3.9 with `Python.h`; rocky10 system python3 with `python3-devel`; pyDevSup compiles; debian unaffected |
 
 ##### Verification Results
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
-| T1 | 2026-09-11 | control host | Passed | `ansible-playbook -i inventory/lab.ini playbooks/operators/python.yml --syntax-check` exits 0; both edited var files parse as valid YAML - `python3-devel` in the default `pkg_python_redhat`, `python39-devel` in the rocky8 override |
-| T2 | 2026-09-11 (partial) | a rocky8-family host | Pending | Partial: `rpm -ql python39-devel` resolves `/usr/include/python3.9/Python.h`, confirming the rocky8 package name and header path. Still pending: the `python` operator apply on clean rocky8/rocky10 epics-dev guests, the rocky10 `python3-devel` header, and a pyDevSup `gz` build |
+| T1 | 2026-09-11 | control host | Passed | `--syntax-check` exits 0; all edited files valid YAML; the `runtime_python_alts` loop renders `python:/usr/bin/python3 python3:/usr/bin/python3.9` on rocky8; RAW_STYLE single-quote parity holds (raw block 8, even) |
+| T2 | 2026-09-11 (partial) | a rocky8-family host | Pending | Partial: `rpm -ql python39-devel` resolves `/usr/include/python3.9/Python.h` (rocky8 header path), and the EPICS-env session confirmed pyDevSup builds once `python3` is forced to 3.9. Still pending: a clean operator run confirming the operator itself sets `python3` -> 3.9 (the partial used a manual `alternatives --set`), the rocky10 `python3-devel` header, and a pyDevSup `gz` build on both |
 
 ## Backlog
 
