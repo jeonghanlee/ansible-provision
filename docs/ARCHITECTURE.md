@@ -255,7 +255,8 @@ ioc-runner CLI install
   ├── copy completion → /etc/bash_completion.d/
   └── verify ioc-runner -V, list -vv, and inspect help
 
-mkdir /opt/epics-iocs (2775, root:ioc)
+mkdir /opt/epics-iocs (2775, root:ioc, default ACL g:ioc:rwx)
+mkdir /opt/epics-pvinfo{,/env,/names} (2775, root:ioc, default ACL g:ioc:rwx)
 usermod -aG ioc {{ epics_ioc_engineers }}
 ```
 

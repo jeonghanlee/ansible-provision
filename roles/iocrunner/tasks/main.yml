@@ -68,6 +68,18 @@
     mkdir -p /opt/epics-iocs
     chown root:ioc /opt/epics-iocs
     chmod 2775 /opt/epics-iocs
+    setfacl -d -m g:ioc:rwx /opt/epics-iocs
+    setfacl -d -m o::rx /opt/epics-iocs
+  changed_when: false
+
+- name: Create shared IOC PV-info directories
+  ansible.builtin.raw: |
+    set -e
+    mkdir -p /opt/epics-pvinfo /opt/epics-pvinfo/env /opt/epics-pvinfo/names
+    chown root:ioc /opt/epics-pvinfo /opt/epics-pvinfo/env /opt/epics-pvinfo/names
+    chmod 2775 /opt/epics-pvinfo /opt/epics-pvinfo/env /opt/epics-pvinfo/names
+    setfacl -d -m g:ioc:rwx /opt/epics-pvinfo /opt/epics-pvinfo/env /opt/epics-pvinfo/names
+    setfacl -d -m o::rx /opt/epics-pvinfo /opt/epics-pvinfo/env /opt/epics-pvinfo/names
   changed_when: false
 
 - name: Add engineers to ioc group
