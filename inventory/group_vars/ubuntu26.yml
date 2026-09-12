@@ -34,7 +34,6 @@ epics_os_packages:
   - remake
   - libudev-dev
   - libsystemd-dev
-  - linux-source
   - libblosc-dev
   - libtiff-dev
   - libjpeg-dev

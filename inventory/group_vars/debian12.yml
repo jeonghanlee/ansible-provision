@@ -26,7 +26,6 @@ epics_os_packages:
   - remake
   - libudev-dev
   - libsystemd-dev
-  - linux-source
   - libxml2-dev
   - libnetcdf-dev
   - libhdf5-dev
