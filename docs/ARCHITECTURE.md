@@ -361,7 +361,7 @@ group_vars or carry its own complete group_vars tree.
 | `repo_epics` / `epics_install_group` | Ansible / group_vars/all.yml (empty group leaves the install root owned by the IOC engineer) |
 | `epics_clone_mode` | Ansible / group_vars/all.yml (default `minimal` is a shallow single-OS checkout for a Docker or single-OS host; `full` on a production NFS server clones every OS tree under the pinned version) |
 | `epics_ca_zone` / `epics_pva_zone` | Ansible / group_vars/all.yml (empty opens the EPICS ports in the default firewalld zone; a named zone must already exist and is never created by the role) |
-| `runtime_python_alt_path` | Ansible / group_vars per OS (`rocky8.yml` selects `/usr/bin/python3.9`) |
+| `runtime_python_alts` | Ansible / group_vars per OS (RedHat family; `name -> path` pairs set via alternatives, each applied only where its group exists; `rocky8.yml` adds `python3` -> `/usr/bin/python3.9`) |
 
 **Identity invariant** (must hold; only partially derived): the SSH
 user (`ansible_user`), the first IOC engineer
