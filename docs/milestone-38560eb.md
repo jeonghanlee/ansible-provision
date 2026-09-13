@@ -96,9 +96,9 @@ Status tally: 12 Complete, 0 In progress, 0 Not started, 1 Deferred, 1 Blocked. 
 | Core | M11 | Install the requested version in the app and EPICS roles | Milestone | Complete | No | D11 | The con/procServ/conserver and EPICS roles drop the install-once guard and install the requested version on every apply (EPICS re-checks out the tag; `epics_clone_mode` picks minimal single-OS or full multi-OS); verified on the production IOC server 2026-09-04 (con 1.1.0 replaced by 1.2.0, full mode carries every OS tree, second apply `failed=0`); delivered in `fd4ff1c`/`13bc8e6`; [detail](#m11---install-the-requested-version-in-the-app-and-epics-roles) |
 | Core | M12 | Keep /run/cloud-init world-readable after the in-build cloud-init upgrade | Milestone | Complete | No | D12 | After `roles/epics_build` runs on a rocky epics-dev guest, `/run/cloud-init` is 0755 and an unprivileged `cloud-init status --long` prints, both immediately and after a later `systemd-tmpfiles --create`; debian/ubuntu unaffected; [detail](#m12---keep-runcloud-init-world-readable-after-the-in-build-cloud-init-upgrade) |
 | Core | M13 | Fix RedHat python provisioning for EPICS source builds | Milestone | Complete | No | D13, D14 | The RedHat python operator installs Python dev headers and makes `python3` resolve to the intended version, so `Python.h` is present and pyDevSup compiles on rocky8/rocky10; debian unaffected; [detail](#m13---fix-redhat-python-provisioning-for-epics-source-builds) |
-| Core | M14 | Middleware server provisioning (pinned Java/Maven, Phoebus) | Milestone | Blocked | No | G2 | A middleware species provisions a pinned non-system OpenJDK/Maven and the Phoebus middleware on a middleware host, layered on the common+epics base, with internal specifics supplied through the site override layer; blocked until the cloud-provision package baseline and middleware VM land (G2); [detail](#m14---middleware-server-provisioning-pinned-javamaven-phoebus) |
+| Core | M14 | Middleware server provisioning (Archiver Appliance, Phoebus) | Milestone | Blocked | No | G2 | A middleware species provisions the EPICS Archiver Appliance and Phoebus, each independently selectable, on a middleware host layered on the common+epics base - system Java (distribution OpenJDK 21 with `JAVA_HOME`), Tomcat 9.0.121, MariaDB, the applications from their binary distribution repositories (species `archiver`, `phoebus`) or from source (`archiver-dev`, `phoebus-dev`), combinable as `middleware`, group `mid` / user `mid-srv` - with internal specifics supplied through the site override layer; blocked until the cloud-provision operator/species structure, package baseline, and middleware VM land (G2); [detail](#m14---middleware-server-provisioning-archiver-appliance-phoebus) |
 | Gate | G1 | the production IOC server reaches the internal git host | External gate | Complete | No | | Reachability achieved through the site HTTP proxy's CONNECT tunnel (an ssh `ProxyCommand` over the proxy), not a firewall whitelist: the owner's key authenticates and `git ls-remote` returns the refs; confirmed 2026-09-03 by the successful iocserver clone (M4/T2) |
-| Gate | G2 | cloud-provision ships the middleware package baseline and the middleware VM | External gate | Open | No | | The middleware OS package set (pinned Java/Maven dependencies, Phoebus build dependencies) originates in cloud-provision as the normative source and a middleware VM is provisionable there, before ansible-provision mirrors the set and layers its roles; owned by the cloud-provision session |
+| Gate | G2 | cloud-provision ships the middleware package baseline and the middleware VM | External gate | Open | No | | The middleware operator/species structure and OS package baseline (system OpenJDK 21, Tomcat 9.0.121, MariaDB; no Maven package) originate in cloud-provision (`docs/milestone-e260630.md` M11) as the normative source and a middleware VM is provisionable there, before ansible-provision mirrors the set and layers its roles; owned by the cloud-provision session |
 
 ### Decisions
 
@@ -119,6 +119,7 @@ Status tally: 12 Complete, 0 In progress, 0 Not started, 1 Deferred, 1 Blocked. 
 | D13 | The RedHat-family python provisioning gap - no Python dev headers, so a pyDevSup C extension fails with `Python.h` missing on Rocky - is fixed in `roles/python` by mirroring the Debian `python3-dev`: add `python3-devel` to the default `pkg_python_redhat` (reaching rocky10 and any generic RedHat vacuum) and `python39-devel` to the rocky8 override (matching its 3.9 module). The milestone and GitHub issue (#25) are recorded before the code change; implementation status and live rocky verification (T2) are tracked in the M13 detail. | Owner decision, 2026-09-10 |
 | D14 | The rocky8 python operator set only the unversioned `python` alternative, leaving `python3` at the system 3.6, so pyDevSup built against absent 3.6 headers. The operator now sets a `runtime_python_alts` list of name -> path pairs, applying each only when its alternatives group exists and failing loudly when a present group cannot be set (replacing the silent `\|\| true`). rocky8 sets `python3 -> /usr/bin/python3.9` (the versioned target pyDevSup reads) and `python -> /usr/bin/python3` (which then follows python3 to 3.9); setting `python -> python3.9` directly is avoided because the unversioned `python` group does not reliably register `python3.9`. The system python 3.6 is kept, not removed: RHEL8 platform-python depends on it, so the supported switch is alternatives. | Owner decision, 2026-09-11 |
 | D15 | Middleware server provisioning (a middleware server, the middleware counterpart of the IOC dev host) is built in ansible-provision the same way the IOC species are: a new `java` operator role pins a non-system OpenJDK/Maven (dnf module stream + `alternatives`, with override keys `maven_module_version`/`pkg_java`/`java_alternatives_path` and a Maven settings template) and a middleware species layers it on `common`+`epics`, with Phoebus as the middleware application and a middleware group analogous to `ioc`. The internal lineage origin these repos derive from is a substance reference only (OpenJDK 21 + Maven 3.8, Phoebus); internal endpoints stay out of this public repository and are supplied through the site override layer. The cloud-provision package baseline and the middleware VM are the normative source and land first (G2). Sub-decisions left pending: increment scope (Java/Maven runtime first vs with Phoebus), the middleware group name and GID policy, the pinned Java default version, and the species name and target vacuum. | Owner decision, 2026-09-11 |
+| D16 | Middleware server provisioning follows the cloud-provision middleware plan (`docs/milestone-e260630.md` M11, D2, D3): system Java (the distribution OpenJDK 21 with `JAVA_HOME` at the distribution path), no non-system pin and no Maven package (aa-maven supplies Maven 3.9.9 through its Maven Wrapper on the source-build path only), Tomcat 9.0.121 as the shared `CATALINA_HOME` and MariaDB (SQLite later) as the Archiver Appliance baseline, the Archiver Appliance and Phoebus installed from their binary distribution repositories (aa-distribution, phoebus-distribution) with source-build alternatives, and service group `mid` / user `mid-srv` parallel to `ioc` / `ioc-srv`. Supersedes the pinned non-system OpenJDK/Maven and Phoebus-build substance of `D15`; the ansible-provision-way build and the site override layer from `D15` stand. | Owner decision, 2026-09-12 |
 
 ### Milestone Details
 
@@ -1146,60 +1147,92 @@ the target python version per OS beyond the current selections.
 - Delivered in af239dd (dev headers), 37829b5 (python3 alternatives), and 54b32c6 (absent-group if-guard).
 - T2 Passed 2026-09-11 (EPICS-env session): rocky8 and rocky10 clean operator runs with no manual override, pyDevSup built on both; full public gz matrix 6/6.
 
-#### M14 - Middleware server provisioning (pinned Java/Maven, Phoebus)
+#### M14 - Middleware server provisioning (Archiver Appliance, Phoebus)
 
 - Origin: 38560eb / M14
 - Status: Blocked (on G2)
 
 ##### Summary
 
-A middleware server (the middleware counterpart of the IOC dev host) needs a
-pinned, non-system Java/Maven runtime and the Phoebus middleware, provisioned
-the same way the IOC species are. ansible-provision grows a `java` operator
-role and a middleware species; the middleware OS package baseline and the
-middleware VM originate in cloud-provision (`G2`) as the normative source and
-land first.
+A middleware server (the middleware counterpart of the IOC dev host) hosts the
+EPICS Archiver Appliance and Phoebus, each independently selectable, on the
+`common` + `epics` base, provisioned the same way the IOC species are. It runs
+the system Java (the distribution OpenJDK 21 with `JAVA_HOME` exported), Tomcat
+9.0.121 as the shared `CATALINA_HOME`, and MariaDB as the Archiver Appliance
+configuration database; the applications install from their binary distribution
+repositories, each with a source-build alternative. ansible-provision mirrors
+the operator/species structure and the middleware OS package baseline that
+originate in cloud-provision (`G2`) as the normative source and land first.
 
 ##### Scope
 
-- A `java` operator role: remove any stock OpenJDK/Maven, select the pinned
-  Maven module stream, install the pinned non-system OpenJDK/Maven, set it as
-  the default `java` through `alternatives`, and deploy a Maven settings
-  template. Version and proxy values are exposed as override keys
-  (`maven_module_version`, `pkg_java`, `java_alternatives_path`, the Maven
-  proxy host) with neutral public defaults.
-- A middleware species that layers the `java` operator (and a Phoebus
-  application operator) on the `common` + `epics` base, plus a middleware group
-  analogous to `ioc`, run as `make <species>.<vacuum>`.
-- Internal endpoints (proxy, internal git remote, the exact pinned path, NTP)
-  are supplied through the site override layer, not committed here.
+- A `java` operator: install the distribution OpenJDK 21 JDK (the development
+  package, not the headless runtime) from the mirrored package set and export
+  `JAVA_HOME` at the distribution JDK path (family-specific, exposed as an
+  override key with the distribution default). No non-system pin and no Maven
+  package: the source-build path obtains Maven 3.9.9 through the aa-maven
+  Maven Wrapper (`./mvnw`).
+- A `tomcat` operator: Tomcat 9.0.121 (Apache tarball) as the shared
+  `CATALINA_HOME` only; the Archiver Appliance instance skeleton, `server.xml`
+  / `context.xml`, and schema stay with aa-env.
+- A `mariadb` operator: the MariaDB server with the `archappl` database and
+  user, kept a separable module because aa-env replaces it with SQLite later.
+- Application operators `archiver` and `phoebus`: install the aa-distribution
+  WARs and the phoebus-distribution binary, each paired with a source-build
+  operator (`archiver-build` builds aa-maven at its freeze tag with `./mvnw`
+  and needs `JAVA_HOME`, git with an origin ref, openssh-client, outbound HTTPS,
+  and `-Dsphinx.skip=true`; `phoebus-build` builds Phoebus from source).
+- Species `archiver` and `archiver-dev` (distribution install / source build),
+  `phoebus` and `phoebus-dev`, and `middleware` (the selectable combination)
+  layer those operators on `common` + `epics`, with the service group `mid` and
+  user `mid-srv` parallel to `ioc` / `ioc-srv`, run as `make <species>.<vacuum>`.
+- Version values (Tomcat, distribution refs) are override keys with neutral
+  public defaults; internal endpoints (proxy, internal git remote, NTP) are
+  supplied through the site override layer, not committed here.
 
-Out of scope: the cloud-provision middleware package baseline and the
-middleware VM (`G2`, owned by the cloud-provision session); the site override
-values (the `server-configuration` repository); the Phoebus product build
-itself beyond invoking its published build.
+Out of scope: the cloud-provision operator/species structure, middleware
+package baseline, and middleware VM (`G2`, owned by the cloud-provision
+session); creating and populating the aa-distribution and phoebus-distribution
+repositories (aa-env and phoebus-env); the Archiver Appliance instance layout
+and schema (aa-env); the site override values (the `server-configuration`
+repository); Maven as an installed package.
 
 ##### Completion Criteria
 
-- The middleware species provisions the pinned non-system Java/Maven (the
-  default `java` resolves to the pinned OpenJDK) and the Phoebus middleware on a
-  middleware host, layered on `common` + `epics`.
-- Version and proxy values are override keys with neutral public defaults; no
-  internal endpoint is committed to this repository.
+- The middleware species provisions the distribution OpenJDK 21 JDK with
+  `JAVA_HOME` at its path, Tomcat 9.0.121 at the shared `CATALINA_HOME`,
+  MariaDB with the `archappl` database, and the selected applications
+  (Archiver Appliance WARs, Phoebus binary) on a middleware host, layered on
+  `common` + `epics`, under group `mid` / user `mid-srv`.
+- The `archiver-dev` and `phoebus-dev` species provision the same applications
+  through their source-build operators; no non-system Java pin and no Maven
+  package are installed, and the Archiver Appliance build runs through `./mvnw`.
+- Version values are override keys with neutral public defaults; no internal
+  endpoint is committed to this repository.
 - The species runs as `make <species>.<vacuum>` and a re-apply is idempotent.
 
 ##### Dependencies And Decisions
 
-- `G2` (Open): cloud-provision ships the middleware OS package baseline and the
-  middleware VM as the normative source. `M14` is Blocked until `G2` is
+- `G2` (Open): cloud-provision ships the middleware operator/species structure,
+  the middleware OS package baseline (system OpenJDK 21, Tomcat 9.0.121,
+  MariaDB), and the middleware VM as the normative source (cloud-provision
+  `docs/milestone-e260630.md` M11, D2, D3). `M14` is Blocked until `G2` is
   Complete, then resumes as Not started.
-- `D15` (owner, 2026-09-11): build it the ansible-provision way; the internal
-  lineage origin is a substance reference only (OpenJDK 21 + Maven 3.8,
-  Phoebus); internal specifics via the site override layer.
+- `D15` (owner, 2026-09-11): build it the ansible-provision way; internal
+  specifics via the site override layer. Its pinned non-system Java/Maven and
+  Phoebus-build substance is superseded by `D16`.
+- `D16` (owner, 2026-09-12): system Java with `JAVA_HOME`, no Maven package
+  (aa-maven wrapper on the source-build path), Tomcat 9.0.121 and MariaDB as
+  the Archiver Appliance baseline, Archiver Appliance and Phoebus from their
+  binary distribution repositories with source-build alternatives, group `mid`
+  / user `mid-srv`.
 - Sub-decisions pending (owner, to set at the implementation increment):
-  increment scope (Java/Maven runtime first vs with Phoebus); the middleware
-  group name and GID policy; the pinned Java default version; the species name
-  and target vacuum.
+  increment scope (source-build species first vs the distribution path
+  alongside); the `mid` group GID policy; the target vacuum (cloud-provision
+  proposes rocky8); Maven proxy settings for the source-build species behind
+  the site proxy (a settings.xml template or `MAVEN_OPTS`, since Maven does
+  not read the proxy environment variables the `proxy` role exports; owner:
+  ansible-provision or aa-maven).
 
 ##### Implementation Plan
 
@@ -1208,19 +1241,21 @@ itself beyond invoking its published build.
 - Implementation Authorization: none
 - Superseded Plan Artifacts: none
 
-1. After `G2`, mirror the middleware OS package set from cloud-provision per the
-   existing package seam.
-2. Add the `java` operator role (pinned OpenJDK/Maven via `alternatives`,
-   override keys, Maven settings template).
-3. Add the middleware species and group, and the Phoebus application operator
-   per the pending increment-scope decision.
+1. After `G2`, mirror the middleware OS package baseline (system OpenJDK 21,
+   Tomcat 9.0.121, MariaDB) from cloud-provision per the existing package seam.
+2. Add the `java` (distribution JDK + `JAVA_HOME`), `tomcat` (9.0.121 shared
+   `CATALINA_HOME`), and `mariadb` operators.
+3. Add the `archiver` and `phoebus` application operators with their
+   source-build operators, the `mid` group and `mid-srv` user, and the
+   `archiver` / `archiver-dev` / `phoebus` / `phoebus-dev` / `middleware`
+   species per the pending increment-scope decision.
 
 ##### Test Plan
 
 | Label | Layer | Method | Environment | Expected Result |
 | --- | --- | --- | --- | --- |
-| T1 | Structure | Syntax-check the middleware species and confirm it is enumerated in `configure/RELEASE` and `inventory/lab.ini` | control host | The species resolves its operator imports and is registered. |
-| T2 | Integration | Apply the middleware species on a middleware host and inspect `java -version`, `mvn -version`, and the Phoebus install | middleware host | `java` resolves to the pinned OpenJDK, Maven is the pinned stream, Phoebus is installed; a re-apply is idempotent. |
+| T1 | Structure | Syntax-check the middleware species and confirm they are enumerated in `configure/RELEASE` and `inventory/lab.ini` | control host | The species resolve their operator imports and are registered. |
+| T2 | Integration | Apply the middleware species on a middleware host and inspect `JAVA_HOME`, `$JAVA_HOME/bin/java -version`, the Tomcat `CATALINA_HOME`, the MariaDB service, the `mid` group and `mid-srv` user, and the installed application artifacts | middleware host | `JAVA_HOME` points to the distribution JDK path and its `java -version` reports the distribution OpenJDK 21, no Maven package is installed, Tomcat 9.0.121 and MariaDB are present, the selected applications are installed under `mid` / `mid-srv`; a re-apply is idempotent. |
 
 ##### Verification Results
 
