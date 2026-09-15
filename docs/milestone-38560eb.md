@@ -1216,8 +1216,9 @@ repository); Maven as an installed package.
 - `G2` (Open): cloud-provision ships the middleware operator/species structure,
   the middleware OS package baseline (system OpenJDK 21, Tomcat 9.0.121,
   MariaDB), and the middleware VM as the normative source (cloud-provision
-  `docs/milestone-e260630.md` M11, D2, D3). `M14` is Blocked until `G2` is
-  Complete, then resumes as Not started.
+  `docs/milestone-e260630.md` M11, D2, D3). `M14`'s row stays Blocked while `G2`
+  is Open, but implementation proceeds on the branch (develop-before-merge, see
+  Implementation Plan); the row completes when M11 merges (`G2`) and M14/T2 passes.
 - `D15` (owner, 2026-09-11): build it the ansible-provision way; internal
   specifics via the site override layer. Its pinned non-system Java/Maven and
   Phoebus-build substance is superseded by `D16`.
@@ -1226,29 +1227,40 @@ repository); Maven as an installed package.
   the Archiver Appliance baseline, Archiver Appliance and Phoebus from their
   binary distribution repositories with source-build alternatives, group `mid`
   / user `mid-srv`.
-- Sub-decisions pending (owner, to set at the implementation increment):
-  increment scope (source-build species first vs the distribution path
-  alongside); the `mid` group GID policy; the target vacuum (cloud-provision
-  proposes rocky8); Maven proxy settings for the source-build species behind
-  the site proxy (a settings.xml template or `MAVEN_OPTS`, since Maven does
-  not read the proxy environment variables the `proxy` role exports; owner:
-  ansible-provision or aa-maven).
+- Sub-decisions resolved (owner, 2026-09-14): increment scope - the
+  source-build path first, first increment `archiver-dev` (`java` + `tomcat` +
+  `mariadb` + `archiver-build` + the `archiver-dev` species), matching the
+  cloud-provision M11/T2 live gate; target vacuum - rocky8 first
+  (cloud-provision's proposal), debian13 to follow; the `mid` group GID follows
+  the `ioc`/`ioc-srv` precedent (a site-set GID via an override key); Maven proxy
+  - ansible-provision supplies a `settings.xml` through the site override layer
+  (Maven does not read the proxy env vars the `proxy` role exports), pending
+  confirmation with aa-maven on ownership.
 
 ##### Implementation Plan
 
-- Plan Status: draft
-- Plan Acceptance: none
-- Implementation Authorization: none
+- Plan Status: accepted
+- Plan Acceptance: 2026-09-14
+- Implementation Authorization: 2026-09-14 (develop on branch
+  `m14-middleware-reconcile` against the cloud-provision M11 branch definition
+  `m11-middleware-operators` d52827c; merge to master after M14 and M11/T2)
 - Superseded Plan Artifacts: none
 
-1. After `G2`, mirror the middleware OS package baseline (system OpenJDK 21,
-   Tomcat 9.0.121, MariaDB) from cloud-provision per the existing package seam.
-2. Add the `java` (distribution JDK + `JAVA_HOME`), `tomcat` (9.0.121 shared
-   `CATALINA_HOME`), and `mariadb` operators.
-3. Add the `archiver` and `phoebus` application operators with their
-   source-build operators, the `mid` group and `mid-srv` user, and the
-   `archiver` / `archiver-dev` / `phoebus` / `phoebus-dev` / `middleware`
-   species per the pending increment-scope decision.
+Developed before `G2` rather than after: `G2` completes when cloud-provision M11
+merges to master, which follows M11/T2, which needs these M14 roles - so the
+non-deadlocking path is to develop on the branch against the M11 branch
+definition now (owner + LAB-CLOUD, 2026-09-14).
+
+1. First increment (`archiver-dev`, rocky8): mirror the middleware OS package
+   baseline (system OpenJDK 21, Tomcat 9.0.121, MariaDB) from the cloud-provision
+   M11 branch; add the `java` (distribution JDK + `JAVA_HOME`), `tomcat`
+   (9.0.121 shared `CATALINA_HOME`), and `mariadb` operators; add the
+   `archiver-build` operator, the `mid` group and `mid-srv` user, and the
+   `archiver-dev` species.
+2. Extend to debian13; add the distribution path (`archiver` operator and
+   `archiver` species).
+3. Add `phoebus` / `phoebus-build` and the `phoebus` / `phoebus-dev` /
+   `middleware` species.
 
 ##### Test Plan
 
