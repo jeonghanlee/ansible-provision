@@ -10,7 +10,7 @@ epics_install_group: ""
 
 # EPICS-env-distribution version selectors (epics_os_dir set per vacuum
 # in group_vars).
-epics_env_version:  "1.2.2"
+epics_env_version:  "1.3.0"
 epics_base_version: "7.0.10"
 
 # EPICS distribution clone mode. Default "minimal" suits a single-OS host or an

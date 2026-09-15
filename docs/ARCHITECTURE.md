@@ -170,7 +170,7 @@ EPICS path resolution:
 | Variable | rocky8 | debian13 |
 |---|---|---|
 | `epics_os_dir` | `rocky-8.10` | `debian-13` |
-| `epics_env_version` | `1.2.2` | `1.2.2` |
+| `epics_env_version` | `1.3.0` | `1.3.0` |
 | `epics_base_version` | `7.0.10` | `7.0.10` |
 
 ### Shared Install-Root Ownership

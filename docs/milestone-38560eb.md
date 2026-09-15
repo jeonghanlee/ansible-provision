@@ -31,10 +31,11 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: M14 starts with the standalone `java` operator and
-the existing EPICS operators, per the 2026-09-15 scope decision. Java installation,
-default commands, login `JAVA_HOME`, and re-apply passed on fresh Rocky 8.10 and
-Debian 13 VMs (M14/T3-T4); continue with the existing EPICS operators.
+Next session entry point: continue M14 with the standalone Tomcat and MariaDB
+operators. Java installation, default commands, login `JAVA_HOME`, and re-apply
+passed on Rocky 8.10 and Debian 13 VMs (M14/T3-T4). The existing EPICS distribution
+operator now defaults to 1.3.0 and passed installation, example IOC build/runtime,
+CA communication, binary dependency checks, and re-apply on both (M14/T5-T7).
 The full `archiver-dev` path follows aa-env and aa-maven readiness; M14 remains
 Blocked on G2 for completion.
 
@@ -1247,6 +1248,8 @@ repository); Maven as an installed package.
   reuse `proxy`, `common`, `provenance`, `python`, and `epics` unchanged.
   Tomcat, MariaDB, and the full `archiver-dev` assembly follow; aa-env and
   aa-maven are required for the application path.
+- EPICS distribution selector (2026-09-15): use 1.3.0 as the `epics` role
+  default, with Base 7.0.10. Existing operator behavior remains unchanged.
 
 ##### Implementation Plan
 
@@ -1285,6 +1288,9 @@ definition now (owner + LAB-CLOUD, 2026-09-14).
 | T2 | Integration | Apply the middleware species on a middleware host and inspect `JAVA_HOME`, `$JAVA_HOME/bin/java -version`, the Tomcat `CATALINA_HOME`, the MariaDB service, the `mid` group and `mid-srv` user, and the installed application artifacts | middleware host | `JAVA_HOME` points to the distribution JDK path and its `java -version` reports the distribution OpenJDK 21, no Maven package is installed, Tomcat 9.0.121 and MariaDB are present, the selected applications are installed under `mid` / `mid-srv`; a re-apply is idempotent. |
 | T3 | Integration | Apply the real `common` and `java` operators on fresh VMs; inspect the installed JDK and default commands; remove only the installed JDK development package and repeat `op.java` to verify installation change reporting | Rocky 8.10 and Debian 13 | OpenJDK and javac 21 are installed; default commands resolve under `JAVA_HOME`; actual package installation reports `changed=1`, `failed=0` |
 | T4 | Integration | Re-apply `op.java`; run the installed commands in a new login shell; compare the Java profile hash, inode, mtime, ownership and mode before and after | Rocky 8.10 and Debian 13 | Re-apply reports `changed=0`, `failed=0`; login exports the distribution `JAVA_HOME`; the profile remains identical and root:root 0644 |
+| T5 | Integration | Apply `op.provenance`, `op.python`, and `op.epics` after `common`; use the default EPICS version without extra-vars; compare checkout identity with the remote tag and inspect the OS tree and login environment | Rocky 8.10 and Debian 13 archiver-dev VMs | EPICS-env 1.3.0 / Base 7.0.10 installs, the checkout matches the remote tag, 70 module entries have live links, and sampled modules provide headers and DBD files |
+| T6 | Integration | Generate and build the shipped Base example with `makeBaseApp.pl`; run its generated startup script; read, write, and monitor its records through CA; run the unmodified EPICS-env 1.3.0 `tools/check_deps.bash` against the installed tree | Same two VMs | Example IOC builds and exits cleanly; CA read/write/readback and monitor updates pass; dependency checker exits 0 |
+| T7 | Integration | Re-apply `op.epics`; compare installed package lists, checkout state, profile content hashes, and login environment; verify Python EPICS imports and the existing Java runtime/compiler | Same two VMs | Re-apply exits 0 with no package, checkout, or environment-content drift; Python imports succeed and Java/Javac remain 21 |
 
 ##### Verification Results
 
@@ -1294,6 +1300,9 @@ definition now (owner + LAB-CLOUD, 2026-09-14).
 | T2 | pending | middleware host | Not run | |
 | T3 | 2026-09-15T07:43:13Z | Fresh Rocky 8.10 and Debian 13 archiver-dev VMs | Passed | Real Make `op.common` and `op.java` runs installed OpenJDK and javac 21.0.12.1 on both. After removal of only `java-21-openjdk-devel` or `openjdk-21-jdk-headless`, the corrected role reinstalled the package and reported `ok=1 changed=1 failed=0` on each host. Initial live execution exposed merged package output masking the change sentinel; the role now reads its final stdout line. |
 | T4 | 2026-09-15T07:43:13Z | Same Rocky 8.10 and Debian 13 VMs | Passed | The real `op.java` re-apply reported `ok=1 changed=0 failed=0` on both. Fresh `bash -l` sessions verified runtime/compiler 21.0.12.1 and command resolution under `/usr/lib/jvm/java-21-openjdk` (Rocky) or `/usr/lib/jvm/java-21-openjdk-amd64` (Debian). The profile SHA-256, inode, mtime and root:root 0644 ownership/mode matched before and after. |
+| T5 | 2026-09-15T17:12:59Z | Rocky 8.10 and Debian 13 archiver-dev VMs with common and Java installed | Passed | Real Make targets installed the prerequisites and distribution. Default 1.3.0 resolved to remote tag commit `d18e1cd0da2b62580d7d48d6e496bcb7e5757c38`; each clean sparse checkout selected its own OS tree. Login `EPICS_BASE`, profile mode/ownership, 70 module entries, live links, and calc/asyn/busy/sscan/std headers and DBD files passed. |
+| T6 | 2026-09-15T17:12:59Z | Same two VMs | Passed | Each installed Base generated and built its own example IOC using the shipped templates. Its startup script, CA read/write/readback, monitor updates, and clean exit passed. The unmodified 1.3.0 dependency checker exited 0 on both: 150 executables and 78 shared libraries, with zero RPATH, non-system ABSPATH, or lost-ORIGIN violations. Sourced ldd checks resolved softIoc/caget/caput/camonitor dependencies. |
+| T7 | 2026-09-15T17:12:59Z | Same two VMs | Passed | Real `op.epics` re-apply reported Rocky `ok=6 failed=0` and Debian `ok=5 failed=0 skipped=1`. Before/after package lists, clean checkout identity, sparse selection, profile content hashes, Python versions/imports, and login environment matched. Java and javac remained 21.0.12.1 with correct command resolution and profile ownership/mode. The existing role suppresses change reporting; `changed=0` alone is not the evidence. |
 
 Java increment observation (2026-09-15, control host): the standalone role,
 operator playbook, and `op.java` target are implemented in the working tree.
@@ -1322,6 +1331,15 @@ shell syntax, and ShellCheck passed. The verified role SHA-256 is
 The architecture tree matches the 16 existing roles and omits the absent
 legacy directories; the corrected directory description passed the maintainer
 reader check. Both accepted review findings are resolved.
+
+M14/T5-T7 verification basis: ansible-provision `b8cc658` with the EPICS
+default changed to 1.3.0. The verified `roles/epics/defaults/main.yml` SHA-256
+is `8e5af33f1ca769b714df61565335965531d88509d27a94c5f62101610b8e27cd`;
+the unchanged task file SHA-256 is
+`40cf24fdaccc673a8822f00a8f28ac683fb3824b88bed21562062f44f3fb9a36`.
+Recheck using the T5-T7 methods above on the same OS pair. This covers the
+EPICS distribution operator and a shipped example consumer; full middleware
+assembly checks T1-T2 remain unrun.
 
 ## Backlog
 
