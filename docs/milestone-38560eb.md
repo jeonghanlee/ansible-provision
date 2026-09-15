@@ -31,7 +31,14 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: no Ready work here - `M13` (RedHat python provisioning
+Next session entry point: M14 starts with the standalone `java` operator and
+the existing EPICS operators, per the 2026-09-15 scope decision. Java installation,
+default commands, login `JAVA_HOME`, and re-apply passed on fresh Rocky 8.10 and
+Debian 13 VMs (M14/T3-T4); continue with the existing EPICS operators.
+The full `archiver-dev` path follows aa-env and aa-maven readiness; M14 remains
+Blocked on G2 for completion.
+
+Milestone summary: `M13` (RedHat python provisioning
 for EPICS source builds) is Complete: rocky8 and rocky10 clean operator runs,
 pyDevSup builds on both, full public gz matrix 6/6 (issue #25). `M14` (middleware
 server provisioning) is Blocked on `G2` (cloud-provision ships the middleware
@@ -1236,12 +1243,16 @@ repository); Maven as an installed package.
   - ansible-provision supplies a `settings.xml` through the site override layer
   (Maven does not read the proxy env vars the `proxy` role exports), pending
   confirmation with aa-maven on ownership.
+- Increment order (2026-09-15): add the standalone `java` operator first and
+  reuse `proxy`, `common`, `provenance`, `python`, and `epics` unchanged.
+  Tomcat, MariaDB, and the full `archiver-dev` assembly follow; aa-env and
+  aa-maven are required for the application path.
 
 ##### Implementation Plan
 
 - Plan Status: accepted
-- Plan Acceptance: 2026-09-14
-- Implementation Authorization: 2026-09-14 (develop on branch
+- Plan Acceptance: 2026-09-15 (Java-first increment)
+- Implementation Authorization: 2026-09-15 (standalone `java` addition; develop on branch
   `m14-middleware-reconcile` against the cloud-provision M11 branch definition
   `m11-middleware-operators` d52827c; merge to master after M14 and M11/T2)
 - Superseded Plan Artifacts: none
@@ -1251,15 +1262,19 @@ merges to master, which follows M11/T2, which needs these M14 roles - so the
 non-deadlocking path is to develop on the branch against the M11 branch
 definition now (owner + LAB-CLOUD, 2026-09-14).
 
-1. First increment (`archiver-dev`, rocky8): mirror the middleware OS package
+1. Add the standalone `java` role and operator playbook, register `op.java`,
+   and document its distribution JDK defaults and site override keys. Reuse
+   the existing EPICS operators. Verify syntax and target resolution locally;
+   verify installation, alternatives, login environment, and re-apply on rocky8.
+2. Continue toward `archiver-dev`, rocky8: mirror the middleware OS package
    baseline (system OpenJDK 21, Tomcat 9.0.121, MariaDB) from the cloud-provision
-   M11 branch; add the `java` (distribution JDK + `JAVA_HOME`), `tomcat`
+   M11 branch; reuse `java` and add the `tomcat`
    (9.0.121 shared `CATALINA_HOME`), and `mariadb` operators; add the
    `archiver-build` operator, the `mid` group and `mid-srv` user, and the
    `archiver-dev` species.
-2. Extend to debian13; add the distribution path (`archiver` operator and
+3. Extend to debian13; add the distribution path (`archiver` operator and
    `archiver` species).
-3. Add `phoebus` / `phoebus-build` and the `phoebus` / `phoebus-dev` /
+4. Add `phoebus` / `phoebus-build` and the `phoebus` / `phoebus-dev` /
    `middleware` species.
 
 ##### Test Plan
@@ -1268,6 +1283,8 @@ definition now (owner + LAB-CLOUD, 2026-09-14).
 | --- | --- | --- | --- | --- |
 | T1 | Structure | Syntax-check the middleware species and confirm they are enumerated in `configure/RELEASE` and `inventory/lab.ini` | control host | The species resolve their operator imports and are registered. |
 | T2 | Integration | Apply the middleware species on a middleware host and inspect `JAVA_HOME`, `$JAVA_HOME/bin/java -version`, the Tomcat `CATALINA_HOME`, the MariaDB service, the `mid` group and `mid-srv` user, and the installed application artifacts | middleware host | `JAVA_HOME` points to the distribution JDK path and its `java -version` reports the distribution OpenJDK 21, no Maven package is installed, Tomcat 9.0.121 and MariaDB are present, the selected applications are installed under `mid` / `mid-srv`; a re-apply is idempotent. |
+| T3 | Integration | Apply the real `common` and `java` operators on fresh VMs; inspect the installed JDK and default commands; remove only the installed JDK development package and repeat `op.java` to verify installation change reporting | Rocky 8.10 and Debian 13 | OpenJDK and javac 21 are installed; default commands resolve under `JAVA_HOME`; actual package installation reports `changed=1`, `failed=0` |
+| T4 | Integration | Re-apply `op.java`; run the installed commands in a new login shell; compare the Java profile hash, inode, mtime, ownership and mode before and after | Rocky 8.10 and Debian 13 | Re-apply reports `changed=0`, `failed=0`; login exports the distribution `JAVA_HOME`; the profile remains identical and root:root 0644 |
 
 ##### Verification Results
 
@@ -1275,6 +1292,36 @@ definition now (owner + LAB-CLOUD, 2026-09-14).
 | --- | --- | --- | --- | --- |
 | T1 | pending | control host | Not run | |
 | T2 | pending | middleware host | Not run | |
+| T3 | 2026-09-15T07:43:13Z | Fresh Rocky 8.10 and Debian 13 archiver-dev VMs | Passed | Real Make `op.common` and `op.java` runs installed OpenJDK and javac 21.0.12.1 on both. After removal of only `java-21-openjdk-devel` or `openjdk-21-jdk-headless`, the corrected role reinstalled the package and reported `ok=1 changed=1 failed=0` on each host. Initial live execution exposed merged package output masking the change sentinel; the role now reads its final stdout line. |
+| T4 | 2026-09-15T07:43:13Z | Same Rocky 8.10 and Debian 13 VMs | Passed | The real `op.java` re-apply reported `ok=1 changed=0 failed=0` on both. Fresh `bash -l` sessions verified runtime/compiler 21.0.12.1 and command resolution under `/usr/lib/jvm/java-21-openjdk` (Rocky) or `/usr/lib/jvm/java-21-openjdk-amd64` (Debian). The profile SHA-256, inode, mtime and root:root 0644 ownership/mode matched before and after. |
+
+Java increment observation (2026-09-15, control host): the standalone role,
+operator playbook, and `op.java` target are implemented in the working tree.
+The real operator passes Ansible `--syntax-check`; its default-rendered raw
+body passes `sh -n`, `bash -n`, and `shellcheck -s sh`. The raw single-quote
+count is even. `make -n op.java.rocky8` resolves the operator playbook and
+Rocky 8 limit. Ansible `--check` with a local inventory exits 0 and skips the
+raw task; this is not installation or idempotency evidence. `git diff --check`
+passes. The complete M14/T1 and M14/T2 remain unrun.
+
+M14/T3-T4 installation evidence: `roles/java/tasks/main.yml` SHA-256
+`f7d20ca2606e136f16c1a7c0ba65387e93e66c4d2c8288aa9f6b8853337ce9b5`.
+Recheck with `make op.java` using the two VM host entries as runtime inventory,
+then inspect `java -version`, `javac -version`, `JAVA_HOME`, and
+`/etc/profile.d/java.sh` in a new login shell. This verifies the Java increment;
+the full `archiver-dev` assembly and EPICS application path were not run here.
+
+Review correction verification (2026-09-15T15:11:36Z): the role now identifies
+the missing or non-executable `java` or `javac` path under `JAVA_HOME`.
+On both existing test VMs, the real `op.java` run with
+`java_home=/nonexistent/review-jdk` returned rc 1 and named
+`/nonexistent/review-jdk/bin/java` in its error. A subsequent default run
+reported `ok=1 changed=0 failed=0` on each. Ansible syntax, raw quote parity,
+shell syntax, and ShellCheck passed. The verified role SHA-256 is
+`a5a331b8700c713421949ed9ad051402a567e70153632f6ee5aa600e7c6d677d`.
+The architecture tree matches the 16 existing roles and omits the absent
+legacy directories; the corrected directory description passed the maintainer
+reader check. Both accepted review findings are resolved.
 
 ## Backlog
 

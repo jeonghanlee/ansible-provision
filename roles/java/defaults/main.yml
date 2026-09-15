@@ -1,0 +1,13 @@
+---
+# roles/java/defaults/main.yml
+# Java package subsets from cloud-provision configure/middleware-packages.
+pkg_java_redhat:
+  - java-21-openjdk
+  - java-21-openjdk-devel
+pkg_java_debian:
+  - openjdk-21-jdk-headless
+java_home_redhat: "/usr/lib/jvm/java-21-openjdk"
+java_home_debian: "/usr/lib/jvm/java-21-openjdk-amd64"
+# A site override takes precedence over the family default.
+java_home: ""
+java_profile: "/etc/profile.d/java.sh"

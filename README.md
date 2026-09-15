@@ -119,6 +119,7 @@ is the normative statement of content and order.
 | Operator | Role | Source |
 |---|---|---|
 | P_common | `common` | OS package manager |
+| P_java | `java` | Distribution OpenJDK 21 JDK packages |
 | P_rt | `rt` | Debian PREEMPT_RT packages |
 | P_provenance | `provenance` | - |
 | P_epics | `epics` | [jeonghanlee/EPICS-env-distribution](https://github.com/jeonghanlee/EPICS-env-distribution) |
@@ -131,6 +132,28 @@ is the normative statement of content and order.
 | P_iocrunner | `iocrunner` | [jeonghanlee/epics-ioc-runner](https://github.com/jeonghanlee/epics-ioc-runner) |
 | P_testusers | `testusers` | - |
 | P_ethercat | `ethercat` | [jeonghanlee/ethercat-env](https://github.com/jeonghanlee/ethercat-env) (bundle) |
+
+### Java
+
+Run `java` after `common`, using the existing runtime inventory:
+
+```bash
+make op.java.rocky8 RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini
+```
+
+The operator installs the distribution OpenJDK 21 JDK, selects `java` and
+`javac`, and writes `/etc/profile.d/java.sh` for subsequent login shells.
+It uses the Java package subset of the cloud-provision middleware baseline:
+`java-21-openjdk` and `java-21-openjdk-devel` on RedHat, and
+`openjdk-21-jdk-headless` on Debian. Maven belongs to the application wrapper.
+
+The default `JAVA_HOME` is `/usr/lib/jvm/java-21-openjdk` on RedHat and
+`/usr/lib/jvm/java-21-openjdk-amd64` on Debian. Override `java_home` in site
+inventory for another distribution JDK path or architecture. Package lists
+(`pkg_java_redhat`, `pkg_java_debian`), family paths (`java_home_redhat`,
+`java_home_debian`), and `java_profile` are role defaults. Service units and
+non-login build commands must supply `JAVA_HOME` explicitly; they do not
+automatically read the login profile.
 
 ## Species Assemblies
 

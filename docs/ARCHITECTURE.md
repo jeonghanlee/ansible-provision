@@ -70,14 +70,13 @@ ansible-provision/
 |       |-- ubuntu24.yml             (epics_os_dir: ubuntu-24.04)
 |       `-- ubuntu26.yml             (epics_os_dir: ubuntu-26.04)
 |-- playbooks/
-|   |-- operators/                   (one playbook per operator, 15)
+|   |-- operators/                   (one playbook per operator, 16)
 |   `-- species/                     (one assembly per species, 8)
-`-- roles/                           (one role per operator, 15; plus 2 legacy)
+`-- roles/                           (one role per operator, 16)
     |-- common/      rt/          provenance/  python/
     |-- proxy/       epics/       epics_build/ epics_support/
-    |-- procserv/    conserver/   con/
-    |-- nfs_sim/     iocrunner/   testusers/   ethercat/
-    `-- base_os/     app_epics/   (legacy, retired per D3; removal pending)
+    |-- procserv/    conserver/   con/         java/
+    `-- nfs_sim/     iocrunner/   testusers/   ethercat/
 ```
 
 ---

@@ -1,0 +1,112 @@
+---
+# roles/java/tasks/main.yml
+# Install the distribution JDK, select its runtime and compiler, and export
+# JAVA_HOME for subsequent login shells. No source-build tooling is installed.
+- name: Provision the system OpenJDK 21 JDK
+  ansible.builtin.raw: |
+    set -eu
+    export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+    umask 022
+    state=unchanged
+    jdk={{ java_home | quote }}
+    profile={{ java_profile | quote }}
+    if [ -f /etc/redhat-release ]; then
+      if [ -z "${jdk}" ]; then jdk={{ java_home_redhat | quote }}; fi
+      set -- {{ pkg_java_redhat | map('quote') | join(' ') }}
+      for package in "$@"; do
+        if ! rpm -q "${package}" >/dev/null 2>&1; then
+          dnf install -y "${package}" >&2
+          state=changed
+        fi
+      done
+      selector=alternatives
+    elif [ -f /etc/debian_version ]; then
+      if [ -z "${jdk}" ]; then jdk={{ java_home_debian | quote }}; fi
+      export DEBIAN_FRONTEND=noninteractive
+      refreshed=no
+      set -- {{ pkg_java_debian | map('quote') | join(' ') }}
+      for package in "$@"; do
+        installed=$(dpkg-query -W -f='${Status}' "${package}" 2>/dev/null) || installed=
+        if [ "${installed}" != "install ok installed" ]; then
+          if [ "${refreshed}" = no ]; then
+            apt-get update >&2
+            refreshed=yes
+          fi
+          apt-get install -y "${package}" >&2
+          state=changed
+        fi
+      done
+      selector=update-alternatives
+    else
+      printf '%s\n' 'Error: java requires a RedHat or Debian family host.' >&2
+      exit 1
+    fi
+
+    # Restrict paths written into shell configuration to literal absolute paths.
+    case "${jdk}" in
+      /*) ;;
+      *) printf '%s\n' 'Error: JAVA_HOME must be absolute.' >&2; exit 1 ;;
+    esac
+    case "${jdk}" in
+      *[!a-zA-Z0-9_./+-]*) printf '%s\n' 'Error: unsupported JAVA_HOME characters.' >&2; exit 1 ;;
+    esac
+    for tool in java javac; do
+      if [ ! -x "${jdk}/bin/${tool}" ]; then
+        printf 'Error: JAVA_HOME requires an executable file: %s\n' "${jdk}/bin/${tool}" >&2
+        exit 1
+      fi
+    done
+    runtime=$("${jdk}/bin/java" -version 2>&1)
+    compiler=$("${jdk}/bin/javac" -version 2>&1)
+    case "${runtime}" in
+      'openjdk version "21.'*) ;;
+      *) printf '%s\n' 'Error: JAVA_HOME does not provide OpenJDK 21.' >&2; exit 1 ;;
+    esac
+    case "${compiler}" in
+      'javac 21.'*) ;;
+      *) printf '%s\n' 'Error: JAVA_HOME does not provide javac 21.' >&2; exit 1 ;;
+    esac
+    for tool in java javac; do
+      selected=$(readlink -f "${jdk}/bin/${tool}")
+      current=$(readlink -f "/usr/bin/${tool}")
+      if [ "${current}" != "${selected}" ]; then
+        "${selector}" --set "${tool}" "${selected}" >&2
+        state=changed
+      fi
+      test "$(readlink -f "/usr/bin/${tool}")" = "${selected}"
+    done
+
+    case "${profile}" in
+      /*/*.sh) ;;
+      *) printf '%s\n' 'Error: java_profile must be an absolute .sh path.' >&2; exit 1 ;;
+    esac
+    parent=${profile%/*}
+    test -d "${parent}"
+    test "$(stat -c %u "${parent}")" = 0
+    if find "${parent}" -maxdepth 0 -perm /022 | grep -q .; then
+      printf '%s\n' 'Error: java_profile directory is writable by non-root users.' >&2
+      exit 1
+    fi
+    if [ -L "${profile}" ] || { [ -e "${profile}" ] && [ ! -f "${profile}" ]; }; then
+      printf '%s\n' 'Error: java_profile must be a regular file.' >&2
+      exit 1
+    fi
+    tmp=$(mktemp "${parent}/.java.XXXXXX")
+    trap 'rm -f -- "${tmp}"' EXIT
+    trap 'exit 1' HUP INT TERM
+    printf 'export JAVA_HOME="%s"\n' "${jdk}" > "${tmp}"
+    sh -n "${tmp}"
+    chmod 0644 "${tmp}"
+    chown root:root "${tmp}"
+    if [ -f "${profile}" ] && cmp -s "${tmp}" "${profile}" &&
+       [ "$(stat -c '%u:%g:%a' "${profile}")" = '0:0:644' ]; then
+      :
+    else
+      mv -f -- "${tmp}" "${profile}"
+      state=changed
+    fi
+    test -s "${profile}"
+    printf '%s\n' "${state}"
+  register: java_setup
+  # SSH may merge package-manager stderr into stdout; the final line owns state.
+  changed_when: "(java_setup.stdout_lines | default([]) | last | default('') | trim) == 'changed'"
