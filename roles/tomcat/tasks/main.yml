@@ -1,0 +1,177 @@
+---
+# roles/tomcat/tasks/main.yml
+# Install an immutable shared distribution and publish its login environment.
+- name: Install the shared Apache Tomcat distribution
+  ansible.builtin.raw: |
+    set -eu
+    export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+    umask 022
+    version={{ tomcat_version | quote }}
+    checksum={{ tomcat_sha512 | quote }}
+    url={{ tomcat_archive_url | quote }}
+    parent={{ tomcat_install_parent | quote }}
+    catalina_home={{ tomcat_home | quote }}
+    profile={{ tomcat_profile | quote }}
+    state=unchanged
+
+    # Validate all destinations before downloading or modifying the install.
+    case "${version}" in
+      9.0.*) ;;
+      *) printf '%s\n' 'Error: tomcat_version must be a Tomcat 9.0 release.' >&2; exit 1 ;;
+    esac
+    patch=${version#9.0.}
+    case "${patch}" in
+      ''|*[!0-9]*) printf '%s\n' 'Error: invalid Tomcat patch version.' >&2; exit 1 ;;
+    esac
+    case "${checksum}" in
+      *[!0-9a-f]*|'') printf '%s\n' 'Error: tomcat_sha512 must be lowercase hexadecimal.' >&2; exit 1 ;;
+    esac
+    if [ "$(printf '%s' "${checksum}" | wc -c)" -ne 128 ]; then
+      printf '%s\n' 'Error: tomcat_sha512 must contain 128 hexadecimal characters.' >&2
+      exit 1
+    fi
+    case "${url}" in
+      https://*) ;;
+      *) printf '%s\n' 'Error: tomcat_archive_url must use HTTPS.' >&2; exit 1 ;;
+    esac
+    for path in "${parent}" "${catalina_home}" "${profile}"; do
+      case "${path}" in
+        /*) ;;
+        *) printf 'Error: Tomcat path must be absolute: %s\n' "${path}" >&2; exit 1 ;;
+      esac
+      case "${path}/" in
+        *[!a-zA-Z0-9_./+-]*|*//*|*/./*|*/../*)
+          printf 'Error: unsupported Tomcat path: %s\n' "${path}" >&2; exit 1 ;;
+      esac
+    done
+    install="${parent}/apache-tomcat-${version}"
+    case "${profile}" in
+      /*/*.sh) ;;
+      *) printf '%s\n' 'Error: tomcat_profile must be an absolute .sh path.' >&2; exit 1 ;;
+    esac
+    for destination in "${catalina_home}" "${profile}"; do
+      case "${destination}/" in
+        "${install}/"*) printf '%s\n' 'Error: Tomcat destinations must not overlap the install directory.' >&2; exit 1 ;;
+      esac
+      case "${install}/" in
+        "${destination}/"*) printf '%s\n' 'Error: Tomcat destinations must not contain the install directory.' >&2; exit 1 ;;
+      esac
+    done
+    case "${catalina_home}/" in
+      "${profile}/"*) printf '%s\n' 'Error: Tomcat home and profile must not overlap.' >&2; exit 1 ;;
+    esac
+    case "${profile}/" in
+      "${catalina_home}/"*) printf '%s\n' 'Error: Tomcat home and profile must not overlap.' >&2; exit 1 ;;
+    esac
+    for directory in "${parent}" "${catalina_home%/*}" "${profile%/*}"; do
+      while [ -n "${directory}" ]; do
+        if [ ! -d "${directory}" ] || [ -L "${directory}" ] ||
+           [ "$(stat -c %u "${directory}")" != 0 ] ||
+           [ -n "$(find "${directory}" -maxdepth 0 \( -perm /022 -o ! -perm -0111 \) -print)" ]; then
+          printf 'Error: Tomcat parent must be root-owned, searchable by all users, and without shared write access: %s\n' "${directory}" >&2
+          exit 1
+        fi
+        directory=${directory%/*}
+      done
+    done
+    if { [ -e "${catalina_home}" ] && [ ! -L "${catalina_home}" ]; } ||
+       { [ -L "${catalina_home}" ] && [ "$(stat -c %u "${catalina_home}")" != 0 ]; }; then
+      printf 'Error: tomcat_home must be absent or a root-owned symlink: %s\n' "${catalina_home}" >&2
+      exit 1
+    fi
+    if [ -L "${profile}" ] || { [ -e "${profile}" ] && [ ! -f "${profile}" ]; }; then
+      printf 'Error: tomcat_profile must be a regular file: %s\n' "${profile}" >&2
+      exit 1
+    fi
+    for tool in wget tar sha512sum sha256sum unzip; do
+      if ! command -v "${tool}" >/dev/null 2>&1; then
+        printf 'Error: required command is missing; apply common first: %s\n' "${tool}" >&2
+        exit 1
+      fi
+    done
+    if [ ! -x /usr/bin/java ]; then
+      printf '%s\n' 'Error: Java is missing; apply the java operator first.' >&2
+      exit 1
+    fi
+    runtime=$(/usr/bin/java -version 2>&1)
+    case "${runtime}" in
+      'openjdk version "21.'*) ;;
+      *) printf '%s\n' 'Error: Tomcat requires the system OpenJDK 21 selected by java.' >&2; exit 1 ;;
+    esac
+
+    stage=$(mktemp -d "${parent}/.tomcat.XXXXXX")
+    profile_tmp=
+    link_tmp=
+    trap 'rm -rf -- "${stage}"; if [ -n "${profile_tmp}" ]; then rm -f -- "${profile_tmp}"; fi; if [ -n "${link_tmp}" ]; then rm -rf -- "${link_tmp}"; fi' EXIT
+    trap 'exit 1' HUP INT TERM
+    if [ -e "${install}" ] || [ -L "${install}" ]; then
+      if [ ! -d "${install}" ] || [ -L "${install}" ] ||
+         [ ! -f "${install}/.ansible-tomcat.sha512" ] ||
+         [ "$(cat "${install}/.ansible-tomcat.sha512")" != "${checksum}" ]; then
+        printf 'Error: existing Tomcat installation does not match the requested archive: %s\n' "${install}" >&2
+        exit 1
+      fi
+      if [ -n "$(find "${install}" \( ! -user root -o ! -group root -o \
+          \( -type d ! -perm 0755 \) -o \
+          \( -type f ! -perm 0644 ! -perm 0755 \) -o \
+          \( ! -type d ! -type f \) \) -print -quit)" ] ||
+         [ -n "$(find "${install}/bin" -maxdepth 1 -type f -name '*.sh' ! -perm 0755 -print -quit)" ]; then
+        printf 'Error: Tomcat installation ownership or permissions changed: %s\n' "${install}" >&2
+        exit 1
+      fi
+      (cd "${install}" && find . -type f \
+        ! -path './.ansible-tomcat-files.sha256' ! -path './.ansible-tomcat.sha512' \
+        -print0 | LC_ALL=C sort -z | xargs -0 sha256sum) > "${stage}/files.sha256"
+      if ! cmp -s "${stage}/files.sha256" "${install}/.ansible-tomcat-files.sha256"; then
+        printf 'Error: installed Tomcat files failed integrity verification: %s\n' "${install}" >&2
+        exit 1
+      fi
+    else
+      wget --quiet --timeout=30 --tries=3 -O "${stage}/archive.tar.gz" -- "${url}"
+      printf '%s  %s\n' "${checksum}" "${stage}/archive.tar.gz" | sha512sum -c - >&2
+      tar --no-same-owner --no-same-permissions -xzf "${stage}/archive.tar.gz" -C "${stage}"
+      tree="${stage}/apache-tomcat-${version}"
+      test -d "${tree}"
+      for file in bin/catalina.sh bin/bootstrap.jar bin/tomcat-juli.jar lib/catalina.jar conf/server.xml; do
+        if [ ! -s "${tree}/${file}" ] || [ -L "${tree}/${file}" ]; then
+          printf 'Error: Tomcat archive is missing a required regular file: %s\n' "${file}" >&2
+          exit 1
+        fi
+      done
+      unzip -p "${tree}/lib/catalina.jar" org/apache/catalina/util/ServerInfo.properties > "${stage}/version.properties"
+      if ! grep -Fxq "server.info=Apache Tomcat/${version}" "${stage}/version.properties"; then
+        printf '%s\n' 'Error: Tomcat archive version does not match tomcat_version.' >&2
+        exit 1
+      fi
+      chown -R root:root "${tree}"
+      chmod -R u=rwX,go=rX "${tree}"
+      (cd "${tree}" && find . -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum) > "${stage}/files.sha256"
+      mv -- "${stage}/files.sha256" "${tree}/.ansible-tomcat-files.sha256"
+      printf '%s\n' "${checksum}" > "${tree}/.ansible-tomcat.sha512"
+      mv -T -- "${tree}" "${install}"
+      state=changed
+    fi
+    if [ ! -L "${catalina_home}" ] || [ "$(readlink "${catalina_home}")" != "${install}" ]; then
+      link_tmp=$(mktemp -d "${catalina_home%/*}/.tomcat-link.XXXXXX")
+      ln -s -- "${install}" "${link_tmp}/home"
+      mv -Tf -- "${link_tmp}/home" "${catalina_home}"
+      state=changed
+    fi
+    profile_tmp=$(mktemp "${profile%/*}/.tomcat-profile.XXXXXX")
+    printf 'export CATALINA_HOME="%s"\n' "${catalina_home}" > "${profile_tmp}"
+    sh -n "${profile_tmp}"
+    chmod 0644 "${profile_tmp}"
+    chown root:root "${profile_tmp}"
+    if [ -f "${profile}" ] && cmp -s "${profile_tmp}" "${profile}" &&
+       [ "$(stat -c '%u:%g:%a' "${profile}")" = '0:0:644' ]; then
+      :
+    else
+      mv -f -- "${profile_tmp}" "${profile}"
+      state=changed
+    fi
+    test -x "${catalina_home}/bin/catalina.sh"
+    test -s "${catalina_home}/lib/catalina.jar"
+    test -s "${profile}"
+    printf '%s\n' "${state}"
+  register: tomcat_setup
+  changed_when: "(tomcat_setup.stdout_lines | default([]) | last | default('') | trim) == 'changed'"

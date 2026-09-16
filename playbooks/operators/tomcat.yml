@@ -1,0 +1,10 @@
+---
+# playbooks/operators/tomcat.yml
+# Apply after java; application instances are provisioned separately.
+- name: Apply the tomcat operator
+  hosts: vacua
+  gather_facts: false
+  become: yes
+  roles:
+    - role: tomcat
+      tags: [tomcat]

@@ -1,0 +1,9 @@
+---
+# roles/tomcat/defaults/main.yml
+# Shared Apache distribution; application instances own CATALINA_BASE.
+tomcat_version: "9.0.121"
+tomcat_sha512: "16494dd4745f808d3c506807b5275521fd71044d976f441d18eeeab0f5a38bc1b5344ca395292f6f26eb7612cd8c8e746d01ccdfb29893d394052d9f4b1f4c11"
+tomcat_archive_url: "https://archive.apache.org/dist/tomcat/tomcat-9/v{{ tomcat_version }}/bin/apache-tomcat-{{ tomcat_version }}.tar.gz"
+tomcat_install_parent: "/opt"
+tomcat_home: "/opt/tomcat9"
+tomcat_profile: "/etc/profile.d/tomcat.sh"

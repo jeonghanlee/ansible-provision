@@ -120,6 +120,7 @@ is the normative statement of content and order.
 |---|---|---|
 | P_common | `common` | OS package manager |
 | P_java | `java` | Distribution OpenJDK 21 JDK packages |
+| P_tomcat | `tomcat` | Apache Tomcat 9.0.121 binary tarball |
 | P_rt | `rt` | Debian PREEMPT_RT packages |
 | P_provenance | `provenance` | - |
 | P_epics | `epics` | [jeonghanlee/EPICS-env-distribution](https://github.com/jeonghanlee/EPICS-env-distribution) |
@@ -154,6 +155,37 @@ inventory for another distribution JDK path or architecture. Package lists
 `java_home_debian`), and `java_profile` are role defaults. Service units and
 non-login build commands must supply `JAVA_HOME` explicitly; they do not
 automatically read the login profile.
+
+### Tomcat
+
+Run `tomcat` after `common` and `java`:
+
+```bash
+make op.tomcat.rocky8 RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini
+```
+
+The operator verifies the Apache archive against the pinned SHA-512, installs
+`/opt/apache-tomcat-9.0.121` as root-owned shared files, and links
+`/opt/tomcat9` to that directory. `/etc/profile.d/tomcat.sh` exports
+`CATALINA_HOME` for subsequent login shells. Re-apply verifies the archive's
+regular-file list, file hashes, root ownership, directory mode `0755`, file
+modes `0644` or `0755`, and executable `bin/*.sh` scripts. Added, missing,
+modified, inaccessible, or non-regular files cause an explicit failure instead
+of being overwritten.
+
+Site inventory can override `tomcat_version`, `tomcat_sha512`,
+`tomcat_archive_url`, `tomcat_install_parent`, `tomcat_home`, and
+`tomcat_profile`. A version change requires its matching checksum; previous
+version directories remain available. The install directory, home link, and
+profile must be separate paths; none may contain another. Parent directories
+must already exist, be root-owned, allow directory traversal by all users,
+and prohibit group/other writes.
+
+This operator supplies the shared Tomcat distribution. The application owns
+`CATALINA_BASE`, instance configuration, and service startup; aa-env supplies
+the Archiver Appliance instances. Services must set `JAVA_HOME` and
+`CATALINA_HOME` explicitly. See the Apache
+[multiple-instance instructions](https://tomcat.apache.org/tomcat-9.0-doc/RUNNING.txt).
 
 ## Species Assemblies
 

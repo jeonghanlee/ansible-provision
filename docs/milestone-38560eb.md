@@ -31,11 +31,15 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: continue M14 with the standalone Tomcat and MariaDB
-operators. Java installation, default commands, login `JAVA_HOME`, and re-apply
+Next session entry point: continue M14 with the standalone MariaDB operator.
+Java installation, default commands, login `JAVA_HOME`, and re-apply
 passed on Rocky 8.10 and Debian 13 VMs (M14/T3-T4). The existing EPICS distribution
 operator now defaults to 1.3.0 and passed installation, example IOC build/runtime,
 CA communication, binary dependency checks, and re-apply on both (M14/T5-T7).
+Tomcat 9.0.121 is installed as shared `CATALINA_HOME`; temporary-instance
+HTTP/startup/shutdown, re-apply, and integrity rejection passed on both
+(M14/T8-T10). Path-overlap, permission, and file-list rejection preserve the
+installed tree. Application instances and services remain aa-env responsibilities.
 The full `archiver-dev` path follows aa-env and aa-maven readiness; M14 remains
 Blocked on G2 for completion.
 
@@ -1254,8 +1258,8 @@ repository); Maven as an installed package.
 ##### Implementation Plan
 
 - Plan Status: accepted
-- Plan Acceptance: 2026-09-15 (Java-first increment)
-- Implementation Authorization: 2026-09-15 (standalone `java` addition; develop on branch
+- Plan Acceptance: 2026-09-15 (Java-first increment, followed by standalone Tomcat)
+- Implementation Authorization: 2026-09-15 (standalone `java` and `tomcat` additions; develop on branch
   `m14-middleware-reconcile` against the cloud-provision M11 branch definition
   `m11-middleware-operators` d52827c; merge to master after M14 and M11/T2)
 - Superseded Plan Artifacts: none
@@ -1275,6 +1279,15 @@ definition now (owner + LAB-CLOUD, 2026-09-14).
    (9.0.121 shared `CATALINA_HOME`), and `mariadb` operators; add the
    `archiver-build` operator, the `mid` group and `mid-srv` user, and the
    `archiver-dev` species.
+   The Tomcat increment installs the SHA-512-verified Apache 9.0.121 archive
+   under a versioned root-owned directory, exposes `/opt/tomcat9` as shared
+   `CATALINA_HOME`, and registers `op.tomcat`. Version, checksum, URL, and
+   paths are site override keys. The operator creates no service or application
+   instance; a temporary instance verifies Java 21 startup and HTTP on both
+   target VMs. Re-apply and invalid-checksum tests verify preservation.
+   Destinations cannot contain one another. Re-apply checks the archive file
+   list and hashes, root ownership, readable files, searchable directories,
+   and executable startup scripts before publishing the home link or profile.
 3. Extend to debian13; add the distribution path (`archiver` operator and
    `archiver` species).
 4. Add `phoebus` / `phoebus-build` and the `phoebus` / `phoebus-dev` /
@@ -1291,6 +1304,9 @@ definition now (owner + LAB-CLOUD, 2026-09-14).
 | T5 | Integration | Apply `op.provenance`, `op.python`, and `op.epics` after `common`; use the default EPICS version without extra-vars; compare checkout identity with the remote tag and inspect the OS tree and login environment | Rocky 8.10 and Debian 13 archiver-dev VMs | EPICS-env 1.3.0 / Base 7.0.10 installs, the checkout matches the remote tag, 70 module entries have live links, and sampled modules provide headers and DBD files |
 | T6 | Integration | Generate and build the shipped Base example with `makeBaseApp.pl`; run its generated startup script; read, write, and monitor its records through CA; run the unmodified EPICS-env 1.3.0 `tools/check_deps.bash` against the installed tree | Same two VMs | Example IOC builds and exits cleanly; CA read/write/readback and monitor updates pass; dependency checker exits 0 |
 | T7 | Integration | Re-apply `op.epics`; compare installed package lists, checkout state, profile content hashes, and login environment; verify Python EPICS imports and the existing Java runtime/compiler | Same two VMs | Re-apply exits 0 with no package, checkout, or environment-content drift; Python imports succeed and Java/Javac remain 21 |
+| T8 | Integration | Apply the real `op.tomcat` after Java; inspect the verified archive installation and login CATALINA_HOME; start and stop a temporary instance using the installed scripts and stock ROOT application | Rocky 8.10 and Debian 13 archiver-dev VMs | Tomcat 9.0.121 runs with Java 21 and serves HTTP; the shared home remains root-owned and no persistent instance or service is created |
+| T9 | Integration | Re-apply `op.tomcat`; compare install files and profile metadata; use isolated paths to test an invalid checksum, valid overrides, and a modified installed JAR through the real operator | Same two VMs | Re-apply reports unchanged and preserves installed content; checksum rejection exits nonzero before publishing a home or profile; modified files are rejected without overwrite |
+| T10 | Integration | Use the real operator with isolated paths to reject overlapping destinations before and after installation, a non-searchable parent, JAR mode 0600, directory mode 0700, startup-script modes 0644 and 0700, an added executable `bin/setenv.sh`, a symlink, and changed or missing JARs; compare content and metadata before and after each rejection; repeat the default re-apply and temporary-instance HTTP/startup/shutdown checks | Same two VMs | Every invalid case exits nonzero without changing the installed tree, home link, or profile; restoring valid state permits unchanged re-apply; the default installation remains usable with Java 21 |
 
 ##### Verification Results
 
@@ -1303,6 +1319,9 @@ definition now (owner + LAB-CLOUD, 2026-09-14).
 | T5 | 2026-09-15T17:12:59Z | Rocky 8.10 and Debian 13 archiver-dev VMs with common and Java installed | Passed | Real Make targets installed the prerequisites and distribution. Default 1.3.0 resolved to remote tag commit `d18e1cd0da2b62580d7d48d6e496bcb7e5757c38`; each clean sparse checkout selected its own OS tree. Login `EPICS_BASE`, profile mode/ownership, 70 module entries, live links, and calc/asyn/busy/sscan/std headers and DBD files passed. |
 | T6 | 2026-09-15T17:12:59Z | Same two VMs | Passed | Each installed Base generated and built its own example IOC using the shipped templates. Its startup script, CA read/write/readback, monitor updates, and clean exit passed. The unmodified 1.3.0 dependency checker exited 0 on both: 150 executables and 78 shared libraries, with zero RPATH, non-system ABSPATH, or lost-ORIGIN violations. Sourced ldd checks resolved softIoc/caget/caput/camonitor dependencies. |
 | T7 | 2026-09-15T17:12:59Z | Same two VMs | Passed | Real `op.epics` re-apply reported Rocky `ok=6 failed=0` and Debian `ok=5 failed=0 skipped=1`. Before/after package lists, clean checkout identity, sparse selection, profile content hashes, Python versions/imports, and login environment matched. Java and javac remained 21.0.12.1 with correct command resolution and profile ownership/mode. The existing role suppresses change reporting; `changed=0` alone is not the evidence. |
+| T8 | 2026-09-15T18:49:43Z | Rocky 8.10 and Debian 13 archiver-dev VMs | Passed | Real `op.tomcat` first runs reported `ok=1 changed=1 failed=0` on both. The official archive SHA-512 and installed version matched 9.0.121. Login CATALINA_HOME resolved through `/opt/tomcat9`; root ownership and permissions passed. Stock configuration and the shipped ROOT application in temporary CATALINA_BASE directories ran with Java 21, returned HTTP 200, and stopped cleanly via the installed shutdown script. Shared install content/metadata stayed unchanged. Neither host has an installed Tomcat service. |
+| T9 | 2026-09-15T18:49:43Z | Same two VMs | Passed | Default and alternate-path re-applies reported `ok=1 changed=0 failed=0`. File hashes, ownership, permissions, inode, mtime, home symlink, and Tomcat/Java/EPICS profiles matched before and after default re-apply. The real operator rejected an incorrect SHA-512 before publishing any destination, installed with valid path overrides, and rejected a modified JAR without overwriting it. Temporary failure-test installs were removed; default installations remained unchanged and Java 21 verification passed. |
+| T10 | 2026-09-16T05:29:38Z | Rocky 8.10 and Debian 13 archiver-dev VMs | Passed | All listed invalid states were rejected by the real `op.tomcat`; content hashes, modes, ownership, inode, mtime, and home/profile state matched before and after rejection. Incorrect archive checksums still failed before publishing a destination. Fresh alternate-path installs passed, and valid or restored installs reported `changed=0`. Default re-apply also reported `changed=0` on both, preserving the shared tree and Tomcat/Java/EPICS profiles. Installed scripts with the stock ROOT application returned HTTP 200 and stopped cleanly under Java 21. |
 
 Java increment observation (2026-09-15, control host): the standalone role,
 operator playbook, and `op.java` target are implemented in the working tree.
@@ -1340,6 +1359,26 @@ the unchanged task file SHA-256 is
 Recheck using the T5-T7 methods above on the same OS pair. This covers the
 EPICS distribution operator and a shipped example consumer; full middleware
 assembly checks T1-T2 remain unrun.
+
+M14/T8-T9 verification basis: ansible-provision `dae8aef` with the initial
+standalone Tomcat addition. The verified task SHA-256 is
+`51706a8e53562c54ce30cbe67e256bd98f73460178b84dcccc6182ad9e73dfea`;
+the defaults SHA-256 is
+`f37485d6cd00990667a991f8a25d0d5b90a454f30e732696b7bae6e0519049f5`.
+Ansible syntax, raw quote parity, rendered `sh -n` / `bash -n`, ShellCheck,
+Make target resolution, and the 17-role/operator inventory check passed.
+Static safety, privileged path/ownership checks, and observed failure/preservation
+behavior were inspected separately. Recheck with T8-T9 on the same OS pair;
+the full Archiver Appliance assembly remains outside this increment.
+
+M14/T10 verification basis: ansible-provision `dae8aef` with the corrected
+Tomcat task SHA-256
+`bcadb2b0d32239cc4d9e86b6aa7fd8516eaab6131cef7503202f52e50722d708`;
+defaults remain at the T8-T9 SHA-256 above. The default-rendered raw task passed
+`sh -n`, `bash -n`, and `shellcheck -s sh`; Ansible syntax-check passed.
+Recheck with T10 on the same OS pair using separate root-owned installation
+parents with mode `0755`; run the installed scripts as an ordinary user with
+explicit `CATALINA_HOME` and `CATALINA_BASE` for each test installation.
 
 ## Backlog
 
