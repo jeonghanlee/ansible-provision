@@ -6,6 +6,14 @@ bake-path task uses `ansible.builtin.raw` with `gather_facts: false`.
 This page names the house conventions that make raw safe. New and
 edited tasks follow them; deviations need a recorded reason.
 
+The MariaDB account task uses `action_plugins/raw_stdin.py`: a controller-side
+raw SSH action that passes the credential hash as stdin rather than embedding
+it in command arguments. No target Python or remote module is involved.
+Use `cmd` for shell code and `stdin` for data; the action requires the `ssh`
+connection plugin and `no_log: true`. It does not append a newline to stdin.
+Keep secrets out of `cmd` and out of shell output. It does not support the
+task `environment` or `async` keywords.
+
 ## Conventions
 
 1. **`set -e` in every multi-command raw block.** A raw task fails
@@ -65,3 +73,16 @@ Never modules on a bake path.
 `.check` targets validate inventory, reachability, and template
 rendering only — they are not a change preview (stated in README and
 ANSIBLE_CLI).
+
+`raw_stdin` also skips remote execution in check mode. Its SSH/sudo contract
+can be verified with public markers on disposable reachable hosts with
+passwordless sudo. From the repository root, run:
+
+```bash
+ansible-playbook -i /path/to/test-inventory.ini tests/check-raw-stdin.yml
+ansible-playbook -i /path/to/test-inventory.ini tests/check-raw-stdin.yml --check
+```
+
+Both runs must finish with `failed=0` and `changed=0` for every host. Expected
+failure tasks are ignored only so the following assertions can verify their
+failure status; a missing failure makes the play fail.

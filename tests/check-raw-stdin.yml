@@ -1,0 +1,62 @@
+---
+# tests/check-raw-stdin.yml
+- name: Verify raw stdin over SSH and sudo without remote Python
+  hosts: all
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Deliver a public multiline marker through stdin
+      raw_stdin:
+        stdin: "public-stdin-marker-9f6208\nsecond line with spaces\n"
+        cmd: |
+          set -eu
+          export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+          test "$(id -u)" = 0
+          test ! -t 0
+          IFS= read -r marker
+          IFS= read -r second
+          test "$(printf '%s' "${marker}" | sha256sum)" = '60fa20852c3b4203d321a97346177e929f32255361477fa84f95043059f419fa  -'
+          test "${second}" = 'second line with spaces'
+          if IFS= read -r _; then exit 1; fi
+          # Only public test data is examined, within the receiving process.
+          if tr '\000' '\n' < /proc/$$/cmdline | grep -Fq -- "${marker}"; then
+            exit 1
+          fi
+          printf '%s\n' delivered
+      no_log: true
+      register: stdin_delivery
+      changed_when: false
+
+    - name: Assert successful delivery or check-mode skip
+      ansible.builtin.assert:
+        that:
+          - (ansible_check_mode and stdin_delivery is skipped) or (not ansible_check_mode and stdin_delivery.stdout | trim == 'delivered')
+
+    - name: Preserve a failing raw command exit status
+      raw_stdin:
+        stdin: "public failure input\n"
+        cmd: "exit 23"
+      no_log: true
+      register: stdin_failure
+      ignore_errors: true
+      changed_when: false
+
+    - name: Assert the raw exit status or check-mode skip
+      ansible.builtin.assert:
+        that:
+          - (ansible_check_mode and stdin_failure is skipped) or (not ansible_check_mode and stdin_failure is failed and stdin_failure.rc == 23)
+
+    - name: Reject private input without output suppression
+      raw_stdin:
+        stdin: "public guard input\n"
+        cmd: "exit 0"
+      no_log: false
+      register: stdin_guard
+      ignore_errors: true
+      changed_when: false
+
+    - name: Assert the output-suppression guard
+      ansible.builtin.assert:
+        that:
+          - stdin_guard is failed
+          - "stdin_guard.msg == 'raw_stdin requires no_log: true'"

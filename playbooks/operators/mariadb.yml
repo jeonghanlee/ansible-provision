@@ -1,0 +1,10 @@
+---
+# playbooks/operators/mariadb.yml
+# Apply after common; runs are scoped with --limit.
+- name: Apply the mariadb operator
+  hosts: vacua
+  gather_facts: false
+  become: yes
+  roles:
+    - role: mariadb
+      tags: [mariadb]

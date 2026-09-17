@@ -50,6 +50,7 @@ for a single-operator run (make op.<operator>).
 ansible-provision/
 |-- Makefile                         (entry point)
 |-- ansible.cfg                      (defaults: inventory, become)
+|-- action_plugins/raw_stdin.py      (controller-side raw SSH stdin transport)
 |-- configure/                       (EPICS-style Makefile system)
 |   |-- CONFIG / RULES               (aggregators)
 |   |-- RELEASE                      (appname, species and operator lists)
@@ -70,13 +71,13 @@ ansible-provision/
 |       |-- ubuntu24.yml             (epics_os_dir: ubuntu-24.04)
 |       `-- ubuntu26.yml             (epics_os_dir: ubuntu-26.04)
 |-- playbooks/
-|   |-- operators/                   (one playbook per operator, 17)
+|   |-- operators/                   (one playbook per operator, 18)
 |   `-- species/                     (one assembly per species, 8)
-`-- roles/                           (one role per operator, 17)
+`-- roles/                           (one role per operator, 18)
     |-- common/      rt/          provenance/  python/
     |-- proxy/       epics/       epics_build/ epics_support/
     |-- procserv/    conserver/   con/         java/        tomcat/
-    `-- nfs_sim/     iocrunner/   testusers/   ethercat/
+    `-- nfs_sim/     iocrunner/   testusers/   ethercat/    mariadb/
 ```
 
 ---
@@ -306,6 +307,13 @@ where target Python is guaranteed, and it never runs on the bake path
 (the `rt` operator on the pristine rtbase build host stays fully
 raw). New roles follow the same rule: raw-only unless the role is
 Debian-13-live-only, and never modules on a bake path.
+
+The MariaDB account task uses the controller-side `raw_stdin` action in place
+of `ansible.builtin.raw` to send its password hash through SSH stdin. It still
+executes a raw shell command, requires no target Python, and transfers no
+module or credential file. The action requires the `ssh` connection plugin
+and `no_log: true`, preserves become and the command exit status, and skips
+execution in check mode. Other raw tasks follow the ordinary raw module path.
 
 ---
 

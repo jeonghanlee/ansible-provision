@@ -1,0 +1,13 @@
+---
+# roles/mariadb/defaults/main.yml
+# Server package subsets from cloud-provision configure/middleware-packages.
+pkg_mariadb_redhat:
+  - mariadb-server
+pkg_mariadb_debian:
+  - mariadb-server
+mariadb_database: "archappl"
+mariadb_user: "archappl"
+# Supply the mysql_native_password hash through private site variables.
+# The application retains the corresponding plaintext password.
+mariadb_password_hash: ""
+mariadb_skip_networking: true

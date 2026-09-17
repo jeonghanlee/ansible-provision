@@ -31,7 +31,8 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: continue M14 with the standalone MariaDB operator.
+Next session entry point: continue M14 with aa-env and aa-maven integration
+for the `archiver-build` operator and the `archiver-dev` assembly.
 Java installation, default commands, login `JAVA_HOME`, and re-apply
 passed on Rocky 8.10 and Debian 13 VMs (M14/T3-T4). The existing EPICS distribution
 operator now defaults to 1.3.0 and passed installation, example IOC build/runtime,
@@ -39,7 +40,15 @@ CA communication, binary dependency checks, and re-apply on both (M14/T5-T7).
 Tomcat 9.0.121 is installed as shared `CATALINA_HOME`; temporary-instance
 HTTP/startup/shutdown, re-apply, and integrity rejection passed on both
 (M14/T8-T10). Path-overlap, permission, and file-list rejection preserve the
-installed tree. Application instances and services remain aa-env responsibilities.
+installed tree. The standalone MariaDB operator now supplies the UDS service,
+`archappl` database and application account; client access, re-apply, password
+rotation, service restart and preservation checks passed on both OS families
+(M14/T11-T13). Anonymous accounts, remote root accounts and default test
+database access are removed, with preservation and re-apply verified on both
+(M14/T14). The account hash travels through SSH stdin; unsupported existing
+authentication conditions fail before account changes (M14/T15-T16).
+Application instances, schema and JDBC/client UDS configuration
+remain aa-env responsibilities.
 The full `archiver-dev` path follows aa-env and aa-maven readiness; M14 remains
 Blocked on G2 for completion.
 
@@ -1258,10 +1267,15 @@ repository); Maven as an installed package.
 ##### Implementation Plan
 
 - Plan Status: accepted
-- Plan Acceptance: 2026-09-15 (Java-first increment, followed by standalone Tomcat)
-- Implementation Authorization: 2026-09-15 (standalone `java` and `tomcat` additions; develop on branch
+- Plan Acceptance: 2026-09-15 (Java-first increment, followed by standalone Tomcat and MariaDB)
+- Implementation Authorization: 2026-09-15 (standalone `java`, `tomcat`, and `mariadb` additions; develop on branch
   `m14-middleware-reconcile` against the cloud-provision M11 branch definition
   `m11-middleware-operators` d52827c; merge to master after M14 and M11/T2)
+- Security setup authorization: 2026-09-16 (remove anonymous accounts, remote
+  root accounts, the test database and its default database grants)
+- Review correction authorization: 2026-09-16 (remove the credential hash from
+  command arguments and reject unsupported existing authentication conditions
+  without clearing their security policy)
 - Superseded Plan Artifacts: none
 
 Developed before `G2` rather than after: `G2` completes when cloud-provision M11
@@ -1288,6 +1302,24 @@ definition now (owner + LAB-CLOUD, 2026-09-14).
    Destinations cannot contain one another. Re-apply checks the archive file
    list and hashes, root ownership, readable files, searchable directories,
    and executable startup scripts before publishing the home link or profile.
+   The MariaDB increment installs the distribution server, enables its service,
+   and supplies a runtime Unix domain socket: `/run/mariadb/mariadb.sock` on
+   RedHat and `/run/mysqld/mysqld.sock` on Debian. TCP is disabled by default;
+   a boolean override permits localhost TCP. Root management uses socket
+   authentication; the application uses a private site-supplied password hash
+   and receives only the `archappl` database privileges, without grant authority.
+   Database creation uses aa-env's `utf8mb4` default. Schema, the separate admin
+   workflow, and JDBC/client transport configuration remain with aa-env.
+   Verify actual client login, data operations, denied access, re-apply,
+   password rotation, and service restart on both OS families.
+   Security setup removes anonymous accounts and root accounts outside the
+   distribution localhost/loopback scope through DROP USER, drops the test
+   database, removes its default database-level grants including orphan rows,
+   and reloads privileges. Other databases and application accounts remain.
+   The account hash is sent through SSH stdin by a controller-side raw action,
+   with no target Python or credential file. A visible preflight rejects
+   existing TLS requirements, explicit password expiration and account locks
+   before account mutation; package and service configuration precede it.
 3. Extend to debian13; add the distribution path (`archiver` operator and
    `archiver` species).
 4. Add `phoebus` / `phoebus-build` and the `phoebus` / `phoebus-dev` /
@@ -1307,6 +1339,12 @@ definition now (owner + LAB-CLOUD, 2026-09-14).
 | T8 | Integration | Apply the real `op.tomcat` after Java; inspect the verified archive installation and login CATALINA_HOME; start and stop a temporary instance using the installed scripts and stock ROOT application | Rocky 8.10 and Debian 13 archiver-dev VMs | Tomcat 9.0.121 runs with Java 21 and serves HTTP; the shared home remains root-owned and no persistent instance or service is created |
 | T9 | Integration | Re-apply `op.tomcat`; compare install files and profile metadata; use isolated paths to test an invalid checksum, valid overrides, and a modified installed JAR through the real operator | Same two VMs | Re-apply reports unchanged and preserves installed content; checksum rejection exits nonzero before publishing a home or profile; modified files are rejected without overwrite |
 | T10 | Integration | Use the real operator with isolated paths to reject overlapping destinations before and after installation, a non-searchable parent, JAR mode 0600, directory mode 0700, startup-script modes 0644 and 0700, an added executable `bin/setenv.sh`, a symlink, and changed or missing JARs; compare content and metadata before and after each rejection; repeat the default re-apply and temporary-instance HTTP/startup/shutdown checks | Same two VMs | Every invalid case exits nonzero without changing the installed tree, home link, or profile; restoring valid state permits unchanged re-apply; the default installation remains usable with Java 21 |
+| T11 | Integration | Apply the real `op.mariadb` after common; inspect the installed server, systemd service, socket and root authentication; use the distribution client as an ordinary user to create, read, update and remove a temporary application table, including a four-byte UTF-8 value; attempt invalid credentials and access to mysql.user | Rocky 8.10 and Debian 13 archiver-dev VMs | Distribution MariaDB runs through UDS, root requires Unix socket authentication, the application has only archappl database privileges, and unauthorized access fails |
+| T12 | Integration | Re-apply through Make and compare configuration hashes and metadata, service PID, account definitions and existing profiles; rotate and restore the application password; enable localhost TCP and restore UDS-only mode; restart the service; restrict runtime/socket permissions and re-apply | Same two VMs | Unchanged runs report changed=0; credential and configuration changes report changed; data survives; old credentials and root TCP access fail; restart and permission repair restore ordinary-user UDS access |
+| T13 | Integration | Use the real operator to reject missing credentials, reserved or malformed names, trailing newlines and a non-boolean transport value; test a separate existing latin1 database, an account with global privileges and a symlink configuration file; create a separate database named select with a separate application account | Same two VMs | Invalid inputs fail before provisioning; conflicting database/account definitions and symlink targets remain intact; quoted database identifiers install and re-apply correctly; fixture cleanup leaves the default database empty and the service on UDS only |
+| T14 | Integration | Apply the real op.mariadb on both VMs, then seed anonymous accounts, remote root accounts including quoted/backslash host names, a populated test database, default test-prefix grants and an orphan grant row; retain a separate account and data in unrelated, test-prefix and application databases; apply under NO_BACKSLASH_ESCAPES and re-apply | Rocky 8.10 and Debian 13 | Target accounts, test database and default test grants are absent; test-prefix access is denied; other accounts, data, SQL mode, service PID and configuration are preserved; repeated apply reports changed=0 |
+| T15 | Integration | Run tests/check-raw-stdin.yml normally and with --check through real SSH/sudo, using only public multiline markers; render the role and confirm its hash appears only in stdin; create a separate account through Make op.mariadb and rerun the password-rotation, UDS/TCP and security-cleanup checks | Rocky 8.10 and Debian 13 | Exact stdin arrives without a TTY and is absent from the receiving shell arguments; command failures and no_log enforcement are preserved; check mode skips execution; account creation, credential rotation, data preservation and unchanged reapply pass |
+| T16 | Integration | Create a separate database/account through the real operator; add REQUIRE X509, SSL, CIPHER, ISSUER and SUBJECT separately on both servers; test PASSWORD EXPIRE and ACCOUNT LOCK on MariaDB 11.8; apply after each condition and compare SHOW CREATE USER and SHOW GRANTS, then restore the fixture condition | Same two VMs | Each unsupported condition produces a visible failure before account changes and preserves definitions; restoring the condition permits ordinary-user data access and changed=0 reapply; remove only the temporary fixture database and account |
 
 ##### Verification Results
 
@@ -1322,6 +1360,12 @@ definition now (owner + LAB-CLOUD, 2026-09-14).
 | T8 | 2026-09-15T18:49:43Z | Rocky 8.10 and Debian 13 archiver-dev VMs | Passed | Real `op.tomcat` first runs reported `ok=1 changed=1 failed=0` on both. The official archive SHA-512 and installed version matched 9.0.121. Login CATALINA_HOME resolved through `/opt/tomcat9`; root ownership and permissions passed. Stock configuration and the shipped ROOT application in temporary CATALINA_BASE directories ran with Java 21, returned HTTP 200, and stopped cleanly via the installed shutdown script. Shared install content/metadata stayed unchanged. Neither host has an installed Tomcat service. |
 | T9 | 2026-09-15T18:49:43Z | Same two VMs | Passed | Default and alternate-path re-applies reported `ok=1 changed=0 failed=0`. File hashes, ownership, permissions, inode, mtime, home symlink, and Tomcat/Java/EPICS profiles matched before and after default re-apply. The real operator rejected an incorrect SHA-512 before publishing any destination, installed with valid path overrides, and rejected a modified JAR without overwriting it. Temporary failure-test installs were removed; default installations remained unchanged and Java 21 verification passed. |
 | T10 | 2026-09-16T05:29:38Z | Rocky 8.10 and Debian 13 archiver-dev VMs | Passed | All listed invalid states were rejected by the real `op.tomcat`; content hashes, modes, ownership, inode, mtime, and home/profile state matched before and after rejection. Incorrect archive checksums still failed before publishing a destination. Fresh alternate-path installs passed, and valid or restored installs reported `changed=0`. Default re-apply also reported `changed=0` on both, preserving the shared tree and Tomcat/Java/EPICS profiles. Installed scripts with the stock ROOT application returned HTTP 200 and stopped cleanly under Java 21. |
+| T11 | 2026-09-16T06:48:18Z | Rocky 8.10 and Debian 13 archiver-dev VMs | Passed | The real package task installed MariaDB 10.3.39 and 11.8.6 respectively. The real service/account tasks configured root Unix socket authentication, utf8mb4 archappl and its localhost account. Final-code client tests as vmadmin created/read/updated/deleted/dropped a temporary table and round-tripped a four-byte UTF-8 value. Wrong/empty passwords, root access as an ordinary OS user and mysql.user reads failed. No MariaDB TCP listener remained in default mode. |
+| T12 | 2026-09-16T06:48:18Z | Same two VMs | Passed | Final-code re-applies reported ok=3 changed=0 failed=0 on each. Config content, ownership/mode, inode/mtime, service PID, root/application definitions and Java/EPICS/Tomcat profiles matched. Password rotation rejected the old password and preserved data; rotation re-apply was unchanged. Localhost TCP served the application while rejecting root TCP; restoring UDS disabled TCP. Service restart preserved data. Restricting runtime mode to 0750 and socket mode to 0770 was repaired by the real operator to mysql:mysql 0755 and 0777, with ordinary-user login restored and subsequent re-apply unchanged. |
+| T13 | 2026-09-16T06:48:18Z | Same two VMs | Passed | All listed invalid-input runs failed and preserved the default configuration, service PID and account definitions. The real operator rejected a separate latin1 database and an account with global SELECT without changing their definitions. A symlink at the managed config path was rejected without overwriting its target or restarting MariaDB. A fresh database named select and its separate account installed successfully and reapplied unchanged. Only test-created fixtures were removed; the default archappl database is empty and final re-apply reported changed=0 on both. |
+| T14 | 2026-09-16T15:05:57Z | Rocky 8.10 / MariaDB 10.3.39 and Debian 13 / MariaDB 11.8.6 | Passed | Actual existing-state cleanup and seeded-fixture runs succeeded through Make op.mariadb. Seeded cleanup reported changed=1 on each. SQL queries verified zero anonymous/remote-root accounts, zero test schemas and zero matching mysql.db rows. The retained account lost test-prefix access while keeping its own database access and authentication definition. Data in test_keep, securekeep and archappl survived; the global SQL mode, service PID, config metadata and existing profiles matched. Quote/backslash account host names were deleted under NO_BACKSLASH_ESCAPES. After fixture cleanup, the final run reported ok=4 changed=0 failed=0 on each, with root UDS authentication and no TCP listener verified. |
+| T15 | 2026-09-16T15:57:43Z | Rocky 8.10 / MariaDB 10.3.39 and Debian 13 / MariaDB 11.8.6 | Passed | The shipped raw_stdin action received public multiline input through SSH/sudo; the receiving root shell had no TTY and no marker in its command arguments. Exit 23 propagated, missing no_log failed, and check mode skipped both valid commands. The role rendered with the credential value only in stdin. Real Make runs created separate accounts and passed the 21-check lifecycle and 8-check security regressions; final operator reapply reported ok=5 changed=0 failed=0 on both. No remote credential-visibility experiment was used. |
+| T16 | 2026-09-16T15:56:03Z | Same two VMs | Passed | X509, SSL, CIPHER, ISSUER and SUBJECT conditions failed visibly on both servers before the account task. Explicit expiration and account lock tests ran on MariaDB 11.8 and failed as expected; MariaDB 10.3 rejected the PASSWORD EXPIRE fixture setup syntax. Account/grant definitions were unchanged after rejection. Restoring each fixture condition restored data access; the final custom-account reapply reported changed=0 on both, and fixture accounts/databases were removed. |
 
 Java increment observation (2026-09-15, control host): the standalone role,
 operator playbook, and `op.java` target are implemented in the working tree.
@@ -1379,6 +1423,42 @@ defaults remain at the T8-T9 SHA-256 above. The default-rendered raw task passed
 Recheck with T10 on the same OS pair using separate root-owned installation
 parents with mode `0755`; run the installed scripts as an ordinary user with
 explicit `CATALINA_HOME` and `CATALINA_BASE` for each test installation.
+
+M14/T11-T13 verification basis: ansible-provision `6c81884` with the standalone
+MariaDB addition. The final task SHA-256 is
+`3baaac945cea28907d4786b5151d8fa08696cbcb7b12e760d63dd24c3cbeacc9`;
+the defaults SHA-256 is
+`516d8af8a57286d95b24c1921cf37ced16af1d800d152aeb289be84aaacf4019`.
+Ansible syntax, rendered `sh -n` / `bash -n`, ShellCheck, raw quote parity,
+Make target resolution, and the 18-role/operator inventory check passed.
+Recheck T11-T13 with private test credentials using the real `op.mariadb`
+target and the distribution SQL client on both OS families. The server and
+local client path are verified; the AA JDBC path, schema and full
+`archiver-dev` assembly remain unverified until aa-env and aa-maven integration.
+
+M14/T14 verification basis: the security task extends the T11-T13 operator;
+its verified task-file SHA-256 is
+`3c134d0e2a331388ddb2a88fbd226d69d725b4be2038c99e0216e48aa8433709`.
+The distribution secure-installation scripts on both OS families supplied the
+account and default test-grant scope. Account deletion uses DROP USER across
+MariaDB versions instead of writing mysql.user/mysql.global_priv directly.
+Ansible syntax, shell syntax, ShellCheck and quote parity passed for all five
+raw tasks. Recheck using T14 with disposable test accounts and databases on
+both OS families; this procedure intentionally deletes the test database.
+
+
+M14/T15-T16 verification basis: the accepted review corrections extend the
+T14 operator. The task-file SHA-256 is
+`e7a8cf60550d5abac8dbbd1c9a48b2082ffbe9e97dc5e780c2cfba7641234fd9`;
+`action_plugins/raw_stdin.py` is
+`b517b5fb2a95e57afd5c22544cb512db1ad93c73f5e6a7f34416bab7e4891ebd`.
+All six role shell blocks passed sh/bash syntax and ShellCheck; YAML, Python,
+Ansible syntax and raw quote-parity checks passed. Recheck the transport with
+`tests/check-raw-stdin.yml` as described in RAW_STYLE.md, and the account policy
+through T16 using private test credentials and separate disposable accounts.
+The transport test uses public data, not a scan exposing database credentials.
+The AA JDBC path, schema and full archiver-dev assembly remain outside these
+operator checks.
 
 ## Backlog
 

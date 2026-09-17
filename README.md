@@ -121,6 +121,7 @@ is the normative statement of content and order.
 | P_common | `common` | OS package manager |
 | P_java | `java` | Distribution OpenJDK 21 JDK packages |
 | P_tomcat | `tomcat` | Apache Tomcat 9.0.121 binary tarball |
+| P_mariadb | `mariadb` | Distribution MariaDB server packages |
 | P_rt | `rt` | Debian PREEMPT_RT packages |
 | P_provenance | `provenance` | - |
 | P_epics | `epics` | [jeonghanlee/EPICS-env-distribution](https://github.com/jeonghanlee/EPICS-env-distribution) |
@@ -186,6 +187,74 @@ This operator supplies the shared Tomcat distribution. The application owns
 the Archiver Appliance instances. Services must set `JAVA_HOME` and
 `CATALINA_HOME` explicitly. See the Apache
 [multiple-instance instructions](https://tomcat.apache.org/tomcat-9.0-doc/RUNNING.txt).
+
+### MariaDB
+
+Run `mariadb` after `common`, supplying private site variables through Ansible:
+
+```bash
+export RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini
+make op.mariadb.rocky8 ANSIBLE_OPTS='-e @/path/to/private-mariadb.yml'
+```
+
+The private variables must define `mariadb_password_hash`: a
+`mysql_native_password` hash (`*` followed by 40 uppercase hexadecimal
+characters). It is the uppercase hexadecimal double SHA-1 of the password,
+prefixed by `*`; the inner SHA-1 is the binary digest. There is no default
+password. The application uses the corresponding original password, not this
+hash. Keep the hash in private site inventory or Ansible Vault; the account
+task suppresses its output and sends the hash over SSH stdin, outside command
+arguments. The controller-side `raw_stdin` action requires Ansible's `ssh`
+connection plugin and `no_log: true`; the target needs no Python. Changing the
+hash updates the application account without recreating the database.
+
+The operator installs `mariadb-server`, enables `mariadb.service`, and creates
+the `archappl` database with `utf8mb4`. The `archappl` application account at
+`localhost` receives all privileges on that database, without global
+privileges or `GRANT OPTION`. `mariadb_database` and `mariadb_user` accept
+1-32 lowercase letters or digits, starting with a letter; system names are
+reserved. An existing database with another charset or an existing application
+account with privileges outside that scope causes failure without changing
+those database/account definitions.
+
+The application account uses password authentication without additional TLS
+requirements. Existing `REQUIRE SSL`, `X509`, cipher, issuer or subject
+requirements, an explicitly expired password, or an account lock cause a
+visible failure before account changes. Resolve that policy separately before
+re-applying; the operator does not remove those restrictions. This check runs
+after package and service configuration.
+
+| OS family | Unix domain socket | Managed server configuration |
+|---|---|---|
+| RedHat | `/run/mariadb/mariadb.sock` | `/etc/my.cnf.d/zz-ansible-archiver.cnf` |
+| Debian | `/run/mysqld/mysqld.sock` | `/etc/mysql/mariadb.conf.d/99-ansible-archiver.cnf` |
+
+By default `mariadb_skip_networking: true` disables TCP. Setting it to `false`
+allows TCP on `127.0.0.1` alongside the socket. The systemd drop-in
+`/etc/systemd/system/mariadb.service.d/archiver.conf` recreates the runtime
+directory with mode `0755`; local clients can reach the socket and must pass
+database authentication. Root management uses `root@localhost` with
+`unix_socket` authentication. Provisioning requires passwordless local root
+access through the socket, as provided by a fresh distribution installation;
+it converts that root account to socket-only authentication. Socket-activated `mariadb.socket` must be
+disabled before applying the service configuration.
+
+Security setup removes all anonymous accounts and remote root accounts using
+`DROP USER`. Following the distribution secure-installation scope, root entries
+at `localhost`, `127.0.0.1`, and `::1` are local; other root host entries are
+removed. It drops the `test` database, including its data, and deletes database
+grants for `test` and the default `test_*` patterns, including orphan grant rows.
+Other databases and non-anonymous, non-root accounts are preserved. Privileges
+are reloaded on every apply, including when no persistent rows need changing.
+
+Re-apply compares configuration and account state and reports actual changes.
+Service configuration changes restart MariaDB; unchanged re-apply preserves
+the running service. Package lists are available as `pkg_mariadb_redhat` and
+`pkg_mariadb_debian` defaults.
+
+aa-env owns the schema, its separate `admin` account workflow, application
+commands, and Tomcat JDBC configuration. Its current TCP commands and JDBC
+URL need UDS configuration before using the default socket-only server.
 
 ## Species Assemblies
 

@@ -1,0 +1,323 @@
+---
+# roles/mariadb/tasks/main.yml
+- name: Reject invalid MariaDB account settings before provisioning
+  ansible.builtin.raw: |
+    printf '%s\n' 'Error: mariadb_database and mariadb_user require 1-32 lowercase letters or digits, starting with a letter; system names are reserved. Supply mariadb_password_hash as a mysql_native_password hash and mariadb_skip_networking as a boolean.' >&2
+    exit 1
+  when: >-
+    mariadb_database is not match('^[a-z][a-z0-9]{0,31}\Z') or
+    mariadb_user is not match('^[a-z][a-z0-9]{0,31}\Z') or
+    mariadb_database in ['mysql', 'sys', 'test'] or
+    mariadb_user in ['root', 'mysql', 'mariadb'] or
+    mariadb_password_hash is not match('^\*[0-9A-F]{40}\Z') or
+    mariadb_skip_networking is not boolean
+  changed_when: false
+  check_mode: false
+
+- name: Install the distribution MariaDB server
+  ansible.builtin.raw: |
+    set -eu
+    export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+    state=unchanged
+    if [ -f /etc/redhat-release ]; then
+      set -- {{ pkg_mariadb_redhat | map('quote') | join(' ') }}
+      for package in "$@"; do
+        if ! rpm -q "${package}" >/dev/null 2>&1; then
+          dnf install -y "${package}" >&2
+          state=changed
+        fi
+      done
+    elif [ -f /etc/debian_version ]; then
+      export DEBIAN_FRONTEND=noninteractive
+      refreshed=no
+      set -- {{ pkg_mariadb_debian | map('quote') | join(' ') }}
+      for package in "$@"; do
+        installed=$(dpkg-query -W -f='${Status}' "${package}" 2>/dev/null) || installed=
+        if [ "${installed}" != 'install ok installed' ]; then
+          if [ "${refreshed}" = no ]; then
+            apt-get update >&2
+            refreshed=yes
+          fi
+          apt-get install -y "${package}" >&2
+          state=changed
+        fi
+      done
+    else
+      printf '%s\n' 'Error: mariadb requires a RedHat or Debian family host.' >&2
+      exit 1
+    fi
+    printf '%s\n' "${state}"
+  register: mariadb_packages
+  changed_when: "(mariadb_packages.stdout_lines | default([]) | last | default('') | trim) == 'changed'"
+
+- name: Configure and start the MariaDB socket service
+  ansible.builtin.raw: |
+    set -eu
+    export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+    umask 022
+    state=unchanged
+    restart=no
+    networking={{ mariadb_skip_networking | ternary('1', '0') | quote }}
+    if [ -f /etc/redhat-release ]; then
+      config=/etc/my.cnf.d/zz-ansible-archiver.cnf
+      runtime=mariadb
+      socket=/run/mariadb/mariadb.sock
+      client=/usr/bin/mysql
+    else
+      config=/etc/mysql/mariadb.conf.d/99-ansible-archiver.cnf
+      runtime=mysqld
+      socket=/run/mysqld/mysqld.sock
+      client=/usr/bin/mariadb
+    fi
+    dropin=/etc/systemd/system/mariadb.service.d/archiver.conf
+    if systemctl is-active --quiet mariadb.socket || systemctl is-enabled --quiet mariadb.socket 2>/dev/null; then
+      printf '%s\n' 'Error: socket activation is outside this operator; disable mariadb.socket first.' >&2
+      exit 1
+    fi
+
+    # Validate all ancestors before creating or replacing root-owned files.
+    for destination in "${config}" "${dropin}"; do
+      parent=${destination%/*}
+      while [ "${parent}" != / ]; do
+        if [ -L "${parent}" ]; then
+          printf 'Error: symlink configuration directory: %s\n' "${parent}" >&2
+          exit 1
+        fi
+        if [ -e "${parent}" ]; then
+          test -d "${parent}"
+          test "$(stat -c %u "${parent}")" = 0
+          if find "${parent}" -maxdepth 0 -perm /022 | grep -q .; then
+            printf 'Error: writable configuration directory: %s\n' "${parent}" >&2
+            exit 1
+          fi
+        fi
+        parent=${parent%/*}
+        if [ -z "${parent}" ]; then parent=/; fi
+      done
+      if [ -L "${destination}" ] || { [ -e "${destination}" ] && [ ! -f "${destination}" ]; }; then
+        printf 'Error: configuration must be a regular file: %s\n' "${destination}" >&2
+        exit 1
+      fi
+    done
+    if [ ! -d "${dropin%/*}" ]; then
+      install -d -o root -g root -m 0755 "${dropin%/*}"
+      state=changed
+    fi
+    tmp=
+    trap 'if [ -n "${tmp}" ]; then rm -f -- "${tmp}"; fi' EXIT
+    trap 'exit 1' HUP INT TERM
+    for destination in "${config}" "${dropin}"; do
+      tmp=$(mktemp "${destination%/*}/.mariadb.XXXXXX")
+      if [ "${destination}" = "${config}" ]; then
+        printf '[mysqld]\nsocket=%s\nskip-networking=%s\nbind-address=127.0.0.1\n\n[client]\nsocket=%s\n' \
+          "${socket}" "${networking}" "${socket}" > "${tmp}"
+      else
+        printf '[Service]\nRuntimeDirectory=%s\nRuntimeDirectoryMode=0755\n' "${runtime}" > "${tmp}"
+      fi
+      test -s "${tmp}"
+      chmod 0644 "${tmp}"
+      chown root:root "${tmp}"
+      if [ -f "${destination}" ] && cmp -s "${tmp}" "${destination}" &&
+         [ "$(stat -c '%u:%g:%a' "${destination}")" = '0:0:644' ]; then
+        rm -f -- "${tmp}"
+      else
+        mv -f -- "${tmp}" "${destination}"
+        state=changed
+        restart=yes
+      fi
+      tmp=
+    done
+    if [ "${restart}" = yes ] || [ "$(systemctl show mariadb.service -p NeedDaemonReload --value)" = yes ]; then
+      systemctl daemon-reload
+      state=changed
+    fi
+    if ! systemctl is-enabled --quiet mariadb.service; then
+      systemctl enable mariadb.service >&2
+      state=changed
+    fi
+    if ! systemctl is-active --quiet mariadb.service; then
+      systemctl start mariadb.service
+      state=changed
+    elif [ "${restart}" = yes ] || [ ! -S "${socket}" ] ||
+         [ "$(stat -c '%U:%G:%a' "${socket%/*}")" != 'mysql:mysql:755' ] ||
+         [ "$(stat -c '%U:%G:%a' "${socket}")" != 'mysql:mysql:777' ]; then
+      systemctl restart mariadb.service
+      state=changed
+    fi
+    # Check effective values, including recovery after an interrupted apply.
+    actual=$("${client}" --no-defaults --protocol=SOCKET --socket="${socket}" --user=root --batch --skip-column-names \
+      -e 'SELECT @@skip_networking')
+    if [ "${actual}" != "${networking}" ]; then
+      systemctl restart mariadb.service
+      state=changed
+    fi
+    actual=$("${client}" --no-defaults --protocol=SOCKET --socket="${socket}" --user=root --batch --skip-column-names \
+      -e 'SELECT @@socket, @@skip_networking, @@bind_address')
+    expected=$(printf '%s\t%s\t127.0.0.1' "${socket}" "${networking}")
+    if [ "${actual}" != "${expected}" ]; then
+      printf '%s\n' 'Error: another MariaDB setting overrides the managed socket or network configuration.' >&2
+      exit 1
+    fi
+    test -S "${socket}"
+    test "$(stat -c '%U:%G:%a' "${socket%/*}")" = 'mysql:mysql:755'
+    test "$(stat -c '%U:%G:%a' "${socket}")" = 'mysql:mysql:777'
+    systemctl is-active --quiet mariadb.service
+    printf '%s\n' "${state}"
+  register: mariadb_service
+  changed_when: "(mariadb_service.stdout_lines | default([]) | last | default('') | trim) == 'changed'"
+
+- name: Reject unsupported existing application authentication conditions
+  ansible.builtin.raw: |
+    set -eu
+    export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+    account={{ mariadb_user | quote }}
+    if [ -f /etc/redhat-release ]; then
+      socket=/run/mariadb/mariadb.sock
+      client=/usr/bin/mysql
+    else
+      socket=/run/mysqld/mysqld.sock
+      client=/usr/bin/mariadb
+    fi
+    set -- "${client}" --no-defaults --protocol=SOCKET --socket="${socket}" --user=root --batch --skip-column-names
+    unsupported=$("$@" -e "SELECT COUNT(*) FROM mysql.user WHERE User='${account}' AND Host='localhost' AND (ssl_type <> '' OR password_expired = 'Y')")
+    if [ "${unsupported}" != 0 ]; then
+      printf '%s\n' 'Error: the existing application account requires TLS/certificates or has an expired password; resolve its authentication policy before provisioning.' >&2
+      exit 1
+    fi
+    exists=$("$@" -e "SELECT COUNT(*) FROM mysql.user WHERE User='${account}' AND Host='localhost'")
+    if [ "${exists}" = 1 ]; then
+      # Keep the definition, including its credential hash, inside the shell.
+      definition=$("$@" -e "SHOW CREATE USER '${account}'@'localhost'")
+      case "${definition}" in
+        *' ACCOUNT LOCK'*)
+          printf '%s\n' 'Error: the existing application account is locked; resolve its authentication policy before provisioning.' >&2
+          exit 1
+          ;;
+      esac
+    fi
+  changed_when: false
+
+- name: Provision root socket authentication and the application database account
+  raw_stdin:
+    stdin: "{{ mariadb_password_hash }}\n"
+    cmd: |
+      set -eu
+      export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+      umask 077
+      state=unchanged
+      database={{ mariadb_database | quote }}
+      account={{ mariadb_user | quote }}
+      IFS= read -r password_hash
+      identifier_quote=$(printf '\140')
+      if [ -f /etc/redhat-release ]; then
+        socket=/run/mariadb/mariadb.sock
+        client=/usr/bin/mysql
+      else
+        socket=/run/mysqld/mysqld.sock
+        client=/usr/bin/mariadb
+      fi
+      set -- "${client}" --no-defaults --protocol=SOCKET --socket="${socket}" --user=root --batch --skip-column-names
+
+      # Fail before account mutation when an existing database has another charset
+      # or the named application account has privileges beyond this database.
+      charset=$("$@" -e "SELECT DEFAULT_CHARACTER_SET_NAME FROM information_schema.SCHEMATA WHERE SCHEMA_NAME='${database}'")
+      if [ -n "${charset}" ] && [ "${charset}" != utf8mb4 ]; then
+        printf '%s\n' 'Error: the existing database charset must be utf8mb4.' >&2
+        exit 1
+      fi
+      exists=$("$@" -e "SELECT COUNT(*) FROM mysql.user WHERE User='${account}' AND Host='localhost'")
+      grants=
+      if [ "${exists}" = 1 ]; then
+        grants=$("$@" -e "SHOW GRANTS FOR '${account}'@'localhost'")
+        unexpected=$(printf '%s\n' "${grants}" | grep -Ev "^GRANT (USAGE ON [*][.][*]|.* ON ${identifier_quote}${database}${identifier_quote}[.][*]) TO " || true)
+        if [ -n "${unexpected}" ] || printf '%s\n' "${grants}" | grep -q 'WITH GRANT OPTION'; then
+          printf '%s\n' 'Error: the application account has privileges outside the managed database scope.' >&2
+          exit 1
+        fi
+      fi
+
+      plugin=$("$@" -e "SELECT COUNT(*) FROM information_schema.PLUGINS WHERE PLUGIN_NAME='unix_socket' AND PLUGIN_STATUS='ACTIVE'")
+      if [ "${plugin}" = 0 ]; then
+        "$@" -e "INSTALL SONAME 'auth_socket'"
+        state=changed
+      fi
+      root_definition=$("$@" -e "SHOW CREATE USER 'root'@'localhost'")
+      case "${root_definition}" in
+        *' OR '*) "$@" -e "ALTER USER 'root'@'localhost' IDENTIFIED VIA unix_socket"; state=changed ;;
+        *'IDENTIFIED VIA unix_socket'*) ;;
+        *) "$@" -e "ALTER USER 'root'@'localhost' IDENTIFIED VIA unix_socket"; state=changed ;;
+      esac
+      if [ -z "${charset}" ]; then
+        "$@" -e "CREATE DATABASE ${identifier_quote}${database}${identifier_quote} CHARACTER SET utf8mb4"
+        state=changed
+      fi
+      if [ "${exists}" = 0 ]; then
+        printf "CREATE USER '%s'@'localhost' IDENTIFIED VIA mysql_native_password USING '%s';\n" \
+          "${account}" "${password_hash}" | "$@"
+        state=changed
+      else
+        authentication=$("$@" -e "SELECT CONCAT(COALESCE(NULLIF(plugin,''),'mysql_native_password'),':',COALESCE(NULLIF(authentication_string,''),Password)) FROM mysql.user WHERE User='${account}' AND Host='localhost'")
+        definition=$("$@" -e "SHOW CREATE USER '${account}'@'localhost'")
+        if [ "${authentication}" != "mysql_native_password:${password_hash}" ] ||
+           printf '%s\n' "${definition}" | grep -q ' OR '; then
+          printf "ALTER USER '%s'@'localhost' IDENTIFIED VIA mysql_native_password USING '%s';\n" \
+            "${account}" "${password_hash}" | "$@"
+          state=changed
+        fi
+      fi
+      if ! printf '%s\n' "${grants}" | grep -q "^GRANT ALL PRIVILEGES ON ${identifier_quote}${database}${identifier_quote}[.][*] TO "; then
+        "$@" -e "GRANT ALL PRIVILEGES ON ${identifier_quote}${database}${identifier_quote}.* TO '${account}'@'localhost'"
+        state=changed
+      fi
+      test "$("$@" -e "SELECT DEFAULT_CHARACTER_SET_NAME FROM information_schema.SCHEMATA WHERE SCHEMA_NAME='${database}'")" = utf8mb4
+      test "$("$@" -e "SELECT plugin FROM mysql.user WHERE User='root' AND Host='localhost'")" = unix_socket
+      test "$("$@" -e "SELECT CONCAT(COALESCE(NULLIF(plugin,''),'mysql_native_password'),':',COALESCE(NULLIF(authentication_string,''),Password)) FROM mysql.user WHERE User='${account}' AND Host='localhost'")" = "mysql_native_password:${password_hash}"
+      printf '%s\n' "${state}"
+  no_log: true
+  register: mariadb_accounts
+  changed_when: "(mariadb_accounts.stdout_lines | default([]) | last | default('') | trim) == 'changed'"
+
+- name: Remove anonymous accounts, remote root accounts, and test database access
+  ansible.builtin.raw: |
+    set -eu
+    export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+    umask 077
+    state=unchanged
+    if [ -f /etc/redhat-release ]; then
+      socket=/run/mariadb/mariadb.sock
+      client=/usr/bin/mysql
+    else
+      socket=/run/mysqld/mysqld.sock
+      client=/usr/bin/mariadb
+    fi
+    set -- "${client}" --no-defaults --protocol=SOCKET --socket="${socket}" --user=root --batch --skip-column-names
+
+    # Match the distribution secure-installation account scope. Use account DDL
+    # across versions where mysql.user is either a table or a compatibility view.
+    account_filter="User='' OR (User='root' AND Host NOT IN ('localhost','127.0.0.1','::1'))"
+    removals=$("$@" --raw -e "SET SESSION sql_mode=''; SELECT CONCAT('DROP USER ',QUOTE(User),'@',QUOTE(Host),';') FROM mysql.user WHERE ${account_filter}")
+    if [ -n "${removals}" ]; then
+      printf '%s\n' "SET SESSION sql_mode='';" "${removals}" | "$@"
+      state=changed
+    fi
+    if [ "$("$@" -e "SELECT COUNT(*) FROM information_schema.SCHEMATA WHERE SCHEMA_NAME='test'")" != 0 ]; then
+      "$@" -e 'DROP DATABASE test'
+      state=changed
+    fi
+
+    # Remove the exact test schema and default test-prefix grant patterns,
+    # including orphan grant rows that have no matching account to revoke.
+    grant_filter="Db='test' OR HEX(Db) IN ('746573745C5F25','746573745F25')"
+    if [ "$("$@" -e "SELECT COUNT(*) FROM mysql.db WHERE ${grant_filter}")" != 0 ]; then
+      "$@" -e "DELETE FROM mysql.db WHERE ${grant_filter}"
+      state=changed
+    fi
+    # Reload even after an interrupted earlier DELETE left no persistent rows.
+    # This has no persistent change and does not restart the server.
+    "$@" -e 'FLUSH PRIVILEGES'
+    test "$("$@" -e "SELECT COUNT(*) FROM mysql.user WHERE ${account_filter}")" = 0
+    test "$("$@" -e "SELECT COUNT(*) FROM information_schema.SCHEMATA WHERE SCHEMA_NAME='test'")" = 0
+    test "$("$@" -e "SELECT COUNT(*) FROM mysql.db WHERE ${grant_filter}")" = 0
+    printf '%s\n' "${state}"
+  register: mariadb_security
+  changed_when: "(mariadb_security.stdout_lines | default([]) | last | default('') | trim) == 'changed'"
