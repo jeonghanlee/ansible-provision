@@ -58,6 +58,10 @@
     state=unchanged
     restart=no
     networking={{ mariadb_skip_networking | ternary('1', '0') | quote }}
+    # Loopback TCP requires deterministic host matching: enable skip-name-resolve
+    # so a 127.0.0.1 connection matches the '127.0.0.1' account, never 'localhost'
+    # (localhost may resolve to ::1). Off on the socket-only default.
+    if [ "${networking}" = 0 ]; then nameresolve_expected=1; else nameresolve_expected=0; fi
     if [ -f /etc/redhat-release ]; then
       config=/etc/my.cnf.d/zz-ansible-archiver.cnf
       runtime=mariadb
@@ -109,8 +113,15 @@
     for destination in "${config}" "${dropin}"; do
       tmp=$(mktemp "${destination%/*}/.mariadb.XXXXXX")
       if [ "${destination}" = "${config}" ]; then
-        printf '[mysqld]\nsocket=%s\nskip-networking=%s\nbind-address=127.0.0.1\n\n[client]\nsocket=%s\n' \
-          "${socket}" "${networking}" "${socket}" > "${tmp}"
+        # Byte-identical to the socket-only config when TCP is off; adds
+        # skip-name-resolve only under loopback TCP.
+        if [ "${networking}" = 0 ]; then
+          printf '[mysqld]\nsocket=%s\nskip-networking=%s\nbind-address=127.0.0.1\nskip-name-resolve\n\n[client]\nsocket=%s\n' \
+            "${socket}" "${networking}" "${socket}" > "${tmp}"
+        else
+          printf '[mysqld]\nsocket=%s\nskip-networking=%s\nbind-address=127.0.0.1\n\n[client]\nsocket=%s\n' \
+            "${socket}" "${networking}" "${socket}" > "${tmp}"
+        fi
       else
         printf '[Service]\nRuntimeDirectory=%s\nRuntimeDirectoryMode=0755\n' "${runtime}" > "${tmp}"
       fi
@@ -145,15 +156,16 @@
       state=changed
     fi
     # Check effective values, including recovery after an interrupted apply.
+    # skip-name-resolve is not dynamic, so a runtime mismatch also forces a restart.
     actual=$("${client}" --no-defaults --protocol=SOCKET --socket="${socket}" --user=root --batch --skip-column-names \
-      -e 'SELECT @@skip_networking')
-    if [ "${actual}" != "${networking}" ]; then
+      -e 'SELECT @@skip_networking, @@skip_name_resolve')
+    if [ "${actual}" != "$(printf '%s\t%s' "${networking}" "${nameresolve_expected}")" ]; then
       systemctl restart mariadb.service
       state=changed
     fi
     actual=$("${client}" --no-defaults --protocol=SOCKET --socket="${socket}" --user=root --batch --skip-column-names \
-      -e 'SELECT @@socket, @@skip_networking, @@bind_address')
-    expected=$(printf '%s\t%s\t127.0.0.1' "${socket}" "${networking}")
+      -e 'SELECT @@socket, @@skip_networking, @@bind_address, @@skip_name_resolve')
+    expected=$(printf '%s\t%s\t127.0.0.1\t%s' "${socket}" "${networking}" "${nameresolve_expected}")
     if [ "${actual}" != "${expected}" ]; then
       printf '%s\n' 'Error: another MariaDB setting overrides the managed socket or network configuration.' >&2
       exit 1
@@ -171,6 +183,7 @@
     set -eu
     export PATH=/usr/sbin:/usr/bin:/sbin:/bin
     account={{ mariadb_user | quote }}
+    tcp={{ mariadb_skip_networking | ternary('0', '1') | quote }}
     if [ -f /etc/redhat-release ]; then
       socket=/run/mariadb/mariadb.sock
       client=/usr/bin/mysql
@@ -179,22 +192,29 @@
       client=/usr/bin/mariadb
     fi
     set -- "${client}" --no-defaults --protocol=SOCKET --socket="${socket}" --user=root --batch --skip-column-names
-    unsupported=$("$@" -e "SELECT COUNT(*) FROM mysql.user WHERE User='${account}' AND Host='localhost' AND (ssl_type <> '' OR password_expired = 'Y')")
-    if [ "${unsupported}" != 0 ]; then
-      printf '%s\n' 'Error: the existing application account requires TLS/certificates or has an expired password; resolve its authentication policy before provisioning.' >&2
-      exit 1
-    fi
-    exists=$("$@" -e "SELECT COUNT(*) FROM mysql.user WHERE User='${account}' AND Host='localhost'")
-    if [ "${exists}" = 1 ]; then
-      # Keep the definition, including its credential hash, inside the shell.
-      definition=$("$@" -e "SHOW CREATE USER '${account}'@'localhost'")
-      case "${definition}" in
-        *' ACCOUNT LOCK'*)
-          printf '%s\n' 'Error: the existing application account is locked; resolve its authentication policy before provisioning.' >&2
-          exit 1
-          ;;
-      esac
-    fi
+    # The application account is provisioned at 'localhost' (socket) and, when
+    # loopback TCP is enabled, additionally at '127.0.0.1' for the archiver
+    # species. Screen every host the account will hold.
+    hosts=localhost
+    if [ "${tcp}" = 1 ]; then hosts="localhost 127.0.0.1"; fi
+    for host in ${hosts}; do
+      unsupported=$("$@" -e "SELECT COUNT(*) FROM mysql.user WHERE User='${account}' AND Host='${host}' AND (ssl_type <> '' OR password_expired = 'Y')")
+      if [ "${unsupported}" != 0 ]; then
+        printf '%s\n' 'Error: the existing application account requires TLS/certificates or has an expired password; resolve its authentication policy before provisioning.' >&2
+        exit 1
+      fi
+      exists=$("$@" -e "SELECT COUNT(*) FROM mysql.user WHERE User='${account}' AND Host='${host}'")
+      if [ "${exists}" = 1 ]; then
+        # Keep the definition, including its credential hash, inside the shell.
+        definition=$("$@" -e "SHOW CREATE USER '${account}'@'${host}'")
+        case "${definition}" in
+          *' ACCOUNT LOCK'*)
+            printf '%s\n' 'Error: the existing application account is locked; resolve its authentication policy before provisioning.' >&2
+            exit 1
+            ;;
+        esac
+      fi
+    done
   changed_when: false
 
 - name: Provision root socket authentication and the application database account
@@ -207,6 +227,7 @@
       state=unchanged
       database={{ mariadb_database | quote }}
       account={{ mariadb_user | quote }}
+      tcp={{ mariadb_skip_networking | ternary('0', '1') | quote }}
       IFS= read -r password_hash
       identifier_quote=$(printf '\140')
       if [ -f /etc/redhat-release ]; then
@@ -218,6 +239,13 @@
       fi
       set -- "${client}" --no-defaults --protocol=SOCKET --socket="${socket}" --user=root --batch --skip-column-names
 
+      # The application account is held at 'localhost' (socket) and, when loopback
+      # TCP is enabled, also at '127.0.0.1' so the archiver species can connect over
+      # jdbc:mariadb://localhost:3306 with --protocol=tcp (IPv4 loopback only). root
+      # stays socket-authenticated at 'localhost' regardless.
+      hosts=localhost
+      if [ "${tcp}" = 1 ]; then hosts="localhost 127.0.0.1"; fi
+
       # Fail before account mutation when an existing database has another charset
       # or the named application account has privileges beyond this database.
       charset=$("$@" -e "SELECT DEFAULT_CHARACTER_SET_NAME FROM information_schema.SCHEMATA WHERE SCHEMA_NAME='${database}'")
@@ -225,16 +253,16 @@
         printf '%s\n' 'Error: the existing database charset must be utf8mb4.' >&2
         exit 1
       fi
-      exists=$("$@" -e "SELECT COUNT(*) FROM mysql.user WHERE User='${account}' AND Host='localhost'")
-      grants=
-      if [ "${exists}" = 1 ]; then
-        grants=$("$@" -e "SHOW GRANTS FOR '${account}'@'localhost'")
-        unexpected=$(printf '%s\n' "${grants}" | grep -Ev "^GRANT (USAGE ON [*][.][*]|.* ON ${identifier_quote}${database}${identifier_quote}[.][*]) TO " || true)
-        if [ -n "${unexpected}" ] || printf '%s\n' "${grants}" | grep -q 'WITH GRANT OPTION'; then
-          printf '%s\n' 'Error: the application account has privileges outside the managed database scope.' >&2
-          exit 1
+      for host in ${hosts}; do
+        if [ "$("$@" -e "SELECT COUNT(*) FROM mysql.user WHERE User='${account}' AND Host='${host}'")" = 1 ]; then
+          grants=$("$@" -e "SHOW GRANTS FOR '${account}'@'${host}'")
+          unexpected=$(printf '%s\n' "${grants}" | grep -Ev "^GRANT (USAGE ON [*][.][*]|.* ON ${identifier_quote}${database}${identifier_quote}[.][*]) TO " || true)
+          if [ -n "${unexpected}" ] || printf '%s\n' "${grants}" | grep -q 'WITH GRANT OPTION'; then
+            printf '%s\n' 'Error: the application account has privileges outside the managed database scope.' >&2
+            exit 1
+          fi
         fi
-      fi
+      done
 
       plugin=$("$@" -e "SELECT COUNT(*) FROM information_schema.PLUGINS WHERE PLUGIN_NAME='unix_socket' AND PLUGIN_STATUS='ACTIVE'")
       if [ "${plugin}" = 0 ]; then
@@ -251,27 +279,38 @@
         "$@" -e "CREATE DATABASE ${identifier_quote}${database}${identifier_quote} CHARACTER SET utf8mb4"
         state=changed
       fi
-      if [ "${exists}" = 0 ]; then
-        printf "CREATE USER '%s'@'localhost' IDENTIFIED VIA mysql_native_password USING '%s';\n" \
-          "${account}" "${password_hash}" | "$@"
-        state=changed
-      else
-        authentication=$("$@" -e "SELECT CONCAT(COALESCE(NULLIF(plugin,''),'mysql_native_password'),':',COALESCE(NULLIF(authentication_string,''),Password)) FROM mysql.user WHERE User='${account}' AND Host='localhost'")
-        definition=$("$@" -e "SHOW CREATE USER '${account}'@'localhost'")
-        if [ "${authentication}" != "mysql_native_password:${password_hash}" ] ||
-           printf '%s\n' "${definition}" | grep -q ' OR '; then
-          printf "ALTER USER '%s'@'localhost' IDENTIFIED VIA mysql_native_password USING '%s';\n" \
-            "${account}" "${password_hash}" | "$@"
+      # Create or reconcile the application account at each host, with the same
+      # credential hash and the same single-database grant.
+      for host in ${hosts}; do
+        exists=$("$@" -e "SELECT COUNT(*) FROM mysql.user WHERE User='${account}' AND Host='${host}'")
+        grants=
+        if [ "${exists}" = 1 ]; then
+          grants=$("$@" -e "SHOW GRANTS FOR '${account}'@'${host}'")
+        fi
+        if [ "${exists}" = 0 ]; then
+          printf "CREATE USER '%s'@'%s' IDENTIFIED VIA mysql_native_password USING '%s';\n" \
+            "${account}" "${host}" "${password_hash}" | "$@"
+          state=changed
+        else
+          authentication=$("$@" -e "SELECT CONCAT(COALESCE(NULLIF(plugin,''),'mysql_native_password'),':',COALESCE(NULLIF(authentication_string,''),Password)) FROM mysql.user WHERE User='${account}' AND Host='${host}'")
+          definition=$("$@" -e "SHOW CREATE USER '${account}'@'${host}'")
+          if [ "${authentication}" != "mysql_native_password:${password_hash}" ] ||
+             printf '%s\n' "${definition}" | grep -q ' OR '; then
+            printf "ALTER USER '%s'@'%s' IDENTIFIED VIA mysql_native_password USING '%s';\n" \
+              "${account}" "${host}" "${password_hash}" | "$@"
+            state=changed
+          fi
+        fi
+        if ! printf '%s\n' "${grants}" | grep -q "^GRANT ALL PRIVILEGES ON ${identifier_quote}${database}${identifier_quote}[.][*] TO "; then
+          "$@" -e "GRANT ALL PRIVILEGES ON ${identifier_quote}${database}${identifier_quote}.* TO '${account}'@'${host}'"
           state=changed
         fi
-      fi
-      if ! printf '%s\n' "${grants}" | grep -q "^GRANT ALL PRIVILEGES ON ${identifier_quote}${database}${identifier_quote}[.][*] TO "; then
-        "$@" -e "GRANT ALL PRIVILEGES ON ${identifier_quote}${database}${identifier_quote}.* TO '${account}'@'localhost'"
-        state=changed
-      fi
+      done
       test "$("$@" -e "SELECT DEFAULT_CHARACTER_SET_NAME FROM information_schema.SCHEMATA WHERE SCHEMA_NAME='${database}'")" = utf8mb4
       test "$("$@" -e "SELECT plugin FROM mysql.user WHERE User='root' AND Host='localhost'")" = unix_socket
-      test "$("$@" -e "SELECT CONCAT(COALESCE(NULLIF(plugin,''),'mysql_native_password'),':',COALESCE(NULLIF(authentication_string,''),Password)) FROM mysql.user WHERE User='${account}' AND Host='localhost'")" = "mysql_native_password:${password_hash}"
+      for host in ${hosts}; do
+        test "$("$@" -e "SELECT CONCAT(COALESCE(NULLIF(plugin,''),'mysql_native_password'),':',COALESCE(NULLIF(authentication_string,''),Password)) FROM mysql.user WHERE User='${account}' AND Host='${host}'")" = "mysql_native_password:${password_hash}"
+      done
       printf '%s\n' "${state}"
   no_log: true
   register: mariadb_accounts
@@ -292,10 +331,14 @@
     fi
     set -- "${client}" --no-defaults --protocol=SOCKET --socket="${socket}" --user=root --batch --skip-column-names
 
-    # Match the distribution secure-installation account scope. Use account DDL
-    # across versions where mysql.user is either a table or a compatibility view.
-    account_filter="User='' OR (User='root' AND Host NOT IN ('localhost','127.0.0.1','::1'))"
-    removals=$("$@" --raw -e "SET SESSION sql_mode=''; SELECT CONCAT('DROP USER ',QUOTE(User),'@',QUOTE(Host),';') FROM mysql.user WHERE ${account_filter}")
+    # Keep only root@'localhost' (socket-authenticated); drop every other root
+    # host and the anonymous users. Stricter than stock secure-installation,
+    # which keeps root@'127.0.0.1'/'::1': under loopback TCP those are reachable
+    # and this role passwords no root account. Removal is DROP USER IF EXISTS
+    # built from a SELECT, so it works whether mysql.user is a table (<=10.3) or
+    # a view (>=10.4), and IF EXISTS keeps a re-run idempotent under any race.
+    account_filter="User='' OR (User='root' AND Host <> 'localhost')"
+    removals=$("$@" --raw -e "SET SESSION sql_mode=''; SELECT CONCAT('DROP USER IF EXISTS ',QUOTE(User),'@',QUOTE(Host),';') FROM mysql.user WHERE ${account_filter}")
     if [ -n "${removals}" ]; then
       printf '%s\n' "SET SESSION sql_mode='';" "${removals}" | "$@"
       state=changed
