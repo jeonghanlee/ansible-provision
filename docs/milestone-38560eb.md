@@ -31,8 +31,14 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: continue M14 with aa-env and aa-maven integration
-for the `archiver-build` operator and the `archiver-dev` assembly.
+Next session entry point: write the `archiver_build` operator -
+`roles/archiver_build/tasks/main.yml` (drive aa-env's make sequence as root, per
+the 2026-09-18 sub-decision and authorization), `playbooks/operators/archiver_build.yml`,
+and the `archiver_dev` species - then run it all-root on the Rocky 8.10 and
+Debian 13 archiver-dev VMs; that run is M14/T17-T19 and the aa-env M8 runtime
+evidence. `roles/archiver_build/defaults/main.yml` is drafted. The MariaDB
+loopback-TCP mode and the `[archiver_dev]` group_vars are committed (`5b5ee44`,
+`08dbb93`) and verified on both OS.
 Java installation, default commands, login `JAVA_HOME`, and re-apply
 passed on Rocky 8.10 and Debian 13 VMs (M14/T3-T4). The existing EPICS distribution
 operator now defaults to 1.3.0 and passed installation, example IOC build/runtime,
@@ -1263,6 +1269,22 @@ repository); Maven as an installed package.
   aa-maven are required for the application path.
 - EPICS distribution selector (2026-09-15): use 1.3.0 as the `epics` role
   default, with Base 7.0.10. Existing operator behavior remains unchanged.
+- `archiver_build` realization (owner, 2026-09-18): the operator drives aa-env's
+  make sequence (aa-env clones and builds aa-maven from source internally); it
+  does not build aa-maven separately. Runs as root like the other build
+  operators - no build-user split, since aa-env's internal sudo no-ops when
+  already root and `make install` chowns the instances to `mid-srv:mid`
+  regardless. Pins aa-env `fb43522` and aa-maven `SRC_TAG=3c96141d`. Variable
+  placement: `configure/RELEASE.local` (SRC_TAG) and `../CONFIG_SITE.local` -
+  one directory above the checkout, which survives the OS-conf rewrite -
+  (AA_USERID/AA_GROUPID, DB name/user/pass, DB_HOST_NAME=127.0.0.1,
+  DB_HOST_PORT, JAVA_HOME/TOMCAT_HOME). Pre-create `mid`/`mid-srv` with a
+  site-set GID (ioc/ioc-srv precedent); default `als` overlay; skip aa-env
+  `db.secure`/`db.addAdmin`/`db.create` (the `mariadb` operator makes the DB and
+  account) and `install_os_packages.bash` (the operators supply the packages).
+  Checkout at `/opt/epicsarchiverap-env-src`. Boundary: aa-env owns each make
+  target's internals (WAR build, instance layout, systemd unit, schema, overlay);
+  this operator owns orchestration, refs, config, and the service account.
 
 ##### Implementation Plan
 
@@ -1276,6 +1298,17 @@ repository); Maven as an installed package.
 - Review correction authorization: 2026-09-16 (remove the credential hash from
   command arguments and reject unsupported existing authentication conditions
   without clearing their security policy)
+- MariaDB loopback-TCP authorization: 2026-09-18 (add a TCP-loopback +
+  `skip-name-resolve` mode gated on `mariadb_skip_networking: false`, the
+  `archappl@'127.0.0.1'` application account, and secure-step hardening to keep
+  only `root@'localhost'`; committed `5b5ee44`. Wire it for the archiver species
+  through the `[archiver_dev]` group and `group_vars/archiver_dev.yml`; committed
+  `08dbb93`.)
+- archiver_build authorization: 2026-09-18 (drive aa-env's make sequence as root
+  in order: `init` -> `db.conf` -> `conf.archapplproperties` -> `build.mvn` ->
+  `sql.fill` -> `conf.storage` -> `install` -> `sd_start`; never `make build`
+  wholesale, which bundles the root `conf.storage`. Realization per the
+  2026-09-18 sub-decision above.)
 - Superseded Plan Artifacts: none
 
 Developed before `G2` rather than after: `G2` completes when cloud-provision M11
@@ -1345,6 +1378,9 @@ definition now (owner + LAB-CLOUD, 2026-09-14).
 | T14 | Integration | Apply the real op.mariadb on both VMs, then seed anonymous accounts, remote root accounts including quoted/backslash host names, a populated test database, default test-prefix grants and an orphan grant row; retain a separate account and data in unrelated, test-prefix and application databases; apply under NO_BACKSLASH_ESCAPES and re-apply | Rocky 8.10 and Debian 13 | Target accounts, test database and default test grants are absent; test-prefix access is denied; other accounts, data, SQL mode, service PID and configuration are preserved; repeated apply reports changed=0 |
 | T15 | Integration | Run tests/check-raw-stdin.yml normally and with --check through real SSH/sudo, using only public multiline markers; render the role and confirm its hash appears only in stdin; create a separate account through Make op.mariadb and rerun the password-rotation, UDS/TCP and security-cleanup checks | Rocky 8.10 and Debian 13 | Exact stdin arrives without a TTY and is absent from the receiving shell arguments; command failures and no_log enforcement are preserved; check mode skips execution; account creation, credential rotation, data preservation and unchanged reapply pass |
 | T16 | Integration | Create a separate database/account through the real operator; add REQUIRE X509, SSL, CIPHER, ISSUER and SUBJECT separately on both servers; test PASSWORD EXPIRE and ACCOUNT LOCK on MariaDB 11.8; apply after each condition and compare SHOW CREATE USER and SHOW GRANTS, then restore the fixture condition | Same two VMs | Each unsupported condition produces a visible failure before account changes and preserves definitions; restoring the condition permits ordinary-user data access and changed=0 reapply; remove only the temporary fixture database and account |
+| T17 | Integration | Apply the `archiver_build` build steps (`init`, `db.conf`, `conf.archapplproperties`, `build.mvn`) as root with aa-env `fb43522` + aa-maven `SRC_TAG=3c96141d`; inspect the produced WARs and the als overlay in `WEB-INF/classes`, and the schema load | Rocky 8.10 and Debian 13 archiver-dev VMs | The four `aa-*-{mgmt,engine,etl,retrieval}.war` build with the als `appliances.xml`/`archappl.properties`/`policies.py` packed; `sql.fill` loads the schema over TCP as `archappl@'127.0.0.1'` |
+| T18 | Integration | Run the root install steps (`conf.storage`, `install`, `sd_start`); inspect `/arch` ownership, the four instances under `/opt/epicsarchiverap-maven`, the `epicsarchiverap-maven.service` unit and state, mgmt HTTP, and one archived PV | Same two VMs | `/arch` and the instances are `mid-srv:mid`; the unit is enabled and active; mgmt returns HTTP 200; one PV archives and reads back |
+| T19 | Integration | Re-apply the full `archiver_build` operator; compare the installed tree, unit, and service PID before and after | Same two VMs | Re-apply reports `changed=0`, `failed=0`; the installed tree, unit, and running service are unchanged |
 
 ##### Verification Results
 
@@ -1366,6 +1402,31 @@ definition now (owner + LAB-CLOUD, 2026-09-14).
 | T14 | 2026-09-16T15:05:57Z | Rocky 8.10 / MariaDB 10.3.39 and Debian 13 / MariaDB 11.8.6 | Passed | Actual existing-state cleanup and seeded-fixture runs succeeded through Make op.mariadb. Seeded cleanup reported changed=1 on each. SQL queries verified zero anonymous/remote-root accounts, zero test schemas and zero matching mysql.db rows. The retained account lost test-prefix access while keeping its own database access and authentication definition. Data in test_keep, securekeep and archappl survived; the global SQL mode, service PID, config metadata and existing profiles matched. Quote/backslash account host names were deleted under NO_BACKSLASH_ESCAPES. After fixture cleanup, the final run reported ok=4 changed=0 failed=0 on each, with root UDS authentication and no TCP listener verified. |
 | T15 | 2026-09-16T15:57:43Z | Rocky 8.10 / MariaDB 10.3.39 and Debian 13 / MariaDB 11.8.6 | Passed | The shipped raw_stdin action received public multiline input through SSH/sudo; the receiving root shell had no TTY and no marker in its command arguments. Exit 23 propagated, missing no_log failed, and check mode skipped both valid commands. The role rendered with the credential value only in stdin. Real Make runs created separate accounts and passed the 21-check lifecycle and 8-check security regressions; final operator reapply reported ok=5 changed=0 failed=0 on both. No remote credential-visibility experiment was used. |
 | T16 | 2026-09-16T15:56:03Z | Same two VMs | Passed | X509, SSL, CIPHER, ISSUER and SUBJECT conditions failed visibly on both servers before the account task. Explicit expiration and account lock tests ran on MariaDB 11.8 and failed as expected; MariaDB 10.3 rejected the PASSWORD EXPIRE fixture setup syntax. Account/grant definitions were unchanged after rejection. Restoring each fixture condition restored data access; the final custom-account reapply reported changed=0 on both, and fixture accounts/databases were removed. |
+| T17 | 2026-09-18 (partial) | aa-env isolated env, aa-maven 3c96141d | Partial | Build only, on aa-env's side, not our operator: aa-env ran `make build.mvn` (-DskipTests) at aa-maven 3c96141d producing the four `aa-*` WARs with the als classpathfiles. Our `archiver_build` operator has not run this step. |
+| T18 | pending | Rocky 8.10 and Debian 13 archiver-dev VMs | Not run | End-to-end install-to-running (aa-env M8) has not been run by anyone; our all-root operator run will be the first exercise. |
+| T19 | pending | Same two VMs | Not run | |
+
+MariaDB loopback-TCP verification (2026-09-18, Rocky 8.10 / MariaDB 10.3.39 and
+Debian 13 / MariaDB 11.8.6 archiver-dev VMs): the `mariadb` operator applied with
+`mariadb_skip_networking: false` on both. `@@skip_name_resolve=1`; a
+`--protocol=tcp` login to 127.0.0.1 authenticates as `archappl@'127.0.0.1'`; the
+listener is `127.0.0.1:3306` only (no `::1`); `root@'127.0.0.1'` and `root@'::1'`
+are dropped, so root over TCP returns Access denied; the application grant is
+`archappl.*` only. Re-apply reported `changed=0`. Verified role committed
+`5b5ee44`; reviewed third- and second-person to convergence. The `[archiver_dev]`
+group_vars resolution (`mariadb_skip_networking=False` for an `[archiver_dev]`
+host, unset elsewhere) verified via `ansible-inventory --host`; committed
+`08dbb93`.
+
+archiver_build increment status (2026-09-18, control host): only
+`roles/archiver_build/defaults/main.yml` is drafted; `tasks/main.yml`, the
+operator playbook, and the `archiver_dev` species remain to write. The
+als-overlay build is verified by execution on aa-env's side only (T17 partial);
+the per-step privilege split and the ordered make sequence are derived from
+aa-env's Makefiles, not executed; the end-to-end install (T18) is unrun. Our
+all-root operator run will be the first real exercise of both the privilege
+behavior and the end-to-end, and its results (mgmt 200, one PV archived) are the
+M8 runtime evidence, observed in our archiver-dev environment.
 
 Java increment observation (2026-09-15, control host): the standalone role,
 operator playbook, and `op.java` target are implemented in the working tree.
