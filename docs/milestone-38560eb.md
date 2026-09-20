@@ -1428,6 +1428,14 @@ all-root operator run will be the first real exercise of both the privilege
 behavior and the end-to-end, and its results (mgmt 200, one PV archived) are the
 M8 runtime evidence, observed in our archiver-dev environment.
 
+Generator gap closed (2026-09-18, cloud-provision `m11-middleware-operators`
+`06ea800`): `generate_ansible_inventory.bash` now emits `[archiver_dev]` and
+`[archiver]` for the archiver species pair (tests 197/197), so a real provision
+attaches the `archiver_dev` group_vars with no change on our side; re-sync the
+local cloud-provision checkout before provisioning. The generator still lacks
+`phoebus`, `phoebus-dev`, `middleware`, and `iocserver` - the same one-line
+addition when those are provisioned.
+
 Java increment observation (2026-09-15, control host): the standalone role,
 operator playbook, and `op.java` target are implemented in the working tree.
 The real operator passes Ansible `--syntax-check`; its default-rendered raw
