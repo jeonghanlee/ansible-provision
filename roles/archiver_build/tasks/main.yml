@@ -1,0 +1,202 @@
+---
+# roles/archiver_build/tasks/main.yml
+#
+# Installs the EPICS Archiver Appliance by driving aa-env's
+# (epicsarchiverap-env) make sequence, which clones and builds aa-maven from
+# source internally. This operator owns orchestration, refs, config, and the
+# service account; aa-env owns each make target's internals. It runs as root
+# like the other build operators; aa-env's internal sudo no-ops when already
+# root, so no build-user split is needed.
+#
+# Prerequisites come earlier in the archiver_dev species: the java operator
+# (JDK 21 + JAVA_HOME), the tomcat operator (/opt/tomcat9 shared CATALINA_HOME),
+# and the mariadb operator (loopback-TCP archappl DB and account). This
+# operator installs its own build tools (git, make, unzip, sed, tree, curl),
+# mirroring epics_build; aa-env's install_os_packages.bash is skipped.
+#
+# The build runs as a detached systemd transient unit (systemd-run), not inline
+# over the SSH session: a long `./mvnw` on a cold ~/.m2 cannot leave a dropped
+# connection with a half-built tree that a retry mistakes for progress. The
+# launch step is idempotent (skip installed, leave a running unit alone, else
+# clean-start); ansible then polls the unit to a success sentinel. Mirrors the
+# epics_build operator.
+
+- name: Install the detached archiver build script
+  ansible.builtin.raw: |
+    cat > /usr/local/sbin/archiver-build.sh <<'ARCHIVER_BUILD_SCRIPT'
+    #!/bin/bash
+    set -e
+
+    sentinel=/var/tmp/archiver-build.done
+
+    group="{{ archiver_group }}"
+    user="{{ archiver_user }}"
+    gid="{{ archiver_gid }}"
+    repo="{{ repo_archiver_env }}"
+    ref="{{ archiver_env_ref }}"
+    src_parent="{{ path_archiver_env_src }}"
+    src_tag="{{ archiver_maven_src_tag }}"
+    site_id="{{ archiver_site_id }}"
+    db_name="{{ archiver_db_name }}"
+    db_user="{{ archiver_db_user }}"
+    db_pass="{{ archiver_db_password }}"
+    db_host="{{ archiver_db_host }}"
+    db_port="{{ archiver_db_port }}"
+    storage_top="{{ archiver_storage_top }}"
+    install_parent="{{ archiver_install_parent }}"
+
+    top="${src_parent}/epicsarchiverap-env"
+
+    # --- OS build-tool packages and JAVA_HOME (TOMCAT_HOME is /opt/tomcat9).
+    # The aa-env install_os_packages.bash is skipped; install its build tools
+    # here (mirrors epics_build). The -devel deps come with the epics operator.
+    . /etc/os-release
+    case "${ID}" in
+      rocky|rhel|centos)
+        java_home=/usr/lib/jvm/java-21-openjdk
+        dnf install -y git tree make unzip sed curl wget
+        ;;
+      debian|ubuntu)
+        java_home=/usr/lib/jvm/java-21-openjdk-amd64
+        export DEBIAN_FRONTEND=noninteractive
+        apt-get update
+        apt-get install -y git tree make unzip sed curl wget
+        ;;
+      *) echo "archiver_build: unsupported OS ID=${ID}" >&2; exit 1 ;;
+    esac
+
+    # --- Service group and runtime account (site-set GID; nologin) ---
+    # The aa-env install would create these too; pre-creating fixes the GID and
+    # aa-env then no-ops on the existing user/group.
+    if ! getent group "${group}" >/dev/null; then
+      if [ -n "${gid}" ]; then groupadd -g "${gid}" "${group}"; else groupadd "${group}"; fi
+    fi
+    if ! id "${user}" >/dev/null 2>&1; then
+      useradd --system -g "${group}" -M -s /usr/sbin/nologin "${user}"
+    fi
+
+    # --- Clone aa-env at the pinned ref; self-clean any partial tree first ---
+    rm -rf "${top}"
+    install -d -m 0755 "${src_parent}"
+    git clone "${repo}" "${top}"
+    git -C "${top}" checkout "refs/tags/${ref}" 2>/dev/null || git -C "${top}" checkout "${ref}"
+
+    # --- Site overrides in ../CONFIG_SITE.local (one dir above the checkout;
+    # it is -included and survives the OS-conf rewrite we never trigger) ---
+    printf '%s\n' \
+      "AA_USERID:=${user}" \
+      "AA_GROUPID:=${group}" \
+      "JAVA_HOME=${java_home}" \
+      "TOMCAT_HOME=/opt/tomcat9" \
+      "DB_NAME=${db_name}" \
+      "DB_USER=${db_user}" \
+      "DB_HOST_NAME=${db_host}" \
+      "DB_HOST_PORT=${db_port}" \
+      "ARCHAPPL_STORAGE_TOP=${storage_top}" \
+      "AA_INSTALL_PATH=${install_parent}" \
+      "ARCHAPPL_SITEID:=${site_id}" > "${src_parent}/CONFIG_SITE.local"
+    # Override DB_USER_PASS only when a site password is supplied. An empty
+    # value here would win over the aa-env default (this file is -included
+    # after CONFIG_SITE) and break the DB login; leaving it unset lets the
+    # aa-env default stand.
+    if [ -n "${db_pass}" ]; then
+      printf 'DB_USER_PASS=%s\n' "${db_pass}" >> "${src_parent}/CONFIG_SITE.local"
+    fi
+
+    # --- Pin the aa-maven source ref (make init clones it at SRC_TAG) ---
+    printf 'SRC_TAG:=%s\n' "${src_tag}" > "${top}/configure/RELEASE.local"
+
+    # --- Build and install, aa-env driving aa-maven internally. conf.storage,
+    # install, and sd_start are the root steps; never `make build` wholesale,
+    # which bundles conf.storage. ---
+    cd "${top}"
+    make init
+    make db.conf
+    make conf.archapplproperties
+    make build.mvn
+    make sql.fill
+    make conf.storage
+    make install
+    make sd_start
+
+    # Success sentinel: reached only when set -e let every step pass. The poll
+    # step reads this to tell a finished install from a failed one.
+    touch "${sentinel}"
+    ARCHIVER_BUILD_SCRIPT
+    chmod 0755 /usr/local/sbin/archiver-build.sh
+  changed_when: false
+
+- name: Launch the detached archiver build unit
+  ansible.builtin.raw: |
+    set -e
+    install_root="{{ archiver_install_parent }}/epicsarchiverap-maven"
+    sentinel=/var/tmp/archiver-build.done
+    unit=archiver-build.service
+
+    # Already installed (the mgmt instance is present): do not rebuild, but
+    # ensure the appliance service is running so a re-apply of a stopped host
+    # restores it.
+    if ls -d "${install_root}/mgmt" >/dev/null 2>&1; then
+      if systemctl is-active --quiet epicsarchiverap-maven.service; then
+        echo "ARCHIVER_BUILD_SKIPPED: already installed and active"
+      else
+        systemctl start epicsarchiverap-maven.service
+        echo "ARCHIVER_BUILD_STARTED: started the installed appliance"
+      fi
+      exit 0
+    fi
+
+    # A build unit already running (e.g. it survived a dropped SSH connection):
+    # leave it; the poll step waits. Match every non-final state, not just
+    # "active", so the brief "activating" window is not missed.
+    state=$(systemctl is-active "${unit}" 2>/dev/null || true)
+    case "${state}" in
+      active|activating|deactivating|reloading)
+        echo "ARCHIVER_BUILD_RUNNING: existing unit"
+        exit 0
+        ;;
+    esac
+
+    # Not installed and no running unit: clear any stale result and sentinel,
+    # then start a fresh detached build. The script self-cleans partial state.
+    systemctl reset-failed "${unit}" 2>/dev/null || true
+    rm -f "${sentinel}"
+    systemd-run --unit="${unit}" --collect --setenv=HOME=/root /usr/local/sbin/archiver-build.sh
+    echo "ARCHIVER_BUILD_STARTED"
+  register: archiver_build_launch
+  changed_when: "'ARCHIVER_BUILD_STARTED' in archiver_build_launch.stdout"
+
+- name: Wait for the detached archiver build to finish
+  ansible.builtin.raw: |
+    unit=archiver-build.service
+    sentinel=/var/tmp/archiver-build.done
+    install_root="{{ archiver_install_parent }}/epicsarchiverap-maven"
+    # Still running in any non-final state ("activating" included): keep polling.
+    state=$(systemctl is-active "${unit}" 2>/dev/null || true)
+    case "${state}" in
+      active|activating|deactivating|reloading)
+        echo "BUILDING"
+        exit 1
+        ;;
+    esac
+    # Done on either signal: the success sentinel, or an install tree already
+    # present (an idempotent re-apply that skipped the build in the launch step).
+    if [ -f "${sentinel}" ] || ls -d "${install_root}/mgmt" >/dev/null 2>&1; then
+      echo "DONE"
+      exit 0
+    fi
+    echo "FAILED: build unit exited without a success sentinel or install tree" >&2
+    journalctl -u "${unit}" --no-pager 2>/dev/null | tail -n 80 >&2
+    exit 2
+  register: archiver_build_wait
+  until: archiver_build_wait.rc != 1
+  retries: 80
+  delay: 30
+  changed_when: false
+  failed_when: archiver_build_wait.rc == 2
+
+- name: Show the installed appliance instances and service state
+  ansible.builtin.raw: |
+    ls -d {{ archiver_install_parent }}/epicsarchiverap-maven/{mgmt,engine,etl,retrieval} 2>/dev/null
+    systemctl is-active epicsarchiverap-maven.service 2>/dev/null || true
+  changed_when: false

@@ -1,0 +1,11 @@
+---
+# playbooks/operators/archiver_build.yml
+# One operator, one playbook. Species assemblies import these in the
+# operator definition's order; runs are scoped with --limit.
+- name: Apply the archiver_build operator
+  hosts: vacua
+  gather_facts: false
+  become: yes
+  roles:
+    - role: archiver_build
+      tags: [archiver_build]

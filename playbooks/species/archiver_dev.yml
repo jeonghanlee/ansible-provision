@@ -1,0 +1,11 @@
+---
+# playbooks/species/archiver_dev.yml
+# archiver-dev = P_archiver-build P_mariadb P_tomcat P_java (P_epics or P_epics-build) P_python P_provenance |bare>
+- import_playbook: ../operators/common.yml
+- import_playbook: ../operators/provenance.yml
+- import_playbook: ../operators/python.yml
+- import_playbook: ../operators/epics.yml
+- import_playbook: ../operators/java.yml
+- import_playbook: ../operators/tomcat.yml
+- import_playbook: ../operators/mariadb.yml
+- import_playbook: ../operators/archiver_build.yml
