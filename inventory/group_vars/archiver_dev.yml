@@ -1,0 +1,16 @@
+---
+# inventory/group_vars/archiver_dev.yml
+# The archiver-dev species runs the mariadb operator over loopback TCP so the
+# Archiver Appliance reaches the config store at jdbc:mariadb://127.0.0.1:3306.
+# aa-env's Connector/J connects over TCP rather than the local socket, so the
+# socket-only default does not serve it.
+# Every other vacuum keeps the socket-only default (mariadb_skip_networking:
+# true), so only archiver-dev hosts open the IPv4 loopback listener.
+#
+# The group name is the underscore form of the archiver-dev species, matching
+# the cloud-provision generator (species iocrunner-nfs -> group iocrunner_nfs).
+mariadb_skip_networking: false
+
+# The application account password hash (mariadb_password_hash) must match the
+# credential aa-env's Tomcat JNDI resource carries. Supply it through private
+# site variables, never in this tracked file.
