@@ -1,0 +1,46 @@
+---
+# roles/archiver_build/defaults/main.yml
+# Builds and installs the EPICS Archiver Appliance by driving aa-env's
+# (epicsarchiverap-env) make sequence, which clones and builds aa-maven from
+# source internally. This operator owns the orchestration, refs, config, and
+# service account; aa-env owns each make target's internals (WAR build,
+# instance layout, systemd unit, schema). Runs as root, like the other build
+# operators; aa-env's internal sudo no-ops when already root.
+
+# aa-env source repository and the ref this run pins.
+repo_archiver_env: "https://github.com/jeonghanlee/epicsarchiverap-env"
+archiver_env_ref: "fb43522"
+
+# aa-maven source ref, written to configure/RELEASE.local as SRC_TAG. aa-env's
+# `make init` clones aa-maven and checks this out (a bare commit works there).
+archiver_maven_src_tag: "3c96141d"
+
+# Where the aa-env source tree is cloned and built (aa-maven is cloned inside).
+path_archiver_env_src: "/opt/epicsarchiverap-env-src"
+
+# Site build id whose overlay (site-template/<id>) aa-env applies before build.
+archiver_site_id: "als"
+
+# Service account and group for the appliance, parallel to ioc / ioc-srv. The
+# operator pre-creates them so the GID is deterministic; aa-env's install then
+# no-ops on the existing user/group. The GID is a site override key; empty
+# leaves it to the site.
+archiver_group: "mid"
+archiver_user: "mid-srv"
+archiver_gid: ""
+
+# Archiver Appliance install location and storage root.
+archiver_install_parent: "/opt"
+archiver_storage_top: "/arch"
+
+# Database connection aa-env's context.xml renders (loopback TCP; see the
+# mariadb operator). Name and user reuse the mariadb operator's values so both
+# sides address the same account.
+archiver_db_host: "127.0.0.1"
+archiver_db_port: "3306"
+archiver_db_name: "{{ mariadb_database | default('archappl') }}"
+archiver_db_user: "{{ mariadb_user | default('archappl') }}"
+# The application account plaintext password aa-env's JNDI resource sends over
+# TCP. It must correspond to the mariadb_password_hash the mariadb operator
+# installs. Supply it through private site variables; never commit it here.
+archiver_db_password: ""
