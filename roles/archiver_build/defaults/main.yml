@@ -33,6 +33,35 @@ archiver_gid: ""
 archiver_install_parent: "/opt"
 archiver_storage_top: "/arch"
 
+# Per-instance JVM heap, overriding the aa-env default through AA_JAVA_HEAPSIZE.
+# aa-env derives CATALINA_OPTS from it as both -Xms and -Xmx, and applies the
+# result to every instance; it ships 1G, sized in its own comment for a 64 GB
+# server. The appliance runs four instances (mgmt, engine, etl, retrieval), so
+# 1G each oversubscribes a lab vacuum alongside MariaDB and the OOM killer takes
+# an instance down. 256M keeps the four inside about 1 GB of heap.
+archiver_java_heapsize: "256M"
+
+# Explicit opt-in to rebuild and reinstall an appliance that is already present.
+# The operator converges on absence and on a dead instance, but deliberately not
+# on a changed knob: that would rebuild and restart a live appliance as a side
+# effect of editing a variable. A changed knob is reported instead, and the owner
+# sets this true for the one run meant to apply it.
+archiver_force_reinstall: false
+
+# The knob set an install was configured with. The build records this line beside
+# its sentinel, and a later run compares the two to detect that the desired
+# configuration has moved away from what is installed. List every knob that
+# reaches the appliance only through the aa-env config and install steps.
+archiver_config_stamp: >-
+  heap={{ archiver_java_heapsize }}
+  site={{ archiver_site_id }}
+  db={{ archiver_db_name }}@{{ archiver_db_host }}:{{ archiver_db_port }}/{{ archiver_db_user }}
+  account={{ archiver_user }}:{{ archiver_group }}
+  storage={{ archiver_storage_top }}
+  install={{ archiver_install_parent }}
+  envref={{ archiver_env_ref }}
+  srctag={{ archiver_maven_src_tag }}
+
 # Database connection aa-env's context.xml renders (loopback TCP; see the
 # mariadb operator). Name and user reuse the mariadb operator's values so both
 # sides address the same account.

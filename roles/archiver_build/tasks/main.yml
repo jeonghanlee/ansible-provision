@@ -28,6 +28,7 @@
     set -e
 
     sentinel=/var/tmp/archiver-build.done
+    stamp=/var/tmp/archiver-build.config
 
     group="{{ archiver_group }}"
     user="{{ archiver_user }}"
@@ -44,8 +45,39 @@
     db_port="{{ archiver_db_port }}"
     storage_top="{{ archiver_storage_top }}"
     install_parent="{{ archiver_install_parent }}"
+    heapsize="{{ archiver_java_heapsize }}"
 
     top="${src_parent}/epicsarchiverap-env"
+
+    # --- Site proxy: a login shell reads /etc/profile.d, but a systemd-run unit
+    # starts with no profile, so http_proxy and its peers are absent and an
+    # external wget (Maven) or git fetch would fail. Source the cloud-provision
+    # proxy contract when present; a direct-net host simply has no such file. ---
+    for proxy_env in /etc/profile.d/*proxy*.sh; do
+      [ -f "${proxy_env}" ] && . "${proxy_env}" || true
+    done
+
+    # --- Maven proxy: Maven reads a proxy only from a settings file. Measured on
+    # the build host: http_proxy, mvn -Dhttps.proxyHost, and MAVEN_OPTS carried as
+    # JVM startup arguments all leave Maven Central unreachable; a settings file
+    # resolves it. The file is selected with -gs, an explicit path, because under
+    # the wrapper both the user settings and the wrapper conf sit under the home
+    # of whoever runs the build, so neither survives a change of build user. ---
+    # The settings file itself belongs to the cloud-provision proxy contract, which
+    # writes it at /etc/maven-proxy-settings.xml. This operator only consumes it,
+    # and never writes one of its own: a host-level proxy artifact has a single
+    # owner, and a second generator would drift from it. Maven does not read that
+    # path automatically, so -gs names it. A direct-network host has no such file
+    # and needs no settings; a proxied host without one is refused before the
+    # build starts, in the launch step. Any file left by the earlier interim
+    # approach is removed so a host cannot keep consuming a stale copy.
+    contract_settings=/etc/maven-proxy-settings.xml
+    rm -f "${src_parent}/maven-settings.xml"
+    maven_opts=""
+    if [ -f "${contract_settings}" ]; then
+      maven_opts="-gs ${contract_settings}"
+    fi
+    printf '%s\n' "archiver_build: maven proxy settings: ${maven_opts:-none}"
 
     # --- OS build-tool packages and JAVA_HOME (TOMCAT_HOME is /opt/tomcat9).
     # The aa-env install_os_packages.bash is skipped; install its build tools
@@ -94,6 +126,7 @@
       "DB_HOST_PORT=${db_port}" \
       "ARCHAPPL_STORAGE_TOP=${storage_top}" \
       "AA_INSTALL_PATH=${install_parent}" \
+      "AA_JAVA_HEAPSIZE=${heapsize}" \
       "ARCHAPPL_SITEID:=${site_id}" > "${src_parent}/CONFIG_SITE.local"
     # Override DB_USER_PASS only when a site password is supplied. An empty
     # value here would win over the aa-env default (this file is -included
@@ -101,6 +134,13 @@
     # aa-env default stand.
     if [ -n "${db_pass}" ]; then
       printf 'DB_USER_PASS=%s\n' "${db_pass}" >> "${src_parent}/CONFIG_SITE.local"
+    fi
+    # Select the Maven settings file through the aa-env MAVEN_OPTS hook, which is
+    # appended to every mvn invocation. CONFIG_SITE.local is included after the
+    # empty aa-env default, so this assignment wins. Left unset on a direct-net
+    # host, where the aa-env default stands and Maven goes direct.
+    if [ -n "${maven_opts}" ]; then
+      printf 'MAVEN_OPTS:=%s\n' "${maven_opts}" >> "${src_parent}/CONFIG_SITE.local"
     fi
 
     # --- Pin the aa-maven source ref (make init clones it at SRC_TAG) ---
@@ -120,7 +160,10 @@
     make sd_start
 
     # Success sentinel: reached only when set -e let every step pass. The poll
-    # step reads this to tell a finished install from a failed one.
+    # step reads this to tell a finished install from a failed one. The stamp
+    # beside it records the knob set this install was configured with, so a later
+    # run can see that the desired configuration has moved away from it.
+    printf '%s\n' "{{ archiver_config_stamp }}" > "${stamp}"
     touch "${sentinel}"
     ARCHIVER_BUILD_SCRIPT
     chmod 0755 /usr/local/sbin/archiver-build.sh
@@ -131,17 +174,64 @@
     set -e
     install_root="{{ archiver_install_parent }}/epicsarchiverap-maven"
     sentinel=/var/tmp/archiver-build.done
+    stamp=/var/tmp/archiver-build.config
     unit=archiver-build.service
+    force="{{ archiver_force_reinstall | bool | lower }}"
+    want_stamp="{{ archiver_config_stamp }}"
+
+    # Will this run build at all? A forced reinstall always does, and so does an
+    # absent install; an installed host that was not forced does not.
+    will_build=no
+    if [ "${force}" = "true" ] || ! ls -d "${install_root}/mgmt" >/dev/null 2>&1; then
+      will_build=yes
+    fi
+
+    # A build needs the Maven settings the proxy contract owns, so refuse now,
+    # before anything is torn down, rather than let mvn fail deep in dependency
+    # resolution with nothing but "Network is unreachable" - that failure cost a
+    # full diagnosis once already. This SSH session carries the contract
+    # environment, so http_proxy answers whether the host is proxied at all; a
+    # direct-network host needs no settings and passes straight through.
+    if [ "${will_build}" = "yes" ] && [ -n "${http_proxy}" ] && [ ! -f /etc/maven-proxy-settings.xml ]; then
+      echo "ARCHIVER_BUILD_PRECONDITION: this host is proxied but carries no /etc/maven-proxy-settings.xml." >&2
+      echo "Maven takes a proxy only from a settings file, and that file belongs to the cloud-provision proxy contract." >&2
+      echo "Apply a proxy contract that provides it, then re-run. Nothing was stopped and no build was started." >&2
+      exit 1
+    fi
+
+    # An explicit reinstall was asked for: stop the appliance so aa-env installs
+    # over a quiet tree, drop the previous result, and fall through to the build.
+    if [ "${force}" = "true" ]; then
+      systemctl stop epicsarchiverap-maven.service 2>/dev/null || true
+      rm -f "${sentinel}" "${stamp}"
 
     # Already installed (the mgmt instance is present): do not rebuild, but
-    # ensure the appliance service is running so a re-apply of a stopped host
-    # restores it.
-    if ls -d "${install_root}/mgmt" >/dev/null 2>&1; then
-      if systemctl is-active --quiet epicsarchiverap-maven.service; then
-        echo "ARCHIVER_BUILD_SKIPPED: already installed and active"
+    # ensure the appliance is actually serving. One unit launches four Tomcat
+    # instances through archappl.bash and systemd tracks only the main process,
+    # so the unit keeps reporting active after a single instance dies - measured
+    # on a host whose mgmt instance had been OOM-killed while the unit still read
+    # active and a re-apply reported no change. Judge by the four instances
+    # themselves, and repair with restart, which is what a nominally active but
+    # degraded unit needs; start would be a no-op there.
+    elif ls -d "${install_root}/mgmt" >/dev/null 2>&1; then
+      missing=""
+      for instance in mgmt engine etl retrieval; do
+        pgrep -f "catalina.base=${install_root}/${instance}" >/dev/null 2>&1 || missing="${missing} ${instance}"
+      done
+      if [ -z "${missing}" ] && systemctl is-active --quiet epicsarchiverap-maven.service; then
+        echo "ARCHIVER_BUILD_SKIPPED: already installed, all four instances live"
       else
-        systemctl start epicsarchiverap-maven.service
-        echo "ARCHIVER_BUILD_STARTED: started the installed appliance"
+        systemctl restart epicsarchiverap-maven.service
+        echo "ARCHIVER_BUILD_REPAIRED: restarted the installed appliance; instances missing:${missing}"
+      fi
+      # Configuration drift is reported, never acted on here: rebuilding a live
+      # appliance because a variable moved is the owner decision, taken with
+      # archiver_force_reinstall. An install predating the stamp leaves no basis
+      # to compare, which is reported as unknown rather than as drift.
+      if [ ! -f "${stamp}" ]; then
+        echo "ARCHIVER_BUILD_STAMP_UNKNOWN: installed before the config stamp existed; drift cannot be judged"
+      elif [ "$(cat "${stamp}")" != "${want_stamp}" ]; then
+        echo "ARCHIVER_BUILD_DRIFT: installed with [$(cat "${stamp}")] but this run wants [${want_stamp}]"
       fi
       exit 0
     fi
@@ -164,13 +254,23 @@
     systemd-run --unit="${unit}" --collect --setenv=HOME=/root /usr/local/sbin/archiver-build.sh
     echo "ARCHIVER_BUILD_STARTED"
   register: archiver_build_launch
-  changed_when: "'ARCHIVER_BUILD_STARTED' in archiver_build_launch.stdout"
+  changed_when: >-
+    'ARCHIVER_BUILD_STARTED' in archiver_build_launch.stdout or
+    'ARCHIVER_BUILD_REPAIRED' in archiver_build_launch.stdout
+
+- name: Stop on configuration drift against the installed appliance
+  ansible.builtin.raw: |
+    printf '%s\n' "The installed appliance was configured with a different knob set than this run wants." >&2
+    printf '%s\n' "Nothing was changed. Re-run with -e archiver_force_reinstall=true to rebuild and reinstall." >&2
+    printf '%s\n' "{{ archiver_build_launch.stdout | regex_search('ARCHIVER_BUILD_DRIFT.*') }}" >&2
+    exit 1
+  when: "'ARCHIVER_BUILD_DRIFT' in archiver_build_launch.stdout"
+  changed_when: false
 
 - name: Wait for the detached archiver build to finish
   ansible.builtin.raw: |
     unit=archiver-build.service
     sentinel=/var/tmp/archiver-build.done
-    install_root="{{ archiver_install_parent }}/epicsarchiverap-maven"
     # Still running in any non-final state ("activating" included): keep polling.
     state=$(systemctl is-active "${unit}" 2>/dev/null || true)
     case "${state}" in
@@ -179,15 +279,21 @@
         exit 1
         ;;
     esac
-    # Done on either signal: the success sentinel, or an install tree already
-    # present (an idempotent re-apply that skipped the build in the launch step).
-    if [ -f "${sentinel}" ] || ls -d "${install_root}/mgmt" >/dev/null 2>&1; then
+    # This task runs only when a build was launched or was already running, so the
+    # success sentinel is the one valid signal that it finished. An existing
+    # install tree is no longer accepted in its place: a forced reinstall leaves
+    # the previous tree standing, and reading that as success would hide a failed
+    # rebuild.
+    if [ -f "${sentinel}" ]; then
       echo "DONE"
       exit 0
     fi
-    echo "FAILED: build unit exited without a success sentinel or install tree" >&2
+    echo "FAILED: build unit exited without a success sentinel" >&2
     journalctl -u "${unit}" --no-pager 2>/dev/null | tail -n 80 >&2
     exit 2
+  when: >-
+    'ARCHIVER_BUILD_STARTED' in archiver_build_launch.stdout or
+    'ARCHIVER_BUILD_RUNNING' in archiver_build_launch.stdout
   register: archiver_build_wait
   until: archiver_build_wait.rc != 1
   retries: 80
