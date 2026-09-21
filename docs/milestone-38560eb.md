@@ -31,12 +31,15 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: write the `archiver_build` operator -
-`roles/archiver_build/tasks/main.yml` (drive aa-env's make sequence as root, per
-the 2026-09-18 sub-decision and authorization), `playbooks/operators/archiver_build.yml`,
-and the `archiver_dev` species - then run it all-root on the Rocky 8.10 and
-Debian 13 archiver-dev VMs; that run is M14/T17-T19 and the aa-env M8 runtime
-evidence. `roles/archiver_build/defaults/main.yml` is drafted. The MariaDB
+Next session entry point: commit the two `archiver_build` role files the first
+end-to-end run produced - `roles/archiver_build/tasks/main.yml` and
+`roles/archiver_build/defaults/main.yml` - carrying the proxy contract sourced
+inside the detached build unit, the contract-owned Maven settings consumed with
+`-gs` plus the pre-build refusal when that file is absent, `archiver_java_heapsize`,
+the four-instance health check that repairs with `restart`, and the config stamp
+with `archiver_force_reinstall`. One piece of T18 evidence is still open: a PV must
+be archived and read back through the retrieval endpoint. The operator, its
+playbook and the `archiver_dev` species are committed (`575b3f4`); the MariaDB
 loopback-TCP mode and the `[archiver_dev]` group_vars are committed (`5b5ee44`,
 `08dbb93`) and verified on both OS.
 Java installation, default commands, login `JAVA_HOME`, and re-apply
@@ -1402,9 +1405,9 @@ definition now (owner + LAB-CLOUD, 2026-09-14).
 | T14 | 2026-09-16T15:05:57Z | Rocky 8.10 / MariaDB 10.3.39 and Debian 13 / MariaDB 11.8.6 | Passed | Actual existing-state cleanup and seeded-fixture runs succeeded through Make op.mariadb. Seeded cleanup reported changed=1 on each. SQL queries verified zero anonymous/remote-root accounts, zero test schemas and zero matching mysql.db rows. The retained account lost test-prefix access while keeping its own database access and authentication definition. Data in test_keep, securekeep and archappl survived; the global SQL mode, service PID, config metadata and existing profiles matched. Quote/backslash account host names were deleted under NO_BACKSLASH_ESCAPES. After fixture cleanup, the final run reported ok=4 changed=0 failed=0 on each, with root UDS authentication and no TCP listener verified. |
 | T15 | 2026-09-16T15:57:43Z | Rocky 8.10 / MariaDB 10.3.39 and Debian 13 / MariaDB 11.8.6 | Passed | The shipped raw_stdin action received public multiline input through SSH/sudo; the receiving root shell had no TTY and no marker in its command arguments. Exit 23 propagated, missing no_log failed, and check mode skipped both valid commands. The role rendered with the credential value only in stdin. Real Make runs created separate accounts and passed the 21-check lifecycle and 8-check security regressions; final operator reapply reported ok=5 changed=0 failed=0 on both. No remote credential-visibility experiment was used. |
 | T16 | 2026-09-16T15:56:03Z | Same two VMs | Passed | X509, SSL, CIPHER, ISSUER and SUBJECT conditions failed visibly on both servers before the account task. Explicit expiration and account lock tests ran on MariaDB 11.8 and failed as expected; MariaDB 10.3 rejected the PASSWORD EXPIRE fixture setup syntax. Account/grant definitions were unchanged after rejection. Restoring each fixture condition restored data access; the final custom-account reapply reported changed=0 on both, and fixture accounts/databases were removed. |
-| T17 | 2026-09-18 (partial) | aa-env isolated env, aa-maven 3c96141d | Partial | Build only, on aa-env's side, not our operator: aa-env ran `make build.mvn` (-DskipTests) at aa-maven 3c96141d producing the four `aa-*` WARs with the als classpathfiles. Our `archiver_build` operator has not run this step. |
-| T18 | pending | Rocky 8.10 and Debian 13 archiver-dev VMs | Not run | End-to-end install-to-running (aa-env M8) has not been run by anyone; our all-root operator run will be the first exercise. |
-| T19 | pending | Same two VMs | Not run | |
+| T17 | 2026-09-20 | Rocky 8.10 and Debian 13 archiver-dev VMs, and a third, freshly provisioned Rocky 8.10 archiver-dev VM | Passed | Our `archiver_build` operator ran the build steps as root on all three hosts. `init`, `db.conf`, `conf.archapplproperties`, `build.mvn` and `sql.fill` each completed under `set -e`, so the ordered sequence and the schema load over loopback TCP were executed rather than derived. The als classpathfiles are packed as required: `appliances.xml`, `archappl.properties` and `policies.py` are each present in `WEB-INF/classes` of all four deployed webapps, generated into `site-template/siteid/classpathfiles` by `copy.sitespecific` within `build.mvn`. The two proxy defects in the increment status below - the detached unit carrying no proxy, and Maven not reading one from the environment - blocked this run first and had to be fixed. |
+| T18 | 2026-09-20 | Same three hosts | Partial | The root install steps ran and the appliance serves. On all three hosts: the four instances are installed under `/opt/epicsarchiverap-maven`, `epicsarchiverap-maven.service` is enabled and active, `/arch` is owned `mid-srv:mid` (0755), the appliance processes run as the `mid-srv` service account and not as root (so the build-as-root, run-as-service-account split is now observed rather than derived), and mgmt `/mgmt/bpl/getApplianceInfo` returns HTTP 200 with identity `appliance0` and version 2025-6. One Done-when element remains: the archived-PV half is incomplete - a test PV was submitted and reached `Being archived`, but the retrieval read-back was not completed before the fixture was removed. Timing note for any future probe: mgmt answers 500 for roughly 20-30 s after a start, so a single-shot check misreads as failure. |
+| T19 | 2026-09-20 | Rocky 8.10 and Debian 13 archiver-dev VMs | Passed | Re-apply reports `changed=0 failed=0` on both, with the launch step reporting all four instances live, and the installed state is unchanged across it: the install-tree fingerprint (file list and sizes, excluding `logs`, `temp` and `work`), all four per-instance JVM PIDs, and the unit `ActiveEnterTimestamp` were captured before and after and are identical on both hosts. The result is only trustworthy because of a defect found while producing it: an earlier re-apply reported `changed=0` while one host had a dead mgmt instance, because the check trusted `systemctl is-active` on a unit that stays active when one of its four Tomcat instances dies. The check now judges the four instances themselves and repairs with `restart`; verified by killing an instance and observing `changed=1` naming the missing instance, against a healthy control host reporting `changed=0`. |
 
 MariaDB loopback-TCP verification (2026-09-18, Rocky 8.10 / MariaDB 10.3.39 and
 Debian 13 / MariaDB 11.8.6 archiver-dev VMs): the `mariadb` operator applied with
@@ -1418,15 +1421,48 @@ group_vars resolution (`mariadb_skip_networking=False` for an `[archiver_dev]`
 host, unset elsewhere) verified via `ansible-inventory --host`; committed
 `08dbb93`.
 
-archiver_build increment status (2026-09-18, control host): only
-`roles/archiver_build/defaults/main.yml` is drafted; `tasks/main.yml`, the
-operator playbook, and the `archiver_dev` species remain to write. The
-als-overlay build is verified by execution on aa-env's side only (T17 partial);
-the per-step privilege split and the ordered make sequence are derived from
-aa-env's Makefiles, not executed; the end-to-end install (T18) is unrun. Our
-all-root operator run will be the first real exercise of both the privilege
-behavior and the end-to-end, and its results (mgmt 200, one PV archived) are the
-M8 runtime evidence, observed in our archiver-dev environment.
+archiver_build increment status (2026-09-20, Rocky 8.10 and Debian 13 archiver-dev
+VMs and a third, freshly provisioned Rocky 8.10 host): the operator, its playbook
+and the `archiver_dev` species are written, registered and have now run end to end
+(`575b3f4`). The per-step
+privilege split and the ordered make sequence are no longer derived from aa-env's
+Makefiles - both were executed and observed (T17, T18). Four defects surfaced in
+that first end-to-end run and are resolved in the role:
+
+- A detached `systemd-run` unit inherits no `/etc/profile.d`, so the build carried
+  no proxy and could not fetch Maven. The build script now sources the proxy
+  contract profile itself. The systemd-level equivalent is open on cloud-provision's
+  side, so this stays until that is settled.
+- Maven takes a proxy only from a settings file. Measured against the pinned
+  aa-maven source with Maven 3.9.16: the shell proxy variables, `mvn
+  -Dhttps.proxyHost`, and `MAVEN_OPTS` carried as JVM startup arguments each leave
+  Maven Central unreachable, while a settings file selected with `-gs` resolves.
+  That file belongs to the cloud-provision proxy contract (`0099673`); this
+  operator consumes it and generates none, and a proxied host without it is
+  refused before the build starts rather than failing inside mvn.
+- Four appliance instances at aa-env's default 1G heap each oversubscribe a 4 GB
+  vacuum, and the OOM killer takes one down: under 1G the Rocky host lost an
+  instance about 2 h 50 min after install and the Debian host about 4 h.
+  `archiver_java_heapsize` (default 256M) overrides `AA_JAVA_HEAPSIZE`. Available
+  memory rose from about 0.5 GB to about 1.6 GB, and under 256M the two hosts had
+  run 3 h 59 min and 4 h 30 min with zero kernel OOM events and all four instances
+  alive as of 2026-09-21 01:07 PDT - each past the interval at which it previously
+  failed. The freshly provisioned host stood at 1 h 45 min, also clean. Recheck by
+  comparing the unit `ActiveEnterTimestamp` against the clock and counting kernel
+  OOM with
+  `journalctl -k`: a plain journal grep also matches this role's own comment text
+  as echoed by sudo, which reads as phantom OOM events.
+- The installed-and-active check trusted the systemd unit, which stays active when
+  one of its four Tomcat instances dies, so a degraded appliance reported no
+  change. It now judges the four instances and repairs with `restart` (T19).
+
+A changed knob does not reach an already-installed appliance, so the operator
+records a config stamp at install time, reports drift against it, and rebuilds
+only under `archiver_force_reinstall`. Contract-file delivery and consumption are
+both verified on the freshly provisioned host: the file arrives at first boot, the
+build logs its use of it, no local file is generated, and Maven resolved from
+central with no unreachable errors. Still open: one Done-when element of T18, a PV
+archived and read back through the retrieval endpoint.
 
 Generator gap closed (2026-09-18, cloud-provision `m11-middleware-operators`
 `06ea800`): `generate_ansible_inventory.bash` now emits `[archiver_dev]` and
