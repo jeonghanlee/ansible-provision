@@ -118,12 +118,15 @@ is the normative statement of content and order.
 
 | Operator | Role | Source |
 |---|---|---|
+| P_proxy | `proxy` | [jeonghanlee/cloud-provision](https://github.com/jeonghanlee/cloud-provision) (proxy contract, applied not reimplemented) |
 | P_common | `common` | OS package manager |
 | P_java | `java` | Distribution OpenJDK 21 JDK packages |
 | P_tomcat | `tomcat` | Apache Tomcat 9.0.121 binary tarball |
 | P_mariadb | `mariadb` | Distribution MariaDB server packages |
+| P_archiver-build | `archiver_build` | [jeonghanlee/epicsarchiverap-env](https://github.com/jeonghanlee/epicsarchiverap-env) |
 | P_rt | `rt` | Debian PREEMPT_RT packages |
 | P_provenance | `provenance` | - |
+| P_python | `python` | OS package manager |
 | P_epics | `epics` | [jeonghanlee/EPICS-env-distribution](https://github.com/jeonghanlee/EPICS-env-distribution) |
 | P_epics-build | `epics_build` | [jeonghanlee/EPICS-env](https://github.com/jeonghanlee/EPICS-env) |
 | P_epics-support | `epics_support` | [jeonghanlee/EPICS-env-support](https://github.com/jeonghanlee/EPICS-env-support) |
@@ -254,7 +257,64 @@ the running service. Package lists are available as `pkg_mariadb_redhat` and
 
 aa-env owns the schema, its separate `admin` account workflow, application
 commands, and Tomcat JDBC configuration. Its current TCP commands and JDBC
-URL need UDS configuration before using the default socket-only server.
+URL need UDS configuration before using the default socket-only server. The
+`archiver_dev` species does not use that default: it opts into loopback TCP
+through `mariadb_skip_networking: false`, which is the path the Archiver section
+describes.
+
+### Archiver
+
+Run `archiver_build` after `java`, `tomcat`, and `mariadb`, or apply the whole
+species in one run:
+
+```bash
+export RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini
+# one operator
+make op.archiver_build.rocky8 ANSIBLE_OPTS='-e @/path/to/private-mariadb.yml'
+# or the whole species
+make archiver_dev.rocky8 ANSIBLE_OPTS='-e @/path/to/private-mariadb.yml'
+```
+
+The operator drives aa-env's make sequence, which clones and builds aa-maven
+from source internally, and installs the four appliance instances under
+`/opt/epicsarchiverap-maven`, served by `epicsarchiverap-maven.service` as the
+`mid-srv` service account. The build runs as a detached systemd unit, so a
+dropped connection cannot leave a half-built tree behind. The play polls that
+unit to a success sentinel and reports nothing until it finishes. Expect several
+minutes on a host with a cold Maven cache. The build unit keeps its own output:
+read `journalctl -u archiver-build.service` on the target while it runs, or
+after it fails. `archiver_env_ref` pins aa-env and `archiver_maven_src_tag`
+pins the aa-maven source.
+
+The instances serve on 17665 (mgmt), 17666 (engine), 17667 (etl) and 17668
+(retrieval). Management lives under mgmt, for example
+`http://<host>:17665/mgmt/bpl/getApplianceInfo`. mgmt answers 500 for roughly
+20 to 30 seconds after a start while it initialises, so a single check issued
+immediately reads as a failure that is not one.
+
+The appliance authenticates to MariaDB over loopback TCP as the application
+account, so the private variables that define `mariadb_password_hash` must
+correspond to the password the appliance sends. `archiver_db_password` is empty
+by default, which leaves the aa-env default in place; set it only when the site
+uses another credential. The `archiver_dev` group_vars set
+`mariadb_skip_networking: false`, which is what opens the loopback listener.
+
+Maven reads a proxy only from a settings file. This operator consumes the file
+the cloud-provision proxy contract owns at `/etc/maven-proxy-settings.xml` and
+writes none of its own. On a proxied host that does not carry it, the operator
+refuses before starting a build rather than failing inside Maven. That file
+arrives at provisioning, so a host provisioned before the contract covered Maven
+is recreated through cloud-provision's `bin/create_vm.bash` rather than rebuilt
+in place.
+
+`archiver_java_heapsize` (default `256M`) overrides the aa-env heap default for
+every instance, because four instances at that default oversubscribe a 4 GB
+host. A changed knob does not reach an appliance that is already installed. The
+operator records the knob set at install time, and a later re-apply that wants a
+different set is refused with the difference named, stopping the run instead of
+rebuilding. Supply `ANSIBLE_OPTS='-e archiver_force_reinstall=true'` to rebuild.
+An installed appliance whose four instances are not all running is repaired with
+a service restart.
 
 ## Species Assemblies
 
@@ -268,3 +328,4 @@ URL need UDS configuration before using the default socket-only server.
 | `species/nfs_sim.yml` | P_nfs-sim on bare |
 | `species/rtbase.yml` | P_rt on bare |
 | `species/ethercat.yml` | P_ethercat on the rtbase golden |
+| `species/archiver_dev.yml` | P_archiver-build P_mariadb P_tomcat P_java (P_epics or P_epics-build) P_python P_provenance on bare |

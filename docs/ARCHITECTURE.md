@@ -34,6 +34,8 @@ operation above that baseline. The first-pass validation environment uses
      | nfs_sim    -> common, nfs_sim
      | rtbase     -> common, rt
      | ethercat   -> ethercat (on the rtbase golden)
+     | archiver_dev -> common, provenance, python, epics, java, tomcat,
+     |                 mariadb, archiver_build
      |
      V
 [ Linux nodes ready for EPICS IOC validation ]
@@ -64,6 +66,7 @@ ansible-provision/
 |   |-- lab.ini                      (host-free lab group relationships)
 |   `-- group_vars/
 |       |-- all.yml                  (values shared by more than one operator)
+|       |-- archiver_dev.yml         (mariadb loopback TCP for the archiver species)
 |       |-- debian12.yml             (epics_os_dir: debian-12)
 |       |-- debian13.yml             (epics_os_dir: debian-13)
 |       |-- rocky8.yml               (epics_os_dir, rocky 3.9 python overrides)
@@ -71,13 +74,14 @@ ansible-provision/
 |       |-- ubuntu24.yml             (epics_os_dir: ubuntu-24.04)
 |       `-- ubuntu26.yml             (epics_os_dir: ubuntu-26.04)
 |-- playbooks/
-|   |-- operators/                   (one playbook per operator, 18)
-|   `-- species/                     (one assembly per species, 8)
-`-- roles/                           (one role per operator, 18)
+|   |-- operators/                   (one playbook per operator, 19)
+|   `-- species/                     (one assembly per species, 9)
+`-- roles/                           (one role per operator, 19)
     |-- common/      rt/          provenance/  python/
     |-- proxy/       epics/       epics_build/ epics_support/
     |-- procserv/    conserver/   con/         java/        tomcat/
-    `-- nfs_sim/     iocrunner/   testusers/   ethercat/    mariadb/
+    |-- nfs_sim/     iocrunner/   testusers/   ethercat/    mariadb/
+    `-- archiver_build/
 ```
 
 ---
