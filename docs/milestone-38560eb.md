@@ -31,17 +31,20 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: commit the two `archiver_build` role files the first
-end-to-end run produced - `roles/archiver_build/tasks/main.yml` and
-`roles/archiver_build/defaults/main.yml` - carrying the proxy contract sourced
-inside the detached build unit, the contract-owned Maven settings consumed with
-`-gs` plus the pre-build refusal when that file is absent, `archiver_java_heapsize`,
-the four-instance health check that repairs with `restart`, and the config stamp
-with `archiver_force_reinstall`. One piece of T18 evidence is still open: a PV must
-be archived and read back through the retrieval endpoint. The operator, its
-playbook and the `archiver_dev` species are committed (`575b3f4`); the MariaDB
-loopback-TCP mode and the `[archiver_dev]` group_vars are committed (`5b5ee44`,
-`08dbb93`) and verified on both OS.
+Next session entry point: the archiver-dev path is complete - the species
+provisions a bare host into a serving appliance, re-applies without changing the
+installed tree, and archives a PV that reads back. The rest of the M14 scope is
+untouched: the distribution-based `archiver` species, for which
+cloud-provision's `create_vm.bash` carries no selector - it has only the
+archiver-dev pair; the Phoebus pair, a `phoebus`
+operator consuming the published distribution and a `phoebus_build` source-build
+alternative, with their species; and the `middleware` combination. Each also needs
+the generator addition that the Generator gap note below tracks. Committed and
+verified so far: the MariaDB loopback-TCP mode and the `[archiver_dev]` group_vars
+(`5b5ee44`, `08dbb93`), the `archiver_build` operator with its playbook and the
+`archiver_dev` species (`575b3f4`), and their proxy, sizing and health hardening
+(`a9a24cd`). Later work on the branch is not enumerated here; `git log` on
+`m14-middleware-reconcile` carries it.
 Java installation, default commands, login `JAVA_HOME`, and re-apply
 passed on Rocky 8.10 and Debian 13 VMs (M14/T3-T4). The existing EPICS distribution
 operator now defaults to 1.3.0 and passed installation, example IOC build/runtime,
@@ -1277,7 +1280,8 @@ repository); Maven as an installed package.
   does not build aa-maven separately. Runs as root like the other build
   operators - no build-user split, since aa-env's internal sudo no-ops when
   already root and `make install` chowns the instances to `mid-srv:mid`
-  regardless. Pins aa-env `fb43522` and aa-maven `SRC_TAG=3c96141d`. Variable
+  regardless. Pinned aa-env `fb43522` and aa-maven `SRC_TAG=3c96141d`; the aa-env
+  pin moved to `e06c554` on 2026-09-21 (see the increment status). Variable
   placement: `configure/RELEASE.local` (SRC_TAG) and `../CONFIG_SITE.local` -
   one directory above the checkout, which survives the OS-conf rewrite -
   (AA_USERID/AA_GROUPID, DB name/user/pass, DB_HOST_NAME=127.0.0.1,
@@ -1381,8 +1385,8 @@ definition now (owner + LAB-CLOUD, 2026-09-14).
 | T14 | Integration | Apply the real op.mariadb on both VMs, then seed anonymous accounts, remote root accounts including quoted/backslash host names, a populated test database, default test-prefix grants and an orphan grant row; retain a separate account and data in unrelated, test-prefix and application databases; apply under NO_BACKSLASH_ESCAPES and re-apply | Rocky 8.10 and Debian 13 | Target accounts, test database and default test grants are absent; test-prefix access is denied; other accounts, data, SQL mode, service PID and configuration are preserved; repeated apply reports changed=0 |
 | T15 | Integration | Run tests/check-raw-stdin.yml normally and with --check through real SSH/sudo, using only public multiline markers; render the role and confirm its hash appears only in stdin; create a separate account through Make op.mariadb and rerun the password-rotation, UDS/TCP and security-cleanup checks | Rocky 8.10 and Debian 13 | Exact stdin arrives without a TTY and is absent from the receiving shell arguments; command failures and no_log enforcement are preserved; check mode skips execution; account creation, credential rotation, data preservation and unchanged reapply pass |
 | T16 | Integration | Create a separate database/account through the real operator; add REQUIRE X509, SSL, CIPHER, ISSUER and SUBJECT separately on both servers; test PASSWORD EXPIRE and ACCOUNT LOCK on MariaDB 11.8; apply after each condition and compare SHOW CREATE USER and SHOW GRANTS, then restore the fixture condition | Same two VMs | Each unsupported condition produces a visible failure before account changes and preserves definitions; restoring the condition permits ordinary-user data access and changed=0 reapply; remove only the temporary fixture database and account |
-| T17 | Integration | Apply the `archiver_build` build steps (`init`, `db.conf`, `conf.archapplproperties`, `build.mvn`) as root with aa-env `fb43522` + aa-maven `SRC_TAG=3c96141d`; inspect the produced WARs and the als overlay in `WEB-INF/classes`, and the schema load | Rocky 8.10 and Debian 13 archiver-dev VMs | The four `aa-*-{mgmt,engine,etl,retrieval}.war` build with the als `appliances.xml`/`archappl.properties`/`policies.py` packed; `sql.fill` loads the schema over TCP as `archappl@'127.0.0.1'` |
-| T18 | Integration | Run the root install steps (`conf.storage`, `install`, `sd_start`); inspect `/arch` ownership, the four instances under `/opt/epicsarchiverap-maven`, the `epicsarchiverap-maven.service` unit and state, mgmt HTTP, and one archived PV | Same two VMs | `/arch` and the instances are `mid-srv:mid`; the unit is enabled and active; mgmt returns HTTP 200; one PV archives and reads back |
+| T17 | Integration | Apply the `archiver_build` build steps (`init`, `db.conf`, `conf.archapplproperties`, `build.mvn`) as root with the pinned aa-env ref (`fb43522` when this ran) + aa-maven `SRC_TAG=3c96141d`; inspect the produced WARs and the als overlay in `WEB-INF/classes`, and the schema load | Rocky 8.10 and Debian 13 archiver-dev VMs, and a freshly provisioned host | The four `aa-*-{mgmt,engine,etl,retrieval}.war` build with the als `appliances.xml`/`archappl.properties`/`policies.py` packed; `sql.fill` loads the schema over TCP as `archappl@'127.0.0.1'` |
+| T18 | Integration | Run the root install steps (`conf.storage`, `install`, `sd_start`); inspect `/arch` ownership, the four instances under `/opt/epicsarchiverap-maven`, the `epicsarchiverap-maven.service` unit and state, mgmt HTTP, and one archived PV | Same hosts as T17 | `/arch` and the instances are `mid-srv:mid`; the unit is enabled and active; mgmt returns HTTP 200; one PV archives and reads back |
 | T19 | Integration | Re-apply the full `archiver_build` operator; compare the installed tree, unit, and service PID before and after | Same two VMs | Re-apply reports `changed=0`, `failed=0`; the installed tree, unit, and running service are unchanged |
 
 ##### Verification Results
@@ -1405,9 +1409,9 @@ definition now (owner + LAB-CLOUD, 2026-09-14).
 | T14 | 2026-09-16T15:05:57Z | Rocky 8.10 / MariaDB 10.3.39 and Debian 13 / MariaDB 11.8.6 | Passed | Actual existing-state cleanup and seeded-fixture runs succeeded through Make op.mariadb. Seeded cleanup reported changed=1 on each. SQL queries verified zero anonymous/remote-root accounts, zero test schemas and zero matching mysql.db rows. The retained account lost test-prefix access while keeping its own database access and authentication definition. Data in test_keep, securekeep and archappl survived; the global SQL mode, service PID, config metadata and existing profiles matched. Quote/backslash account host names were deleted under NO_BACKSLASH_ESCAPES. After fixture cleanup, the final run reported ok=4 changed=0 failed=0 on each, with root UDS authentication and no TCP listener verified. |
 | T15 | 2026-09-16T15:57:43Z | Rocky 8.10 / MariaDB 10.3.39 and Debian 13 / MariaDB 11.8.6 | Passed | The shipped raw_stdin action received public multiline input through SSH/sudo; the receiving root shell had no TTY and no marker in its command arguments. Exit 23 propagated, missing no_log failed, and check mode skipped both valid commands. The role rendered with the credential value only in stdin. Real Make runs created separate accounts and passed the 21-check lifecycle and 8-check security regressions; final operator reapply reported ok=5 changed=0 failed=0 on both. No remote credential-visibility experiment was used. |
 | T16 | 2026-09-16T15:56:03Z | Same two VMs | Passed | X509, SSL, CIPHER, ISSUER and SUBJECT conditions failed visibly on both servers before the account task. Explicit expiration and account lock tests ran on MariaDB 11.8 and failed as expected; MariaDB 10.3 rejected the PASSWORD EXPIRE fixture setup syntax. Account/grant definitions were unchanged after rejection. Restoring each fixture condition restored data access; the final custom-account reapply reported changed=0 on both, and fixture accounts/databases were removed. |
-| T17 | 2026-09-20 | Rocky 8.10 and Debian 13 archiver-dev VMs, and a third, freshly provisioned Rocky 8.10 archiver-dev VM | Passed | Our `archiver_build` operator ran the build steps as root on all three hosts. `init`, `db.conf`, `conf.archapplproperties`, `build.mvn` and `sql.fill` each completed under `set -e`, so the ordered sequence and the schema load over loopback TCP were executed rather than derived. The als classpathfiles are packed as required: `appliances.xml`, `archappl.properties` and `policies.py` are each present in `WEB-INF/classes` of all four deployed webapps, generated into `site-template/siteid/classpathfiles` by `copy.sitespecific` within `build.mvn`. The two proxy defects in the increment status below - the detached unit carrying no proxy, and Maven not reading one from the environment - blocked this run first and had to be fixed. |
-| T18 | 2026-09-20 | Same three hosts | Partial | The root install steps ran and the appliance serves. On all three hosts: the four instances are installed under `/opt/epicsarchiverap-maven`, `epicsarchiverap-maven.service` is enabled and active, `/arch` is owned `mid-srv:mid` (0755), the appliance processes run as the `mid-srv` service account and not as root (so the build-as-root, run-as-service-account split is now observed rather than derived), and mgmt `/mgmt/bpl/getApplianceInfo` returns HTTP 200 with identity `appliance0` and version 2025-6. One Done-when element remains: the archived-PV half is incomplete - a test PV was submitted and reached `Being archived`, but the retrieval read-back was not completed before the fixture was removed. Timing note for any future probe: mgmt answers 500 for roughly 20-30 s after a start, so a single-shot check misreads as failure. |
-| T19 | 2026-09-20 | Rocky 8.10 and Debian 13 archiver-dev VMs | Passed | Re-apply reports `changed=0 failed=0` on both, with the launch step reporting all four instances live, and the installed state is unchanged across it: the install-tree fingerprint (file list and sizes, excluding `logs`, `temp` and `work`), all four per-instance JVM PIDs, and the unit `ActiveEnterTimestamp` were captured before and after and are identical on both hosts. The result is only trustworthy because of a defect found while producing it: an earlier re-apply reported `changed=0` while one host had a dead mgmt instance, because the check trusted `systemctl is-active` on a unit that stays active when one of its four Tomcat instances dies. The check now judges the four instances themselves and repairs with `restart`; verified by killing an instance and observing `changed=1` naming the missing instance, against a healthy control host reporting `changed=0`. |
+| T17 | 2026-09-21T06:23:08Z | Rocky 8.10 and Debian 13 archiver-dev VMs, and a third, freshly provisioned Rocky 8.10 archiver-dev VM | Passed | Our `archiver_build` operator ran the build steps as root on all three hosts. `init`, `db.conf`, `conf.archapplproperties`, `build.mvn` and `sql.fill` each completed under `set -e`, so the ordered sequence and the schema load over loopback TCP were executed rather than derived. The als classpathfiles are packed as required: `appliances.xml`, `archappl.properties` and `policies.py` are each present in `WEB-INF/classes` of all four deployed webapps, generated into `site-template/siteid/classpathfiles` by `copy.sitespecific` within `build.mvn`. The two proxy defects in the increment status below - the detached unit carrying no proxy, and Maven not reading one from the environment - blocked this run first and had to be fixed. |
+| T18 | 2026-09-21T15:33:55Z | Same three hosts | Passed | The root install steps ran and the appliance serves. On all three hosts: the four instances are installed under `/opt/epicsarchiverap-maven` and listen on 17665 mgmt, 17666 engine, 17667 etl and 17668 retrieval, `epicsarchiverap-maven.service` is enabled and active, `/arch` (0755), the install root and all four instance directories are owned `mid-srv:mid`, the appliance processes run as the `mid-srv` service account and not as root (so the build-as-root, run-as-service-account split is now observed rather than derived), and mgmt `/mgmt/bpl/getApplianceInfo` returns HTTP 200 with identity `appliance0` and version 2025-6. A PV archives and reads back (verified on the freshly provisioned host): a 1 Hz calc record submitted through `mgmt/bpl/archivePV` moved `Initial sampling` to `Appliance assigned` to `Being archived`; `retrieval/data/getData.json` then returned 68 points carrying the record `EGU`, the leading samples one second apart and incrementing; and the short-term store held the PV under `/arch/sts/ArchiverStore/` as `<segment before the colon>/<remainder>:<YYYY_MM_DD_HH>.pb`, the hour bucket in UTC because the appliance stores in UTC - the 15:33Z run produced the `_15` bucket and the first sample carried epoch 1790004766, which is 15:32:46Z. The test IOC and the PV were removed afterwards. Timing note for any future probe: mgmt answers 500 for roughly 20-30 s after a start, so a single-shot check misreads as failure. |
+| T19 | 2026-09-21T08:07:09Z | Rocky 8.10 and Debian 13 archiver-dev VMs | Passed | Re-apply reports `changed=0 failed=0` on both, with the launch step reporting all four instances live, and the installed state is unchanged across it: the install-tree fingerprint (file list and sizes, excluding `logs`, `temp` and `work`), all four per-instance JVM PIDs, and the unit `ActiveEnterTimestamp` were captured before and after and are identical on both hosts. The result is only trustworthy because of a defect found while producing it: an earlier re-apply reported `changed=0` while one host had a dead mgmt instance, because the check trusted `systemctl is-active` on a unit that stays active when one of its four Tomcat instances dies. The check now judges the four instances themselves and repairs with `restart`; verified by killing an instance and observing `changed=1` naming the missing instance, against a healthy control host reporting `changed=0`. |
 
 MariaDB loopback-TCP verification (2026-09-18, Rocky 8.10 / MariaDB 10.3.39 and
 Debian 13 / MariaDB 11.8.6 archiver-dev VMs): the `mariadb` operator applied with
@@ -1461,8 +1465,30 @@ records a config stamp at install time, reports drift against it, and rebuilds
 only under `archiver_force_reinstall`. Contract-file delivery and consumption are
 both verified on the freshly provisioned host: the file arrives at first boot, the
 build logs its use of it, no local file is generated, and Maven resolved from
-central with no unreachable errors. Still open: one Done-when element of T18, a PV
-archived and read back through the retrieval endpoint.
+central with no unreachable errors. The archiver-dev path now has no outstanding
+evidence: install, service account, serving endpoint, unchanged re-apply and an
+archived PV read back are all observed.
+
+Pinned aa-env ref moved to `e06c554` (2026-09-21). `fb43522` is its ancestor, and
+nothing under `site-template/`, `scripts/`, `configure/CONFIG_SITE` or
+`configure/CONFIG_SRC` differs between the two, so every override this operator
+writes carries across unchanged; what did change is the build recipe, which now
+passes `-DskipTests` (only the flag is observable here; aa-env reports the tests
+moved to aa-maven CI), and `debian13.pkgs`,
+which drops the four python packages. Verified by execution on the freshly
+provisioned host: a plain re-apply was refused with the drift report naming
+`envref` as the single differing field, leaving the appliance running untouched,
+and a forced reinstall then rebuilt at `e06c554` in about a minute with
+`failed=0`, leaving four instances, the unit active, heap `Xmx256M`, the als
+classpathfiles in the webapp and mgmt answering 200 on the first probe. This was
+the first exercise of drift detection against a real knob change rather than a
+synthetic one. The two older hosts stay installed at `fb43522` and cannot be moved
+in place: a forced rebuild on them is refused before anything is torn down,
+because the contract Maven settings file arrives only at provisioning and they
+predate it. Recreating the VM is the route, through cloud-provision's `bin/create_vm.bash`,
+and a host created now carries that file. Verified by running exactly that forced rebuild on both: it reported
+`failed=1 changed=0`, the refusal naming the missing settings file, and left both
+appliances serving at the old ref with four instances each.
 
 Generator gap closed (2026-09-18, cloud-provision `m11-middleware-operators`
 `06ea800`): `generate_ansible_inventory.bash` now emits `[archiver_dev]` and

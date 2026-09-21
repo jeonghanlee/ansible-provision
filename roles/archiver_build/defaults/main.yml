@@ -9,7 +9,7 @@
 
 # aa-env source repository and the ref this run pins.
 repo_archiver_env: "https://github.com/jeonghanlee/epicsarchiverap-env"
-archiver_env_ref: "fb43522"
+archiver_env_ref: "e06c554"
 
 # aa-maven source ref, written to configure/RELEASE.local as SRC_TAG. aa-env's
 # `make init` clones aa-maven and checks this out (a bare commit works there).
