@@ -139,7 +139,7 @@
     # appended to every mvn invocation. CONFIG_SITE.local is included after the
     # empty aa-env default, so this assignment wins. Left unset on a direct-net
     # host, where the aa-env default stands and Maven goes direct. The hook is not
-    # MAVEN_OPTS: that name is Maven's own JVM-options variable.
+    # MAVEN_OPTS: that name is the JVM-options variable of Maven itself.
     if [ -n "${maven_flags}" ]; then
       printf 'MAVEN_FLAGS:=%s\n' "${maven_flags}" >> "${src_parent}/CONFIG_SITE.local"
     fi
@@ -188,7 +188,7 @@
       exit 1
     fi
     if [ "${schema_tables}" -eq 0 ]; then
-      echo "archiver_build: aa-env's sql.fill exited 0 but loaded no schema; ${db_name} has no tables, so the appliance would not persist PV configuration" >&2
+      echo "archiver_build: the aa-env sql.fill exited 0 but loaded no schema; ${db_name} has no tables, so the appliance would not persist PV configuration" >&2
       if [ -n "${stopped_note}" ]; then echo "${stopped_note}" >&2; fi
       exit 1
     fi
