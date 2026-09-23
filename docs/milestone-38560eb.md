@@ -38,7 +38,7 @@ path is not complete: the species provisions a bare host into a serving
 appliance, re-applies without changing the installed tree, and archives a PV
 that reads back, but PV configuration never reaches the database. The operator
 now stops a fresh build right after `sql.fill` when the database has no tables.
-The fix is aa-env's, tracked in jeonghanlee/epicsarchiverap-env#47. When it
+The fix is aa-env's (G3, jeonghanlee/epicsarchiverap-env#47). When it
 lands on `modernize`, pin that commit in `archiver_env_ref`, rebuild a host with
 `archiver_force_reinstall=true` (a plain re-apply is refused as drift), and
 re-run T17: it passes when the table check lets the build continue and
@@ -121,7 +121,7 @@ verified on the production IOC server 2026-09-04 (con 1.1.0 replaced by 1.2.0,
 full mode carries every OS tree, second apply `failed=0`). Delivered in
 `fd4ff1c` and `13bc8e6`.
 
-Status tally: 12 Complete, 0 In progress, 0 Not started, 1 Deferred, 1 Blocked. 2 external gates (1 Complete, 1 Open).
+Status tally: 12 Complete, 0 In progress, 0 Not started, 1 Deferred, 1 Blocked. 3 external gates (1 Complete, 2 Open).
 
 ## Milestone
 
@@ -142,9 +142,10 @@ Status tally: 12 Complete, 0 In progress, 0 Not started, 1 Deferred, 1 Blocked. 
 | Core | M11 | Install the requested version in the app and EPICS roles | Milestone | Complete | No | D11 | The con/procServ/conserver and EPICS roles drop the install-once guard and install the requested version on every apply (EPICS re-checks out the tag; `epics_clone_mode` picks minimal single-OS or full multi-OS); verified on the production IOC server 2026-09-04 (con 1.1.0 replaced by 1.2.0, full mode carries every OS tree, second apply `failed=0`); delivered in `fd4ff1c`/`13bc8e6`; [detail](#m11---install-the-requested-version-in-the-app-and-epics-roles) |
 | Core | M12 | Keep /run/cloud-init world-readable after the in-build cloud-init upgrade | Milestone | Complete | No | D12 | After `roles/epics_build` runs on a rocky epics-dev guest, `/run/cloud-init` is 0755 and an unprivileged `cloud-init status --long` prints, both immediately and after a later `systemd-tmpfiles --create`; debian/ubuntu unaffected; [detail](#m12---keep-runcloud-init-world-readable-after-the-in-build-cloud-init-upgrade) |
 | Core | M13 | Fix RedHat python provisioning for EPICS source builds | Milestone | Complete | No | D13, D14 | The RedHat python operator installs Python dev headers and makes `python3` resolve to the intended version, so `Python.h` is present and pyDevSup compiles on rocky8/rocky10; debian unaffected; [detail](#m13---fix-redhat-python-provisioning-for-epics-source-builds) |
-| Core | M14 | Middleware server provisioning (Archiver Appliance, Phoebus) | Milestone | Blocked | No | G2 | A middleware species provisions the EPICS Archiver Appliance and Phoebus, each independently selectable, on a middleware host layered on the common+epics base - system Java (distribution OpenJDK 21 with `JAVA_HOME`), Tomcat 9.0.121, MariaDB, the applications from their binary distribution repositories (species `archiver`, `phoebus`) or from source (`archiver-dev`, `phoebus-dev`), combinable as `middleware`, group `mid` / user `mid-srv` - with internal specifics supplied through the site override layer; blocked until the cloud-provision operator/species structure, package baseline, and middleware VM land (G2); [detail](#m14---middleware-server-provisioning-archiver-appliance-phoebus) |
+| Core | M14 | Middleware server provisioning (Archiver Appliance, Phoebus) | Milestone | Blocked | No | G2, G3 | A middleware species provisions the EPICS Archiver Appliance and Phoebus, each independently selectable, on a middleware host layered on the common+epics base - system Java (distribution OpenJDK 21 with `JAVA_HOME`), Tomcat 9.0.121, MariaDB, the applications from their binary distribution repositories (species `archiver`, `phoebus`) or from source (`archiver-dev`, `phoebus-dev`), combinable as `middleware`, group `mid` / user `mid-srv` - with internal specifics supplied through the site override layer; blocked until the cloud-provision operator/species structure, package baseline, and middleware VM land (G2); [detail](#m14---middleware-server-provisioning-archiver-appliance-phoebus) |
 | Gate | G1 | the production IOC server reaches the internal git host | External gate | Complete | No | | Reachability achieved through the site HTTP proxy's CONNECT tunnel (an ssh `ProxyCommand` over the proxy), not a firewall whitelist: the owner's key authenticates and `git ls-remote` returns the refs; confirmed 2026-09-03 by the successful iocserver clone (M4/T2) |
 | Gate | G2 | cloud-provision ships the middleware package baseline and the middleware VM | External gate | Open | No | | The middleware operator/species structure and OS package baseline (system OpenJDK 21, Tomcat 9.0.121, MariaDB; no Maven package) originate in cloud-provision (`docs/milestone-e260630.md` M11) as the normative source and a middleware VM is provisionable there, before ansible-provision mirrors the set and layers its roles; owned by the cloud-provision session |
+| Gate | G3 | aa-env ships a `sql.fill` that loads the configuration schema when the database and application account are provisioned externally | External gate | Open | No | | Complete when the jeonghanlee/epicsarchiverap-env#47 fix commit is on `modernize` and aa-env records #47's acceptance as met: with only the application account, `make sql.fill` loads the schema, `make sql.show` lists `PVTypeInfo`, `PVAliases`, `ArchivePVRequests` and `ExternalDataServers`, and an absent database exits non-zero. Observing it on an archiver-dev host is M14/T17, not this gate; owned by the aa-env session |
 
 ### Decisions
 
@@ -1196,7 +1197,7 @@ the target python version per OS beyond the current selections.
 #### M14 - Middleware server provisioning (Archiver Appliance, Phoebus)
 
 - Origin: 38560eb / M14
-- Status: Blocked (on G2)
+- Status: Blocked (on G2, G3)
 
 ##### Summary
 
@@ -1265,6 +1266,15 @@ repository); Maven as an installed package.
   `docs/milestone-e260630.md` M11, D2, D3). `M14`'s row stays Blocked while `G2`
   is Open, but implementation proceeds on the branch (develop-before-merge, see
   Implementation Plan); the row completes when M11 merges (`G2`) and M14/T2 passes.
+- `G3` (Open, added 2026-09-23): aa-env's `sql.fill` loads no schema when the
+  database and application account are provisioned externally, as this
+  operator provisions them, and exits 0 anyway
+  (jeonghanlee/epicsarchiverap-env#47, owned by the aa-env session). The
+  operator's post-`sql.fill` table check is designed to stop a fresh
+  archiver-dev build at that step (not yet exercised in a build), so the schema
+  load (M14/T17) cannot pass until `G3` completes.
+  `M14` stays Blocked while `G2` or `G3` is Open and resumes as In progress when
+  both are Complete.
 - `D15` (owner, 2026-09-11): build it the ansible-provision way; internal
   specifics via the site override layer. Its pinned non-system Java/Maven and
   Phoebus-build substance is superseded by `D16`.
