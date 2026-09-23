@@ -73,11 +73,11 @@
     # approach is removed so a host cannot keep consuming a stale copy.
     contract_settings=/etc/maven-proxy-settings.xml
     rm -f "${src_parent}/maven-settings.xml"
-    maven_opts=""
+    maven_flags=""
     if [ -f "${contract_settings}" ]; then
-      maven_opts="-gs ${contract_settings}"
+      maven_flags="-gs ${contract_settings}"
     fi
-    printf '%s\n' "archiver_build: maven proxy settings: ${maven_opts:-none}"
+    printf '%s\n' "archiver_build: maven proxy settings: ${maven_flags:-none}"
 
     # --- OS build-tool packages and JAVA_HOME (TOMCAT_HOME is /opt/tomcat9).
     # The aa-env install_os_packages.bash is skipped; install its build tools
@@ -135,12 +135,13 @@
     if [ -n "${db_pass}" ]; then
       printf 'DB_USER_PASS=%s\n' "${db_pass}" >> "${src_parent}/CONFIG_SITE.local"
     fi
-    # Select the Maven settings file through the aa-env MAVEN_OPTS hook, which is
+    # Select the Maven settings file through the aa-env MAVEN_FLAGS hook, which is
     # appended to every mvn invocation. CONFIG_SITE.local is included after the
     # empty aa-env default, so this assignment wins. Left unset on a direct-net
-    # host, where the aa-env default stands and Maven goes direct.
-    if [ -n "${maven_opts}" ]; then
-      printf 'MAVEN_OPTS:=%s\n' "${maven_opts}" >> "${src_parent}/CONFIG_SITE.local"
+    # host, where the aa-env default stands and Maven goes direct. The hook is not
+    # MAVEN_OPTS: that name is Maven's own JVM-options variable.
+    if [ -n "${maven_flags}" ]; then
+      printf 'MAVEN_FLAGS:=%s\n' "${maven_flags}" >> "${src_parent}/CONFIG_SITE.local"
     fi
 
     # --- Pin the aa-maven source ref (make init clones it at SRC_TAG) ---
@@ -155,17 +156,19 @@
     make conf.archapplproperties
     make build.mvn
     make sql.fill
-    # aa-env's sql.fill exits 0 even when the schema load did nothing, leaving
-    # the database empty. The appliance still starts, archives and serves, so
-    # every later check passes while PV configuration fails to persist, showing
-    # only as errors in the mgmt log, and survives only in memory until the next
-    # restart. Count the tables before treating the step as done, and stop here
-    # rather than install and start on a database the appliance cannot write
-    # to; an unreadable count stops the build too. With a site password, ask
-    # over the same TCP path and account the appliance uses, which proves the
-    # application login too; otherwise fall back to the local socket as root,
-    # which answers whether the schema is there only when the database is on
-    # this host, as this species places it.
+    # Before aa-env 1fc20a8 (jeonghanlee/epicsarchiverap-env#47), sql.fill exited
+    # 0 even when the schema load did nothing, leaving the database empty; the
+    # count stays as a guard, so no path that lets sql.fill pass can install on an
+    # empty database. On an empty one the appliance still starts, archives and
+    # serves, so every later check passes while PV configuration fails to
+    # persist, showing only as errors in the mgmt log, and survives only in
+    # memory until the next restart. Count the tables before treating the step
+    # as done, and stop here rather than install and start on a database the
+    # appliance cannot write to; an unreadable count stops the build too. With a
+    # site password, ask over the same TCP path and account the appliance uses,
+    # which proves the application login too; otherwise fall back to the local
+    # socket as root, which answers whether the schema is there only when the
+    # database is on this host, as this species places it.
     schema_query="SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='${db_name}'"
     if [ -n "${db_pass}" ]; then
       schema_tables=$(MYSQL_PWD="${db_pass}" mysql -h "${db_host}" -P "${db_port}" -u "${db_user}" -N -B -e "${schema_query}") || schema_tables=""

@@ -284,7 +284,10 @@ unit to a success sentinel and reports nothing until it finishes. Expect several
 minutes on a host with a cold Maven cache. The build unit keeps its own output:
 read `journalctl -u archiver-build.service` on the target while it runs, or
 after it fails. `archiver_env_ref` pins aa-env and `archiver_maven_src_tag`
-pins the aa-maven source.
+pins the aa-maven source. The operator passes Maven flags through aa-env's
+`MAVEN_FLAGS` hook, so `archiver_env_ref` must be `84b38e5` or later; an older
+ref reads `MAVEN_OPTS` instead, and a proxied build then cannot reach Maven
+Central.
 
 The instances serve on 17665 (mgmt), 17666 (engine), 17667 (etl) and 17668
 (retrieval). Management lives under mgmt, for example
@@ -307,22 +310,23 @@ arrives at provisioning, so a host provisioned before the contract covered Maven
 is recreated through cloud-provision's `bin/create_vm.bash` rather than rebuilt
 in place.
 
-`archiver_java_heapsize` (default `256M`) overrides the aa-env heap default for
-every instance, because four instances at that default oversubscribe a 4 GB
-host. A changed knob does not reach an appliance that is already installed. The
-operator records the knob set at install time, and a later re-apply that wants a
+`archiver_java_heapsize` (default `256M`) sets the heap of every instance
+explicitly; four instances at a 1G heap oversubscribe a 4 GB host. A changed
+knob does not reach an appliance that is already installed. The operator
+records the knob set at install time, and a later re-apply that wants a
 different set is refused with the difference named, stopping the run instead of
-rebuilding. Supply `ANSIBLE_OPTS='-e archiver_force_reinstall=true'` to rebuild.
+rebuilding. To rebuild, add `-e archiver_force_reinstall=true` to the same
+`ANSIBLE_OPTS` that carries the private variables, for example
+`ANSIBLE_OPTS='-e @/path/to/private-mariadb.yml -e archiver_force_reinstall=true'`.
 An installed appliance whose four instances are not all running is repaired with
 a service restart.
 
 After `sql.fill` the operator counts the tables in the configuration database and
 stops the build before install when there are none or they cannot be counted: an
 appliance on an empty database archives and serves, but never persists PV
-configuration. A forced
-reinstall stops the running appliance before it builds, so a build stopped at
-that check leaves the previous appliance stopped; the build log names how to
-start it again.
+configuration. A forced reinstall stops the running appliance before it builds,
+so a build stopped at that check leaves the previous appliance stopped; the
+build log names how to start it again.
 
 ## Species Assemblies
 

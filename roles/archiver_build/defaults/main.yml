@@ -7,9 +7,12 @@
 # instance layout, systemd unit, schema). Runs as root, like the other build
 # operators; aa-env's internal sudo no-ops when already root.
 
-# aa-env source repository and the ref this run pins.
+# aa-env source repository and the ref this run pins. The build passes Maven
+# flags through aa-env's MAVEN_FLAGS hook, which aa-env introduced in 84b38e5; an
+# older ref reads MAVEN_OPTS instead, so a proxied build pinned to one cannot
+# reach Maven Central. Pin 84b38e5 or later.
 repo_archiver_env: "https://github.com/jeonghanlee/epicsarchiverap-env"
-archiver_env_ref: "6a026d4"
+archiver_env_ref: "1fc20a8"
 
 # aa-maven source ref, written to configure/RELEASE.local as SRC_TAG. aa-env's
 # `make init` clones aa-maven and checks this out (a bare commit works there).
@@ -18,7 +21,10 @@ archiver_maven_src_tag: "3c96141d"
 # Where the aa-env source tree is cloned and built (aa-maven is cloned inside).
 path_archiver_env_src: "/opt/epicsarchiverap-env-src"
 
-# Site build id whose overlay (site-template/<id>) aa-env applies before build.
+# Site id aa-env stamps into the build (ARCHAPPL_SITEID). aa-env copies its one
+# overlay, site-template/siteid, to src/sitespecific/<id>, but at the pinned ref
+# its Maven calls set the site to als regardless of this value, so another value
+# is not honoured end to end. Keep als.
 archiver_site_id: "als"
 
 # Service account and group for the appliance, parallel to ioc / ioc-srv. The
@@ -33,12 +39,13 @@ archiver_gid: ""
 archiver_install_parent: "/opt"
 archiver_storage_top: "/arch"
 
-# Per-instance JVM heap, overriding the aa-env default through AA_JAVA_HEAPSIZE.
-# aa-env derives CATALINA_OPTS from it as both -Xms and -Xmx, and applies the
-# result to every instance; it ships 1G, sized in its own comment for a 64 GB
-# server. The appliance runs four instances (mgmt, engine, etl, retrieval), so
-# 1G each oversubscribes a lab vacuum alongside MariaDB and the OOM killer takes
-# an instance down. 256M keeps the four inside about 1 GB of heap.
+# Per-instance JVM heap, written to AA_JAVA_HEAPSIZE. aa-env derives
+# CATALINA_OPTS from it as both -Xms and -Xmx and applies the result to every
+# instance. The appliance runs four instances (mgmt, engine, etl, retrieval), so
+# a 1G heap each oversubscribes a lab vacuum alongside MariaDB and the OOM killer
+# takes an instance down; 256M keeps the four inside about 1 GB of heap. aa-env's
+# own default matches at the pinned ref; setting it here keeps the value part of
+# the install stamp, so a change on either side shows as drift.
 archiver_java_heapsize: "256M"
 
 # Explicit opt-in to rebuild and reinstall an appliance that is already present.
@@ -69,7 +76,10 @@ archiver_db_host: "127.0.0.1"
 archiver_db_port: "3306"
 archiver_db_name: "{{ mariadb_database | default('archappl') }}"
 archiver_db_user: "{{ mariadb_user | default('archappl') }}"
-# The application account plaintext password aa-env's JNDI resource sends over
-# TCP. It must correspond to the mariadb_password_hash the mariadb operator
-# installs. Supply it through private site variables; never commit it here.
+# The application account plaintext password. aa-env's JNDI resource sends it
+# over TCP, aa-env's sql.fill logs in with it at the pinned ref, and the
+# operator's post-sql.fill table check uses it when it is set. It must correspond
+# to the mariadb_password_hash the mariadb operator installs. Empty leaves the
+# aa-env default in place. Supply it through private site variables; never
+# commit it here.
 archiver_db_password: ""
