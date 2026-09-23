@@ -31,22 +31,25 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: the archiver-dev schema load. aa-env's `sql.fill`
-loads nothing when the database and application account are provisioned
-externally, as this operator does, so M14/T17 is Failed and the archiver-dev
-path is not complete: the species provisions a bare host into a serving
-appliance, re-applies without changing the installed tree, and archives a PV
-that reads back, but PV configuration never reaches the database. The operator
-now stops a fresh build right after `sql.fill` when the database has no tables.
-The fix is aa-env's (G3, jeonghanlee/epicsarchiverap-env#47). When it
-lands on `modernize`, pin that commit in `archiver_env_ref`, rebuild a host with
-`archiver_force_reinstall=true` (a plain re-apply is refused as drift), and
+Next session entry point: the archiver-dev schema load. At aa-env `6a026d4`,
+the ref the hosts are installed at, `sql.fill` loads nothing when the database
+and application account are provisioned externally, as this operator does, so
+M14/T17 is Failed and the archiver-dev path is not complete: the species
+provisions a bare host into a serving appliance, re-applies without changing
+the installed tree, and archives a PV that reads back, but PV configuration
+never reaches the database. The operator now stops a fresh build right after
+`sql.fill` when the database has no tables. The fix is aa-env's (G3,
+jeonghanlee/epicsarchiverap-env#47): it is on `modernize` at `1fc20a8`, not yet
+observed here, and `archiver_env_ref` pins that commit, with the operator's
+Maven flags moved to the `MAVEN_FLAGS` hook that aa-env renamed in the same
+range. G3 stays Open until aa-env records #47's acceptance. Rebuild a host with
+`archiver_force_reinstall=true` (a plain re-apply is refused as drift) and
 re-run T17: it passes when the table check lets the build continue and
 `make sql.show` lists `PVTypeInfo`, `PVAliases`, `ArchivePVRequests` and
-`ExternalDataServers`. Before the fix lands, a forced reinstall stops a running
-appliance and the build then halts at the table check, leaving it stopped; the
-build log says how to start it again. Both behaviours come from the operator
-code and have not yet run in a build. The rest of the M14 scope is untouched:
+`ExternalDataServers`. If the table check still stops a forced rebuild at the
+pinned ref, the running appliance is left stopped; the build log says how to
+start it again. Both behaviours come from the operator code and have not yet
+run in a build. The rest of the M14 scope is untouched:
 the distribution-based `archiver` species, for which
 cloud-provision's `create_vm.bash` carries no selector - it has only the
 archiver-dev pair; the Phoebus pair, a `phoebus`
@@ -1304,7 +1307,8 @@ repository); Maven as an installed package.
   operators - no build-user split, since aa-env's internal sudo no-ops when
   already root and `make install` chowns the instances to `mid-srv:mid`
   regardless. Pinned aa-env `fb43522` and aa-maven `SRC_TAG=3c96141d`; the aa-env
-  pin moved to `e06c554` on 2026-09-21 (see the increment status). Variable
+  pin moved to `e06c554` on 2026-09-21, to `6a026d4` on 2026-09-22 and to
+  `1fc20a8` on 2026-09-23 (see the increment status). Variable
   placement: `configure/RELEASE.local` (SRC_TAG) and `../CONFIG_SITE.local` -
   one directory above the checkout, which survives the OS-conf rewrite -
   (AA_USERID/AA_GROUPID, DB name/user/pass, DB_HOST_NAME=127.0.0.1,
@@ -1432,7 +1436,7 @@ definition now (owner + LAB-CLOUD, 2026-09-14).
 | T14 | 2026-09-16T15:05:57Z | Rocky 8.10 / MariaDB 10.3.39 and Debian 13 / MariaDB 11.8.6 | Passed | Actual existing-state cleanup and seeded-fixture runs succeeded through Make op.mariadb. Seeded cleanup reported changed=1 on each. SQL queries verified zero anonymous/remote-root accounts, zero test schemas and zero matching mysql.db rows. The retained account lost test-prefix access while keeping its own database access and authentication definition. Data in test_keep, securekeep and archappl survived; the global SQL mode, service PID, config metadata and existing profiles matched. Quote/backslash account host names were deleted under NO_BACKSLASH_ESCAPES. After fixture cleanup, the final run reported ok=4 changed=0 failed=0 on each, with root UDS authentication and no TCP listener verified. |
 | T15 | 2026-09-16T15:57:43Z | Rocky 8.10 / MariaDB 10.3.39 and Debian 13 / MariaDB 11.8.6 | Passed | The shipped raw_stdin action received public multiline input through SSH/sudo; the receiving root shell had no TTY and no marker in its command arguments. Exit 23 propagated, missing no_log failed, and check mode skipped both valid commands. The role rendered with the credential value only in stdin. Real Make runs created separate accounts and passed the 21-check lifecycle and 8-check security regressions; final operator reapply reported ok=5 changed=0 failed=0 on both. No remote credential-visibility experiment was used. |
 | T16 | 2026-09-16T15:56:03Z | Same two VMs | Passed | X509, SSL, CIPHER, ISSUER and SUBJECT conditions failed visibly on both servers before the account task. Explicit expiration and account lock tests ran on MariaDB 11.8 and failed as expected; MariaDB 10.3 rejected the PASSWORD EXPIRE fixture setup syntax. Account/grant definitions were unchanged after rejection. Restoring each fixture condition restored data access; the final custom-account reapply reported changed=0 on both, and fixture accounts/databases were removed. |
-| T17 | 2026-09-23T09:05:24Z | The current three archiver-dev hosts (Rocky 8.10 x2, Debian 13): T17's original third host, and two hosts rebuilt through this operator on 2026-09-21 after the original run | Failed | The build half holds, observed 2026-09-21T06:23:08Z: our `archiver_build` operator ran `init`, `db.conf`, `conf.archapplproperties` and `build.mvn` as root on the original three hosts, and the als classpathfiles are packed as required: `appliances.xml`, `archappl.properties` and `policies.py` are each present in `WEB-INF/classes` of all four deployed webapps, generated into `site-template/siteid/classpathfiles` by `copy.sitespecific` within `build.mvn`. The two proxy defects in the increment status below - the detached unit carrying no proxy, and Maven not reading one from the environment - blocked that run first and had to be fixed. The schema half fails: `sql.fill` loaded nothing on any host. The 2026-09-21 result counted the load as executed because `sql.fill` exited 0 under `set -e`, but the exit status does not show the load. Inspected on the current three hosts: the configuration database exists and holds zero tables (`information_schema.tables` count 0); mgmt on every host logs `Table 'archappl.PVTypeInfo' doesn't exist` at each start, when it loads PV configuration from the database (`Loading PVTypeInfo from persistence`), and on the host where PVs were registered it logs the same error, and the same for `PVAliases`, on each registration. Cause, read from aa-env's scripts: `query_from_sql_file` first checks the database through `isDb`, which logs in as the admin account (`DB_ADMIN`, default `admin`) that this mode never creates, so the check reports the database absent; the not-found path prints `There is no >> archappl << in the dababase` beside the MariaDB `Access denied for user 'admin'` error - both lines stand in every build log - and then ends in a bare `exit`, which returns 0. The operator now counts the tables right after `sql.fill` and stops when there are none or the count cannot be read (fifth defect in the increment status below). |
+| T17 | 2026-09-23T09:05:24Z | The current three archiver-dev hosts (Rocky 8.10 x2, Debian 13): T17's original third host, and two hosts rebuilt through this operator on 2026-09-21 after the original run; all three installed at aa-env `6a026d4` since 2026-09-22 | Failed | The build half holds, observed 2026-09-21T06:23:08Z: our `archiver_build` operator ran `init`, `db.conf`, `conf.archapplproperties` and `build.mvn` as root on the original three hosts, and the als classpathfiles are packed as required: `appliances.xml`, `archappl.properties` and `policies.py` are each present in `WEB-INF/classes` of all four deployed webapps, generated into `site-template/siteid/classpathfiles` by `copy.sitespecific` within `build.mvn`. The two proxy defects in the increment status below - the detached unit carrying no proxy, and Maven not reading one from the environment - blocked that run first and had to be fixed. The schema half fails: `sql.fill` loaded nothing on any host. The 2026-09-21 result counted the load as executed because `sql.fill` exited 0 under `set -e`, but the exit status does not show the load. Inspected on the current three hosts: the configuration database exists and holds zero tables (`information_schema.tables` count 0); mgmt on every host logs `Table 'archappl.PVTypeInfo' doesn't exist` at each start, when it loads PV configuration from the database (`Loading PVTypeInfo from persistence`), and on the host where PVs were registered it logs the same error, and the same for `PVAliases`, on each registration. Cause, read from aa-env's scripts: `query_from_sql_file` first checks the database through `isDb`, which logs in as the admin account (`DB_ADMIN`, default `admin`) that this mode never creates, so the check reports the database absent; the not-found path prints `There is no >> archappl << in the dababase` beside the MariaDB `Access denied for user 'admin'` error - both lines stand in every build log - and then ends in a bare `exit`, which returns 0. The operator now counts the tables right after `sql.fill` and stops when there are none or the count cannot be read (fifth defect in the increment status below). |
 | T18 | 2026-09-21T15:33:55Z | Same three hosts | Passed | The root install steps ran and the appliance serves. On all three hosts: the four instances are installed under `/opt/epicsarchiverap-maven` and listen on 17665 mgmt, 17666 engine, 17667 etl and 17668 retrieval, `epicsarchiverap-maven.service` is enabled and active, `/arch` (0755), the install root and all four instance directories are owned `mid-srv:mid`, the appliance processes run as the `mid-srv` service account and not as root (so the build-as-root, run-as-service-account split is now observed rather than derived), and mgmt `/mgmt/bpl/getApplianceInfo` returns HTTP 200 with identity `appliance0` and version 2025-6. A PV archives and reads back (verified on the freshly provisioned host): a 1 Hz calc record submitted through `mgmt/bpl/archivePV` moved `Initial sampling` to `Appliance assigned` to `Being archived`; `retrieval/data/getData.json` then returned 68 points carrying the record `EGU`, the leading samples one second apart and incrementing; and the short-term store held the PV under `/arch/sts/ArchiverStore/` as `<segment before the colon>/<remainder>:<YYYY_MM_DD_HH>.pb`, the hour bucket in UTC because the appliance stores in UTC - the 15:33Z run produced the `_15` bucket and the first sample carried epoch 1790004766, which is 15:32:46Z. The test IOC and the PV were removed afterwards. Timing note for any future probe: mgmt answers 500 for roughly 20-30 s after a start, so a single-shot check misreads as failure. |
 | T19 | 2026-09-21T08:07:09Z | Rocky 8.10 and Debian 13 archiver-dev VMs | Passed | Re-apply reports `changed=0 failed=0` on both, with the launch step reporting all four instances live, and the installed state is unchanged across it: the install-tree fingerprint (file list and sizes, excluding `logs`, `temp` and `work`), all four per-instance JVM PIDs, and the unit `ActiveEnterTimestamp` were captured before and after and are identical on both hosts. The result is only trustworthy because of a defect found while producing it: an earlier re-apply reported `changed=0` while one host had a dead mgmt instance, because the check trusted `systemctl is-active` on a unit that stays active when one of its four Tomcat instances dies. The check now judges the four instances themselves and repairs with `restart`; verified by killing an instance and observing `changed=1` naming the missing instance, against a healthy control host reporting `changed=0`. |
 
@@ -1527,13 +1531,29 @@ and a forced reinstall then rebuilt at `e06c554` in about a minute with
 `failed=0`, leaving four instances, the unit active, heap `Xmx256M`, the als
 classpathfiles in the webapp and mgmt answering 200 on the first probe. This was
 the first exercise of drift detection against a real knob change rather than a
-synthetic one. The two older hosts stay installed at `fb43522` and cannot be moved
-in place: a forced rebuild on them is refused before anything is torn down,
+synthetic one. The two older hosts stayed installed at `fb43522` and could not be
+moved in place, until they were recreated through cloud-provision later on
+2026-09-21: a forced rebuild on them is refused before anything is torn down,
 because the contract Maven settings file arrives only at provisioning and they
 predate it. Recreating the VM is the route, through cloud-provision's `bin/create_vm.bash`,
 and a host created now carries that file. Verified by running exactly that forced rebuild on both: it reported
 `failed=1 changed=0`, the refusal naming the missing settings file, and left both
 appliances serving at the old ref with four instances each.
+
+Pinned aa-env ref moved to `6a026d4` (2026-09-22, `247f350`). It is seven commits
+ahead of `e06c554`, and its one policy change sets the MTS store to
+`PARTITION_DAY` (from `PARTITION_MONTH`, `hold=2` unchanged). All three current
+archiver-dev hosts were force-reinstalled at `6a026d4` around 2026-09-22T00:29Z,
+as their install stamps and JVM start times show; every observation after that,
+including the T17 schema inspection, comes from that ref.
+
+Pinned aa-env ref moved to `1fc20a8` (2026-09-23). It is twelve commits ahead of
+`6a026d4` and carries the `sql.fill` fix (G3), a 256M heap default, a systemd
+health timer for missing instances and the removal of the jsvc path. It also
+renames aa-env's Maven flag hook from `MAVEN_OPTS` to `MAVEN_FLAGS` (`84b38e5`),
+so the operator now writes `MAVEN_FLAGS` and needs `84b38e5` or later. The hosts
+stay installed at `6a026d4` until they are rebuilt with
+`archiver_force_reinstall=true`.
 
 Generator gap closed (2026-09-18, cloud-provision `m11-middleware-operators`
 `06ea800`): `generate_ansible_inventory.bash` now emits `[archiver_dev]` and
