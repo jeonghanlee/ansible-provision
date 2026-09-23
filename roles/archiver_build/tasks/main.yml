@@ -155,6 +155,40 @@
     make conf.archapplproperties
     make build.mvn
     make sql.fill
+    # aa-env's sql.fill exits 0 even when the schema load did nothing, leaving
+    # the database empty. The appliance still starts, archives and serves, so
+    # every later check passes while PV configuration fails to persist, showing
+    # only as errors in the mgmt log, and survives only in memory until the next
+    # restart. Count the tables before treating the step as done, and stop here
+    # rather than install and start on a database the appliance cannot write
+    # to; an unreadable count stops the build too. With a site password, ask
+    # over the same TCP path and account the appliance uses, which proves the
+    # application login too; otherwise fall back to the local socket as root,
+    # which answers whether the schema is there only when the database is on
+    # this host, as this species places it.
+    schema_query="SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='${db_name}'"
+    if [ -n "${db_pass}" ]; then
+      schema_tables=$(MYSQL_PWD="${db_pass}" mysql -h "${db_host}" -P "${db_port}" -u "${db_user}" -N -B -e "${schema_query}") || schema_tables=""
+    else
+      schema_tables=$(mysql -N -B -e "${schema_query}") || schema_tables=""
+    fi
+    # A forced reinstall stopped the previous appliance before this build began,
+    # and install has not run yet, so its tree is intact but nothing is serving.
+    # Say so on the way out, with the way back, rather than leave it down unnoticed.
+    stopped_note=""
+    if [ -d "${install_parent}/epicsarchiverap-maven/mgmt" ]; then
+      stopped_note="archiver_build: the previous appliance under ${install_parent}/epicsarchiverap-maven is left stopped; start it with 'systemctl start epicsarchiverap-maven.service' or re-apply without archiver_force_reinstall"
+    fi
+    if [ -z "${schema_tables}" ]; then
+      echo "archiver_build: cannot read ${db_name} to confirm the schema after sql.fill" >&2
+      if [ -n "${stopped_note}" ]; then echo "${stopped_note}" >&2; fi
+      exit 1
+    fi
+    if [ "${schema_tables}" -eq 0 ]; then
+      echo "archiver_build: aa-env's sql.fill exited 0 but loaded no schema; ${db_name} has no tables, so the appliance would not persist PV configuration" >&2
+      if [ -n "${stopped_note}" ]; then echo "${stopped_note}" >&2; fi
+      exit 1
+    fi
     make conf.storage
     make install
     make sd_start

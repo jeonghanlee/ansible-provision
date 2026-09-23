@@ -316,6 +316,14 @@ rebuilding. Supply `ANSIBLE_OPTS='-e archiver_force_reinstall=true'` to rebuild.
 An installed appliance whose four instances are not all running is repaired with
 a service restart.
 
+After `sql.fill` the operator counts the tables in the configuration database and
+stops the build before install when there are none or they cannot be counted: an
+appliance on an empty database archives and serves, but never persists PV
+configuration. A forced
+reinstall stops the running appliance before it builds, so a build stopped at
+that check leaves the previous appliance stopped; the build log names how to
+start it again.
+
 ## Species Assemblies
 
 | Assembly | Product |
