@@ -321,6 +321,21 @@ rebuilding. To rebuild, add `-e archiver_force_reinstall=true` to the same
 An installed appliance whose four instances are not all running is repaired with
 a service restart.
 
+The store policy of each tier is set with `archiver_store_sts_granularity`,
+`archiver_store_sts_hold`, `archiver_store_mts_granularity`,
+`archiver_store_mts_hold` and `archiver_store_lts_granularity`, which need
+`archiver_env_ref` at `9eed006` or later. Empty leaves the aa-env default: STS
+`PARTITION_HOUR` hold 2, MTS `PARTITION_DAY` hold 2, LTS `PARTITION_YEAR`. A
+granularity is one of `PARTITION_5MIN`, `PARTITION_15MIN`, `PARTITION_30MIN`,
+`PARTITION_HOUR`, `PARTITION_DAY`, `PARTITION_MONTH` and `PARTITION_YEAR`. The
+three granularities are set together or not at all, strictly finer to coarser
+from STS to LTS; a hold is a positive integer. The operator refuses any other
+value before a build starts. The values are part of the recorded knob set, so
+changing them on an installed appliance needs `archiver_force_reinstall`. A test
+host that watches samples reach all three tiers within hours uses STS
+`PARTITION_5MIN` hold 2, MTS `PARTITION_HOUR` hold 2 and LTS `PARTITION_DAY`;
+real deployments keep the defaults.
+
 After `sql.fill` the operator counts the tables in the configuration database and
 stops the build before install when there are none or they cannot be counted: an
 appliance on an empty database archives and serves, but never persists PV

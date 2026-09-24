@@ -10,9 +10,10 @@
 # aa-env source repository and the ref this run pins. The build passes Maven
 # flags through aa-env's MAVEN_FLAGS hook, which aa-env introduced in 84b38e5; an
 # older ref reads MAVEN_OPTS instead, so a proxied build pinned to one cannot
-# reach Maven Central. Pin 84b38e5 or later.
+# reach Maven Central. Pin 84b38e5 or later; the store policy variables below
+# need 9eed006 or later.
 repo_archiver_env: "https://github.com/jeonghanlee/epicsarchiverap-env"
-archiver_env_ref: "1fc20a8"
+archiver_env_ref: "9eed006"
 
 # aa-maven source ref, written to configure/RELEASE.local as SRC_TAG. aa-env's
 # `make init` clones aa-maven and checks this out (a bare commit works there).
@@ -48,6 +49,23 @@ archiver_storage_top: "/arch"
 # the install stamp, so a change on either side shows as drift.
 archiver_java_heapsize: "256M"
 
+# Store policy per tier, written to the aa-env ARCHAPPL_STS_GRANULARITY,
+# ARCHAPPL_STS_HOLD, ARCHAPPL_MTS_GRANULARITY, ARCHAPPL_MTS_HOLD and
+# ARCHAPPL_LTS_GRANULARITY, which aa-env renders into policies.py from 9eed006
+# on; an older ref ignores them. Empty leaves the aa-env default (STS
+# PARTITION_HOUR hold 2, MTS PARTITION_DAY hold 2, LTS PARTITION_YEAR). A
+# granularity is one of PARTITION_5MIN, PARTITION_15MIN, PARTITION_30MIN,
+# PARTITION_HOUR, PARTITION_DAY, PARTITION_MONTH and PARTITION_YEAR; the three are
+# set together or not at all, strictly finer to coarser from STS to LTS. A hold
+# is a positive integer and may be set on its own. The launch step refuses any
+# other value before a build starts. A test host shortens the chain to watch
+# samples reach all three tiers within hours; real deployments keep the defaults.
+archiver_store_sts_granularity: ""
+archiver_store_sts_hold: ""
+archiver_store_mts_granularity: ""
+archiver_store_mts_hold: ""
+archiver_store_lts_granularity: ""
+
 # Explicit opt-in to rebuild and reinstall an appliance that is already present.
 # The operator converges on absence and on a dead instance, but deliberately not
 # on a changed knob: that would rebuild and restart a live appliance as a side
@@ -66,6 +84,7 @@ archiver_config_stamp: >-
   account={{ archiver_user }}:{{ archiver_group }}
   storage={{ archiver_storage_top }}
   install={{ archiver_install_parent }}
+  store=sts:{{ archiver_store_sts_granularity or '-' }}/{{ archiver_store_sts_hold or '-' }},mts:{{ archiver_store_mts_granularity or '-' }}/{{ archiver_store_mts_hold or '-' }},lts:{{ archiver_store_lts_granularity or '-' }}
   envref={{ archiver_env_ref }}
   srctag={{ archiver_maven_src_tag }}
 

@@ -46,6 +46,11 @@
     storage_top="{{ archiver_storage_top }}"
     install_parent="{{ archiver_install_parent }}"
     heapsize="{{ archiver_java_heapsize }}"
+    sts_gran="{{ archiver_store_sts_granularity }}"
+    sts_hold="{{ archiver_store_sts_hold }}"
+    mts_gran="{{ archiver_store_mts_granularity }}"
+    mts_hold="{{ archiver_store_mts_hold }}"
+    lts_gran="{{ archiver_store_lts_granularity }}"
 
     top="${src_parent}/epicsarchiverap-env"
 
@@ -143,6 +148,16 @@
     if [ -n "${maven_flags}" ]; then
       printf 'MAVEN_FLAGS:=%s\n' "${maven_flags}" >> "${src_parent}/CONFIG_SITE.local"
     fi
+    # Store policy per tier. Each value is written only when set, so an unset one
+    # leaves the aa-env default in place; the launch step has already checked the
+    # names, the holds and the order across tiers.
+    for store_setting in "ARCHAPPL_STS_GRANULARITY=${sts_gran}" "ARCHAPPL_STS_HOLD=${sts_hold}" \
+        "ARCHAPPL_MTS_GRANULARITY=${mts_gran}" "ARCHAPPL_MTS_HOLD=${mts_hold}" \
+        "ARCHAPPL_LTS_GRANULARITY=${lts_gran}"; do
+      if [ -n "${store_setting#*=}" ]; then
+        printf '%s\n' "${store_setting%%=*}:=${store_setting#*=}" >> "${src_parent}/CONFIG_SITE.local"
+      fi
+    done
 
     # --- Pin the aa-maven source ref (make init clones it at SRC_TAG) ---
     printf 'SRC_TAG:=%s\n' "${src_tag}" > "${top}/configure/RELEASE.local"
@@ -233,6 +248,53 @@
       echo "ARCHIVER_BUILD_PRECONDITION: this host is proxied but carries no /etc/maven-proxy-settings.xml." >&2
       echo "Maven takes a proxy only from a settings file, and that file belongs to the cloud-provision proxy contract." >&2
       echo "Apply a proxy contract that provides it, then re-run. Nothing was stopped and no build was started." >&2
+      exit 1
+    fi
+
+    # The store policy reaches aa-env only inside the build, so check it here,
+    # before anything is torn down. aa-env rejects a bad name or hold only once
+    # the build is under way, and leaves the order across tiers to the operator.
+    sts_gran="{{ archiver_store_sts_granularity }}"
+    sts_hold="{{ archiver_store_sts_hold }}"
+    mts_gran="{{ archiver_store_mts_granularity }}"
+    mts_hold="{{ archiver_store_mts_hold }}"
+    lts_gran="{{ archiver_store_lts_granularity }}"
+    store_rank() {
+      case "$1" in
+        PARTITION_5MIN) echo 1 ;;
+        PARTITION_15MIN) echo 2 ;;
+        PARTITION_30MIN) echo 3 ;;
+        PARTITION_HOUR) echo 4 ;;
+        PARTITION_DAY) echo 5 ;;
+        PARTITION_MONTH) echo 6 ;;
+        PARTITION_YEAR) echo 7 ;;
+        *) echo 0 ;;
+      esac
+    }
+    store_error=""
+    if [ -n "${sts_gran}${mts_gran}${lts_gran}" ]; then
+      if [ -z "${sts_gran}" ] || [ -z "${mts_gran}" ] || [ -z "${lts_gran}" ]; then
+        store_error="set all three store granularities or none (STS [${sts_gran}], MTS [${mts_gran}], LTS [${lts_gran}])"
+      else
+        sts_rank=$(store_rank "${sts_gran}")
+        mts_rank=$(store_rank "${mts_gran}")
+        lts_rank=$(store_rank "${lts_gran}")
+        if [ "${sts_rank}" -eq 0 ] || [ "${mts_rank}" -eq 0 ] || [ "${lts_rank}" -eq 0 ]; then
+          store_error="a store granularity must be one of PARTITION_5MIN PARTITION_15MIN PARTITION_30MIN PARTITION_HOUR PARTITION_DAY PARTITION_MONTH PARTITION_YEAR (STS [${sts_gran}], MTS [${mts_gran}], LTS [${lts_gran}])"
+        elif [ "${sts_rank}" -ge "${mts_rank}" ] || [ "${mts_rank}" -ge "${lts_rank}" ]; then
+          store_error="store granularities must run strictly finer to coarser from STS to LTS (STS [${sts_gran}], MTS [${mts_gran}], LTS [${lts_gran}])"
+        fi
+      fi
+    fi
+    for store_hold in "${sts_hold}" "${mts_hold}"; do
+      case "${store_hold}" in
+        "") ;;
+        0*|*[!0-9]*) store_error="${store_error:-a store hold must be a positive integer (got [${store_hold}])}" ;;
+      esac
+    done
+    if [ "${will_build}" = "yes" ] && [ -n "${store_error}" ]; then
+      echo "ARCHIVER_BUILD_PRECONDITION: ${store_error}." >&2
+      echo "Nothing was stopped and no build was started." >&2
       exit 1
     fi
 
