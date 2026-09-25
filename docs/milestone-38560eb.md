@@ -51,7 +51,14 @@ restart. M14/T21, the one-day load test on the same host, started at
 clients from 21:46Z for 6 h, each reading a random PV over a one-hour or one-day
 window with a 2 s pause between requests. The heap stays at 256M so the result
 compares with T20, and an instance lost to it is recorded as the limit (owner
-decision 2026-09-25). The two end events are run by hand after
+decision 2026-09-25). At 19:30Z on 2026-09-25 all 903 PVs had reached LTS, but
+the STS-to-MTS ETL "last job" time was still climbing steadily within each step,
+about 5 s per hour in step 1 and about 11 s per hour since step 2 (0 s at 09:50Z,
+31 s at 15:50Z, 72 s at 19:30Z; the "Approximate time taken by last job in
+ETL(0>1) (s)" rows of `/var/tmp/aasoak9/metrics.csv`), and
+etl had logged two full GCs with its heap at up to 229 MiB of 256M; whether the
+job time reaches the 5-minute partition period is the limit to watch. The two
+end events are run by hand after
 2026-09-26T09:46Z, with their times recorded, as T21 describes; the day-1 soak
 IOC is `aasoak9-ioc.service`. The soak writes
 its 5-minute CSVs (host, per-process, per-log-stream, per-tier first arrival,
