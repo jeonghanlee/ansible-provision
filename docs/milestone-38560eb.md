@@ -64,8 +64,8 @@ this repository. The IOCs, the sampler and the step timers are transient units
 `systemctl list-units 'aasoak9*'` before reading the CSVs as a continuous
 record. The pilot host - the Rocky 8.10 archiver-dev host kept from T17's
 original three at `6a026d4` - was removed on 2026-09-25 after its records were
-kept. Separately, M15 (lab-VM clocks from the KVM PTP clock in `common`) is in
-progress under its plan accepted and authorized on 2026-09-25. The rest of the M14 scope is untouched:
+kept. Separately, M15 (lab-VM clocks from the KVM PTP clock in `common`) is
+Complete, delivered in `57d9d3f` and `eb9ba56`. The rest of the M14 scope is untouched:
 the distribution-based `archiver` species, for which
 cloud-provision's `create_vm.bash` carries no selector - it has only the
 archiver-dev pair; the Phoebus pair, a `phoebus`
@@ -96,7 +96,12 @@ remain aa-env responsibilities.
 The full `archiver-dev` path follows aa-env and aa-maven readiness; M14 remains
 Blocked on G2 for completion.
 
-Milestone summary: `M13` (RedHat python provisioning
+Milestone summary: `M15` (lab-VM clocks from the KVM PTP clock in the `common`
+operator) is Complete: verified on fresh Rocky 8.10 and Debian 13 guests
+2026-09-25 - PHC0 selected and synchronized, unchanged on re-apply and reboot,
+the pools kept where the device is absent, and the Debian first `apt update`
+retrying only on a signature-date failure; delivered in `57d9d3f` and `eb9ba56`
+(jeonghanlee/cloud-provision#44). `M13` (RedHat python provisioning
 for EPICS source builds) is Complete: rocky8 and rocky10 clean operator runs,
 pyDevSup builds on both, full public gz matrix 6/6 (issue #25). `M14` (middleware
 server provisioning) is Blocked on `G2` (cloud-provision ships the middleware
@@ -140,7 +145,7 @@ verified on the production IOC server 2026-09-04 (con 1.1.0 replaced by 1.2.0,
 full mode carries every OS tree, second apply `failed=0`). Delivered in
 `fd4ff1c` and `13bc8e6`.
 
-Status tally: 12 Complete, 1 In progress, 0 Not started, 1 Deferred, 1 Blocked. 3 external gates (2 Complete, 1 Open).
+Status tally: 13 Complete, 0 In progress, 0 Not started, 1 Deferred, 1 Blocked. 3 external gates (2 Complete, 1 Open).
 
 ## Milestone
 
@@ -162,7 +167,7 @@ Status tally: 12 Complete, 1 In progress, 0 Not started, 1 Deferred, 1 Blocked. 
 | Core | M12 | Keep /run/cloud-init world-readable after the in-build cloud-init upgrade | Milestone | Complete | No | D12 | After `roles/epics_build` runs on a rocky epics-dev guest, `/run/cloud-init` is 0755 and an unprivileged `cloud-init status --long` prints, both immediately and after a later `systemd-tmpfiles --create`; debian/ubuntu unaffected; [detail](#m12---keep-runcloud-init-world-readable-after-the-in-build-cloud-init-upgrade) |
 | Core | M13 | Fix RedHat python provisioning for EPICS source builds | Milestone | Complete | No | D13, D14 | The RedHat python operator installs Python dev headers and makes `python3` resolve to the intended version, so `Python.h` is present and pyDevSup compiles on rocky8/rocky10; debian unaffected; [detail](#m13---fix-redhat-python-provisioning-for-epics-source-builds) |
 | Core | M14 | Middleware server provisioning (Archiver Appliance, Phoebus) | Milestone | Blocked | No | G2, G3 | A middleware species provisions the EPICS Archiver Appliance and Phoebus, each independently selectable, on a middleware host layered on the common+epics base - system Java (distribution OpenJDK 21 with `JAVA_HOME`), Tomcat 9.0.121, MariaDB, the applications from their binary distribution repositories (species `archiver`, `phoebus`) or from source (`archiver-dev`, `phoebus-dev`), combinable as `middleware`, group `mid` / user `mid-srv` - with internal specifics supplied through the site override layer; blocked until the cloud-provision operator/species structure, package baseline, and middleware VM land (G2); [detail](#m14---middleware-server-provisioning-archiver-appliance-phoebus) |
-| Core | M15 | Discipline lab-VM clocks from the KVM PTP clock in the common operator | Milestone | In progress | No | D17 | On a KVM guest the `common` operator loads `ptp_kvm`, links `/dev/ptp_kvm` through a udev rule gated on the KVM clock name, and adds a PHC refclock to the chrony configuration it writes, so `timedatectl` reports the clock synchronized with PHC0 selected; where no KVM PTP clock exists the configuration carries no refclock and the site pools serve as before; the first `apt update` on the Debian path retries on a signature-date failure; [detail](#m15---discipline-lab-vm-clocks-from-the-kvm-ptp-clock-in-the-common-operator) |
+| Core | M15 | Discipline lab-VM clocks from the KVM PTP clock in the common operator | Milestone | Complete | No | D17 | On a KVM guest the `common` operator loads `ptp_kvm`, links `/dev/ptp_kvm` through a udev rule gated on the KVM clock name, and adds a PHC refclock to the chrony configuration it writes, so `timedatectl` reports the clock synchronized with PHC0 selected; where no KVM PTP clock exists the configuration carries no refclock and the site pools serve as before; the first `apt update` on the Debian path retries on a signature-date failure; delivered in `57d9d3f` and `eb9ba56`; [detail](#m15---discipline-lab-vm-clocks-from-the-kvm-ptp-clock-in-the-common-operator) |
 | Gate | G1 | the production IOC server reaches the internal git host | External gate | Complete | No | | Reachability achieved through the site HTTP proxy's CONNECT tunnel (an ssh `ProxyCommand` over the proxy), not a firewall whitelist: the owner's key authenticates and `git ls-remote` returns the refs; confirmed 2026-09-03 by the successful iocserver clone (M4/T2) |
 | Gate | G2 | cloud-provision ships the middleware package baseline and the middleware VM | External gate | Open | No | | The middleware operator/species structure and OS package baseline (system OpenJDK 21, Tomcat 9.0.121, MariaDB; no Maven package) originate in cloud-provision (`docs/milestone-e260630.md` M11) as the normative source and a middleware VM is provisionable there, before ansible-provision mirrors the set and layers its roles; owned by the cloud-provision session |
 | Gate | G3 | aa-env ships a `sql.fill` that loads the configuration schema when the database and application account are provisioned externally | External gate | Complete | No | | Complete when the jeonghanlee/epicsarchiverap-env#47 fix commit is on `modernize` and aa-env records #47's acceptance as met: with only the application account, `make sql.fill` loads the schema, `make sql.show` lists `PVTypeInfo`, `PVAliases`, `ArchivePVRequests` and `ExternalDataServers`, and an absent database exits non-zero. Observing it on an archiver-dev host is M14/T17, not this gate; owned by the aa-env session; met 2026-09-23: the fix is `1fc20a8` on `modernize`, and #47 closed with aa-env's acceptance recorded |
@@ -1717,7 +1722,7 @@ operator checks.
 #### M15 - Discipline lab-VM clocks from the KVM PTP clock in the common operator
 
 - Origin: 38560eb / M15
-- Status: In progress
+- Status: Complete
 
 ##### Summary
 
@@ -1811,6 +1816,16 @@ KVM guests beyond confirming they are unaffected.
 | T2 | 2026-09-25T17:38:52Z | Fresh bare Rocky 8.10 and Debian 13 KVM guests from cloud-provision | Passed | `make op.common.rocky8` 17:25:49Z and `op.common.debian13` 17:36:37Z, both `failed=0`; the restart handler ran before the wait task. On both: `/dev/ptp_kvm -> ptp0`, `clock_name` "KVM virtual PTP", the module and udev files as planned; `chronyc sources` selects PHC0 (`#*`, reach 377, offset within 5 ns), `chronyc tracking` reference PHC0 at stratum 1, `timedatectl` "System clock synchronized: yes"; the written configuration keeps the pool, driftfile, makestep, rtcsync and logdir lines and adds `refclock PHC /dev/ptp_kvm poll 2`. The pool servers stay unreachable (`^?`). On Debian chrony replaced systemd-timesyncd (inactive) and answers as `chronyd` and `chrony`. |
 | T3 | 2026-09-25T17:43Z | Same two VMs | Passed | Re-apply (`op.common` again) reported `changed=0` on both, and the chrony configuration, module and udev files kept their sha256 and mtime. After a reboot (17:40Z) both came up with `/dev/ptp_kvm` linked, chrony 4.5 (Rocky) and 4.6.1 (Debian) logged "Selected source PHC0" with no refclock error, PHC0 selected and the clock synchronized. With the module blocked by a temporary modprobe rule, unloaded and the link removed, an apply rewrote the chrony configuration without the refclock line and restarted chrony, which stayed active on the pools alone (unreachable in the lab, so unsynchronized, as expected there). With the block lifted, the next apply restored the link, the refclock line, PHC0 and synchronization. |
 | T4 | 2026-09-25T17:47:28Z | The Debian 13 VM | Passed | Each case through `make op.common.debian13` with `-v`. Clock behind: with chrony stopped, `/var/lib/apt/lists` emptied and the clock set two days back, `apt update` failed on every suite with the sqv message "Not live until"; the task ran 4 attempts with 3 logged retries and failed with rc 100. Clock correct: the task passed on its first attempt (twice, before and after the clock case). Unrelated error: a source naming a suite the mirror does not carry gave a 404 and "does not have a Release file"; the task failed with rc 100 after one attempt, no retry. Two facts found on the way: with index files already present, a clock two days behind makes apt warn, keep the previous index and exit 0, so the reported rc 100 needs an empty list directory as on a fresh VM; and the sqv wording "Not live until" was missing from the retry pattern, added before this result. |
+
+##### Closure Evidence
+
+- Delivered in `57d9d3f` (the KVM PTP refclock, the sync wait and its report)
+  and `eb9ba56` (the Debian first `apt update` retry); the work and its
+  verification were recorded in `ea436ca`.
+- Landed: after a fetch at 2026-09-25T18:56:23Z, `origin/m14-middleware-reconcile`
+  stood at `ea436ca`, which contains both commits; the branch is not yet merged
+  to `master`.
+- T1-T4 Passed on 2026-09-25 against every completion criterion.
 
 ## Backlog
 
