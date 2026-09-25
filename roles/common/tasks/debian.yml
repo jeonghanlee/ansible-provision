@@ -1,7 +1,24 @@
 ---
 # roles/common/tasks/debian.yml
+# A guest can boot with its clock briefly behind a suite signature, so a
+# signature-date failure is retried; any other failure fails at once.
 - name: Update apt cache
-  ansible.builtin.raw: apt update -y
+  ansible.builtin.raw: |
+    attempt=1
+    while :; do
+      rc=0
+      out=$(apt update -y 2>&1) || rc=$?
+      printf '%s\n' "$out"
+      if [ "$rc" -eq 0 ]; then
+        exit 0
+      fi
+      if [ "$attempt" -gt 3 ] || ! printf '%s\n' "$out" | grep -Eq 'not valid yet|created after|Not live until'; then
+        exit "$rc"
+      fi
+      printf 'apt update: signature date not yet valid, retry %s of 3 in 20 s\n' "$attempt" >&2
+      attempt=$((attempt + 1))
+      sleep 20
+    done
   changed_when: false
 
 - name: Install P_common packages (Debian family)
