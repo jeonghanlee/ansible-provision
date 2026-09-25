@@ -59,6 +59,34 @@
   register: sudoers_includedir
   changed_when: "sudoers_includedir.stdout | trim == 'changed'"
 
+- name: Expose the KVM PTP clock for chrony
+  ansible.builtin.raw: |
+    set -e
+    state=unchanged
+    conf=/etc/modules-load.d/ptp_kvm.conf
+    rule=/etc/udev/rules.d/99-ptp-kvm.rules
+    want_rule='SUBSYSTEM=="ptp", ATTR{clock_name}=="KVM virtual PTP", SYMLINK+="ptp_kvm"'
+    if [ "$(cat "$conf" 2>/dev/null)" != "ptp_kvm" ]; then
+      printf '%s\n' ptp_kvm > "$conf"
+      state=changed
+    fi
+    if [ "$(cat "$rule" 2>/dev/null)" != "$want_rule" ]; then
+      printf '%s\n' "$want_rule" > "$rule"
+      udevadm control --reload
+      state=changed
+    fi
+    # The module loads only on a KVM guest; elsewhere the load fails harmlessly
+    # and no link appears.
+    if [ ! -e /dev/ptp_kvm ]; then
+      modprobe ptp_kvm 2>/dev/null || true
+      udevadm trigger --subsystem-match=ptp --action=add
+      udevadm settle
+    fi
+    printf '%s\n' "$state"
+  register: chrony_ptp_kvm_setup
+  changed_when: "chrony_ptp_kvm_setup.stdout | trim == 'changed'"
+  when: chrony_ptp_kvm | bool
+
 - name: Deploy chrony configuration
   ansible.builtin.raw: |
     set -e
@@ -76,6 +104,13 @@
     {% endif %}{% if chrony_leapsectz != '' %}leapsectz {{ chrony_leapsectz }}
     {% endif %}logdir {{ chrony_logdir }}
     CHRONYEOF
+    {% if chrony_ptp_kvm | bool %}
+    # Only a host that has the KVM clock gets the refclock, so chrony never
+    # starts against a missing device.
+    if [ -e /dev/ptp_kvm ]; then
+      printf '%s\n' "refclock PHC /dev/ptp_kvm poll 2" >> "$tmp"
+    fi
+    {% endif %}
     if [ -f "$target" ] && cmp -s "$tmp" "$target"; then
       rm -f "$tmp"
       printf "unchanged\n"
@@ -91,3 +126,30 @@
 - name: Enable and start chronyd
   ansible.builtin.raw: systemctl enable chronyd 2>/dev/null || true; systemctl start chronyd
   changed_when: false
+
+# A changed configuration takes effect through the restart handler; run it now
+# so the wait below watches the new configuration, not the old one.
+- name: Apply a changed chrony configuration
+  ansible.builtin.meta: flush_handlers
+
+- name: Wait for chrony to synchronize to the KVM PTP clock
+  ansible.builtin.raw: |
+    if [ ! -e /dev/ptp_kvm ]; then
+      printf '%s\n' "no KVM PTP clock; chrony serves from the pools"
+    elif chronyc waitsync 6 >/dev/null 2>&1; then
+      printf '%s\n' "synchronized"
+    else
+      printf '%s\n' "chrony did not report synchronization within about 60 s"
+    fi
+  register: chrony_ptp_kvm_wait
+  changed_when: false
+  when: chrony_ptp_kvm | bool
+
+# The wait never fails the play, so surface a clock that did not converge,
+# which a raw task shows only under -v.
+- name: Report a clock that did not synchronize to the KVM PTP clock
+  ansible.builtin.debug:
+    msg: "{{ chrony_ptp_kvm_wait.stdout | default('') | trim }}"
+  when:
+    - chrony_ptp_kvm | bool
+    - "'did not report' in (chrony_ptp_kvm_wait.stdout | default(''))"

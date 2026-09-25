@@ -68,3 +68,10 @@ chrony_minpoll: ""
 chrony_maxpoll: ""
 chrony_keyfile: ""
 chrony_leapsectz: ""
+# Discipline the clock from the KVM PTP hardware clock when the host is a KVM
+# guest: the operator loads ptp_kvm, links /dev/ptp_kvm through a udev rule
+# that matches only the KVM clock, and adds a PHC refclock when that link
+# exists. A host without the KVM clock gets no refclock and keeps the pools.
+# False stops adding the refclock and waiting; module and udev files already
+# written are left in place.
+chrony_ptp_kvm: true
