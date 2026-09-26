@@ -44,35 +44,27 @@ on the soak host - a Rocky 8.10 archiver-dev VM provisioned for it and applied
 through the full species at operator `dca2255` with the README test store values
 on 2026-09-24, where T17 also passed at `9eed006`: all 100 PVs reached STS, MTS,
 LTS and a second LTS day partition, and PV configuration survived an appliance
-restart. M14/T21, the one-day load test on the same host, started at
-2026-09-25T09:46:12Z with 400 more 1 Hz scalars (500 PVs); a host timer adds 300
-1 Hz scalars, 100 10 Hz scalars under the VeryFast policy and three
-1000-element waveforms at 15:46Z (903 PVs), and another runs four retrieval
-clients from 21:46Z for 6 h, each reading a random PV over a one-hour or one-day
-window with a 2 s pause between requests. The heap stays at 256M so the result
-compares with T20, and an instance lost to it is recorded as the limit (owner
-decision 2026-09-25). At 19:30Z on 2026-09-25 all 903 PVs had reached LTS, but
-the STS-to-MTS ETL "last job" time was still climbing steadily within each step,
-about 5 s per hour in step 1 and about 11 s per hour since step 2 (0 s at 09:50Z,
-31 s at 15:50Z, 72 s at 19:30Z; the "Approximate time taken by last job in
-ETL(0>1) (s)" rows of `/var/tmp/aasoak9/metrics.csv`), and
-etl had logged two full GCs with its heap at up to 229 MiB of 256M; whether the
-job time reaches the 5-minute partition period is the limit to watch. The two
-end events are run by hand after
-2026-09-26T09:46Z, with their times recorded, as T21 describes; the day-1 soak
-IOC is `aasoak9-ioc.service`. The soak writes
+restart. M14/T21, the load test on the same host, passed on 2026-09-26: no
+instance or mgmt outage up to 903 PVs and a 6 h retrieval load (42417 requests,
+median 31 ms, all served), and the limit found is the STS-to-MTS ETL job time,
+which rose about 9 s per hour at any PV count to 277 s of the 300 s partition
+period when the run was ended with the disk 91% full; the two end events showed a
+quiet IOC restart and a 5 MB, 10836-line etl burst for 10 min of an unwritable
+MTS. All IOCs and the sampler are stopped; the appliance is left running with no
+PVs connected. The soak writes
 its 5-minute CSVs (host, per-process, per-log-stream, per-tier first arrival,
 retrieval, appliance metrics) and the load clients write `retrieval-load.csv`,
 all to
 `/var/tmp/aasoak9/` on the soak host from tools installed under
 `/usr/local/share/aasoak9/`; the tool sources are local working files, not in
-this repository. The IOCs, the sampler and the step timers are transient units
-(`aasoak9-*`) that a reboot does not restore, so check
-`systemctl list-units 'aasoak9*'` before reading the CSVs as a continuous
-record. The pilot host - the Rocky 8.10 archiver-dev host kept from T17's
+this repository. The run has ended: the IOCs, the sampler and the step timers
+are stopped, and the day-1 and load-test CSVs and logs are copied to the local
+working directory. The pilot host - the Rocky 8.10 archiver-dev host kept from T17's
 original three at `6a026d4` - was removed on 2026-09-25 after its records were
 kept. Separately, M15 (lab-VM clocks from the KVM PTP clock in `common`) is
-Complete, delivered in `57d9d3f` and `eb9ba56`. The rest of the M14 scope is untouched:
+Complete, delivered in `57d9d3f` and `eb9ba56`. M16 (the MariaDB application
+password generated on the host, replacing the `raw_stdin` transport) has a draft
+plan awaiting owner acceptance. The rest of the M14 scope is untouched:
 the distribution-based `archiver` species, for which
 cloud-provision's `create_vm.bash` carries no selector - it has only the
 archiver-dev pair; the Phoebus pair, a `phoebus`
@@ -103,7 +95,9 @@ remain aa-env responsibilities.
 The full `archiver-dev` path follows aa-env and aa-maven readiness; M14 remains
 Blocked on G2 for completion.
 
-Milestone summary: `M15` (lab-VM clocks from the KVM PTP clock in the `common`
+Milestone summary: `M16` (the MariaDB application password generated on the
+host, replacing the `raw_stdin` transport; #26) is Not started with a draft
+plan. `M15` (lab-VM clocks from the KVM PTP clock in the `common`
 operator) is Complete: verified on fresh Rocky 8.10 and Debian 13 guests
 2026-09-25 - PHC0 selected and synchronized, unchanged on re-apply and reboot,
 the pools kept where the device is absent, and the Debian first `apt update`
@@ -113,7 +107,8 @@ for EPICS source builds) is Complete: rocky8 and rocky10 clean operator runs,
 pyDevSup builds on both, full public gz matrix 6/6 (issue #25). `M14` (middleware
 server provisioning) is Blocked on `G2` (cloud-provision ships the middleware
 package baseline and the middleware VM). Every other milestone is Complete
-except `M3` (Deferred per `D3`); the one open external gate is `G2`. `M12` (keep
+except `M3` (Deferred per `D3`) and `M16`
+(Not started); the one open external gate is `G2`. `M12` (keep
 `/run/cloud-init` at 0755 after the in-build cloud-init upgrade)
 is Complete: verified on a rocky10 epics-dev guest 2026-09-09 - the `/etc`
 tmpfiles override holds the directory at 0755 immediately and after a repeated
@@ -152,7 +147,7 @@ verified on the production IOC server 2026-09-04 (con 1.1.0 replaced by 1.2.0,
 full mode carries every OS tree, second apply `failed=0`). Delivered in
 `fd4ff1c` and `13bc8e6`.
 
-Status tally: 13 Complete, 0 In progress, 0 Not started, 1 Deferred, 1 Blocked. 3 external gates (2 Complete, 1 Open).
+Status tally: 13 Complete, 0 In progress, 1 Not started, 1 Deferred, 1 Blocked. 3 external gates (2 Complete, 1 Open).
 
 ## Milestone
 
@@ -175,6 +170,7 @@ Status tally: 13 Complete, 0 In progress, 0 Not started, 1 Deferred, 1 Blocked. 
 | Core | M13 | Fix RedHat python provisioning for EPICS source builds | Milestone | Complete | No | D13, D14 | The RedHat python operator installs Python dev headers and makes `python3` resolve to the intended version, so `Python.h` is present and pyDevSup compiles on rocky8/rocky10; debian unaffected; [detail](#m13---fix-redhat-python-provisioning-for-epics-source-builds) |
 | Core | M14 | Middleware server provisioning (Archiver Appliance, Phoebus) | Milestone | Blocked | No | G2, G3 | A middleware species provisions the EPICS Archiver Appliance and Phoebus, each independently selectable, on a middleware host layered on the common+epics base - system Java (distribution OpenJDK 21 with `JAVA_HOME`), Tomcat 9.0.121, MariaDB, the applications from their binary distribution repositories (species `archiver`, `phoebus`) or from source (`archiver-dev`, `phoebus-dev`), combinable as `middleware`, group `mid` / user `mid-srv` - with internal specifics supplied through the site override layer; blocked until the cloud-provision operator/species structure, package baseline, and middleware VM land (G2); [detail](#m14---middleware-server-provisioning-archiver-appliance-phoebus) |
 | Core | M15 | Discipline lab-VM clocks from the KVM PTP clock in the common operator | Milestone | Complete | No | D17 | On a KVM guest the `common` operator loads `ptp_kvm`, links `/dev/ptp_kvm` through a udev rule gated on the KVM clock name, and adds a PHC refclock to the chrony configuration it writes, so `timedatectl` reports the clock synchronized with PHC0 selected; where no KVM PTP clock exists the configuration carries no refclock and the site pools serve as before; the first `apt update` on the Debian path retries on a signature-date failure; delivered in `57d9d3f` and `eb9ba56`; [detail](#m15---discipline-lab-vm-clocks-from-the-kvm-ptp-clock-in-the-common-operator) |
+| Core | M16 | Generate the MariaDB application password on the host | Milestone | Not started | Yes | D18 | The `mariadb` operator creates the application password on the target host, keeps it in a root-only file, and sets the account from that file; `archiver_build` reads the same file for aa-env; no credential travels from the control host, `raw_stdin` and its tests are removed, and the operator works over SSH and over a local connection alike; [detail](#m16---generate-the-mariadb-application-password-on-the-host) |
 | Gate | G1 | the production IOC server reaches the internal git host | External gate | Complete | No | | Reachability achieved through the site HTTP proxy's CONNECT tunnel (an ssh `ProxyCommand` over the proxy), not a firewall whitelist: the owner's key authenticates and `git ls-remote` returns the refs; confirmed 2026-09-03 by the successful iocserver clone (M4/T2) |
 | Gate | G2 | cloud-provision ships the middleware package baseline and the middleware VM | External gate | Open | No | | The middleware operator/species structure and OS package baseline (system OpenJDK 21, Tomcat 9.0.121, MariaDB; no Maven package) originate in cloud-provision (`docs/milestone-e260630.md` M11) as the normative source and a middleware VM is provisionable there, before ansible-provision mirrors the set and layers its roles; owned by the cloud-provision session |
 | Gate | G3 | aa-env ships a `sql.fill` that loads the configuration schema when the database and application account are provisioned externally | External gate | Complete | No | | Complete when the jeonghanlee/epicsarchiverap-env#47 fix commit is on `modernize` and aa-env records #47's acceptance as met: with only the application account, `make sql.fill` loads the schema, `make sql.show` lists `PVTypeInfo`, `PVAliases`, `ArchivePVRequests` and `ExternalDataServers`, and an absent database exits non-zero. Observing it on an archiver-dev host is M14/T17, not this gate; owned by the aa-env session; met 2026-09-23: the fix is `1fc20a8` on `modernize`, and #47 closed with aa-env's acceptance recorded |
@@ -200,6 +196,7 @@ Status tally: 13 Complete, 0 In progress, 0 Not started, 1 Deferred, 1 Blocked. 
 | D15 | Middleware server provisioning (a middleware server, the middleware counterpart of the IOC dev host) is built in ansible-provision the same way the IOC species are: a new `java` operator role pins a non-system OpenJDK/Maven (dnf module stream + `alternatives`, with override keys `maven_module_version`/`pkg_java`/`java_alternatives_path` and a Maven settings template) and a middleware species layers it on `common`+`epics`, with Phoebus as the middleware application and a middleware group analogous to `ioc`. The internal lineage origin these repos derive from is a substance reference only (OpenJDK 21 + Maven 3.8, Phoebus); internal endpoints stay out of this public repository and are supplied through the site override layer. The cloud-provision package baseline and the middleware VM are the normative source and land first (G2). Sub-decisions left pending: increment scope (Java/Maven runtime first vs with Phoebus), the middleware group name and GID policy, the pinned Java default version, and the species name and target vacuum. | Owner decision, 2026-09-11 |
 | D16 | Middleware server provisioning follows the cloud-provision middleware plan (`docs/milestone-e260630.md` M11, D2, D3): system Java (the distribution OpenJDK 21 with `JAVA_HOME` at the distribution path), no non-system pin and no Maven package (aa-maven supplies Maven 3.9.9 through its Maven Wrapper on the source-build path only), Tomcat 9.0.121 as the shared `CATALINA_HOME` and MariaDB (SQLite later) as the Archiver Appliance baseline, the Archiver Appliance and Phoebus installed from their binary distribution repositories (aa-distribution, phoebus-distribution) with source-build alternatives, and service group `mid` / user `mid-srv` parallel to `ioc` / `ioc-srv`. Supersedes the pinned non-system OpenJDK/Maven and Phoebus-build substance of `D15`; the ansible-provision-way build and the site override layer from `D15` stand. | Owner decision, 2026-09-12 |
 | D17 | The lab-VM time-sync fix handed off by cloud-provision (jeonghanlee/cloud-provision#44: lab VMs never reach NTP sync because the public pools are unreachable behind the site proxy, and one Debian apply failed its first `apt update` on a signature date) is implemented in ansible-provision's `common` operator, the single writer of `chrony.conf`, not in cloud-init. | Owner decision, 2026-09-25 |
+| D18 | The MariaDB application password is generated on the target host by the `mariadb` operator and kept in a root-only file there, read by `archiver_build` for aa-env, replacing the control-host `mariadb_password_hash` carried to the target through the `raw_stdin` action. Carrying the credential was the source of the plugin, its SSH-only constraint and its dedicated tests; a site that wants its own password places the file before the first apply. | Owner decision, 2026-09-25 |
 
 ### Milestone Details
 
@@ -1470,6 +1467,7 @@ definition now (owner + LAB-CLOUD, 2026-09-14).
 | T17 | 2026-09-23T22:10:06Z | A Rocky 8.10 and a Debian 13 archiver-dev host rebuilt through this operator (`a3f9949`) at aa-env `1fc20a8` with `archiver_force_reinstall=true`; both hosts were removed afterwards | Passed | Observed between 22:07:52Z and 22:10:06Z on both hosts: the install stamp carries `envref=1fc20a8`; `CONFIG_SITE.local` carries `MAVEN_FLAGS:=-gs /etc/maven-proxy-settings.xml`, and the build log shows its use and `BUILD SUCCESS`; the four WARs carry the als classpathfiles; `sql.fill` loaded the schema and the operator's table check let the build continue, its first run inside a build; `make sql.show` lists `ArchivePVRequests`, `ExternalDataServers`, `PVAliases` and `PVTypeInfo`; mgmt answers 200, aa-env's health service and timer are installed, and mgmt logs no persistence error. The host then carrying the soak, now the pilot host, stayed at `6a026d4` with an empty configuration database; T17 there was the remaining check (owner decision 2026-09-23). |
 | T17 | 2026-09-24T09:15:13Z | The soak host: a fresh Rocky 8.10 archiver-dev VM, the full species applied from `dca2255` at aa-env `9eed006` with the README test store values | Passed | The apply ran 08:49:29Z-09:08:21Z with `failed=0`. The install stamp carries `envref=9eed006` and the store values; `CONFIG_SITE.local` carries `MAVEN_FLAGS` and the five store lines; the installed `policies.py` and the copy packed into the mgmt webapp carry `PARTITION_5MIN` hold 2, `PARTITION_HOUR` hold 2 and `PARTITION_DAY`; the build log shows the settings file and `BUILD SUCCESS`; the database holds the four tables; all four JVMs run `-Xms256M -Xmx256M`; the health service and timer are installed; mgmt answered 200 at 09:09:03Z once initialised and logs no missing-table error. After 100 PVs were registered, `PVTypeInfo` held 100 rows at 09:15:13Z. This settles the remaining check the 2026-09-23 row named, on a new host instead of the old one (owner decision 2026-09-24). |
 | T20 | 2026-09-25T09:27:24Z | The soak host (Rocky 8.10, 2 vCPU, 3.6 GiB) at operator `dca2255`, aa-env `9eed006` and the README test store values; 100 PVs registered at 2026-09-24T09:09:52Z | Passed | Over 23.9 h of 5-minute samples: the installed `policies.py` carries the test values and T17 passed on this host (row above); STS held all 100 PVs at 09:15Z, MTS at 09:30Z and LTS at 12:15Z, and the second LTS day partition existed for all 100 by 03:15Z on 2026-09-25, about 3 h 15 min after midnight; the unit stayed active with four instances, mgmt 200 and health success in every sample, one PID per JVM all day and kernel OOM 0; retrieval returned the full sample count in every window after the first. The appliance was restarted at 09:25:03Z on 2026-09-25, about 9 h 25 min after midnight: four new JVMs, mgmt 200 at 09:26:01Z, `PVTypeInfo` still 100 rows and all 100 PVs Being archived again, no missing-table error; archiving paused 55 s for the 1 Hz, 10 Hz and waveform PVs and 60 s for a 0.1 Hz PV. Resources: CPU idle mean 96%, MemAvailable 1.23-1.50 GB, no swap; JVM RSS 374-500 MiB each, heap used at most 241 MiB of 256M (etl), full GC 0; `/arch` 3.60 GB, of which LTS 3.11 GB (a 1000-element waveform about 0.69 GB per day, a 1 Hz scalar about 1.9 MB). Logs: the four logs directories together about 480 KB/h; mgmt `catalina.out` 151 KB/h, engine `catalina.out` 133 KB/h plus its dated JULI file 126 KB/h (CA client beacon and duplicate-response records), retrieval 52 KB/h, etl none after startup; ERROR 3, all during mgmt initialisation, and Exception 0. |
+| T21 | 2026-09-26T19:25:06Z | The soak host after T20, heap 256M, 100 day-1 PVs plus 400 1 Hz scalars from 09:46Z on 2026-09-25 (step 1) and 300 1 Hz scalars, 100 10 Hz VeryFast scalars and three waveforms from 15:46Z (step 2, 903 PVs); four retrieval clients 21:46Z-21:56Z (client lost to the kernel OOM killer, its own fault: whole responses buffered) and again 08:30Z-14:30Z on 2026-09-26 with a streaming client; load held to 18:55Z; end events 18:57Z and 19:00-19:10Z | Passed | No step lost an instance or mgmt: 404 samples with four instances, mgmt 200 (max 12 ms) and health success; the only kernel OOM kill was the first retrieval client. Every PV of both steps reached STS, MTS and LTS (step 2 in LTS by 18:55Z). The limit found is ETL: the STS-to-MTS last-job time rose about 9 s per hour at any PV count (0-30 s in step 1, 31-91 s in step 2, 241-277 s in the final hold), reaching 277 s of the 300 s partition period at 18:50Z while the STS file count still held; the run was ended there with the root disk 91% full (`/arch` 3.7 to 12.9 GB, about 0.3 GB/h at 903 PVs). Resources: CPU idle 90-95%; MemAvailable 1231 down to 1003 MiB over the run (JVM RSS 403 to 492 MiB mgmt, 374 to 449 engine, 375 to 431 etl, 377 to 422 retrieval); heap used peaked at 251 MiB of 256M on etl (10 full GCs, none on the others) and 227 on engine. Retrieval load: 42417 requests in 6 h, all 200, median 31 ms, p99 98 ms, max 479 ms, 156 GB served; the 10-minute first attempt got 1163 of 1167 answered (median 29 ms) until the client died; the four failures were one-day waveform requests that ended after about 6 s without a response, cause not isolated. Log growth: mgmt `catalina.out` about 140 KB/h and 800 lines/h at every step; engine 131 KB/h in step 1, 57 in step 2, 25 held, but 2.9 MB/h (21000 lines/h) under retrieval load; retrieval 54 KB/h idle and 12.8 MB/h (58000 lines/h, about 2 lines per request) under retrieval load; etl 2 KB/h. End events: the day-1 IOC restart (18:57:06Z) added about 30 engine application lines and 23 JULI lines with no ERROR; the MTS tree made unwritable for 10 min (19:00:11-19:10:11Z) made etl log 2709 "Exception processing" records with stack traces, 10836 lines and 5 MB, peaking at 1616 lines in one minute, STS files rose 3602 to 5410, and after the restore ETL cleared the backlog to 898 files within 15 min. |
 | T18 | 2026-09-21T15:33:55Z | Same three hosts | Passed | The root install steps ran and the appliance serves. On all three hosts: the four instances are installed under `/opt/epicsarchiverap-maven` and listen on 17665 mgmt, 17666 engine, 17667 etl and 17668 retrieval, `epicsarchiverap-maven.service` is enabled and active, `/arch` (0755), the install root and all four instance directories are owned `mid-srv:mid`, the appliance processes run as the `mid-srv` service account and not as root (so the build-as-root, run-as-service-account split is now observed rather than derived), and mgmt `/mgmt/bpl/getApplianceInfo` returns HTTP 200 with identity `appliance0` and version 2025-6. A PV archives and reads back (verified on the freshly provisioned host): a 1 Hz calc record submitted through `mgmt/bpl/archivePV` moved `Initial sampling` to `Appliance assigned` to `Being archived`; `retrieval/data/getData.json` then returned 68 points carrying the record `EGU`, the leading samples one second apart and incrementing; and the short-term store held the PV under `/arch/sts/ArchiverStore/` as `<segment before the colon>/<remainder>:<YYYY_MM_DD_HH>.pb`, the hour bucket in UTC because the appliance stores in UTC - the 15:33Z run produced the `_15` bucket and the first sample carried epoch 1790004766, which is 15:32:46Z. The test IOC and the PV were removed afterwards. Timing note for any future probe: mgmt answers 500 for roughly 20-30 s after a start, so a single-shot check misreads as failure. |
 | T19 | 2026-09-21T08:07:09Z | Rocky 8.10 and Debian 13 archiver-dev VMs | Passed | Re-apply reports `changed=0 failed=0` on both, with the launch step reporting all four instances live, and the installed state is unchanged across it: the install-tree fingerprint (file list and sizes, excluding `logs`, `temp` and `work`), all four per-instance JVM PIDs, and the unit `ActiveEnterTimestamp` were captured before and after and are identical on both hosts. The result is only trustworthy because of a defect found while producing it: an earlier re-apply reported `changed=0` while one host had a dead mgmt instance, because the check trusted `systemctl is-active` on a unit that stays active when one of its four Tomcat instances dies. The check now judges the four instances themselves and repairs with `restart`; verified by killing an instance and observing `changed=1` naming the missing instance, against a healthy control host reporting `changed=0`. |
 
@@ -1833,6 +1831,117 @@ KVM guests beyond confirming they are unaffected.
   stood at `ea436ca`, which contains both commits; the branch is not yet merged
   to `master`.
 - T1-T4 Passed on 2026-09-25 against every completion criterion.
+
+
+#### M16 - Generate the MariaDB application password on the host
+
+- Origin: 38560eb / M16
+- GitHub Issue: #26, https://github.com/jeonghanlee/ansible-provision/issues/26
+- Status: Not started
+
+##### Summary
+
+The `mariadb` operator takes the application account credential as a
+`mysql_native_password` hash in private variables on the control host and
+carries it to the target through `action_plugins/raw_stdin.py`, so that no
+target Python is needed and the hash never appears in a command line. That
+design brought the plugin, its SSH-only guard, the `no_log` rules and the T15
+and T16 checks, and it fails on a host that provisions itself over
+`ansible_connection=local`. aa-env, by contrast, holds one plaintext
+`DB_USER_PASS` and needs only that value at build time. Generating the
+password on the host and keeping it there removes the transfer and everything
+built around it.
+
+##### Scope
+
+`roles/mariadb`: a root-only credential file (path from `mariadb_password_file`,
+default `/etc/ansible-provision/mariadb-<user>.pass`, mode 0600, root owned)
+created with a random password when absent and left alone when present; the
+application account at `localhost` and, under loopback TCP, `127.0.0.1` set
+from that file, with the SQL fed to the client from the running script rather
+than from command arguments, and a change reported only when the stored
+authentication differs. `roles/archiver_build`: read the file and write
+`DB_USER_PASS` to `CONFIG_SITE.local`, and use it for the post-`sql.fill` table
+check. Removal of `action_plugins/raw_stdin.py`, `tests/check-raw-stdin.yml`,
+`mariadb_password_hash`, `archiver_db_password` and their documentation in
+README, RAW_STYLE and ARCHITECTURE; documentation of the file, a site-supplied
+password (place the file first) and rotation (remove the file, re-apply the
+operator, force-reinstall the appliance).
+
+Out of scope: the MariaDB root account (socket-authenticated, unchanged); the
+account host-spec and grants (unchanged); aa-env's own `db.*` targets, which
+the operator does not run; encrypting the file at rest (the installed
+`context.xml` already carries the plaintext).
+
+##### Completion Criteria
+
+- On fresh Rocky 8.10 and Debian 13 hosts, `op.mariadb` without any private
+  variables creates the file (root, 0600) and the account, and a TCP login as
+  the application account with the file's password succeeds; a re-apply reports
+  no change; a file placed before the first apply is used as is; removing the
+  file and re-applying sets a new password.
+- The full `archiver_dev` species applied without private variables installs an
+  appliance whose `sql.fill` loads the schema and whose mgmt persists PV
+  configuration.
+- `op.mariadb` passes over `ansible_connection=local` with password sudo kept
+  warm, the case that failed before.
+- `raw_stdin` and its test are gone; no remaining document names them or the
+  hash variable.
+
+##### Dependencies And Decisions
+
+- `D18` (owner, 2026-09-25). Raised by the server-configuration session, which
+  provisions a middleware host over a local connection and met the SSH-only
+  guard in the account task; the aa-env contract needs only `DB_USER_PASS`.
+- Supersedes the credential-transport checks recorded as M14/T15 and T16; those
+  rows stay as history of the replaced design.
+- Verification needs fresh Rocky 8.10 and Debian 13 VMs.
+
+##### Implementation Plan
+
+- Plan Status: draft
+- Plan Acceptance: none
+- Implementation Authorization: none
+- Superseded Plan Artifacts: none
+
+1. `roles/mariadb/defaults/main.yml`: add `mariadb_password_file`; drop
+   `mariadb_password_hash`.
+2. `roles/mariadb/tasks/main.yml`: replace the `raw_stdin` account task with a
+   `raw` task that creates the directory when absent (root, 0700) and the
+   file when absent (random password from `/dev/urandom`, root, 0600), reads
+   it, and applies `CREATE USER ... IDENTIFIED BY`
+   / `ALTER USER` for each host through the client's stdin from within the
+   script, comparing `PASSWORD()` of the file against `mysql.user` first so a
+   re-apply reports no change; keep the existing validation of names and the
+   rejection of unsupported existing authentication conditions.
+3. `roles/archiver_build`: a default `archiver_db_password_file` taken from
+   `mariadb_password_file` the way `archiver_db_name` follows
+   `mariadb_database`, so both roles name one path; read that file in the build
+   script, write `DB_USER_PASS` unconditionally, use it in the table check;
+   remove `archiver_db_password`; the stamp is unchanged.
+4. Remove `action_plugins/raw_stdin.py` and `tests/check-raw-stdin.yml`; update
+   README (mariadb and archiver sections), `docs/RAW_STYLE.md`,
+   `docs/ARCHITECTURE.md` and `inventory/group_vars/archiver_dev.yml` comments.
+5. Verify per the Test Plan; tell the server-configuration and aa-env sessions
+   the landed shape.
+
+##### Test Plan
+
+| Label | Layer | Method | Environment | Expected Result |
+| --- | --- | --- | --- | --- |
+| T1 | Mechanism | `--syntax-check` on the species using `mariadb`; the Ansible splitter over every `raw` task; grep for `raw_stdin` and `mariadb_password_hash` across the repository; render the account task | control host | Syntax passes; no split failure; no remaining reference; the rendered script carries no password literal |
+| T2 | Integration | Apply `op.mariadb` without private variables on fresh hosts; inspect the file, `mysql.user`, a TCP login as the application account with the file's password; re-apply; place a file before a first apply on a third clean state; remove the file and re-apply | Fresh Rocky 8.10 and Debian 13 VMs | File root 0600 and account at both hosts; login succeeds; re-apply `changed=0`; a pre-placed password is used unchanged; a removed file yields a new password and the account follows it |
+| T3 | Integration | Apply the full `archiver_dev` species without private variables on a fresh host; check `sql.fill`, the four tables, PV registration persisting to `PVTypeInfo` and mgmt logging no persistence error | Fresh Rocky 8.10 VM | The appliance builds, the schema loads, and a registered PV persists |
+| T4 | Integration | On a VM, install `git`, clone the repository, run `make setup` for `ansible-core`, and apply `op.mariadb` to itself with `ansible_connection=local`, become through sudo with the credential kept warm and no become password given | Rocky 8.10 VM | The account task passes and T2's checks hold |
+
+##### Verification Results
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T1 | | | Pending | |
+| T2 | | | Pending | |
+| T3 | | | Pending | |
+| T4 | | | Pending | |
 
 ## Backlog
 
