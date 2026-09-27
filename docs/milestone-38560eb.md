@@ -63,8 +63,8 @@ working directory. The pilot host - the Rocky 8.10 archiver-dev host kept from T
 original three at `6a026d4` - was removed on 2026-09-25 after its records were
 kept. Separately, M15 (lab-VM clocks from the KVM PTP clock in `common`) is
 Complete, delivered in `57d9d3f` and `eb9ba56`. M16 (the MariaDB application
-password generated on the host, replacing the `raw_stdin` transport) has a draft
-plan awaiting owner acceptance; M17 (the aa-env pin moved to the journald and
+password generated on the host, replacing the `raw_stdin` transport) has its plan
+accepted and implementation authorized (2026-09-26) and is in progress; M17 (the aa-env pin moved to the journald and
 log4j2 service model) and M18 (SQLite through its own operator) follow it in that
 order (D19), each with a draft plan. The rest of the M14 scope is untouched:
 the distribution-based `archiver` species, for which
@@ -98,8 +98,7 @@ The full `archiver-dev` path follows aa-env and aa-maven readiness; M14 remains
 Blocked on G2 for completion.
 
 Milestone summary: `M16` (the MariaDB application password generated on the
-host, replacing the `raw_stdin` transport; #26) is Not started with a draft
-plan; `M17` (the aa-env pin moved to the journald and log4j2 service model) and
+host, replacing the `raw_stdin` transport; #26) is In progress; `M17` (the aa-env pin moved to the journald and log4j2 service model) and
 `M18` (SQLite through its own operator) follow it in that order per `D19`, also
 Not started with draft plans. `M15` (lab-VM clocks from the KVM PTP clock in the `common`
 operator) is Complete: verified on fresh Rocky 8.10 and Debian 13 guests
@@ -111,8 +110,8 @@ for EPICS source builds) is Complete: rocky8 and rocky10 clean operator runs,
 pyDevSup builds on both, full public gz matrix 6/6 (issue #25). `M14` (middleware
 server provisioning) is Blocked on `G2` (cloud-provision ships the middleware
 package baseline and the middleware VM). Every other milestone is Complete
-except `M3` (Deferred per `D3`) and `M16`, `M17`, `M18`
-(Not started); the one open external gate is `G2`. `M12` (keep
+except `M3` (Deferred per `D3`), `M16` (In progress) and `M17`,
+`M18` (Not started); the one open external gate is `G2`. `M12` (keep
 `/run/cloud-init` at 0755 after the in-build cloud-init upgrade)
 is Complete: verified on a rocky10 epics-dev guest 2026-09-09 - the `/etc`
 tmpfiles override holds the directory at 0755 immediately and after a repeated
@@ -151,7 +150,7 @@ verified on the production IOC server 2026-09-04 (con 1.1.0 replaced by 1.2.0,
 full mode carries every OS tree, second apply `failed=0`). Delivered in
 `fd4ff1c` and `13bc8e6`.
 
-Status tally: 13 Complete, 0 In progress, 3 Not started, 1 Deferred, 1 Blocked. 3 external gates (2 Complete, 1 Open).
+Status tally: 13 Complete, 1 In progress, 2 Not started, 1 Deferred, 1 Blocked. 3 external gates (2 Complete, 1 Open).
 
 ## Milestone
 
@@ -174,7 +173,7 @@ Status tally: 13 Complete, 0 In progress, 3 Not started, 1 Deferred, 1 Blocked. 
 | Core | M13 | Fix RedHat python provisioning for EPICS source builds | Milestone | Complete | No | D13, D14 | The RedHat python operator installs Python dev headers and makes `python3` resolve to the intended version, so `Python.h` is present and pyDevSup compiles on rocky8/rocky10; debian unaffected; [detail](#m13---fix-redhat-python-provisioning-for-epics-source-builds) |
 | Core | M14 | Middleware server provisioning (Archiver Appliance, Phoebus) | Milestone | Blocked | No | G2, G3 | A middleware species provisions the EPICS Archiver Appliance and Phoebus, each independently selectable, on a middleware host layered on the common+epics base - system Java (distribution OpenJDK 21 with `JAVA_HOME`), Tomcat 9.0.121, MariaDB, the applications from their binary distribution repositories (species `archiver`, `phoebus`) or from source (`archiver-dev`, `phoebus-dev`), combinable as `middleware`, group `mid` / user `mid-srv` - with internal specifics supplied through the site override layer; blocked until the cloud-provision operator/species structure, package baseline, and middleware VM land (G2); [detail](#m14---middleware-server-provisioning-archiver-appliance-phoebus) |
 | Core | M15 | Discipline lab-VM clocks from the KVM PTP clock in the common operator | Milestone | Complete | No | D17 | On a KVM guest the `common` operator loads `ptp_kvm`, links `/dev/ptp_kvm` through a udev rule gated on the KVM clock name, and adds a PHC refclock to the chrony configuration it writes, so `timedatectl` reports the clock synchronized with PHC0 selected; where no KVM PTP clock exists the configuration carries no refclock and the site pools serve as before; the first `apt update` on the Debian path retries on a signature-date failure; delivered in `57d9d3f` and `eb9ba56`; [detail](#m15---discipline-lab-vm-clocks-from-the-kvm-ptp-clock-in-the-common-operator) |
-| Core | M16 | Generate the MariaDB application password on the host | Milestone | Not started | Yes | D18 | The `mariadb` operator creates the application password on the target host, keeps it in a root-only file, and sets the account from that file; `archiver_build` reads the same file for aa-env; no credential travels from the control host, `raw_stdin` and its tests are removed, and the operator works over SSH and over a local connection alike; [detail](#m16---generate-the-mariadb-application-password-on-the-host) |
+| Core | M16 | Generate the MariaDB application password on the host | Milestone | In progress | No | D18 | The `mariadb` operator creates the application password on the target host, keeps it in a root-only file, and sets the account from that file; `archiver_build` reads the same file for aa-env; no credential travels from the control host, `raw_stdin` and its tests are removed, and the operator works over SSH and over a local connection alike; [detail](#m16---generate-the-mariadb-application-password-on-the-host) |
 | Core | M17 | Move the aa-env pin to the journald and log4j2 service model | Milestone | Not started | No | M16, D19 | `archiver_env_ref` and `archiver_maven_src_tag` move past aa-env `bbe0968` and aa-maven `67be91d7`, where the appliance runs its four Tomcats in the foreground under one journald service with a WAR log4j2 layout; the operator's install check, repair, stamp and documentation fit that unit, the host keeps a persistent, bounded journal, and a fresh `archiver_dev` build serves and persists PV configuration; [detail](#m17---move-the-aa-env-pin-to-the-journald-and-log4j2-service-model) |
 | Core | M18 | Select SQLite as the archiver configuration database through its own operator | Milestone | Not started | No | M17, D19 | A `sqlite` operator installs the SQLite CLI, an `archiver-dev-sqlite` species puts it in place of `mariadb`, and `archiver_build` passes `DB_BACKEND=sqlite` and checks the schema with `make sql.show`; a fresh `archiver_dev_sqlite` host builds with no MariaDB server and persists PV configuration across a restart; [detail](#m18---select-sqlite-as-the-archiver-configuration-database-through-its-own-operator) |
 | Gate | G1 | the production IOC server reaches the internal git host | External gate | Complete | No | | Reachability achieved through the site HTTP proxy's CONNECT tunnel (an ssh `ProxyCommand` over the proxy), not a firewall whitelist: the owner's key authenticates and `git ls-remote` returns the refs; confirmed 2026-09-03 by the successful iocserver clone (M4/T2) |
@@ -1844,7 +1843,7 @@ KVM guests beyond confirming they are unaffected.
 
 - Origin: 38560eb / M16
 - GitHub Issue: #26, https://github.com/jeonghanlee/ansible-provision/issues/26
-- Status: Not started
+- Status: In progress
 
 ##### Summary
 
@@ -1906,17 +1905,23 @@ the operator does not run; encrypting the file at rest (the installed
 
 ##### Implementation Plan
 
-- Plan Status: draft
-- Plan Acceptance: none
-- Implementation Authorization: none
+- Plan Status: accepted
+- Plan Acceptance: 2026-09-26
+- Implementation Authorization: 2026-09-26
 - Superseded Plan Artifacts: none
+- Plan revision (owner, 2026-09-27, from the second-person review of the
+  documentation): step 2 also refuses to replace the password of an existing
+  account when the file is missing, unless `mariadb_password_rotate` is set,
+  so a host set up before the file existed is not cut off from its running
+  appliance.
 
-1. `roles/mariadb/defaults/main.yml`: add `mariadb_password_file`; drop
-   `mariadb_password_hash`.
+1. `roles/mariadb/defaults/main.yml`: add `mariadb_password_file` and
+   `mariadb_password_rotate` (default false); drop `mariadb_password_hash`.
 2. `roles/mariadb/tasks/main.yml`: replace the `raw_stdin` account task with a
    `raw` task that creates the directory when absent (root, 0700) and the
-   file when absent (random password from `/dev/urandom`, root, 0600), reads
-   it, and applies `CREATE USER ... IDENTIFIED BY`
+   file when absent (random password from `/dev/urandom`, root, 0600) unless
+   the account already exists and `mariadb_password_rotate` is not set, in
+   which case it stops with instructions; it then reads the file, and applies `CREATE USER ... IDENTIFIED BY`
    / `ALTER USER` for each host through the client's stdin from within the
    script, comparing `PASSWORD()` of the file against `mysql.user` first so a
    re-apply reports no change; keep the existing validation of names and the
@@ -1937,7 +1942,7 @@ the operator does not run; encrypting the file at rest (the installed
 | Label | Layer | Method | Environment | Expected Result |
 | --- | --- | --- | --- | --- |
 | T1 | Mechanism | `--syntax-check` on the species using `mariadb`; the Ansible splitter over every `raw` task; grep for `raw_stdin` and `mariadb_password_hash` across the repository; render the account task | control host | Syntax passes; no split failure; no remaining reference; the rendered script carries no password literal |
-| T2 | Integration | Apply `op.mariadb` without private variables on fresh hosts; inspect the file, `mysql.user`, a TCP login as the application account with the file's password; re-apply; place a file before a first apply on a third clean state; remove the file and re-apply | Fresh Rocky 8.10 and Debian 13 VMs | File root 0600 and account at both hosts; login succeeds; re-apply `changed=0`; a pre-placed password is used unchanged; a removed file yields a new password and the account follows it |
+| T2 | Integration | Apply `op.mariadb` without private variables on fresh hosts; inspect the file, `mysql.user`, a TCP login as the application account with the file's password; re-apply; place a file before a first apply on a third clean state; remove the file and re-apply without and then with `mariadb_password_rotate=true` | Fresh Rocky 8.10 and Debian 13 VMs | File root 0600 and account at both hosts; login succeeds; re-apply `changed=0`; a pre-placed password is used unchanged; a removed file beside an existing account is refused without rotation and yields a new password with it, the account following |
 | T3 | Integration | Apply the full `archiver_dev` species without private variables on a fresh host; check `sql.fill`, the four tables, PV registration persisting to `PVTypeInfo` and mgmt logging no persistence error | Fresh Rocky 8.10 VM | The appliance builds, the schema loads, and a registered PV persists |
 | T4 | Integration | On a VM, install `git`, clone the repository, run `make setup` for `ansible-core`, and apply `op.mariadb` to itself with `ansible_connection=local`, become through sudo with the credential kept warm and no become password given | Rocky 8.10 VM | The account task passes and T2's checks hold |
 
@@ -1945,10 +1950,10 @@ the operator does not run; encrypting the file at rest (the installed
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
-| T1 | | | Pending | |
-| T2 | | | Pending | |
-| T3 | | | Pending | |
-| T4 | | | Pending | |
+| T1 | 2026-09-26T00:48Z | control host | Passed | `--syntax-check` passes for the `mariadb` and `archiver_build` operators and the `archiver_dev` species; the Ansible splitter accepts all 77 `raw` tasks, including the account task that is now plain `raw` (its first draft used the shell length form `${#password}`, whose `{#` opens a Jinja comment and broke parsing; replaced by `wc -c`). No file outside this register names `raw_stdin`, `check-raw-stdin`, `mariadb_password_hash` or `archiver_db_password`. Rendered with the role defaults, the account task, the build script and the launch step pass `bash -n`, carry no password literal, and name the same file, `/etc/ansible-provision/mariadb-archappl.pass`. |
+| T2 | 2026-09-27T03:31Z | Fresh bare Rocky 8.10 and Debian 13 VMs from cloud-provision | Passed | `make op.mariadb.<vacuum>` with no private variables. Rocky, socket-only first: `/etc/ansible-provision` root 0700, `mariadb-archappl.pass` root 0600 holding a generated 32-character password, account at `localhost`; re-apply `changed=0`. With `mariadb_skip_networking: false` from a vars file: the account gained `127.0.0.1` and a TCP login as `archappl` with the file's password returned `archappl@127.0.0.1`; re-apply `changed=0`. Rotation: removing the file and re-applying changed only the account task, the new 32-character password differs from the old, the new one logs in over TCP and the old one gets "Access denied". Debian: a site password (`Site-Pass.2026x`) written beforehand with mode 0644 was used as given and the file set to 0600; the socket-only and TCP applies and their re-applies behaved as on Rocky (TCP login `archappl@127.0.0.1`, re-apply `changed=0`). The validation task still refuses a non-boolean `mariadb_skip_networking` before any change (seen when the first run passed it as a string). After the plan revision, rechecked on the Rocky VM: with the file removed beside the existing account, an apply failed at the account task with the instruction message and changed nothing, and the old password still logged in; `-e mariadb_password_rotate=true` (a string on the command line, accepted through `| bool`; a first draft that demanded a true boolean refused it and was changed) regenerated the file, the stored hash changed, the old password got "Access denied" and the new one logged in; the next plain re-apply reported `changed=0`. |
+| T3 | 2026-09-27T03:40Z | A fresh Rocky 8.10 archiver-dev VM from cloud-provision | Passed | `make archiver_dev.rocky8` with no private variables, 03:31:17Z-03:37:10Z, `failed=0`. The password file is root 0600; the generated `CONFIG_SITE.local` is 0600 and its one `DB_USER_PASS` line equals the file; the build log shows `BUILD SUCCESS` and no table-check refusal; the database holds `ArchivePVRequests`, `ExternalDataServers`, `PVAliases` and `PVTypeInfo`; mgmt answers 200. A PV registered through `archivePV` was stored in `ArchivePVRequests`, and once a one-record IOC served it, `PVTypeInfo` held its row within 100 s; mgmt logged no missing-table or access-denied line. |
+| T4 | 2026-09-27T03:32Z | The fresh bare Rocky 8.10 VM | Passed | The uncommitted working tree was copied to the VM (a clone of origin would have carried the old code), `make` and ansible-core 2.16.3 installed, and `make op.mariadb.rocky8` run on the VM against `localhost ansible_connection=local` with become through sudo and no become password given. With the password file removed first, the apply changed only the account task, recreated the file root 0600, and a TCP login with it returned `archappl@127.0.0.1`; the re-apply reported `changed=0`. Sudo is passwordless on this lab VM, unlike the production host with password sudo kept warm; the account task no longer takes any secret from the control host, so the sudo mode does not change its path. |
 
 
 #### M17 - Move the aa-env pin to the journald and log4j2 service model
