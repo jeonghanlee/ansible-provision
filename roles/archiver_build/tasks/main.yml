@@ -40,7 +40,7 @@
     site_id="{{ archiver_site_id }}"
     db_name="{{ archiver_db_name }}"
     db_user="{{ archiver_db_user }}"
-    db_pass="{{ archiver_db_password }}"
+    pass_file="{{ archiver_db_password_file }}"
     db_host="{{ archiver_db_host }}"
     db_port="{{ archiver_db_port }}"
     storage_top="{{ archiver_storage_top }}"
@@ -53,6 +53,16 @@
     lts_gran="{{ archiver_store_lts_granularity }}"
 
     top="${src_parent}/epicsarchiverap-env"
+
+    # --- The application password is made on this host by the mariadb operator
+    # and read here, so it never travels from the control host. The launch step
+    # has already refused a build without the file. ---
+    db_pass=""
+    IFS= read -r db_pass < "${pass_file}" || true
+    if [ -z "${db_pass}" ]; then
+      echo "archiver_build: ${pass_file} holds no password; apply the mariadb operator first" >&2
+      exit 1
+    fi
 
     # --- Site proxy: a login shell reads /etc/profile.d, but a systemd-run unit
     # starts with no profile, so http_proxy and its peers are absent and an
@@ -133,13 +143,11 @@
       "AA_INSTALL_PATH=${install_parent}" \
       "AA_JAVA_HEAPSIZE=${heapsize}" \
       "ARCHAPPL_SITEID:=${site_id}" > "${src_parent}/CONFIG_SITE.local"
-    # Override DB_USER_PASS only when a site password is supplied. An empty
-    # value here would win over the aa-env default (this file is -included
-    # after CONFIG_SITE) and break the DB login; leaving it unset lets the
-    # aa-env default stand.
-    if [ -n "${db_pass}" ]; then
-      printf 'DB_USER_PASS=%s\n' "${db_pass}" >> "${src_parent}/CONFIG_SITE.local"
-    fi
+    # The password the mariadb operator set; this file is -included after
+    # CONFIG_SITE, so it replaces the aa-env default. The file now carries a
+    # credential, so only root reads it.
+    printf 'DB_USER_PASS=%s\n' "${db_pass}" >> "${src_parent}/CONFIG_SITE.local"
+    chmod 0600 "${src_parent}/CONFIG_SITE.local"
     # Select the Maven settings file through the aa-env MAVEN_FLAGS hook, which is
     # appended to every mvn invocation. CONFIG_SITE.local is included after the
     # empty aa-env default, so this assignment wins. Left unset on a direct-net
@@ -179,17 +187,11 @@
     # persist, showing only as errors in the mgmt log, and survives only in
     # memory until the next restart. Count the tables before treating the step
     # as done, and stop here rather than install and start on a database the
-    # appliance cannot write to; an unreadable count stops the build too. With a
-    # site password, ask over the same TCP path and account the appliance uses,
-    # which proves the application login too; otherwise fall back to the local
-    # socket as root, which answers whether the schema is there only when the
-    # database is on this host, as this species places it.
+    # appliance cannot write to; an unreadable count stops the build too. Ask
+    # over the same TCP path and account the appliance uses, which proves the
+    # application login too.
     schema_query="SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='${db_name}'"
-    if [ -n "${db_pass}" ]; then
-      schema_tables=$(MYSQL_PWD="${db_pass}" mysql -h "${db_host}" -P "${db_port}" -u "${db_user}" -N -B -e "${schema_query}") || schema_tables=""
-    else
-      schema_tables=$(mysql -N -B -e "${schema_query}") || schema_tables=""
-    fi
+    schema_tables=$(MYSQL_PWD="${db_pass}" mysql -h "${db_host}" -P "${db_port}" -u "${db_user}" -N -B -e "${schema_query}") || schema_tables=""
     # A forced reinstall stopped the previous appliance before this build began,
     # and install has not run yet, so its tree is intact but nothing is serving.
     # Say so on the way out, with the way back, rather than leave it down unnoticed.
@@ -248,6 +250,16 @@
       echo "ARCHIVER_BUILD_PRECONDITION: this host is proxied but carries no /etc/maven-proxy-settings.xml." >&2
       echo "Maven takes a proxy only from a settings file, and that file belongs to the cloud-provision proxy contract." >&2
       echo "Apply a proxy contract that provides it, then re-run. Nothing was stopped and no build was started." >&2
+      exit 1
+    fi
+
+    # The build hands aa-env the password the mariadb operator made on this host;
+    # without that file the appliance could not log in, so refuse before anything
+    # is torn down.
+    pass_file="{{ archiver_db_password_file }}"
+    if [ "${will_build}" = "yes" ] && [ ! -s "${pass_file}" ]; then
+      echo "ARCHIVER_BUILD_PRECONDITION: ${pass_file} is missing or empty; apply the mariadb operator first." >&2
+      echo "Nothing was stopped and no build was started." >&2
       exit 1
     fi
 

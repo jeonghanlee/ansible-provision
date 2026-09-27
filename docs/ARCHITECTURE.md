@@ -52,7 +52,6 @@ for a single-operator run (make op.<operator>).
 ansible-provision/
 |-- Makefile                         (entry point)
 |-- ansible.cfg                      (defaults: inventory, become)
-|-- action_plugins/raw_stdin.py      (controller-side raw SSH stdin transport)
 |-- configure/                       (EPICS-style Makefile system)
 |   |-- CONFIG / RULES               (aggregators)
 |   |-- RELEASE                      (appname, species and operator lists)
@@ -312,12 +311,9 @@ where target Python is guaranteed, and it never runs on the bake path
 raw). New roles follow the same rule: raw-only unless the role is
 Debian-13-live-only, and never modules on a bake path.
 
-The MariaDB account task uses the controller-side `raw_stdin` action in place
-of `ansible.builtin.raw` to send its password hash through SSH stdin. It still
-executes a raw shell command, requires no target Python, and transfers no
-module or credential file. The action requires the `ssh` connection plugin
-and `no_log: true`, preserves become and the command exit status, and skips
-execution in check mode. Other raw tasks follow the ordinary raw module path.
+The MariaDB account task, like every other task here, is an ordinary raw
+task: its password is made and kept in a root-only file on the target and
+passed to the client on stdin, so no credential travels from the control host.
 
 ---
 

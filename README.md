@@ -193,23 +193,34 @@ the Archiver Appliance instances. Services must set `JAVA_HOME` and
 
 ### MariaDB
 
-Run `mariadb` after `common`, supplying private site variables through Ansible:
+Run `mariadb` after `common`; it needs no private variables:
 
 ```bash
 export RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini
-make op.mariadb.rocky8 ANSIBLE_OPTS='-e @/path/to/private-mariadb.yml'
+make op.mariadb.rocky8
 ```
 
-The private variables must define `mariadb_password_hash`: a
-`mysql_native_password` hash (`*` followed by 40 uppercase hexadecimal
-characters). It is the uppercase hexadecimal double SHA-1 of the password,
-prefixed by `*`; the inner SHA-1 is the binary digest. There is no default
-password. The application uses the corresponding original password, not this
-hash. Keep the hash in private site inventory or Ansible Vault; the account
-task suppresses its output and sends the hash over SSH stdin, outside command
-arguments. The controller-side `raw_stdin` action requires Ansible's `ssh`
-connection plugin and `no_log: true`; the target needs no Python. Changing the
-hash updates the application account without recreating the database.
+The application account password is made and kept on the target. The operator
+reads it from a root-only file, `mariadb_password_file` (default
+`/etc/ansible-provision/mariadb-<user>.pass`, mode 0600 in a 0700 directory),
+and creates that file with a random 32-character password when it is absent.
+The password reaches the database client only on its standard input, so it
+appears in no command argument and never crosses the connection; the operator
+works over SSH and over a local connection alike, and the target needs no
+Python. A site that wants its own password writes the file before the first
+apply: one line of 12-128 letters, digits or `._~+-`.
+
+When the application account already exists but the file does not, the
+operator stops without changing anything, because a running appliance may still
+log in with the password the account holds. This is the case on a host set up
+before the password file existed. Either write the account's current password
+into the file, if it meets the rule above, or apply once with
+`-e mariadb_password_rotate=true` to replace it with a generated one. The aa-env
+default `archappl` is too short to keep, so a host still on it takes the second
+way. To rotate later, remove the file and apply with
+`-e mariadb_password_rotate=true`. After any change of the password, an
+installed appliance needs `-e archiver_force_reinstall=true` to take it, since
+the install stamp does not record the password.
 
 The operator installs `mariadb-server`, enables `mariadb.service`, and creates
 the `archappl` database with `utf8mb4`. The `archappl` application account at
@@ -270,9 +281,9 @@ species in one run:
 ```bash
 export RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini
 # one operator
-make op.archiver_build.rocky8 ANSIBLE_OPTS='-e @/path/to/private-mariadb.yml'
+make op.archiver_build.rocky8
 # or the whole species
-make archiver_dev.rocky8 ANSIBLE_OPTS='-e @/path/to/private-mariadb.yml'
+make archiver_dev.rocky8
 ```
 
 The operator drives aa-env's make sequence, which clones and builds aa-maven
@@ -296,11 +307,12 @@ The instances serve on 17665 (mgmt), 17666 (engine), 17667 (etl) and 17668
 immediately reads as a failure that is not one.
 
 The appliance authenticates to MariaDB over loopback TCP as the application
-account, so the private variables that define `mariadb_password_hash` must
-correspond to the password the appliance sends. `archiver_db_password` is empty
-by default, which leaves the aa-env default in place; set it only when the site
-uses another credential. The `archiver_dev` group_vars set
-`mariadb_skip_networking: false`, which is what opens the loopback listener.
+account. The build reads the password from the file the `mariadb` operator made
+on the same host (`archiver_db_password_file`, which follows
+`mariadb_password_file`) and passes it to aa-env as `DB_USER_PASS`; the
+generated `../CONFIG_SITE.local` that carries it is readable by root only. A
+build refuses to start when that file is missing. The `archiver_dev` group_vars
+set `mariadb_skip_networking: false`, which is what opens the loopback listener.
 
 Maven reads a proxy only from a settings file. This operator consumes the file
 the cloud-provision proxy contract owns at `/etc/maven-proxy-settings.xml` and
@@ -315,9 +327,8 @@ explicitly; four instances at a 1G heap oversubscribe a 4 GB host. A changed
 knob does not reach an appliance that is already installed. The operator
 records the knob set at install time, and a later re-apply that wants a
 different set is refused with the difference named, stopping the run instead of
-rebuilding. To rebuild, add `-e archiver_force_reinstall=true` to the same
-`ANSIBLE_OPTS` that carries the private variables, for example
-`ANSIBLE_OPTS='-e @/path/to/private-mariadb.yml -e archiver_force_reinstall=true'`.
+rebuilding. To rebuild, add `-e archiver_force_reinstall=true` to
+`ANSIBLE_OPTS`, for example `ANSIBLE_OPTS='-e archiver_force_reinstall=true'`.
 An installed appliance whose four instances are not all running is repaired with
 a service restart.
 

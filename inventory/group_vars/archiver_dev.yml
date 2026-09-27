@@ -11,6 +11,5 @@
 # the cloud-provision generator (species iocrunner-nfs -> group iocrunner_nfs).
 mariadb_skip_networking: false
 
-# The application account password hash (mariadb_password_hash) must match the
-# credential aa-env's Tomcat JNDI resource carries. Supply it through private
-# site variables, never in this tracked file.
+# The application account password is made on the host by the mariadb operator
+# and read from the same file by archiver_build; nothing is set here.

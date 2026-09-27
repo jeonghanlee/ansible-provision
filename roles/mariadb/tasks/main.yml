@@ -2,14 +2,14 @@
 # roles/mariadb/tasks/main.yml
 - name: Reject invalid MariaDB account settings before provisioning
   ansible.builtin.raw: |
-    printf '%s\n' 'Error: mariadb_database and mariadb_user require 1-32 lowercase letters or digits, starting with a letter; system names are reserved. Supply mariadb_password_hash as a mysql_native_password hash and mariadb_skip_networking as a boolean.' >&2
+    printf '%s\n' 'Error: mariadb_database and mariadb_user require 1-32 lowercase letters or digits, starting with a letter; system names are reserved. mariadb_password_file must be an absolute path of letters, digits, dot, dash, underscore and slash, and mariadb_skip_networking a boolean.' >&2
     exit 1
   when: >-
     mariadb_database is not match('^[a-z][a-z0-9]{0,31}\Z') or
     mariadb_user is not match('^[a-z][a-z0-9]{0,31}\Z') or
     mariadb_database in ['mysql', 'sys', 'test'] or
     mariadb_user in ['root', 'mysql', 'mariadb'] or
-    mariadb_password_hash is not match('^\*[0-9A-F]{40}\Z') or
+    mariadb_password_file is not match('^/[A-Za-z0-9._/-]+\Z') or
     mariadb_skip_networking is not boolean
   changed_when: false
   check_mode: false
@@ -217,102 +217,136 @@
     done
   changed_when: false
 
+# The password is made and kept on the target: the task reads it from a
+# root-only file (created with a random value when absent) and passes it to the
+# client only on stdin, so it appears in no command argument and never crosses
+# the connection.
 - name: Provision root socket authentication and the application database account
-  raw_stdin:
-    stdin: "{{ mariadb_password_hash }}\n"
-    cmd: |
-      set -eu
-      export PATH=/usr/sbin:/usr/bin:/sbin:/bin
-      umask 077
-      state=unchanged
-      database={{ mariadb_database | quote }}
-      account={{ mariadb_user | quote }}
-      tcp={{ mariadb_skip_networking | ternary('0', '1') | quote }}
-      IFS= read -r password_hash
-      identifier_quote=$(printf '\140')
-      if [ -f /etc/redhat-release ]; then
-        socket=/run/mariadb/mariadb.sock
-        client=/usr/bin/mysql
-      else
-        socket=/run/mysqld/mysqld.sock
-        client=/usr/bin/mariadb
-      fi
-      set -- "${client}" --no-defaults --protocol=SOCKET --socket="${socket}" --user=root --batch --skip-column-names
+  ansible.builtin.raw: |
+    set -eu
+    export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+    umask 077
+    state=unchanged
+    database={{ mariadb_database | quote }}
+    account={{ mariadb_user | quote }}
+    tcp={{ mariadb_skip_networking | ternary('0', '1') | quote }}
+    password_file={{ mariadb_password_file | quote }}
+    rotate={{ mariadb_password_rotate | bool | lower | quote }}
+    identifier_quote=$(printf '\140')
+    if [ -f /etc/redhat-release ]; then
+      socket=/run/mariadb/mariadb.sock
+      client=/usr/bin/mysql
+    else
+      socket=/run/mysqld/mysqld.sock
+      client=/usr/bin/mariadb
+    fi
+    set -- "${client}" --no-defaults --protocol=SOCKET --socket="${socket}" --user=root --batch --skip-column-names
 
-      # The application account is held at 'localhost' (socket) and, when loopback
-      # TCP is enabled, also at '127.0.0.1' so the archiver species can connect over
-      # jdbc:mariadb://localhost:3306 with --protocol=tcp (IPv4 loopback only). root
-      # stays socket-authenticated at 'localhost' regardless.
-      hosts=localhost
-      if [ "${tcp}" = 1 ]; then hosts="localhost 127.0.0.1"; fi
-
-      # Fail before account mutation when an existing database has another charset
-      # or the named application account has privileges beyond this database.
-      charset=$("$@" -e "SELECT DEFAULT_CHARACTER_SET_NAME FROM information_schema.SCHEMATA WHERE SCHEMA_NAME='${database}'")
-      if [ -n "${charset}" ] && [ "${charset}" != utf8mb4 ]; then
-        printf '%s\n' 'Error: the existing database charset must be utf8mb4.' >&2
+    # A site password is kept as given; otherwise make one. The value is limited
+    # to characters that need no quoting inside an SQL string literal. A missing
+    # file beside an existing account is refused unless rotation is asked for:
+    # a running appliance may still log in with the password the account holds.
+    if [ ! -f "${password_file}" ]; then
+      existing=$("$@" -e "SELECT COUNT(*) FROM mysql.user WHERE User='${account}'")
+      if [ "${existing}" != 0 ] && [ "${rotate}" != true ]; then
+        printf '%s\n' "Error: the application account exists but ${password_file} is missing. Write its current password there (one line of 12-128 letters, digits or ._~+-), or apply once with mariadb_password_rotate=true to replace it; an installed appliance then needs archiver_force_reinstall=true." >&2
         exit 1
       fi
-      for host in ${hosts}; do
-        if [ "$("$@" -e "SELECT COUNT(*) FROM mysql.user WHERE User='${account}' AND Host='${host}'")" = 1 ]; then
-          grants=$("$@" -e "SHOW GRANTS FOR '${account}'@'${host}'")
-          unexpected=$(printf '%s\n' "${grants}" | grep -Ev "^GRANT (USAGE ON [*][.][*]|.* ON ${identifier_quote}${database}${identifier_quote}[.][*]) TO " || true)
-          if [ -n "${unexpected}" ] || printf '%s\n' "${grants}" | grep -q 'WITH GRANT OPTION'; then
-            printf '%s\n' 'Error: the application account has privileges outside the managed database scope.' >&2
-            exit 1
-          fi
-        fi
-      done
+      install -d -m 0700 -o root -g root "$(dirname "${password_file}")"
+      password=$(head -c 64 /dev/urandom | base64 | tr -dc 'A-Za-z0-9' | head -c 32)
+      printf '%s\n' "${password}" > "${password_file}"
+      state=changed
+    fi
+    chmod 0600 "${password_file}"
+    chown root:root "${password_file}"
+    IFS= read -r password < "${password_file}" || true
+    case "${password}" in
+      *[!A-Za-z0-9._~+-]*|'')
+        printf '%s\n' "Error: ${password_file} must hold one line of 12-128 letters, digits or ._~+-" >&2
+        exit 1
+        ;;
+    esac
+    # Length through wc: the shell length form would open a Jinja comment here.
+    length=$(printf '%s' "${password}" | wc -c)
+    if [ "${length}" -lt 12 ] || [ "${length}" -gt 128 ]; then
+      printf '%s\n' "Error: ${password_file} must hold one line of 12-128 letters, digits or ._~+-" >&2
+      exit 1
+    fi
+    password_hash=$(printf "SELECT PASSWORD('%s');\n" "${password}" | "$@")
 
-      plugin=$("$@" -e "SELECT COUNT(*) FROM information_schema.PLUGINS WHERE PLUGIN_NAME='unix_socket' AND PLUGIN_STATUS='ACTIVE'")
-      if [ "${plugin}" = 0 ]; then
-        "$@" -e "INSTALL SONAME 'auth_socket'"
+    # The application account is held at 'localhost' (socket) and, when loopback
+    # TCP is enabled, also at '127.0.0.1' so the archiver species can connect over
+    # jdbc:mariadb://localhost:3306 with --protocol=tcp (IPv4 loopback only). root
+    # stays socket-authenticated at 'localhost' regardless.
+    hosts=localhost
+    if [ "${tcp}" = 1 ]; then hosts="localhost 127.0.0.1"; fi
+
+    # Fail before account mutation when an existing database has another charset
+    # or the named application account has privileges beyond this database.
+    charset=$("$@" -e "SELECT DEFAULT_CHARACTER_SET_NAME FROM information_schema.SCHEMATA WHERE SCHEMA_NAME='${database}'")
+    if [ -n "${charset}" ] && [ "${charset}" != utf8mb4 ]; then
+      printf '%s\n' 'Error: the existing database charset must be utf8mb4.' >&2
+      exit 1
+    fi
+    for host in ${hosts}; do
+      if [ "$("$@" -e "SELECT COUNT(*) FROM mysql.user WHERE User='${account}' AND Host='${host}'")" = 1 ]; then
+        grants=$("$@" -e "SHOW GRANTS FOR '${account}'@'${host}'")
+        unexpected=$(printf '%s\n' "${grants}" | grep -Ev "^GRANT (USAGE ON [*][.][*]|.* ON ${identifier_quote}${database}${identifier_quote}[.][*]) TO " || true)
+        if [ -n "${unexpected}" ] || printf '%s\n' "${grants}" | grep -q 'WITH GRANT OPTION'; then
+          printf '%s\n' 'Error: the application account has privileges outside the managed database scope.' >&2
+          exit 1
+        fi
+      fi
+    done
+
+    plugin=$("$@" -e "SELECT COUNT(*) FROM information_schema.PLUGINS WHERE PLUGIN_NAME='unix_socket' AND PLUGIN_STATUS='ACTIVE'")
+    if [ "${plugin}" = 0 ]; then
+      "$@" -e "INSTALL SONAME 'auth_socket'"
+      state=changed
+    fi
+    root_definition=$("$@" -e "SHOW CREATE USER 'root'@'localhost'")
+    case "${root_definition}" in
+      *' OR '*) "$@" -e "ALTER USER 'root'@'localhost' IDENTIFIED VIA unix_socket"; state=changed ;;
+      *'IDENTIFIED VIA unix_socket'*) ;;
+      *) "$@" -e "ALTER USER 'root'@'localhost' IDENTIFIED VIA unix_socket"; state=changed ;;
+    esac
+    if [ -z "${charset}" ]; then
+      "$@" -e "CREATE DATABASE ${identifier_quote}${database}${identifier_quote} CHARACTER SET utf8mb4"
+      state=changed
+    fi
+    # Create or reconcile the application account at each host, with the same
+    # password and the same single-database grant.
+    for host in ${hosts}; do
+      exists=$("$@" -e "SELECT COUNT(*) FROM mysql.user WHERE User='${account}' AND Host='${host}'")
+      grants=
+      if [ "${exists}" = 1 ]; then
+        grants=$("$@" -e "SHOW GRANTS FOR '${account}'@'${host}'")
+      fi
+      if [ "${exists}" = 0 ]; then
+        printf "CREATE USER '%s'@'%s' IDENTIFIED BY '%s';\n" \
+          "${account}" "${host}" "${password}" | "$@"
+        state=changed
+      else
+        authentication=$("$@" -e "SELECT CONCAT(COALESCE(NULLIF(plugin,''),'mysql_native_password'),':',COALESCE(NULLIF(authentication_string,''),Password)) FROM mysql.user WHERE User='${account}' AND Host='${host}'")
+        definition=$("$@" -e "SHOW CREATE USER '${account}'@'${host}'")
+        if [ "${authentication}" != "mysql_native_password:${password_hash}" ] ||
+           printf '%s\n' "${definition}" | grep -q ' OR '; then
+          printf "ALTER USER '%s'@'%s' IDENTIFIED BY '%s';\n" \
+            "${account}" "${host}" "${password}" | "$@"
+          state=changed
+        fi
+      fi
+      if ! printf '%s\n' "${grants}" | grep -q "^GRANT ALL PRIVILEGES ON ${identifier_quote}${database}${identifier_quote}[.][*] TO "; then
+        "$@" -e "GRANT ALL PRIVILEGES ON ${identifier_quote}${database}${identifier_quote}.* TO '${account}'@'${host}'"
         state=changed
       fi
-      root_definition=$("$@" -e "SHOW CREATE USER 'root'@'localhost'")
-      case "${root_definition}" in
-        *' OR '*) "$@" -e "ALTER USER 'root'@'localhost' IDENTIFIED VIA unix_socket"; state=changed ;;
-        *'IDENTIFIED VIA unix_socket'*) ;;
-        *) "$@" -e "ALTER USER 'root'@'localhost' IDENTIFIED VIA unix_socket"; state=changed ;;
-      esac
-      if [ -z "${charset}" ]; then
-        "$@" -e "CREATE DATABASE ${identifier_quote}${database}${identifier_quote} CHARACTER SET utf8mb4"
-        state=changed
-      fi
-      # Create or reconcile the application account at each host, with the same
-      # credential hash and the same single-database grant.
-      for host in ${hosts}; do
-        exists=$("$@" -e "SELECT COUNT(*) FROM mysql.user WHERE User='${account}' AND Host='${host}'")
-        grants=
-        if [ "${exists}" = 1 ]; then
-          grants=$("$@" -e "SHOW GRANTS FOR '${account}'@'${host}'")
-        fi
-        if [ "${exists}" = 0 ]; then
-          printf "CREATE USER '%s'@'%s' IDENTIFIED VIA mysql_native_password USING '%s';\n" \
-            "${account}" "${host}" "${password_hash}" | "$@"
-          state=changed
-        else
-          authentication=$("$@" -e "SELECT CONCAT(COALESCE(NULLIF(plugin,''),'mysql_native_password'),':',COALESCE(NULLIF(authentication_string,''),Password)) FROM mysql.user WHERE User='${account}' AND Host='${host}'")
-          definition=$("$@" -e "SHOW CREATE USER '${account}'@'${host}'")
-          if [ "${authentication}" != "mysql_native_password:${password_hash}" ] ||
-             printf '%s\n' "${definition}" | grep -q ' OR '; then
-            printf "ALTER USER '%s'@'%s' IDENTIFIED VIA mysql_native_password USING '%s';\n" \
-              "${account}" "${host}" "${password_hash}" | "$@"
-            state=changed
-          fi
-        fi
-        if ! printf '%s\n' "${grants}" | grep -q "^GRANT ALL PRIVILEGES ON ${identifier_quote}${database}${identifier_quote}[.][*] TO "; then
-          "$@" -e "GRANT ALL PRIVILEGES ON ${identifier_quote}${database}${identifier_quote}.* TO '${account}'@'${host}'"
-          state=changed
-        fi
-      done
-      test "$("$@" -e "SELECT DEFAULT_CHARACTER_SET_NAME FROM information_schema.SCHEMATA WHERE SCHEMA_NAME='${database}'")" = utf8mb4
-      test "$("$@" -e "SELECT plugin FROM mysql.user WHERE User='root' AND Host='localhost'")" = unix_socket
-      for host in ${hosts}; do
-        test "$("$@" -e "SELECT CONCAT(COALESCE(NULLIF(plugin,''),'mysql_native_password'),':',COALESCE(NULLIF(authentication_string,''),Password)) FROM mysql.user WHERE User='${account}' AND Host='${host}'")" = "mysql_native_password:${password_hash}"
-      done
-      printf '%s\n' "${state}"
-  no_log: true
+    done
+    test "$("$@" -e "SELECT DEFAULT_CHARACTER_SET_NAME FROM information_schema.SCHEMATA WHERE SCHEMA_NAME='${database}'")" = utf8mb4
+    test "$("$@" -e "SELECT plugin FROM mysql.user WHERE User='root' AND Host='localhost'")" = unix_socket
+    for host in ${hosts}; do
+      test "$("$@" -e "SELECT CONCAT(COALESCE(NULLIF(plugin,''),'mysql_native_password'),':',COALESCE(NULLIF(authentication_string,''),Password)) FROM mysql.user WHERE User='${account}' AND Host='${host}'")" = "mysql_native_password:${password_hash}"
+    done
+    printf '%s\n' "${state}"
   register: mariadb_accounts
   changed_when: "(mariadb_accounts.stdout_lines | default([]) | last | default('') | trim) == 'changed'"
 

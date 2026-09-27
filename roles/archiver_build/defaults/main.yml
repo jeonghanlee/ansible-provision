@@ -95,10 +95,10 @@ archiver_db_host: "127.0.0.1"
 archiver_db_port: "3306"
 archiver_db_name: "{{ mariadb_database | default('archappl') }}"
 archiver_db_user: "{{ mariadb_user | default('archappl') }}"
-# The application account plaintext password. aa-env's JNDI resource sends it
-# over TCP, aa-env's sql.fill logs in with it at the pinned ref, and the
-# operator's post-sql.fill table check uses it when it is set. It must correspond
-# to the mariadb_password_hash the mariadb operator installs. Empty leaves the
-# aa-env default in place. Supply it through private site variables; never
-# commit it here.
-archiver_db_password: ""
+# The root-only file on this host that holds the application account password,
+# written by the mariadb operator (mariadb_password_file). The build reads it and
+# hands it to aa-env as DB_USER_PASS, which aa-env's JNDI resource and sql.fill
+# use, and the post-sql.fill table check logs in with it. Both roles name one
+# path: this follows mariadb_password_file the way archiver_db_name follows
+# mariadb_database.
+archiver_db_password_file: "{{ mariadb_password_file | default('/etc/ansible-provision/mariadb-' ~ archiver_db_user ~ '.pass') }}"

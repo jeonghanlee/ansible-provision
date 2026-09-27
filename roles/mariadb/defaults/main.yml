@@ -7,7 +7,17 @@ pkg_mariadb_debian:
   - mariadb-server
 mariadb_database: "archappl"
 mariadb_user: "archappl"
-# Supply the mysql_native_password hash through private site variables.
-# The application retains the corresponding plaintext password.
-mariadb_password_hash: ""
+# Root-only file on the target that holds the application account password.
+# The operator creates it with a random password when it is absent and the
+# account does not exist yet (see mariadb_password_rotate for an existing
+# account), and keeps it when present, so a site that wants its own password
+# places the file before the first apply. The password never leaves the
+# target; archiver_build reads the same file for aa-env.
+mariadb_password_file: "/etc/ansible-provision/mariadb-{{ mariadb_user }}.pass"
+# When the application account already exists but the file is missing (a host
+# set up before the file existed, or a removed file), the operator stops rather
+# than replace a password a running appliance may still use. Set this true for
+# the one apply meant to generate a new password; an installed appliance then
+# needs archiver_force_reinstall=true to take it.
+mariadb_password_rotate: false
 mariadb_skip_networking: true
