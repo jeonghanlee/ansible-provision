@@ -64,7 +64,9 @@ original three at `6a026d4` - was removed on 2026-09-25 after its records were
 kept. Separately, M15 (lab-VM clocks from the KVM PTP clock in `common`) is
 Complete, delivered in `57d9d3f` and `eb9ba56`. M16 (the MariaDB application
 password generated on the host, replacing the `raw_stdin` transport) has a draft
-plan awaiting owner acceptance. The rest of the M14 scope is untouched:
+plan awaiting owner acceptance; M17 (the aa-env pin moved to the journald and
+log4j2 service model) and M18 (SQLite through its own operator) follow it in that
+order (D19), each with a draft plan. The rest of the M14 scope is untouched:
 the distribution-based `archiver` species, for which
 cloud-provision's `create_vm.bash` carries no selector - it has only the
 archiver-dev pair; the Phoebus pair, a `phoebus`
@@ -97,7 +99,9 @@ Blocked on G2 for completion.
 
 Milestone summary: `M16` (the MariaDB application password generated on the
 host, replacing the `raw_stdin` transport; #26) is Not started with a draft
-plan. `M15` (lab-VM clocks from the KVM PTP clock in the `common`
+plan; `M17` (the aa-env pin moved to the journald and log4j2 service model) and
+`M18` (SQLite through its own operator) follow it in that order per `D19`, also
+Not started with draft plans. `M15` (lab-VM clocks from the KVM PTP clock in the `common`
 operator) is Complete: verified on fresh Rocky 8.10 and Debian 13 guests
 2026-09-25 - PHC0 selected and synchronized, unchanged on re-apply and reboot,
 the pools kept where the device is absent, and the Debian first `apt update`
@@ -107,7 +111,7 @@ for EPICS source builds) is Complete: rocky8 and rocky10 clean operator runs,
 pyDevSup builds on both, full public gz matrix 6/6 (issue #25). `M14` (middleware
 server provisioning) is Blocked on `G2` (cloud-provision ships the middleware
 package baseline and the middleware VM). Every other milestone is Complete
-except `M3` (Deferred per `D3`) and `M16`
+except `M3` (Deferred per `D3`) and `M16`, `M17`, `M18`
 (Not started); the one open external gate is `G2`. `M12` (keep
 `/run/cloud-init` at 0755 after the in-build cloud-init upgrade)
 is Complete: verified on a rocky10 epics-dev guest 2026-09-09 - the `/etc`
@@ -147,7 +151,7 @@ verified on the production IOC server 2026-09-04 (con 1.1.0 replaced by 1.2.0,
 full mode carries every OS tree, second apply `failed=0`). Delivered in
 `fd4ff1c` and `13bc8e6`.
 
-Status tally: 13 Complete, 0 In progress, 1 Not started, 1 Deferred, 1 Blocked. 3 external gates (2 Complete, 1 Open).
+Status tally: 13 Complete, 0 In progress, 3 Not started, 1 Deferred, 1 Blocked. 3 external gates (2 Complete, 1 Open).
 
 ## Milestone
 
@@ -171,6 +175,8 @@ Status tally: 13 Complete, 0 In progress, 1 Not started, 1 Deferred, 1 Blocked. 
 | Core | M14 | Middleware server provisioning (Archiver Appliance, Phoebus) | Milestone | Blocked | No | G2, G3 | A middleware species provisions the EPICS Archiver Appliance and Phoebus, each independently selectable, on a middleware host layered on the common+epics base - system Java (distribution OpenJDK 21 with `JAVA_HOME`), Tomcat 9.0.121, MariaDB, the applications from their binary distribution repositories (species `archiver`, `phoebus`) or from source (`archiver-dev`, `phoebus-dev`), combinable as `middleware`, group `mid` / user `mid-srv` - with internal specifics supplied through the site override layer; blocked until the cloud-provision operator/species structure, package baseline, and middleware VM land (G2); [detail](#m14---middleware-server-provisioning-archiver-appliance-phoebus) |
 | Core | M15 | Discipline lab-VM clocks from the KVM PTP clock in the common operator | Milestone | Complete | No | D17 | On a KVM guest the `common` operator loads `ptp_kvm`, links `/dev/ptp_kvm` through a udev rule gated on the KVM clock name, and adds a PHC refclock to the chrony configuration it writes, so `timedatectl` reports the clock synchronized with PHC0 selected; where no KVM PTP clock exists the configuration carries no refclock and the site pools serve as before; the first `apt update` on the Debian path retries on a signature-date failure; delivered in `57d9d3f` and `eb9ba56`; [detail](#m15---discipline-lab-vm-clocks-from-the-kvm-ptp-clock-in-the-common-operator) |
 | Core | M16 | Generate the MariaDB application password on the host | Milestone | Not started | Yes | D18 | The `mariadb` operator creates the application password on the target host, keeps it in a root-only file, and sets the account from that file; `archiver_build` reads the same file for aa-env; no credential travels from the control host, `raw_stdin` and its tests are removed, and the operator works over SSH and over a local connection alike; [detail](#m16---generate-the-mariadb-application-password-on-the-host) |
+| Core | M17 | Move the aa-env pin to the journald and log4j2 service model | Milestone | Not started | No | M16, D19 | `archiver_env_ref` and `archiver_maven_src_tag` move past aa-env `bbe0968` and aa-maven `67be91d7`, where the appliance runs its four Tomcats in the foreground under one journald service with a WAR log4j2 layout; the operator's install check, repair, stamp and documentation fit that unit, the host keeps a persistent, bounded journal, and a fresh `archiver_dev` build serves and persists PV configuration; [detail](#m17---move-the-aa-env-pin-to-the-journald-and-log4j2-service-model) |
+| Core | M18 | Select SQLite as the archiver configuration database through its own operator | Milestone | Not started | No | M17, D19 | A `sqlite` operator installs the SQLite CLI, an `archiver-dev-sqlite` species puts it in place of `mariadb`, and `archiver_build` passes `DB_BACKEND=sqlite` and checks the schema with `make sql.show`; a fresh `archiver_dev_sqlite` host builds with no MariaDB server and persists PV configuration across a restart; [detail](#m18---select-sqlite-as-the-archiver-configuration-database-through-its-own-operator) |
 | Gate | G1 | the production IOC server reaches the internal git host | External gate | Complete | No | | Reachability achieved through the site HTTP proxy's CONNECT tunnel (an ssh `ProxyCommand` over the proxy), not a firewall whitelist: the owner's key authenticates and `git ls-remote` returns the refs; confirmed 2026-09-03 by the successful iocserver clone (M4/T2) |
 | Gate | G2 | cloud-provision ships the middleware package baseline and the middleware VM | External gate | Open | No | | The middleware operator/species structure and OS package baseline (system OpenJDK 21, Tomcat 9.0.121, MariaDB; no Maven package) originate in cloud-provision (`docs/milestone-e260630.md` M11) as the normative source and a middleware VM is provisionable there, before ansible-provision mirrors the set and layers its roles; owned by the cloud-provision session |
 | Gate | G3 | aa-env ships a `sql.fill` that loads the configuration schema when the database and application account are provisioned externally | External gate | Complete | No | | Complete when the jeonghanlee/epicsarchiverap-env#47 fix commit is on `modernize` and aa-env records #47's acceptance as met: with only the application account, `make sql.fill` loads the schema, `make sql.show` lists `PVTypeInfo`, `PVAliases`, `ArchivePVRequests` and `ExternalDataServers`, and an absent database exits non-zero. Observing it on an archiver-dev host is M14/T17, not this gate; owned by the aa-env session; met 2026-09-23: the fix is `1fc20a8` on `modernize`, and #47 closed with aa-env's acceptance recorded |
@@ -197,6 +203,7 @@ Status tally: 13 Complete, 0 In progress, 1 Not started, 1 Deferred, 1 Blocked. 
 | D16 | Middleware server provisioning follows the cloud-provision middleware plan (`docs/milestone-e260630.md` M11, D2, D3): system Java (the distribution OpenJDK 21 with `JAVA_HOME` at the distribution path), no non-system pin and no Maven package (aa-maven supplies Maven 3.9.9 through its Maven Wrapper on the source-build path only), Tomcat 9.0.121 as the shared `CATALINA_HOME` and MariaDB (SQLite later) as the Archiver Appliance baseline, the Archiver Appliance and Phoebus installed from their binary distribution repositories (aa-distribution, phoebus-distribution) with source-build alternatives, and service group `mid` / user `mid-srv` parallel to `ioc` / `ioc-srv`. Supersedes the pinned non-system OpenJDK/Maven and Phoebus-build substance of `D15`; the ansible-provision-way build and the site override layer from `D15` stand. | Owner decision, 2026-09-12 |
 | D17 | The lab-VM time-sync fix handed off by cloud-provision (jeonghanlee/cloud-provision#44: lab VMs never reach NTP sync because the public pools are unreachable behind the site proxy, and one Debian apply failed its first `apt update` on a signature date) is implemented in ansible-provision's `common` operator, the single writer of `chrony.conf`, not in cloud-init. | Owner decision, 2026-09-25 |
 | D18 | The MariaDB application password is generated on the target host by the `mariadb` operator and kept in a root-only file there, read by `archiver_build` for aa-env, replacing the control-host `mariadb_password_hash` carried to the target through the `raw_stdin` action. Carrying the credential was the source of the plugin, its SSH-only constraint and its dedicated tests; a site that wants its own password places the file before the first apply. | Owner decision, 2026-09-25 |
+| D19 | An archiver host gets exactly one configuration-database operator, `mariadb` (as today) or a new `sqlite`, chosen by species (`archiver-dev` or `archiver-dev-sqlite`, later `archiver` or `archiver-sqlite`) with the underscore group carrying `archiver_db_backend`; no new VM selector. Agreed with cloud-provision on 2026-09-25 (its `OPERATOR_MODEL.md` and generator follow this repository's role). The work runs in the order M16, M17, M18, because M16 and M18 both change the database handling in `archiver_build` and M18 needs an aa-env ref at or past `bbe0968`, which M17 brings. | Owner decision, 2026-09-26 |
 
 ### Milestone Details
 
@@ -1942,6 +1949,160 @@ the operator does not run; encrypting the file at rest (the installed
 | T2 | | | Pending | |
 | T3 | | | Pending | |
 | T4 | | | Pending | |
+
+
+#### M17 - Move the aa-env pin to the journald and log4j2 service model
+
+- Origin: 38560eb / M17
+- Status: Not started
+
+##### Summary
+
+The operator pins aa-env `9eed006` and aa-maven `3c96141d`. Since then aa-env
+runs the four Tomcats in the foreground under one service (`Type=simple`,
+`KillMode=mixed`, `Restart=no`, each instance through `systemd-cat` as
+`archappl-<instance>`), writes no `catalina.out` or dated JULI file, routes
+Tomcat and java.util.logging through log4j2, takes the application layout from
+the WAR, adds `ARCHAPPL_ROOT_LOGGER_LEVEL` and a launcher `loglevel` command,
+drops macOS, and selects the database backend (`bbe0968`). An aa-env ref past
+`a707cf5` stops `make install` unless the aa-maven build ships the Tomcat log4j
+jars (from `9bbd69bf`), and one past `1400ae7` needs aa-maven `67be91d7` or later.
+Logs then go only to the journal, which on these hosts is volatile and unbounded
+by any site setting.
+
+##### Scope
+
+`roles/archiver_build`: move `archiver_env_ref` to the aa-env head chosen at
+plan time (at or past `bbe0968`) and `archiver_maven_src_tag` to an aa-maven ref
+at or past `67be91d7`; revisit the launch step's instance check and repair and
+their comments against the foreground unit (a dead JVM now ends the unit as
+failed); decide whether `ARCHAPPL_ROOT_LOGGER_LEVEL` becomes an operator knob.
+The host journal: persistent storage, `MaxRetentionSec=8week` and a
+`SystemMaxUse` cap sized from the T20/T21 log figures, and a per-unit rate
+limit, as the logging model assigned to this repository; where that lives is
+an owner decision in the plan. README and the ref history in this register.
+
+Out of scope: the SQLite backend (M18); the MariaDB password change (M16);
+aa-env's own internals.
+
+##### Completion Criteria
+
+- A fresh `archiver_dev` host built at the new refs serves mgmt, persists PV
+  configuration across a restart, and writes each instance's log to the journal
+  under `archappl-<instance>` with priorities.
+- A plain re-apply leaves it unchanged; a killed instance is reported and
+  repaired by the operator as documented.
+- The journal is persistent and bounded as specified, and survives a reboot.
+
+##### Dependencies And Decisions
+
+- `D19` (owner, 2026-09-26): runs after M16.
+- The logging model agreed by aa-env and aa-maven (2026-09-24/25) assigns the
+  host journal settings to this repository.
+
+##### Implementation Plan
+
+- Plan Status: draft
+- Plan Acceptance: none
+- Implementation Authorization: none
+- Superseded Plan Artifacts: none
+
+1. Derive the range from `9eed006` to the chosen aa-env head and from
+   `3c96141d` to the chosen aa-maven ref: interface changes, operator statements
+   whose truth changes, and the ref history to record.
+2. Move both refs; adapt the launch step's instance check, repair and comments
+   to the foreground unit; decide the log-level knob.
+3. Implement the journal settings where the owner decides (candidates: a
+   `common` drop-in for every host, or an `archiver_build` drop-in for archiver
+   hosts only).
+4. Verify on a fresh VM; update README and the ref history.
+
+##### Test Plan
+
+| Label | Layer | Method | Environment | Expected Result |
+| --- | --- | --- | --- | --- |
+| T1 | Mechanism | `--syntax-check`, the splitter over every `raw` task, and a render of the changed tasks | control host | All pass |
+| T2 | Integration | Apply `archiver_dev` at the new refs on a fresh host; register PVs; restart the appliance; read `journalctl -u epicsarchiverap-maven.service -t archappl-<instance>` | Fresh Rocky 8.10 VM | Build succeeds, PV configuration persists across the restart, each instance logs to the journal with priorities |
+| T3 | Integration | Re-apply; kill one instance and re-apply; reboot | Same VM | Re-apply unchanged; the dead instance is reported and repaired; the journal is persistent and within its cap after the reboot |
+
+##### Verification Results
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T1 | | | Pending | |
+| T2 | | | Pending | |
+| T3 | | | Pending | |
+
+#### M18 - Select SQLite as the archiver configuration database through its own operator
+
+- Origin: 38560eb / M18
+- Status: Not started
+
+##### Summary
+
+aa-env `bbe0968` (jeonghanlee/epicsarchiverap-env#43) lets the appliance keep its
+configuration in SQLite instead of MariaDB: `DB_BACKEND:=sqlite` in
+`../CONFIG_SITE.local`, the file `$(ARCHAPPL_STORAGE_TOP)/config/archappl.sqlite`
+owned by the service account, root-run `make sql.fill` creating it with
+`/usr/bin/sqlite3` as that account, `make sql.show` to check the tables, and no
+MariaDB server or `mariadb.service` dependency. Per D19 a host selects the
+backend by species, with a new `sqlite` operator in place of `mariadb`.
+
+##### Scope
+
+A `sqlite` role and `playbooks/operators/sqlite.yml` installing `sqlite`
+(Rocky 8) or `sqlite3` (Debian 13); `playbooks/species/archiver_dev_sqlite.yml`
+with the `archiver_dev` operator list and `sqlite` in place of `mariadb`;
+`inventory/group_vars/archiver_dev_sqlite.yml` carrying only
+`archiver_db_backend: sqlite` (the `archiver_dev` group's one setting,
+`mariadb_skip_networking`, has no SQLite counterpart); `archiver_build`
+writing `DB_BACKEND`, checking the schema with `make sql.show` for SQLite
+(never opening the file as root, which can leave WAL files the appliance cannot
+write), and recording the backend in its stamp; README.
+
+Out of scope: the distribution-based `archiver-sqlite` species (with the
+`archiver` species); cloud-provision's `OPERATOR_MODEL.md` row and generator
+group, which land after this role.
+
+##### Completion Criteria
+
+- A fresh `archiver_dev_sqlite` host has no MariaDB server, builds, holds the
+  four tables in the SQLite file, persists PV configuration across an appliance
+  restart, and re-applies unchanged.
+- `archiver_dev` hosts are unaffected.
+
+##### Dependencies And Decisions
+
+- `D19` (owner, 2026-09-26): runs after M17, which brings an aa-env ref at or
+  past `bbe0968`.
+- Contract confirmed by aa-env on 2026-09-26 after landing `bbe0968`.
+
+##### Implementation Plan
+
+- Plan Status: draft
+- Plan Acceptance: none
+- Implementation Authorization: none
+- Superseded Plan Artifacts: none
+
+1. Add the `sqlite` role and operator playbook.
+2. Add the `archiver_dev_sqlite` species playbook and group_vars.
+3. Extend `archiver_build`: `archiver_db_backend` (default `mariadb`), the
+   `DB_BACKEND` line, the `make sql.show` check for SQLite, the stamp field.
+4. Verify on a fresh VM; notify cloud-provision to land its definition.
+
+##### Test Plan
+
+| Label | Layer | Method | Environment | Expected Result |
+| --- | --- | --- | --- | --- |
+| T1 | Mechanism | `--syntax-check` on both species, the splitter, and a render of the changed tasks for each backend | control host | All pass; the SQLite render carries no MariaDB step |
+| T2 | Integration | Apply `archiver_dev_sqlite` on a fresh host; register PVs; restart the appliance; re-apply | Fresh Rocky 8.10 VM | No MariaDB server, four tables via `make sql.show`, PV configuration persists across the restart, re-apply unchanged |
+
+##### Verification Results
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T1 | | | Pending | |
+| T2 | | | Pending | |
 
 ## Backlog
 
