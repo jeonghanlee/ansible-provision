@@ -2,11 +2,11 @@
 
 ## Scope
 
-This document defines the `test_users` fixture accounts, their bake-time
+This document defines the `testusers` fixture accounts, their bake-time
 placement, ordering, and verification.
 
-**Out of scope:** product IOC accounts are created by `app_ioc_runner`;
-consumer scenarios are defined in
+**Out of scope:** the product IOC account and group are created by
+`roles/iocrunner`; consumer scenarios are defined in
 `epics-ioc-runner/gate/RUNBOOK.md`, which verifies these
 accounts as a precondition and never creates them.
 
@@ -14,18 +14,21 @@ accounts as a precondition and never creates them.
 
 The iocrunner golden images carry fixed accounts for the consumer's
 multi-user authorization and user-service scenarios. The fixture is applied
-during the golden bake and is not part of the product `site.yml`.
+during the golden bake as part of the `iocrunner` species and is not part of
+the `iocserver` species, which provisions a production IOC server.
 
 ## Integration
 
 | Component | Integration |
 | :-- | :-- |
-| `roles/test_users/defaults/main.yml` | Defines fixture account and group inputs. |
-| `roles/test_users/tasks/main.yml` | Creates the accounts through Python-free `raw` tasks. |
-| `playbooks/07_test_users.yml` | Targets `nfs_sim_nodes`; available through server-only Make targets. |
-| `configure/CONFIG_SITE` | Includes `07_test_users` in `SERVER_ONLY_PLAYBOOKS`. |
-| cloud-provision `bake_iocrunner_image.bash` | Runs `07_test_users.yml` after `04_nfs_sim.yml` as Step 6/9. |
-| `site.yml` | Excludes the fixture by design. |
+| `roles/testusers/defaults/main.yml` | Defines fixture account and group inputs. |
+| `roles/testusers/tasks/main.yml` | Creates the accounts through Python-free `raw` tasks. |
+| `playbooks/operators/testusers.yml` | Targets `vacua`; run alone as `make op.testusers.<vacuum> RUNTIME_INVENTORY=<host inventory>`. |
+| `configure/RELEASE` | Lists `testusers` in `OPERATOR_PLAYBOOKS`. |
+| `playbooks/species/iocrunner.yml` | Imports the operator last, after `iocrunner`. |
+| `playbooks/species/iocrunner_nfs.yml` | Applies the `iocrunner` species, then `nfs_sim`. |
+| `playbooks/species/iocserver.yml` | Excludes the fixture by design. |
+| cloud-provision `bin/bake_iocrunner_image.bash` | Applies the `iocrunner` or `iocrunner_nfs` species assembly as Step 4/8. |
 
 ## Accounts
 
@@ -39,17 +42,23 @@ during the golden bake and is not part of the product `site.yml`.
 | `opc` | Yes | Operator with linger enabled, for one account running an IOC in local mode and then as a system service. |
 
 The `ioc-srv` account and `ioc` group are product infrastructure from
-`app_ioc_runner`. This fixture adds only test accounts and group membership.
+`roles/iocrunner`, which runs the runner's `setup-system-infra.bash --full`.
+This fixture adds only test accounts and group membership.
 
 ## Ordering and Data Flow
 
-1. `site.yml` creates the product IOC infrastructure.
-2. `04_nfs_sim.yml` creates the NFS simulation boundary.
-3. `07_test_users.yml` verifies that the `ioc` group exists and creates the
-   fixture accounts.
-4. cloud-provision removes site-proxy state, finalizes the bake manifest, and
-   flattens the golden image.
-5. Fresh variants expose the accounts to the consumer test plan.
+1. cloud-provision boots a fresh VM, resolves its address, and stamps the bake
+   manifest (bake Steps 1-3).
+2. The bake applies the species assembly (Step 4): the species operators
+   install the IOC stack, the `iocrunner` operator creates the product IOC
+   infrastructure, and `testusers`, the last operator of the `iocrunner`
+   species, verifies that the `ioc` group exists and creates the fixture
+   accounts. The `iocrunner-nfs` flavor then applies `nfs_sim`, which
+   creates the NFS simulation boundary.
+3. cloud-provision finalizes and validates the provenance, seals the proxy
+   artifact contract, and shuts down and publishes the validated golden pair
+   (Steps 5-8).
+4. Fresh variants expose the accounts to the consumer test plan.
 
 ## Verification
 

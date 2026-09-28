@@ -31,11 +31,12 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: no Milestone-section row is Ready. M18 closed on
-2026-09-28 (`0a3d4e4`, #28 closed): the `archiver-dev-sqlite` species keeps the
-appliance configuration in SQLite. M14 stays Blocked on G2 and M3 Deferred;
-M20 is Ready in the Backlog and waits for assignment. The next work therefore
-follows owner direction: assigning M20, or cloud-provision closing G2. M21 closed on 2026-09-28 (`8a5c355`): archiver hosts reach
+Next session entry point: M20, the test-user handoff document aligned with the
+operator model, assigned from the Backlog and in progress under its plan
+accepted and authorized on 2026-09-28; the rewrite and T1 are done, so commit
+and push it and close it. M18 closed on 2026-09-28 (`0a3d4e4`, #28 closed):
+the `archiver-dev-sqlite` species keeps the appliance configuration in SQLite.
+M14 stays Blocked on G2 and M3 Deferred. M21 closed on 2026-09-28 (`8a5c355`): archiver hosts reach
 MariaDB over its Unix socket. M17 closed on 2026-09-28 with the pins at epicsarchiverap-env
 `d09dca7` and epicsarchiverap-maven `2fc12f01` (`940b63a`). Background follows. The schema load is fixed:
 epicsarchiverap-env's `sql.fill` fix (G3, jeonghanlee/epicsarchiverap-env#47) is on `modernize` at `1fc20a8`, and M14/T17 passed on a Rocky 8.10 and a Debian 13
@@ -156,7 +157,7 @@ verified on the production IOC server 2026-09-04 (con 1.1.0 replaced by 1.2.0,
 full mode carries every OS tree, second apply `failed=0`). Delivered in
 `fd4ff1c` and `13bc8e6`.
 
-Status tally: 18 Complete, 0 In progress, 0 Not started, 1 Deferred, 1 Blocked. 3 external gates (2 Complete, 1 Open).
+Status tally: 18 Complete, 1 In progress, 0 Not started, 1 Deferred, 1 Blocked. 3 external gates (2 Complete, 1 Open).
 
 ## Milestone
 
@@ -184,6 +185,7 @@ Status tally: 18 Complete, 0 In progress, 0 Not started, 1 Deferred, 1 Blocked. 
 | Core | M18 | Select SQLite as the archiver configuration database through its own operator | Milestone | Complete | No | M17, D19 | A `sqlite` operator installs the SQLite CLI, an `archiver-dev-sqlite` species puts it in place of `mariadb`, and `archiver_build` passes `DB_BACKEND=sqlite` and checks the schema with `make sql.show`; fresh Rocky 8.10 and Debian 13 `archiver_dev_sqlite` hosts build with no MariaDB server and persist PV configuration across a restart; delivered in `0a3d4e4`; [detail](#m18---select-sqlite-as-the-archiver-configuration-database-through-its-own-operator) |
 | Core | M19 | Add an ioc-group operator fixture account with linger | Milestone | Complete | No | | The `testusers` operator also creates `opc`, a member of the `ioc` group with systemd linger enabled, while `opa`, `opb`, `obs`, `usera` and `userb` keep their current membership and linger; a fresh iocrunner host applied through this repository shows that state and re-applies cleanly; delivered in `32ea95f`; [detail](#m19---add-an-ioc-group-operator-fixture-account-with-linger) |
 | Core | M21 | Reach the archiver MariaDB over its Unix socket | Milestone | Complete | No | M17 | `archiver_build` writes `DB_SOCKET` for the `mariadb` backend and the `archiver_dev` group returns to `skip-networking`; fresh Rocky 8.10 and Debian 13 `archiver_dev` hosts build with TCP closed, serve mgmt and persist PV configuration, and an installed TCP host moves over in one forced run; delivered in `8a5c355`; [detail](#m21---reach-the-archiver-mariadb-over-its-unix-socket) |
+| Core | M20 | Align the test-user handoff document with the operator model | Milestone | In progress | No | | `docs/test_users_handoff.md` names `roles/testusers`, `playbooks/operators/testusers.yml`, the `iocrunner` species order and the bake's species step instead of the retired `app_ioc_runner`, `roles/test_users`, `playbooks/07_test_users.yml`, `CONFIG_SITE` list and `site.yml`; [detail](#m20---align-the-test-user-handoff-document-with-the-operator-model) |
 | Gate | G1 | the production IOC server reaches the internal git host | External gate | Complete | No | | Reachability achieved through the site HTTP proxy's CONNECT tunnel (an ssh `ProxyCommand` over the proxy), not a firewall whitelist: the owner's key authenticates and `git ls-remote` returns the refs; confirmed 2026-09-03 by the successful iocserver clone (M4/T2) |
 | Gate | G2 | cloud-provision ships the middleware package baseline and the middleware VM | External gate | Open | No | | The middleware operator/species structure and OS package baseline (system OpenJDK 21, Tomcat 9.0.121, MariaDB; no Maven package) originate in cloud-provision (`docs/milestone-e260630.md` M11) as the normative source and a middleware VM is provisionable there, before ansible-provision mirrors the set and layers its roles; owned by the cloud-provision session |
 | Gate | G3 | epicsarchiverap-env ships a `sql.fill` that loads the configuration schema when the database and application account are provisioned externally | External gate | Complete | No | | Complete when the jeonghanlee/epicsarchiverap-env#47 fix commit is on `modernize` and epicsarchiverap-env records #47's acceptance as met: with only the application account, `make sql.fill` loads the schema, `make sql.show` lists `PVTypeInfo`, `PVAliases`, `ArchivePVRequests` and `ExternalDataServers`, and an absent database exits non-zero. Observing it on an archiver-dev host is M14/T17, not this gate; owned by the epicsarchiverap-env session; met 2026-09-23: the fix is `1fc20a8` on `modernize`, and #47 closed with epicsarchiverap-env's acceptance recorded |
@@ -211,6 +213,12 @@ Status tally: 18 Complete, 0 In progress, 0 Not started, 1 Deferred, 1 Blocked. 
 | D17 | The lab-VM time-sync fix handed off by cloud-provision (jeonghanlee/cloud-provision#44: lab VMs never reach NTP sync because the public pools are unreachable behind the site proxy, and one Debian apply failed its first `apt update` on a signature date) is implemented in ansible-provision's `common` operator, the single writer of `chrony.conf`, not in cloud-init. | Owner decision, 2026-09-25 |
 | D18 | The MariaDB application password is generated on the target host by the `mariadb` operator and kept in a root-only file there, read by `archiver_build` for epicsarchiverap-env, replacing the control-host `mariadb_password_hash` carried to the target through the `raw_stdin` action. Carrying the credential was the source of the plugin, its SSH-only constraint and its dedicated tests; a site that wants its own password places the file before the first apply. | Owner decision, 2026-09-25 |
 | D19 | An archiver host gets exactly one configuration-database operator, `mariadb` (as today) or a new `sqlite`, chosen by species (`archiver-dev` or `archiver-dev-sqlite`, later `archiver` or `archiver-sqlite`) with the underscore group carrying `archiver_db_backend`; no new VM selector. Agreed with cloud-provision on 2026-09-25 (its `OPERATOR_MODEL.md` and generator follow this repository's role). The work runs in the order M16, M17, M18, because M16 and M18 both change the database handling in `archiver_build` and M18 needs an epicsarchiverap-env ref at or past `bbe0968`, which M17 brings. Owner decisions 2026-09-28 (M21 and M18 details): M21, the MariaDB socket, ran between M17 and M18, and for M18 cloud-provision landed its generator and definition first (`8c9b6ba`). | Owner decision, 2026-09-26 |
+
+### Assignment History
+
+| Work Identity | From Canonical | To Canonical | Target Commit | Authority Moved At |
+| --- | --- | --- | --- | --- |
+| 38560eb / M20 | master, `docs/milestone-38560eb.md` `## Backlog` | master, `docs/milestone-38560eb.md` `## Milestone` | this synchronization commit | this synchronization commit |
 
 ### Milestone Details
 
@@ -2445,29 +2453,18 @@ Out of scope: the SQLite backend (M18); remote database hosts.
   installed TCP host was exercised on Rocky 8.10 only.
 
 
-## Backlog
-
-### Work
-
-| Group | ID | Work unit | Type | Status | Ready | Deps | Done when / Evidence |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| Core | M20 | Align the test-user handoff document with the operator model | Milestone | Not started | Yes | | `docs/test_users_handoff.md` names `roles/testusers`, `playbooks/operators/testusers.yml`, the `iocrunner` species order and the bake's species step instead of the retired `app_ioc_runner`, `roles/test_users`, `playbooks/07_test_users.yml`, `CONFIG_SITE` list and `site.yml`; [detail](#m20---align-the-test-user-handoff-document-with-the-operator-model) |
-
-Unassigned work belongs here; the release tally above excludes this section.
-
-### Backlog Details
-
 #### M20 - Align the test-user handoff document with the operator model
 
 - Origin: 38560eb / M20
 - GitHub Issue: none
-- Status: Not started
+- Status: In progress
 
 ##### Summary
 
 `docs/test_users_handoff.md` still describes the staged model: it names
-`app_ioc_runner`, `site.yml`, `roles/test_users`, `playbooks/07_test_users.yml`,
-a `SERVER_ONLY_PLAYBOOKS` entry in `configure/CONFIG_SITE`, `04_nfs_sim.yml`
+`test_users`, `app_ioc_runner`, `site.yml`, `roles/test_users`,
+`playbooks/07_test_users.yml`, a `SERVER_ONLY_PLAYBOOKS` entry in
+`configure/CONFIG_SITE`, `04_nfs_sim.yml`
 and `nfs_sim_nodes`, and says the cloud-provision bake runs `07_test_users.yml`
 as its Step 6/9. The fixture now lives in `roles/testusers`, runs through
 `playbooks/operators/testusers.yml` as the last operator of
@@ -2478,9 +2475,30 @@ assembly as its Step 4/8. The product `ioc-srv` account and `ioc` group come fro
 
 ##### Scope
 
-Every mention of a retired name in `docs/test_users_handoff.md` (as of this
-entry, lines 8, 17, 23-28, 41 and 45-47), including the Integration table and
-Ordering and Data Flow.
+Every mention of a retired name in `docs/test_users_handoff.md`, by section:
+Scope (`test_users`, `app_ioc_runner`), Purpose (`site.yml`), the Integration
+table, the paragraph under Accounts (`app_ioc_runner`), and Ordering and Data
+Flow, with these replacements:
+
+- `test_users` / `roles/test_users` -> `testusers` / `roles/testusers`.
+- `playbooks/07_test_users.yml` targeting `nfs_sim_nodes` ->
+  `playbooks/operators/testusers.yml` (`hosts: vacua`, run as
+  `make op.testusers.<vacuum>`), the last operator of
+  `playbooks/species/iocrunner.yml`.
+- The `SERVER_ONLY_PLAYBOOKS` entry in `configure/CONFIG_SITE` -> the
+  `OPERATOR_PLAYBOOKS` entry in `configure/RELEASE`.
+- `site.yml` excluding the fixture -> the `iocserver` species, the iocrunner
+  product without `testusers`, for a production IOC server.
+- `app_ioc_runner` -> `roles/iocrunner`, which runs the runner's
+  `setup-system-infra.bash --full`.
+- `04_nfs_sim.yml` creating the NFS simulation boundary before the fixture ->
+  the `nfs_sim` operator, applied only by the `iocrunner_nfs` species (the
+  bake's `iocrunner-nfs` flavor) and after the whole iocrunner species, so after
+  `testusers`.
+- The bake running `07_test_users.yml` as Step 6/9 -> the bake applying the
+  iocrunner species assembly as Step 4/8, and Ordering step 4 -> its Steps 5-8
+  (finalize provenance, validate it and extract the sidecar, seal the proxy
+  artifact contract, shut down and publish the validated pair).
 
 Out of scope: the Accounts table and Verification content, which M19 and the
 accepted 2026-07-05 state own; the cloud-provision bake script.
@@ -2488,7 +2506,8 @@ accepted 2026-07-05 state own; the cloud-provision bake script.
 ##### Completion Criteria
 
 - Every path in this repository that the document names exists, and the
-  order it states matches `playbooks/species/iocrunner.yml`.
+  order it states matches `playbooks/species/iocrunner.yml` and
+  `playbooks/species/iocrunner_nfs.yml`.
 - Every reference to another repository matches that repository's current
   files (the cloud-provision bake script, the epics-ioc-runner RUNBOOK).
 
@@ -2496,28 +2515,43 @@ accepted 2026-07-05 state own; the cloud-provision bake script.
 
 - Owner decision (2026-09-27): kept out of M19 so that the fixture account for
   the consumer's release gate stays a small change.
+- Assigned from the Backlog on 2026-09-28 (Assignment History).
+- Owner decision (2026-09-28): the file keeps its name
+  `docs/test_users_handoff.md`, which `docs/README.md`, `docs/SEAM.md` and
+  `roles/testusers/defaults/main.yml` link to; only its content changes.
 
 ##### Implementation Plan
 
-- Plan Status: draft
-- Plan Acceptance: none
-- Implementation Authorization: none
+- Plan Status: accepted
+- Plan Acceptance: 2026-09-28
+- Implementation Authorization: 2026-09-28
 - Superseded Plan Artifacts: none
 
-1. Rewrite the retired mentions against the current operator, species and
+1. Rewrite the retired mentions in the listed sections with the replacements
+   above, checking each against the current operator, species and
    cloud-provision bake files.
+2. Run T1; record the result.
 
 ##### Test Plan
 
 | Label | Layer | Method | Environment | Expected Result |
 | --- | --- | --- | --- | --- |
-| T1 | Mechanism | `grep` the document for the retired names; `test -e` every path of this repository it names; compare the stated order with the species playbook and the whole Ordering list with Steps 1-8 of cloud-provision `bin/bake_iocrunner_image.bash` | control host | No retired name; all paths exist; the operator order and every bake step match |
+| T1 | Mechanism | `grep` the document for the retired names; `test -e` every path of this repository it names; compare the stated order with `playbooks/species/iocrunner.yml` and `playbooks/species/iocrunner_nfs.yml` and the whole Ordering list with Steps 1-8 of cloud-provision `bin/bake_iocrunner_image.bash` | control host | No retired name; all paths exist; the operator order and every bake step match |
 
 ##### Verification Results
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
-| T1 | | | Pending | |
+| T1 | 2026-09-28T18:08:29Z | control host, working tree on `71fa108`; cloud-provision and epics-ioc-runner at their fetched `origin` | Passed | A grep of the rewritten `docs/test_users_handoff.md` finds none of `test_users`, `app_ioc_runner`, `site.yml`, `roles/test_users`, `07_test_users`, `SERVER_ONLY`, `CONFIG_SITE`, `04_nfs_sim`, `nfs_sim_nodes` or `Step 6/9`; all eight repository paths it names exist; `playbooks/species/iocrunner.yml` ends with `testusers` and `iocrunner_nfs.yml` imports `iocrunner.yml` then `nfs_sim`, as its Ordering states; `iocserver.yml` has no `testusers`; the bake's Steps 1-8 and its `iocrunner`/`iocrunner-nfs` assemblies match the Ordering and Integration rows; `gate/RUNBOOK.md` exists in epics-ioc-runner |
+
+## Backlog
+
+### Work
+
+| Group | ID | Work unit | Type | Status | Ready | Deps | Done when / Evidence |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+
+Unassigned work belongs here; the release tally above excludes this section.
 
 ## History
 
