@@ -32,9 +32,10 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
 Next session entry point: M18, SQLite as the archiver configuration database
-through its own operator, whose draft plan needs review against the current
-pins (epicsarchiverap-env `d09dca7`, epicsarchiverap-maven `2fc12f01`) and
-owner acceptance. M21 closed on 2026-09-28 (`8a5c355`): archiver hosts reach
+through its own operator (#28), in progress under its plan accepted and
+authorized on 2026-09-28; its implementation and T1-T3 are done, so commit and
+push it, report to cloud-provision and epicsarchiverap-maven, close it and #28,
+and have the three T2/T3 VMs removed. M21 closed on 2026-09-28 (`8a5c355`): archiver hosts reach
 MariaDB over its Unix socket. M17 closed on 2026-09-28 with the pins at epicsarchiverap-env
 `d09dca7` and epicsarchiverap-maven `2fc12f01` (`940b63a`). Background follows. The schema load is fixed:
 epicsarchiverap-env's `sql.fill` fix (G3, jeonghanlee/epicsarchiverap-env#47) is on `modernize` at `1fc20a8`, and M14/T17 passed on a Rocky 8.10 and a Debian 13
@@ -155,7 +156,7 @@ verified on the production IOC server 2026-09-04 (con 1.1.0 replaced by 1.2.0,
 full mode carries every OS tree, second apply `failed=0`). Delivered in
 `fd4ff1c` and `13bc8e6`.
 
-Status tally: 17 Complete, 0 In progress, 1 Not started, 1 Deferred, 1 Blocked. 3 external gates (2 Complete, 1 Open).
+Status tally: 17 Complete, 1 In progress, 0 Not started, 1 Deferred, 1 Blocked. 3 external gates (2 Complete, 1 Open).
 
 ## Milestone
 
@@ -180,7 +181,7 @@ Status tally: 17 Complete, 0 In progress, 1 Not started, 1 Deferred, 1 Blocked. 
 | Core | M15 | Discipline lab-VM clocks from the KVM PTP clock in the common operator | Milestone | Complete | No | D17 | On a KVM guest the `common` operator loads `ptp_kvm`, links `/dev/ptp_kvm` through a udev rule gated on the KVM clock name, and adds a PHC refclock to the chrony configuration it writes, so `timedatectl` reports the clock synchronized with PHC0 selected; where no KVM PTP clock exists the configuration carries no refclock and the site pools serve as before; the first `apt update` on the Debian path retries on a signature-date failure; delivered in `57d9d3f` and `eb9ba56`; [detail](#m15---discipline-lab-vm-clocks-from-the-kvm-ptp-clock-in-the-common-operator) |
 | Core | M16 | Generate the MariaDB application password on the host | Milestone | Complete | No | D18 | The `mariadb` operator creates the application password on the target host, keeps it in a root-only file, and sets the account from that file; `archiver_build` reads the same file for epicsarchiverap-env; no credential travels from the control host, `raw_stdin` and its tests are removed, and the operator works over SSH and over a local connection alike; delivered in `3e89e33`; [detail](#m16---generate-the-mariadb-application-password-on-the-host) |
 | Core | M17 | Move the epicsarchiverap-env pin to the journald and log4j2 service model | Milestone | Complete | No | M16, D19 | `archiver_env_ref` and `archiver_maven_src_tag` move past epicsarchiverap-env `bbe0968` and epicsarchiverap-maven `67be91d7`, where the appliance runs its four Tomcats in the foreground under one journald service with a WAR log4j2 layout; the operator's install check, repair, stamp and documentation fit that unit, the host keeps a persistent, bounded journal, and a fresh `archiver_dev` build serves and persists PV configuration; delivered in `940b63a`; [detail](#m17---move-the-epicsarchiverap-env-pin-to-the-journald-and-log4j2-service-model) |
-| Core | M18 | Select SQLite as the archiver configuration database through its own operator | Milestone | Not started | Yes | M17, D19 | A `sqlite` operator installs the SQLite CLI, an `archiver-dev-sqlite` species puts it in place of `mariadb`, and `archiver_build` passes `DB_BACKEND=sqlite` and checks the schema with `make sql.show`; fresh Rocky 8.10 and Debian 13 `archiver_dev_sqlite` hosts build with no MariaDB server and persist PV configuration across a restart; [detail](#m18---select-sqlite-as-the-archiver-configuration-database-through-its-own-operator) |
+| Core | M18 | Select SQLite as the archiver configuration database through its own operator | Milestone | In progress | No | M17, D19 | A `sqlite` operator installs the SQLite CLI, an `archiver-dev-sqlite` species puts it in place of `mariadb`, and `archiver_build` passes `DB_BACKEND=sqlite` and checks the schema with `make sql.show`; fresh Rocky 8.10 and Debian 13 `archiver_dev_sqlite` hosts build with no MariaDB server and persist PV configuration across a restart; [detail](#m18---select-sqlite-as-the-archiver-configuration-database-through-its-own-operator) |
 | Core | M19 | Add an ioc-group operator fixture account with linger | Milestone | Complete | No | | The `testusers` operator also creates `opc`, a member of the `ioc` group with systemd linger enabled, while `opa`, `opb`, `obs`, `usera` and `userb` keep their current membership and linger; a fresh iocrunner host applied through this repository shows that state and re-applies cleanly; delivered in `32ea95f`; [detail](#m19---add-an-ioc-group-operator-fixture-account-with-linger) |
 | Core | M21 | Reach the archiver MariaDB over its Unix socket | Milestone | Complete | No | M17 | `archiver_build` writes `DB_SOCKET` for the `mariadb` backend and the `archiver_dev` group returns to `skip-networking`; fresh Rocky 8.10 and Debian 13 `archiver_dev` hosts build with TCP closed, serve mgmt and persist PV configuration, and an installed TCP host moves over in one forced run; delivered in `8a5c355`; [detail](#m21---reach-the-archiver-mariadb-over-its-unix-socket) |
 | Gate | G1 | the production IOC server reaches the internal git host | External gate | Complete | No | | Reachability achieved through the site HTTP proxy's CONNECT tunnel (an ssh `ProxyCommand` over the proxy), not a firewall whitelist: the owner's key authenticates and `git ls-remote` returns the refs; confirmed 2026-09-03 by the successful iocserver clone (M4/T2) |
@@ -2107,7 +2108,7 @@ epicsarchiverap-env's own internals.
 
 - Origin: 38560eb / M18
 - GitHub Issue: #28, https://github.com/jeonghanlee/ansible-provision/issues/28
-- Status: Not started
+- Status: In progress
 
 ##### Summary
 
@@ -2183,9 +2184,9 @@ Out of scope: the distribution-based `archiver-sqlite` species (with the
 
 ##### Implementation Plan
 
-- Plan Status: draft
-- Plan Acceptance: none
-- Implementation Authorization: none
+- Plan Status: accepted
+- Plan Acceptance: 2026-09-28
+- Implementation Authorization: 2026-09-28
 - Superseded Plan Artifacts: none
 
 1. Add the `sqlite` role and operator playbook.
@@ -2212,9 +2213,9 @@ Out of scope: the distribution-based `archiver-sqlite` species (with the
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
-| T1 | | | Pending | |
-| T2 | | | Pending | |
-| T3 | | | Pending | |
+| T1 | 2026-09-28T16:15Z | control host, working tree on `02da53a` | Passed | `--syntax-check` passes for the `sqlite` and `archiver_build` operators and the `archiver_dev_sqlite` and `archiver_dev` species; the Ansible splitter accepts all 80 `raw` tasks; `make -n` resolves `archiver_dev_sqlite.rocky8` and `op.sqlite.rocky8`; the runtime-inventory contract test passes 3/3; rendered with Ansible's templar, the `archiver_build` tasks for `archiver_db_backend` `mariadb` and `sqlite` and the `sqlite` role pass `bash -n`, the stamps read `db=archappl@socket:auto/archappl` and `db=sqlite:/arch/config/archappl.sqlite`, and every MariaDB step of the rendered build and launch scripts sits behind a `db_backend` test that the SQLite render leaves false; that branch taken at run time is T2's |
+| T2 | 2026-09-28T16:33:20Z | Fresh Rocky 8.10 and Debian 13 vacua from cloud-provision (`<os>-archiver-dev` selector, inventoried with `--species archiver-dev-sqlite` by `8c9b6ba`), working tree on `02da53a` | Passed | `make archiver_dev_sqlite.rocky8` and `.debian13` `failed=0` (16:20:32Z-16:28:46Z); deployed epicsarchiverap-env `d09dca7` and epicsarchiverap-maven `2fc12f01`; stamp `db=sqlite:/arch/config/archappl.sqlite`; `CONFIG_SITE.local` carries `DB_BACKEND:=sqlite` and no password or socket line; `mariadb-server` not installed, no `mariadb.service` unit, the appliance unit requires only `sysinit.target system.slice`; `/arch/config/archappl.sqlite` `mid-srv:mid 644`; `make sql.show` and `runuser -u mid-srv -- sqlite3 ... .tables` list ArchivePVRequests, PVAliases, ExternalDataServers, PVTypeInfo; mgmt logs `RDB Engine is 'SQLite' '3.53.4'` and `SQL Dialect SQLite`, with `sqlite-jdbc-3.53.4.0.jar` in `mgmt/WEB-INF/lib`; a 1 Hz PV served by softIocPVX reached `Being archived` (16:31:15Z), `getData.json` returned its samples, `sqlite3` read its `PVTypeInfo` row back, and after `systemctl restart` (10 s, 16:31:46Z) it was `Being archived` again (16:32:33Z) with new samples; the unit journal holds no `SQLITE_BUSY` and four ERROR lines, all the mgmt start-up notice that actions wait until every component has started; a re-apply of the species reported `changed=0` on both |
+| T3 | 2026-09-28T16:33:20Z | A fresh Rocky 8.10 archiver-dev vacuum from cloud-provision, same commits as T2 | Passed | `make archiver_dev.rocky8` `failed=0` (16:20:32Z-16:26:18Z); stamp `db=archappl@socket:auto/archappl`; `CONFIG_SITE.local` carries `DB_BACKEND:=mariadb`, the password and `DB_SOCKET:=/run/mariadb/mariadb.sock`; the unit requires `mariadb.service`; four tables; mgmt logs `RDB Engine is 'MariaDB' '10.3.39-MariaDB'` and `SQL Dialect MySQL`; the same PV sequence passed, with the `PVTypeInfo` row read over the socket and the PV `Being archived` again after the restart; no `SQLITE_BUSY`, the same four start-up ERROR lines; re-apply `changed=0` |
 
 #### M19 - Add an ioc-group operator fixture account with linger
 

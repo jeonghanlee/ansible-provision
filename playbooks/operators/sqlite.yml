@@ -1,0 +1,11 @@
+---
+# playbooks/operators/sqlite.yml
+# Apply after common; the alternative to mariadb for the archiver
+# configuration database. Runs are scoped with --limit.
+- name: Apply the sqlite operator
+  hosts: vacua
+  gather_facts: false
+  become: yes
+  roles:
+    - role: sqlite
+      tags: [sqlite]

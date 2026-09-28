@@ -1,0 +1,43 @@
+---
+# roles/sqlite/tasks/main.yml
+# Install the SQLite command-line tool that epicsarchiverap-env uses for the
+# SQLite configuration database. No server, account or port is created.
+- name: Provision the SQLite command-line tool
+  ansible.builtin.raw: |
+    set -eu
+    export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+    state=unchanged
+    if [ -f /etc/redhat-release ]; then
+      set -- {{ pkg_sqlite_redhat | map('quote') | join(' ') }}
+      for package in "$@"; do
+        if ! rpm -q "${package}" >/dev/null 2>&1; then
+          dnf install -y "${package}" >&2
+          state=changed
+        fi
+      done
+    elif [ -f /etc/debian_version ]; then
+      export DEBIAN_FRONTEND=noninteractive
+      refreshed=no
+      set -- {{ pkg_sqlite_debian | map('quote') | join(' ') }}
+      for package in "$@"; do
+        installed=$(dpkg-query -W -f='${Status}' "${package}" 2>/dev/null) || installed=
+        if [ "${installed}" != "install ok installed" ]; then
+          if [ "${refreshed}" = no ]; then
+            apt-get update >&2
+            refreshed=yes
+          fi
+          apt-get install -y "${package}" >&2
+          state=changed
+        fi
+      done
+    else
+      printf '%s\n' 'Error: sqlite requires a RedHat or Debian family host.' >&2
+      exit 1
+    fi
+    # epicsarchiverap-env calls sqlite3 by name.
+    command -v sqlite3 >/dev/null
+    sqlite3 --version >&2
+    printf '%s\n' "${state}"
+  register: sqlite_setup
+  # SSH may merge package-manager stderr into stdout; the final line owns state.
+  changed_when: "(sqlite_setup.stdout_lines | default([]) | last | default('') | trim) == 'changed'"

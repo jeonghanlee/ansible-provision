@@ -1,0 +1,9 @@
+---
+# roles/sqlite/defaults/main.yml
+# SQLite command-line package per family. The archiver_build operator hands
+# the SQLite configuration database to epicsarchiverap-env, whose sql.fill and
+# sql.show run sqlite3 as the appliance service account; no server is involved.
+pkg_sqlite_redhat:
+  - sqlite
+pkg_sqlite_debian:
+  - sqlite3

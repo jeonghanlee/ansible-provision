@@ -1,0 +1,10 @@
+---
+# inventory/group_vars/archiver_dev_sqlite.yml
+# The archiver-dev-sqlite species keeps the appliance configuration in SQLite:
+# the sqlite operator replaces mariadb, and archiver_build hands
+# epicsarchiverap-env DB_BACKEND=sqlite with no MariaDB step.
+#
+# The group name is the underscore form of the species, matching the
+# cloud-provision generator (species archiver-dev-sqlite -> group
+# archiver_dev_sqlite).
+archiver_db_backend: sqlite

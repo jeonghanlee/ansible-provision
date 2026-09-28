@@ -10,7 +10,8 @@
 #
 # Prerequisites come earlier in the archiver_dev species: the java operator
 # (JDK 21 + JAVA_HOME), the tomcat operator (/opt/tomcat9 shared CATALINA_HOME),
-# and the mariadb operator (archappl DB and account on its socket). This
+# and the mariadb operator (archappl DB and account on its socket), or in the
+# archiver_dev_sqlite species the sqlite operator (sqlite3 only). This
 # operator installs its own build tools (git, make, unzip, sed, tree, curl),
 # mirroring epics_build; epicsarchiverap-env's install_os_packages.bash is
 # skipped.
@@ -54,31 +55,37 @@
     mts_hold="{{ archiver_store_mts_hold }}"
     lts_gran="{{ archiver_store_lts_granularity }}"
     root_level="{{ archiver_root_logger_level }}"
+    db_backend="{{ archiver_db_backend }}"
 
     top="${src_parent}/epicsarchiverap-env"
 
-    # --- Database transport: "auto" is the socket the mariadb operator
-    # manages; empty keeps TCP. ---
-    if [ "${db_socket}" = auto ]; then
-      if [ -f /etc/redhat-release ]; then
-        db_socket=/run/mariadb/mariadb.sock
-      else
-        db_socket=/run/mysqld/mysqld.sock
-      fi
-    fi
-    if [ -n "${db_socket}" ] && [ ! -S "${db_socket}" ]; then
-      echo "archiver_build: ${db_socket} is not a socket; apply the mariadb operator first" >&2
-      exit 1
-    fi
-
-    # --- The application password is made on this host by the mariadb operator
-    # and read here, so it never travels from the control host. The launch step
-    # has already refused a build without the file. ---
+    # --- The MariaDB transport and password apply to the mariadb backend only;
+    # the sqlite backend has no server, account or socket. ---
     db_pass=""
-    IFS= read -r db_pass < "${pass_file}" || true
-    if [ -z "${db_pass}" ]; then
-      echo "archiver_build: ${pass_file} holds no password; apply the mariadb operator first" >&2
-      exit 1
+    if [ "${db_backend}" = mariadb ]; then
+      # Database transport: "auto" is the socket the mariadb operator manages;
+      # empty keeps TCP.
+      if [ "${db_socket}" = auto ]; then
+        if [ -f /etc/redhat-release ]; then
+          db_socket=/run/mariadb/mariadb.sock
+        else
+          db_socket=/run/mysqld/mysqld.sock
+        fi
+      fi
+      if [ -n "${db_socket}" ] && [ ! -S "${db_socket}" ]; then
+        echo "archiver_build: ${db_socket} is not a socket; apply the mariadb operator first" >&2
+        exit 1
+      fi
+      # The application password is made on this host by the mariadb operator
+      # and read here, so it never travels from the control host. The launch
+      # step has already refused a build without the file.
+      IFS= read -r db_pass < "${pass_file}" || true
+      if [ -z "${db_pass}" ]; then
+        echo "archiver_build: ${pass_file} holds no password; apply the mariadb operator first" >&2
+        exit 1
+      fi
+    else
+      db_socket=""
     fi
 
     # --- Site proxy: a login shell reads /etc/profile.d, but a systemd-run unit
@@ -161,16 +168,19 @@
       "ARCHAPPL_STORAGE_TOP=${storage_top}" \
       "AA_INSTALL_PATH=${install_parent}" \
       "AA_JAVA_HEAPSIZE=${heapsize}" \
-      "ARCHAPPL_SITEID:=${site_id}" > "${src_parent}/CONFIG_SITE.local"
-    # The password the mariadb operator set; this file is -included after
-    # CONFIG_SITE, so it replaces the epicsarchiverap-env default. The file now
-    # carries a credential, so only root reads it.
-    printf 'DB_USER_PASS=%s\n' "${db_pass}" >> "${src_parent}/CONFIG_SITE.local"
-    # With a socket, every MariaDB connection of the appliance and of the
-    # epicsarchiverap-env clients uses it, and DB_HOST_NAME/DB_HOST_PORT go
-    # unused; left empty, the epicsarchiverap-env default keeps TCP.
-    if [ -n "${db_socket}" ]; then
-      printf 'DB_SOCKET:=%s\n' "${db_socket}" >> "${src_parent}/CONFIG_SITE.local"
+      "ARCHAPPL_SITEID:=${site_id}" \
+      "DB_BACKEND:=${db_backend}" > "${src_parent}/CONFIG_SITE.local"
+    if [ "${db_backend}" = mariadb ]; then
+      # The password the mariadb operator set; this file is -included after
+      # CONFIG_SITE, so it replaces the epicsarchiverap-env default. The file
+      # now carries a credential, so only root reads it.
+      printf 'DB_USER_PASS=%s\n' "${db_pass}" >> "${src_parent}/CONFIG_SITE.local"
+      # With a socket, every MariaDB connection of the appliance and of the
+      # epicsarchiverap-env clients uses it, and DB_HOST_NAME/DB_HOST_PORT go
+      # unused; left empty, the epicsarchiverap-env default keeps TCP.
+      if [ -n "${db_socket}" ]; then
+        printf 'DB_SOCKET:=%s\n' "${db_socket}" >> "${src_parent}/CONFIG_SITE.local"
+      fi
     fi
     chmod 0600 "${src_parent}/CONFIG_SITE.local"
     # Select the Maven settings file through the epicsarchiverap-env MAVEN_FLAGS
@@ -219,15 +229,32 @@
     # and survives only in memory until the next restart. Count the tables
     # before treating the step as done, and stop here rather than install and
     # start on a database the appliance cannot write to; an unreadable count
-    # stops the build too. Ask over the same transport (socket or TCP) and
-    # account the appliance uses, which proves the application login too.
-    schema_query="SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='${db_name}'"
-    if [ -n "${db_socket}" ]; then
-      set -- --protocol=SOCKET --socket="${db_socket}"
+    # stops the build too. For MariaDB, ask over the same transport (socket or
+    # TCP) and account the appliance uses, which proves the application login
+    # too. For SQLite, list the tables through the epicsarchiverap-env sql.show
+    # target, which runs sqlite3 as the service account, so root never opens the
+    # file and leaves no WAL file the appliance cannot write.
+    if [ "${db_backend}" = sqlite ]; then
+      db_label="${storage_top}/config/archappl.sqlite"
+      schema_tables=""
+      if sqlite_tables=$(make sql.show 2>&1); then
+        schema_tables=0
+        for table in PVTypeInfo PVAliases ArchivePVRequests ExternalDataServers; do
+          if printf '%s\n' "${sqlite_tables}" | grep -qw "${table}"; then
+            schema_tables=$((schema_tables + 1))
+          fi
+        done
+      fi
     else
-      set -- --protocol=TCP -h "${db_host}" -P "${db_port}"
+      db_label="${db_name}"
+      schema_query="SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='${db_name}'"
+      if [ -n "${db_socket}" ]; then
+        set -- --protocol=SOCKET --socket="${db_socket}"
+      else
+        set -- --protocol=TCP -h "${db_host}" -P "${db_port}"
+      fi
+      schema_tables=$(MYSQL_PWD="${db_pass}" mysql "$@" -u "${db_user}" -N -B -e "${schema_query}") || schema_tables=""
     fi
-    schema_tables=$(MYSQL_PWD="${db_pass}" mysql "$@" -u "${db_user}" -N -B -e "${schema_query}") || schema_tables=""
     # A forced reinstall stopped the previous appliance before this build began,
     # and install has not run yet, so its tree is intact but nothing is serving.
     # Say so on the way out, with the way back, rather than leave it down unnoticed.
@@ -236,12 +263,12 @@
       stopped_note="archiver_build: the previous appliance under ${install_parent}/epicsarchiverap-maven is left stopped; start it with 'systemctl start epicsarchiverap-maven.service' or re-apply without archiver_force_reinstall"
     fi
     if [ -z "${schema_tables}" ]; then
-      echo "archiver_build: cannot read ${db_name} to confirm the schema after sql.fill" >&2
+      echo "archiver_build: cannot read ${db_label} to confirm the schema after sql.fill" >&2
       if [ -n "${stopped_note}" ]; then echo "${stopped_note}" >&2; fi
       exit 1
     fi
     if [ "${schema_tables}" -eq 0 ]; then
-      echo "archiver_build: the epicsarchiverap-env sql.fill exited 0 but loaded no schema; ${db_name} has no tables, so the appliance would not persist PV configuration" >&2
+      echo "archiver_build: the epicsarchiverap-env sql.fill exited 0 but loaded no schema; ${db_label} has no tables, so the appliance would not persist PV configuration" >&2
       if [ -n "${stopped_note}" ]; then echo "${stopped_note}" >&2; fi
       exit 1
     fi
@@ -318,8 +345,22 @@
     # The build hands epicsarchiverap-env the password the mariadb operator made
     # on this host; without that file the appliance could not log in, so refuse
     # before anything is torn down.
+    # The configuration database is mariadb or sqlite; refuse anything else
+    # before anything is torn down.
+    db_backend="{{ archiver_db_backend }}"
+    case "${db_backend}" in
+      mariadb|sqlite) ;;
+      *)
+        if [ "${will_build}" = "yes" ]; then
+          echo "ARCHIVER_BUILD_PRECONDITION: archiver_db_backend must be mariadb or sqlite (got [${db_backend}])." >&2
+          echo "Nothing was stopped and no build was started." >&2
+          exit 1
+        fi
+        ;;
+    esac
+
     pass_file="{{ archiver_db_password_file }}"
-    if [ "${will_build}" = "yes" ] && [ ! -s "${pass_file}" ]; then
+    if [ "${will_build}" = "yes" ] && [ "${db_backend}" = mariadb ] && [ ! -s "${pass_file}" ]; then
       echo "ARCHIVER_BUILD_PRECONDITION: ${pass_file} is missing or empty; apply the mariadb operator first." >&2
       echo "Nothing was stopped and no build was started." >&2
       exit 1
@@ -379,7 +420,7 @@
     case "${db_socket}" in
       ""|auto|/*) ;;
       *)
-        if [ "${will_build}" = "yes" ]; then
+        if [ "${will_build}" = "yes" ] && [ "${db_backend}" = mariadb ]; then
           echo "ARCHIVER_BUILD_PRECONDITION: archiver_db_socket must be auto, an absolute socket path, or empty for TCP (got [${db_socket}])." >&2
           echo "Nothing was stopped and no build was started." >&2
           exit 1

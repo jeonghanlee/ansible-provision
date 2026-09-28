@@ -36,6 +36,7 @@ operation above that baseline. The first-pass validation environment uses
      | ethercat   -> ethercat (on the rtbase golden)
      | archiver_dev -> common, provenance, python, epics, java, tomcat,
      |                 mariadb, archiver_build
+     | archiver_dev_sqlite -> archiver_dev with sqlite in place of mariadb
      |
      V
 [ Linux nodes ready for EPICS IOC validation ]
@@ -66,6 +67,7 @@ ansible-provision/
 |   `-- group_vars/
 |       |-- all.yml                  (values shared by more than one operator)
 |       |-- archiver_dev.yml         (archiver species group; socket-only MariaDB)
+|       |-- archiver_dev_sqlite.yml  (archiver_db_backend: sqlite)
 |       |-- debian12.yml             (epics_os_dir: debian-12)
 |       |-- debian13.yml             (epics_os_dir: debian-13)
 |       |-- rocky8.yml               (epics_os_dir, rocky 3.9 python overrides)
@@ -73,14 +75,14 @@ ansible-provision/
 |       |-- ubuntu24.yml             (epics_os_dir: ubuntu-24.04)
 |       `-- ubuntu26.yml             (epics_os_dir: ubuntu-26.04)
 |-- playbooks/
-|   |-- operators/                   (one playbook per operator, 19)
-|   `-- species/                     (one assembly per species, 9)
-`-- roles/                           (one role per operator, 19)
+|   |-- operators/                   (one playbook per operator, 20)
+|   `-- species/                     (one assembly per species, 10)
+`-- roles/                           (one role per operator, 20)
     |-- common/      rt/          provenance/  python/
     |-- proxy/       epics/       epics_build/ epics_support/
     |-- procserv/    conserver/   con/         java/        tomcat/
     |-- nfs_sim/     iocrunner/   testusers/   ethercat/    mariadb/
-    `-- archiver_build/
+    `-- sqlite/      archiver_build/
 ```
 
 ---

@@ -119,13 +119,21 @@ archiver_config_stamp: >-
   heap={{ archiver_java_heapsize }}
   loglevel={{ archiver_root_logger_level or '-' }}
   site={{ archiver_site_id }}
-  db={{ archiver_db_name }}@{{ ('socket:' ~ archiver_db_socket) if archiver_db_socket else (archiver_db_host ~ ':' ~ archiver_db_port) }}/{{ archiver_db_user }}
+  db={{ ('sqlite:' ~ archiver_storage_top ~ '/config/archappl.sqlite') if archiver_db_backend == 'sqlite' else (archiver_db_name ~ '@' ~ (('socket:' ~ archiver_db_socket) if archiver_db_socket else (archiver_db_host ~ ':' ~ archiver_db_port)) ~ '/' ~ archiver_db_user) }}
   account={{ archiver_user }}:{{ archiver_group }}
   storage={{ archiver_storage_top }}
   install={{ archiver_install_parent }}
   store=sts:{{ archiver_store_sts_granularity or '-' }}/{{ archiver_store_sts_hold or '-' }},mts:{{ archiver_store_mts_granularity or '-' }}/{{ archiver_store_mts_hold or '-' }},lts:{{ archiver_store_lts_granularity or '-' }}
   envref={{ archiver_env_ref }}
   srctag={{ archiver_maven_src_tag }}
+
+# Configuration database backend, written to epicsarchiverap-env as
+# DB_BACKEND (from bbe0968): mariadb, served by the mariadb operator, or sqlite,
+# a file under archiver_storage_top/config owned by the service account, with
+# the sqlite operator in place of mariadb. The archiver_dev_sqlite group sets
+# sqlite; the transport, host, port and password settings below apply to
+# mariadb only.
+archiver_db_backend: "mariadb"
 
 # Database transport epicsarchiverap-env's context.xml renders. The socket is
 # written as DB_SOCKET: "auto" takes the socket the mariadb operator manages

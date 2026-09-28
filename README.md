@@ -123,6 +123,7 @@ is the normative statement of content and order.
 | P_java | `java` | Distribution OpenJDK 21 JDK packages |
 | P_tomcat | `tomcat` | Apache Tomcat 9.0.121 binary tarball |
 | P_mariadb | `mariadb` | Distribution MariaDB server packages |
+| P_sqlite | `sqlite` | Distribution SQLite command-line package |
 | P_archiver-build | `archiver_build` | [jeonghanlee/epicsarchiverap-env](https://github.com/jeonghanlee/epicsarchiverap-env) |
 | P_rt | `rt` | Debian PREEMPT_RT packages |
 | P_provenance | `provenance` | - |
@@ -275,8 +276,8 @@ the `archiver_dev` species runs on the socket-only default.
 
 ### Archiver
 
-Run `archiver_build` after `java`, `tomcat`, and `mariadb`, or apply the whole
-species in one run:
+Run `archiver_build` after `java`, `tomcat`, and `mariadb` (or `sqlite` for the
+SQLite species), or apply the whole species in one run:
 
 ```bash
 export RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini
@@ -284,6 +285,8 @@ export RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini
 make op.archiver_build.rocky8
 # or the whole species
 make archiver_dev.rocky8
+# or the SQLite species
+make archiver_dev_sqlite.rocky8
 ```
 
 The operator drives epicsarchiverap-env's make sequence, which clones and builds epicsarchiverap-maven
@@ -376,6 +379,20 @@ sets the appliance's root log level (empty keeps epicsarchiverap-env's `INFO`; o
 recorded knob set; a running appliance's levels change without a rebuild
 through `/opt/epicsarchiverap-maven/archappl.bash loglevel <component> [<logger> [<level>]]`.
 
+The `archiver_dev_sqlite` species keeps the appliance configuration in SQLite
+instead of MariaDB: the `sqlite` operator installs only the `sqlite3` tool
+(`sqlite` on Rocky, `sqlite3` on Debian) in place of `mariadb`, and its group
+sets `archiver_db_backend: sqlite`, which `archiver_build` writes to
+epicsarchiverap-env as `DB_BACKEND` (from `bbe0968`). The database is
+`<archiver_storage_top>/config/archappl.sqlite`, owned by the service account;
+epicsarchiverap-env creates and reads it with `sqlite3` run as that account,
+and the operator checks its tables through `make sql.show` so root never
+opens the file. No MariaDB server, account, password file or socket is
+involved, and `archiver_db_socket`, `archiver_db_host`, `archiver_db_port` and
+`archiver_db_password_file` apply to the `mariadb` backend only. The backend is
+part of the recorded knob set. The cloud-provision generator emits the
+`archiver_dev_sqlite` group for `--species archiver-dev-sqlite`.
+
 After `sql.fill` the operator counts the tables in the configuration database and
 stops the build before install when there are none or they cannot be counted: an
 appliance on an empty database archives and serves, but never persists PV
@@ -396,3 +413,4 @@ build log names how to start it again.
 | `species/rtbase.yml` | P_rt on bare |
 | `species/ethercat.yml` | P_ethercat on the rtbase golden |
 | `species/archiver_dev.yml` | P_archiver-build P_mariadb P_tomcat P_java (P_epics or P_epics-build) P_python P_provenance on bare |
+| `species/archiver_dev_sqlite.yml` | P_archiver-build P_sqlite P_tomcat P_java (P_epics or P_epics-build) P_python P_provenance on bare |
