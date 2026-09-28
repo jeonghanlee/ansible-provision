@@ -31,11 +31,10 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: M17, the epicsarchiverap-env pin moved to the journald and log4j2
-service model (epicsarchiverap-env `d09dca7`, epicsarchiverap-maven `2fc12f01`), in progress under its
-plan accepted and authorized on 2026-09-27; its implementation and T1-T3 are
-done, so commit and push it, close it, and have the T2 VM removed; then M21
-(the MariaDB socket) and M18 (SQLite) follow. Background follows. The schema load is fixed:
+Next session entry point: M21, the archiver MariaDB reached over its Unix
+socket, whose draft plan needs review and owner acceptance; M18 (SQLite)
+follows. M17 closed on 2026-09-28 with the pins at epicsarchiverap-env
+`d09dca7` and epicsarchiverap-maven `2fc12f01` (`940b63a`). Background follows. The schema load is fixed:
 epicsarchiverap-env's `sql.fill` fix (G3, jeonghanlee/epicsarchiverap-env#47) is on `modernize` at `1fc20a8`, and M14/T17 passed on a Rocky 8.10 and a Debian 13
 host rebuilt through this operator at that ref on 2026-09-23: the operator's
 table check let the build continue and `make sql.show` lists `PVTypeInfo`,
@@ -154,7 +153,7 @@ verified on the production IOC server 2026-09-04 (con 1.1.0 replaced by 1.2.0,
 full mode carries every OS tree, second apply `failed=0`). Delivered in
 `fd4ff1c` and `13bc8e6`.
 
-Status tally: 15 Complete, 1 In progress, 2 Not started, 1 Deferred, 1 Blocked. 3 external gates (2 Complete, 1 Open).
+Status tally: 16 Complete, 0 In progress, 2 Not started, 1 Deferred, 1 Blocked. 3 external gates (2 Complete, 1 Open).
 
 ## Milestone
 
@@ -178,10 +177,10 @@ Status tally: 15 Complete, 1 In progress, 2 Not started, 1 Deferred, 1 Blocked. 
 | Core | M14 | Middleware server provisioning (Archiver Appliance, Phoebus) | Milestone | Blocked | No | G2, G3 | A middleware species provisions the EPICS Archiver Appliance and Phoebus, each independently selectable, on a middleware host layered on the common+epics base - system Java (distribution OpenJDK 21 with `JAVA_HOME`), Tomcat 9.0.121, MariaDB, the applications from their binary distribution repositories (species `archiver`, `phoebus`) or from source (`archiver-dev`, `phoebus-dev`), combinable as `middleware`, group `mid` / user `mid-srv` - with internal specifics supplied through the site override layer; blocked until the cloud-provision operator/species structure, package baseline, and middleware VM land (G2); [detail](#m14---middleware-server-provisioning-archiver-appliance-phoebus) |
 | Core | M15 | Discipline lab-VM clocks from the KVM PTP clock in the common operator | Milestone | Complete | No | D17 | On a KVM guest the `common` operator loads `ptp_kvm`, links `/dev/ptp_kvm` through a udev rule gated on the KVM clock name, and adds a PHC refclock to the chrony configuration it writes, so `timedatectl` reports the clock synchronized with PHC0 selected; where no KVM PTP clock exists the configuration carries no refclock and the site pools serve as before; the first `apt update` on the Debian path retries on a signature-date failure; delivered in `57d9d3f` and `eb9ba56`; [detail](#m15---discipline-lab-vm-clocks-from-the-kvm-ptp-clock-in-the-common-operator) |
 | Core | M16 | Generate the MariaDB application password on the host | Milestone | Complete | No | D18 | The `mariadb` operator creates the application password on the target host, keeps it in a root-only file, and sets the account from that file; `archiver_build` reads the same file for epicsarchiverap-env; no credential travels from the control host, `raw_stdin` and its tests are removed, and the operator works over SSH and over a local connection alike; delivered in `3e89e33`; [detail](#m16---generate-the-mariadb-application-password-on-the-host) |
-| Core | M17 | Move the epicsarchiverap-env pin to the journald and log4j2 service model | Milestone | In progress | No | M16, D19 | `archiver_env_ref` and `archiver_maven_src_tag` move past epicsarchiverap-env `bbe0968` and epicsarchiverap-maven `67be91d7`, where the appliance runs its four Tomcats in the foreground under one journald service with a WAR log4j2 layout; the operator's install check, repair, stamp and documentation fit that unit, the host keeps a persistent, bounded journal, and a fresh `archiver_dev` build serves and persists PV configuration; [detail](#m17---move-the-epicsarchiverap-env-pin-to-the-journald-and-log4j2-service-model) |
-| Core | M18 | Select SQLite as the archiver configuration database through its own operator | Milestone | Not started | No | M17, D19 | A `sqlite` operator installs the SQLite CLI, an `archiver-dev-sqlite` species puts it in place of `mariadb`, and `archiver_build` passes `DB_BACKEND=sqlite` and checks the schema with `make sql.show`; a fresh `archiver_dev_sqlite` host builds with no MariaDB server and persists PV configuration across a restart; [detail](#m18---select-sqlite-as-the-archiver-configuration-database-through-its-own-operator) |
+| Core | M17 | Move the epicsarchiverap-env pin to the journald and log4j2 service model | Milestone | Complete | No | M16, D19 | `archiver_env_ref` and `archiver_maven_src_tag` move past epicsarchiverap-env `bbe0968` and epicsarchiverap-maven `67be91d7`, where the appliance runs its four Tomcats in the foreground under one journald service with a WAR log4j2 layout; the operator's install check, repair, stamp and documentation fit that unit, the host keeps a persistent, bounded journal, and a fresh `archiver_dev` build serves and persists PV configuration; delivered in `940b63a`; [detail](#m17---move-the-epicsarchiverap-env-pin-to-the-journald-and-log4j2-service-model) |
+| Core | M18 | Select SQLite as the archiver configuration database through its own operator | Milestone | Not started | Yes | M17, D19 | A `sqlite` operator installs the SQLite CLI, an `archiver-dev-sqlite` species puts it in place of `mariadb`, and `archiver_build` passes `DB_BACKEND=sqlite` and checks the schema with `make sql.show`; a fresh `archiver_dev_sqlite` host builds with no MariaDB server and persists PV configuration across a restart; [detail](#m18---select-sqlite-as-the-archiver-configuration-database-through-its-own-operator) |
 | Core | M19 | Add an ioc-group operator fixture account with linger | Milestone | Complete | No | | The `testusers` operator also creates `opc`, a member of the `ioc` group with systemd linger enabled, while `opa`, `opb`, `obs`, `usera` and `userb` keep their current membership and linger; a fresh iocrunner host applied through this repository shows that state and re-applies cleanly; delivered in `32ea95f`; [detail](#m19---add-an-ioc-group-operator-fixture-account-with-linger) |
-| Core | M21 | Reach the archiver MariaDB over its Unix socket | Milestone | Not started | No | M17 | `archiver_build` writes `DB_SOCKET` for the `mariadb` backend and the `archiver_dev` group returns to `skip-networking`; a fresh `archiver_dev` host builds with TCP closed, serves mgmt and persists PV configuration; [detail](#m21---reach-the-archiver-mariadb-over-its-unix-socket) |
+| Core | M21 | Reach the archiver MariaDB over its Unix socket | Milestone | Not started | Yes | M17 | `archiver_build` writes `DB_SOCKET` for the `mariadb` backend and the `archiver_dev` group returns to `skip-networking`; a fresh `archiver_dev` host builds with TCP closed, serves mgmt and persists PV configuration; [detail](#m21---reach-the-archiver-mariadb-over-its-unix-socket) |
 | Gate | G1 | the production IOC server reaches the internal git host | External gate | Complete | No | | Reachability achieved through the site HTTP proxy's CONNECT tunnel (an ssh `ProxyCommand` over the proxy), not a firewall whitelist: the owner's key authenticates and `git ls-remote` returns the refs; confirmed 2026-09-03 by the successful iocserver clone (M4/T2) |
 | Gate | G2 | cloud-provision ships the middleware package baseline and the middleware VM | External gate | Open | No | | The middleware operator/species structure and OS package baseline (system OpenJDK 21, Tomcat 9.0.121, MariaDB; no Maven package) originate in cloud-provision (`docs/milestone-e260630.md` M11) as the normative source and a middleware VM is provisionable there, before ansible-provision mirrors the set and layers its roles; owned by the cloud-provision session |
 | Gate | G3 | epicsarchiverap-env ships a `sql.fill` that loads the configuration schema when the database and application account are provisioned externally | External gate | Complete | No | | Complete when the jeonghanlee/epicsarchiverap-env#47 fix commit is on `modernize` and epicsarchiverap-env records #47's acceptance as met: with only the application account, `make sql.fill` loads the schema, `make sql.show` lists `PVTypeInfo`, `PVAliases`, `ArchivePVRequests` and `ExternalDataServers`, and an absent database exits non-zero. Observing it on an archiver-dev host is M14/T17, not this gate; owned by the epicsarchiverap-env session; met 2026-09-23: the fix is `1fc20a8` on `modernize`, and #47 closed with epicsarchiverap-env's acceptance recorded |
@@ -1977,7 +1976,7 @@ the operator does not run; encrypting the file at rest (the installed
 #### M17 - Move the epicsarchiverap-env pin to the journald and log4j2 service model
 
 - Origin: 38560eb / M17
-- Status: In progress
+- Status: Complete
 
 ##### Summary
 
@@ -2089,6 +2088,18 @@ epicsarchiverap-env's own internals.
 | T1 | 2026-09-28T04:33Z | control host, working tree on `00cf104` | Passed | `--syntax-check` passes for the `archiver_build` operator and the `archiver_dev` species; the Ansible splitter accepts all 79 `raw` tasks; rendered with Ansible's templar from the role defaults, and again with `archiver_root_logger_level=WARN`, the build script, the new journal task and the launch step pass `bash -n`; the WARN render writes `ARCHAPPL_ROOT_LOGGER_LEVEL:=WARN` and `loglevel=WARN` in the stamp, the default render `loglevel=-` and no level line; the journal drop-in renders `Storage=persistent`, `MaxRetentionSec=8week`, `SystemMaxUse=1G`, `RateLimitIntervalSec=30s`, `RateLimitBurst=10000` |
 | T2 | 2026-09-28T04:55:20Z | A fresh Rocky 8.10 archiver-dev vacuum (2 vCPU, 4 GiB) from cloud-provision, working tree on `00cf104`, epicsarchiverap-env `d09dca7`, epicsarchiverap-maven `2fc12f01` | Passed | `make archiver_dev.rocky8` 04:45:37Z-04:51:50Z `failed=0`; stamp `loglevel=-` with `envref=d09dca7 srctag=2fc12f01` and no level line in `CONFIG_SITE.local`; the unit is `Type=simple`, `KillMode=mixed`, `TimeoutStopUSec=5min`, `Requires=mariadb.service`; four instances live, mgmt 200, four tables, no `catalina.out`; `journalctl -u epicsarchiverap-maven.service -t archappl-<instance>` holds every instance with priorities (mgmt 2 at 4 and 144 at 6, the others at 6 only); a 1 Hz test PV reached `Being archived` with one `PVTypeInfo` row, and after `systemctl restart` (10 s) mgmt answered 200 within 25 s, the row was still there and the PV was `Being archived` again |
 | T3 | 2026-09-28T04:58:45Z | Same VM | Passed | Re-apply of the species `changed=0 failed=0`; with the etl JVM killed the launcher stopped the other three and the unit ended `failed` (status 1), and a re-apply of the operator reported `ARCHIVER_BUILD_REPAIRED` (`changed=1`) and `ARCHIVER_JOURNAL_UNCHANGED`, with the four instances back; the drop-in carries the five settings and `/var/log/journal` exists; after a reboot (04:57:55Z) the unit was active and mgmt 200 on its own, `journalctl --list-boots` listed both boots with each instance's entries of the previous boot still readable, the journal took 24 MB, and the test PV's row remained |
+
+##### Closure Evidence
+
+- Delivered in `940b63a` (the pins at epicsarchiverap-env `d09dca7` and
+  epicsarchiverap-maven `2fc12f01`, `archiver_root_logger_level`, the journald
+  drop-in, the instance-check comments, README and the results above); the
+  repository names were spelled out afterwards in `6ca7a38`. No dedicated
+  GitHub issue.
+- Landed: after a fetch at 2026-09-28T07:40:39Z,
+  `origin/m14-middleware-reconcile` stood at `6ca7a38`, which contains
+  `940b63a`; the branch is not yet merged to `master`.
+- T1-T3 Passed on 2026-09-28 against every completion criterion on Rocky 8.10.
 
 #### M18 - Select SQLite as the archiver configuration database through its own operator
 
