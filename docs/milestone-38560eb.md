@@ -31,11 +31,14 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: no row is Ready in either section. M14 stays Blocked
-on G2 and M3 Deferred, so the next work follows owner direction or
-cloud-provision closing G2. One request awaits that direction:
-epicsarchiverap-maven asked on 2026-09-28 for an acceptance soak of its ETL pass
-scheduler on this deploy path (jeonghanlee/epicsarchiverap-maven#12). M20 closed on 2026-09-28 (`268a060`): the test-user
+Next session entry point: prepare the two parallel ETL scheduler soak runs in
+this document's M22 detail. The source refs and parallel execution are decided;
+the two VM inventories are available and actual Ansible access is verified.
+G4 still awaits the default-chain PV fixture and its storage assessment.
+Local deployment variables and the VM request sent to cloud-provision are in
+`work/soak-etl-pass-3bdf378c/`. Resolve those inputs before deployment and the
+24-hour observation windows. M14 stays Blocked on G2 and M3 Deferred.
+M20 closed on 2026-09-28 (`268a060`): the test-user
 handoff document follows the operator model. M18 closed on 2026-09-28 (`0a3d4e4`, #28 closed):
 the `archiver-dev-sqlite` species keeps the appliance configuration in SQLite.
 M21 closed on 2026-09-28 (`8a5c355`): archiver hosts reach
@@ -159,7 +162,7 @@ verified on the production IOC server 2026-09-04 (con 1.1.0 replaced by 1.2.0,
 full mode carries every OS tree, second apply `failed=0`). Delivered in
 `fd4ff1c` and `13bc8e6`.
 
-Status tally: 19 Complete, 0 In progress, 0 Not started, 1 Deferred, 1 Blocked. 3 external gates (2 Complete, 1 Open).
+Status tally: 19 Complete, 0 In progress, 0 Not started, 1 Deferred, 2 Blocked. 4 external gates (2 Complete, 2 Open).
 
 ## Milestone
 
@@ -188,9 +191,11 @@ Status tally: 19 Complete, 0 In progress, 0 Not started, 1 Deferred, 1 Blocked. 
 | Core | M19 | Add an ioc-group operator fixture account with linger | Milestone | Complete | No | | The `testusers` operator also creates `opc`, a member of the `ioc` group with systemd linger enabled, while `opa`, `opb`, `obs`, `usera` and `userb` keep their current membership and linger; a fresh iocrunner host applied through this repository shows that state and re-applies cleanly; delivered in `32ea95f`; [detail](#m19---add-an-ioc-group-operator-fixture-account-with-linger) |
 | Core | M21 | Reach the archiver MariaDB over its Unix socket | Milestone | Complete | No | M17 | `archiver_build` writes `DB_SOCKET` for the `mariadb` backend and the `archiver_dev` group returns to `skip-networking`; fresh Rocky 8.10 and Debian 13 `archiver_dev` hosts build with TCP closed, serve mgmt and persist PV configuration, and an installed TCP host moves over in one forced run; delivered in `8a5c355`; [detail](#m21---reach-the-archiver-mariadb-over-its-unix-socket) |
 | Core | M20 | Align the test-user handoff document with the operator model | Milestone | Complete | No | | `docs/test_users_handoff.md` names `roles/testusers`, `playbooks/operators/testusers.yml`, the `iocrunner` species order and the bake's species step instead of the retired `app_ioc_runner`, `roles/test_users`, `playbooks/07_test_users.yml`, `CONFIG_SITE` list and `site.yml`; delivered in `268a060`; [detail](#m20---align-the-test-user-handoff-document-with-the-operator-model) |
+| Core | M22 | Verify the ETL pass scheduler on two parallel store chains | Milestone | Blocked | No | M17, M21, G4 | Both fixed-ref deployments run for at least 24 hours across UTC midnight; pass timing and metrics match the scheduler design, normal-load passes do not overrun, each unit stops within its configured timeout, and the earlier soak comparison is recorded; [detail](#m22---verify-the-etl-pass-scheduler-on-two-parallel-store-chains) |
 | Gate | G1 | the production IOC server reaches the internal git host | External gate | Complete | No | | Reachability achieved through the site HTTP proxy's CONNECT tunnel (an ssh `ProxyCommand` over the proxy), not a firewall whitelist: the owner's key authenticates and `git ls-remote` returns the refs; confirmed 2026-09-03 by the successful iocserver clone (M4/T2) |
 | Gate | G2 | cloud-provision ships the middleware package baseline and the middleware VM | External gate | Open | No | | The middleware operator/species structure and OS package baseline (system OpenJDK 21, Tomcat 9.0.121, MariaDB; no Maven package) originate in cloud-provision (`docs/milestone-e260630.md` M11) as the normative source and a middleware VM is provisionable there, before ansible-provision mirrors the set and layers its roles; owned by the cloud-provision session |
 | Gate | G3 | epicsarchiverap-env ships a `sql.fill` that loads the configuration schema when the database and application account are provisioned externally | External gate | Complete | No | | Complete when the jeonghanlee/epicsarchiverap-env#47 fix commit is on `modernize` and epicsarchiverap-env records #47's acceptance as met: with only the application account, `make sql.fill` loads the schema, `make sql.show` lists `PVTypeInfo`, `PVAliases`, `ArchivePVRequests` and `ExternalDataServers`, and an absent database exits non-zero. Observing it on an archiver-dev host is M14/T17, not this gate; owned by the epicsarchiverap-env session; met 2026-09-23: the fix is `1fc20a8` on `modernize`, and #47 closed with epicsarchiverap-env's acceptance recorded |
+| Gate | G4 | Prepare two independent ETL soak environments | External gate | Open | No | | The cloud-provision owner provides two fresh archiver-dev VM inventories; the default-chain PV fixture is identified by the owner before registration; [detail](#g4---prepare-two-independent-etl-soak-environments) |
 
 ### Decisions
 
@@ -2555,6 +2560,163 @@ accepted 2026-07-05 state own; the cloud-provision bake script.
   merged to `master`.
 - T1 Passed on 2026-09-28 against both completion criteria.
 
+
+#### M22 - Verify the ETL pass scheduler on two parallel store chains
+
+- Origin: 38560eb / M22
+- Identity History: none
+- GitHub Issue: none; external request `jeonghanlee/epicsarchiverap-maven#12`
+- Status: Blocked
+
+##### Summary
+
+Observe the deployed ETL pass scheduler on the earlier shortened store chain
+and the epicsarchiverap-env default chain, using independent VMs in parallel.
+The scheduler design at epicsarchiverap-maven `3bdf378c`, including Testing
+item 10, defines the timing, metric meanings and comparison with M14/T21.
+
+##### Scope
+
+Two fresh Rocky 8.10 `archiver_dev` deployments through the full species, with
+MariaDB over its Unix socket and a 256M heap per instance. Use the existing
+cloud-provision VM baseline, with matching resources on both VMs. Record the
+actual disk capacity and check space for the complete observation window
+before registration. Runtime variables pin epicsarchiverap-env `d09dca7` and
+epicsarchiverap-maven `3bdf378c` without changing the role defaults.
+
+| Run | STS | MTS | LTS | PV fixture |
+| --- | --- | --- | --- | --- |
+| Shortened | PARTITION_5MIN, hold 2 | PARTITION_HOUR, hold 2 | PARTITION_DAY | Existing 903-PV fixture and rates from `work/soak-9eed006/pvs-all.csv`, served by its three IOC databases |
+| Default | PARTITION_HOUR, hold 2 | PARTITION_DAY, hold 2 | PARTITION_YEAR | Owner identifies the default fixture before registration; count, names and rates are recorded |
+
+Out of scope: scheduler code changes, repository-wide pin changes, host-sizing
+experiments, SQLite coverage, repeated retrieval stress, deliberate storage
+failures, and disposal or reuse of the previous soak VM.
+
+##### Completion Criteria
+
+- Both deployments identify the exact source commits, rendered store settings,
+  effective properties, PV population and unit stop timeout.
+- Both observations run for at least 24 hours after readiness, cross UTC
+  midnight, and retain complete pass logs and hourly ETL metrics.
+- After the startup pass, each pass follows the design's planned grid within
+  one 5-second tick under the normal soak load; ordering, completed-pass
+  counters and metric values agree with the pass records, with no overrun.
+- A measured stop of the whole unit on each VM completes successfully within
+  that unit's actual `TimeoutStopSec`, without forced termination.
+- A comparison records last-pass and average busy time and weekly usage against
+  the matching earlier load. The retired running-sum last-job value has no
+  counterpart. Measurements with different PV populations are labeled.
+
+##### Dependencies And Decisions
+
+- Decision Date: 2026-09-28. The owner selected epicsarchiverap-maven `3bdf378c`
+  and epicsarchiverap-env `d09dca7`, then selected two VMs in parallel.
+- M17 and M21 are completed deployment prerequisites. G4 supplies the VM
+  inventories and the default fixture; resume as Not started when G4 completes.
+- G2 remains specific to M14's remaining middleware work; it does not prevent
+  the existing archiver-dev deploy path from running this soak.
+- The default chain's MTS-to-LTS cadence is capped at 8 hours, so its planned
+  firings are 00:10, 08:10 and 16:10 UTC. Its hold of two day partitions means
+  that a fresh 24-hour run does not verify new data reaching LTS. Scheduled
+  passes with no eligible partition must still be observed and reported.
+- `ETLPassStopWaitSeconds` defaults to 60 seconds and can be applied twice,
+  followed by consolidation; it is not a 60-second bound on the whole unit.
+
+##### Implementation Plan
+
+- Plan Status: draft
+- Plan Acceptance: none
+- Implementation Authorization: none
+- Superseded Plan Artifacts: none
+
+1. Resolve G4. Freeze each inventory and PV fixture independently, check actual
+   storage headroom, and record the complete runtime configuration. The owner
+   has selected the source refs and parallel topology; the default PV fixture
+   remains unresolved.
+2. Apply `make archiver_dev.rocky8` separately to each inventory, passing
+   `work/soak-etl-pass-3bdf378c/common.yml` plus `shortened.yml` or `default.yml`.
+   Keep a separate deployment log for each VM. Verify the installed source
+   commits, stamp, four running instances, database, health and clock sync.
+   Identify whether the deployed `archappl.properties` comes from the source
+   default site or the epicsarchiverap-env template, and record effective ETL
+   properties without exposing database credentials.
+3. Adapt the existing sampler for journald and a configurable PV fixture. Keep
+   raw pass logs and raw metrics responses. Enable DEBUG only for
+   `org.epics.archiverappliance.etl.common.ETLPassDriver` through the mgmt
+   `setLogLevel` BPL. Report missing samples as collection failures.
+4. Start the real fixture IOCs and register the exact lists. Scope each
+   appliance's Channel Access discovery to its intended fixture IOC and check
+   the connection endpoints, so duplicate PV names on the parallel VM cannot
+   select the wrong source. Verify a real completed-pass log and matching
+   metrics on each appliance. Define each observation start only after every
+   expected PV is archiving, clocks are synchronized, and collection works.
+   Collect host and per-process resources, service state and store state every
+   five minutes, and ETL metrics at least hourly. Retain every pass record
+   throughout the two parallel windows.
+5. After each window, capture final metrics and time one whole-unit stop. Save
+   the service result and journal, including consolidation and any signals.
+   Keep the shutdown-aborted pass separate from normal-load overrun checks.
+6. Record T1-T6 from actual executions. Prepare the scheduler comparison and
+   whole-unit stop measurements for the two upstream projects. Any external
+   message or issue update follows its own authorization.
+
+##### Test Plan
+
+| Label | Layer | Method | Environment | Expected Result |
+| --- | --- | --- | --- | --- |
+| T1 | Configuration | Use `ansible-inventory` to load each pair of runtime YAML files and run `ansible-playbook --syntax-check` on the shipped `archiver_dev` species with those files | Control host, static inventory only | Exact approved extra variables; socket MariaDB and 256M heap; shortened store values on one run and empty store overrides on the other; playbook syntax valid. Host-specific resolution remains T2 |
+| T2 | Deployment | Apply the shipped species, then inspect the installed commits, stamp, policies, effective properties, four instances, database, health and clock; verify fixture connection endpoints after registration | Both VMs | Configurations match their recorded inputs, each appliance connects to its intended IOC sources, and both are ready |
+| T3 | Collection | Run the sampler against each real appliance and compare its outputs with a completed-pass journal record and the live metrics response | Both VMs | Real pass evidence, metric fields, resource samples and UTC timestamps are preserved; failures remain visible |
+| T4 | Soak | Observe each real PV population for at least 24 hours across UTC midnight; evaluate every retained pass and hourly metric snapshot | Both VMs | Normal passes follow the grid and ordering, do not overrun, and agree with the reported metrics; outages or data gaps are reported |
+| T5 | Shutdown | Capture final metrics and time one whole-unit stop on each VM, preserving the unit result and journal | Both VMs after T4 | Successful orderly stops inside the actual timeout, without forced termination; elapsed times and effective wait settings recorded |
+| T6 | Comparison | Compare new busy time and weekly usage with the shipped M14/T21 evidence, accounting for population and load differences | Control host | A reproducible comparison with the retired running-sum metric excluded and the default-chain LTS limitation stated |
+
+##### Verification Results
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T1 | 2026-09-28 19:19:10 UTC | Control host, working tree on `3060a7f` | Passed | The real `ansible-inventory --host localhost` loaded `common.yml` with each store file and returned the approved ten extra-variable values; the real `ansible-playbook --syntax-check` accepted `playbooks/species/archiver_dev.yml` with both file pairs. Only the static inventory was used; no target host was contacted. The existing PV lists contain 100, 400 and 403 entries, with 903 in `pvs-all.csv`, and all three IOC database files exist |
+| T2 | 2026-09-28 19:45:38 UTC | Both fresh Rocky 8.10 VMs | Pending | Actual inventories reach both VMs through Ansible raw with rc=0: Rocky 8.10, two online CPUs, a 20 GiB disk, 18054 MiB free on root, cloud-init done, and NTPSynchronized=no on each. Application deployment, post-deployment space, source refs and fixture connections remain unverified. The shipped species runs `common` first; its KVM PTP clock setup must be checked after application |
+| T3 | Not run | Both VMs | Pending | Collector adaptation and real appliance checks required |
+| T4 | Not run | Both VMs | Pending | No observation window started |
+| T5 | Not run | Both VMs | Pending | Requires completed observation windows |
+| T6 | Not run | Control host | Pending | Requires new measurement evidence |
+
+##### Closure Evidence
+
+- None. No deployment or soak result is claimed.
+
+#### G4 - Prepare two independent ETL soak environments
+
+- Origin: 38560eb / G4
+- GitHub Issue: none
+- Status: Open
+
+##### Summary
+
+The cloud-provision owner supplies two independent, fresh Rocky 8.10 VMs and
+separate inventories for the `archiver-dev` species. The owner identifies the
+default-chain PV fixture. M22 depends on both inputs before deployment and
+registration.
+
+##### Completion Criteria
+
+- Two distinct VM inventories are available to the controller; the VMs have
+  matching baseline resources and enough storage for their observation windows.
+- The default-chain PV fixture is identified, with its real IOC source and
+  registration list available.
+- Host identifiers and addresses stay in local inventories and evidence.
+
+##### Verification Results
+
+| Observed At | Result | Evidence |
+| --- | --- | --- |
+| 2026-09-28 19:45:38 UTC | Pending | Cloud-provision delivered two separate inventories and reported 4096 MiB allocated to each VM. Actual access, OS, CPU, disk, free space, cloud-init and clock state were checked independently as recorded in M22/T2. The default inventory depends on the separate known-hosts file supplied beside it; preserve both. The default-chain fixture and its storage requirement remain pending |
+
+##### Closure Evidence
+
+- None.
 
 ## Backlog
 
