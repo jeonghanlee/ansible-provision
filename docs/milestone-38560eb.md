@@ -2227,8 +2227,10 @@ runs; the retired paths elsewhere in `docs/test_users_handoff.md` (M20).
 ##### Closure Evidence
 
 - Delivered in `32ea95f` (the `opc` list and task in `testusers`, the handoff
-  document's `opc` row and dated check, the results above). Closes #27 when
-  the branch reaches `master`.
+  document's `opc` row and dated check, the results above). #27 was closed
+  manually on its verification (observed closed, reason completed, at
+  2026-09-28T04:15:51Z); the commit's `Closes #27` footer has no further
+  effect when the branch reaches `master`.
 - Landed: after a fetch at 2026-09-28T03:59:23Z,
   `origin/m14-middleware-reconcile` stood at `32ea95f`; the branch is not yet
   merged to `master`.
