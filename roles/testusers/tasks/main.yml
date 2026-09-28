@@ -31,3 +31,13 @@
       loginctl enable-linger "$u"
     done
   changed_when: false
+
+- name: Create operator accounts joined to the ioc group with linger enabled
+  ansible.builtin.raw: |
+    set -e
+    for u in {{ test_users_operators_linger | join(' ') }}; do
+      id "$u" >/dev/null 2>&1 || useradd -m -s /bin/bash "$u"
+      usermod -aG {{ test_users_ioc_group }} "$u"
+      loginctl enable-linger "$u"
+    done
+  changed_when: false

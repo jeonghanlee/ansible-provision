@@ -18,5 +18,10 @@ test_users_observer: obs
 # so systemctl --user runs without an interactive session.
 test_users_local: [usera, userb]
 
+# Operators with linger: joined to ioc like the operators, and lingering like
+# the local-mode users, so one account can run an IOC with systemctl --user
+# and then as a system service through the sudoers gate.
+test_users_operators_linger: [opc]
+
 # Product group the operators join (created by the iocrunner role / setup).
 test_users_ioc_group: ioc

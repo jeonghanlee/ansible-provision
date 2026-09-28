@@ -36,6 +36,7 @@ during the golden bake and is not part of the product `site.yml`.
 | `obs` | No | Observer negative control; state-changing actions are denied. |
 | `usera` | No | Local-mode user with linger enabled. |
 | `userb` | No | Second local-mode user with linger enabled. |
+| `opc` | Yes | Operator with linger enabled, for one account running an IOC in local mode and then as a system service. |
 
 The `ioc-srv` account and `ioc` group are product infrastructure from
 `app_ioc_runner`. This fixture adds only test accounts and group membership.
@@ -59,6 +60,11 @@ accepted state:
 - `obs` exists and does not belong to `ioc`.
 - `usera` and `userb` have systemd linger enabled.
 - A clean reprovision from each golden preserves the fixture.
+
+On 2026-09-28 fresh Rocky 8.10 and Debian 13 hosts applied through the
+`iocrunner` species established `opc` in `ioc` with systemd linger enabled,
+the other five accounts unchanged, and an unchanged re-apply of the operator;
+the check on a fresh variant from the golden follows the next iocrunner bake.
 
 Future verification must use a fresh variant from the golden under test. A
 running overlay with manually created accounts is not evidence for the golden.
