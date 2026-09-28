@@ -31,11 +31,7 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: M19, the `opc` fixture account for the
-epics-ioc-runner 1.4.2 release gate, in progress under its plan accepted and
-authorized on 2026-09-27; the role change and T1-T2 are done, so commit and
-push it, report the commit to epics-ioc-runner and cloud-provision, have the
-two T2 VMs removed, and close it. M17, the aa-env pin moved to the journald and log4j2
+Next session entry point: M17, the aa-env pin moved to the journald and log4j2
 service model, in progress under its plan accepted and authorized on
 2026-09-27; continue from its Implementation Plan step 1, deriving the aa-env range from `9eed006` and the
 aa-maven range from `3c96141d`. Background follows. The schema load is fixed:
@@ -157,7 +153,7 @@ verified on the production IOC server 2026-09-04 (con 1.1.0 replaced by 1.2.0,
 full mode carries every OS tree, second apply `failed=0`). Delivered in
 `fd4ff1c` and `13bc8e6`.
 
-Status tally: 14 Complete, 2 In progress, 1 Not started, 1 Deferred, 1 Blocked. 3 external gates (2 Complete, 1 Open).
+Status tally: 15 Complete, 1 In progress, 1 Not started, 1 Deferred, 1 Blocked. 3 external gates (2 Complete, 1 Open).
 
 ## Milestone
 
@@ -183,7 +179,7 @@ Status tally: 14 Complete, 2 In progress, 1 Not started, 1 Deferred, 1 Blocked. 
 | Core | M16 | Generate the MariaDB application password on the host | Milestone | Complete | No | D18 | The `mariadb` operator creates the application password on the target host, keeps it in a root-only file, and sets the account from that file; `archiver_build` reads the same file for aa-env; no credential travels from the control host, `raw_stdin` and its tests are removed, and the operator works over SSH and over a local connection alike; delivered in `3e89e33`; [detail](#m16---generate-the-mariadb-application-password-on-the-host) |
 | Core | M17 | Move the aa-env pin to the journald and log4j2 service model | Milestone | In progress | No | M16, D19 | `archiver_env_ref` and `archiver_maven_src_tag` move past aa-env `bbe0968` and aa-maven `67be91d7`, where the appliance runs its four Tomcats in the foreground under one journald service with a WAR log4j2 layout; the operator's install check, repair, stamp and documentation fit that unit, the host keeps a persistent, bounded journal, and a fresh `archiver_dev` build serves and persists PV configuration; [detail](#m17---move-the-aa-env-pin-to-the-journald-and-log4j2-service-model) |
 | Core | M18 | Select SQLite as the archiver configuration database through its own operator | Milestone | Not started | No | M17, D19 | A `sqlite` operator installs the SQLite CLI, an `archiver-dev-sqlite` species puts it in place of `mariadb`, and `archiver_build` passes `DB_BACKEND=sqlite` and checks the schema with `make sql.show`; a fresh `archiver_dev_sqlite` host builds with no MariaDB server and persists PV configuration across a restart; [detail](#m18---select-sqlite-as-the-archiver-configuration-database-through-its-own-operator) |
-| Core | M19 | Add an ioc-group operator fixture account with linger | Milestone | In progress | No | | The `testusers` operator also creates `opc`, a member of the `ioc` group with systemd linger enabled, while `opa`, `opb`, `obs`, `usera` and `userb` keep their current membership and linger; a fresh iocrunner host applied through this repository shows that state and re-applies cleanly; [detail](#m19---add-an-ioc-group-operator-fixture-account-with-linger) |
+| Core | M19 | Add an ioc-group operator fixture account with linger | Milestone | Complete | No | | The `testusers` operator also creates `opc`, a member of the `ioc` group with systemd linger enabled, while `opa`, `opb`, `obs`, `usera` and `userb` keep their current membership and linger; a fresh iocrunner host applied through this repository shows that state and re-applies cleanly; delivered in `32ea95f`; [detail](#m19---add-an-ioc-group-operator-fixture-account-with-linger) |
 | Gate | G1 | the production IOC server reaches the internal git host | External gate | Complete | No | | Reachability achieved through the site HTTP proxy's CONNECT tunnel (an ssh `ProxyCommand` over the proxy), not a firewall whitelist: the owner's key authenticates and `git ls-remote` returns the refs; confirmed 2026-09-03 by the successful iocserver clone (M4/T2) |
 | Gate | G2 | cloud-provision ships the middleware package baseline and the middleware VM | External gate | Open | No | | The middleware operator/species structure and OS package baseline (system OpenJDK 21, Tomcat 9.0.121, MariaDB; no Maven package) originate in cloud-provision (`docs/milestone-e260630.md` M11) as the normative source and a middleware VM is provisionable there, before ansible-provision mirrors the set and layers its roles; owned by the cloud-provision session |
 | Gate | G3 | aa-env ships a `sql.fill` that loads the configuration schema when the database and application account are provisioned externally | External gate | Complete | No | | Complete when the jeonghanlee/epicsarchiverap-env#47 fix commit is on `modernize` and aa-env records #47's acceptance as met: with only the application account, `make sql.fill` loads the schema, `make sql.show` lists `PVTypeInfo`, `PVAliases`, `ArchivePVRequests` and `ExternalDataServers`, and an absent database exits non-zero. Observing it on an archiver-dev host is M14/T17, not this gate; owned by the aa-env session; met 2026-09-23: the fix is `1fc20a8` on `modernize`, and #47 closed with aa-env's acceptance recorded |
@@ -2151,7 +2147,7 @@ group, which land after this role.
 
 - Origin: 38560eb / M19
 - GitHub Issue: #27, https://github.com/jeonghanlee/ansible-provision/issues/27
-- Status: In progress
+- Status: Complete
 
 ##### Summary
 
@@ -2227,6 +2223,20 @@ runs; the retired paths elsewhere in `docs/test_users_handoff.md` (M20).
 | --- | --- | --- | --- | --- |
 | T1 | 2026-09-28T03:23:24Z | control host, working tree on `aaa026d` | Passed | `ansible-playbook --syntax-check` exits 0 for `playbooks/operators/testusers.yml` and `playbooks/species/iocrunner.yml`; `--list-tasks` shows the new task last in the operator |
 | T2 | 2026-09-28T03:51:39Z | A fresh Rocky 8.10 and a fresh Debian 13 bare vacuum (2 vCPU, 4 GiB) from cloud-provision, working tree on `aaa026d` | Passed | `make iocrunner.rocky8` and `make iocrunner.debian13` `failed=0` (finished 03:51:11Z), the new task last in the operator on both; on both hosts `id -nG` and the linger file give `opa` and `opb` in `ioc` without linger, `obs` in neither, `usera` and `userb` with linger outside `ioc`, and `opc` in `ioc` with linger (home `/home/opc`, shell `/bin/bash`); `make op.testusers.<vacuum>` re-apply `ok=5 changed=0 failed=0` on both with the same state |
+
+##### Closure Evidence
+
+- Delivered in `32ea95f` (the `opc` list and task in `testusers`, the handoff
+  document's `opc` row and dated check, the results above). Closes #27 when
+  the branch reaches `master`.
+- Landed: after a fetch at 2026-09-28T03:59:23Z,
+  `origin/m14-middleware-reconcile` stood at `32ea95f`; the branch is not yet
+  merged to `master`.
+- T1-T2 Passed on 2026-09-28 against every completion criterion. The consumer
+  applied the operator to its two running test consumers the same day; the
+  next iocrunner bake at or past `32ea95f` carries `opc`, which the consumer
+  tracks as its own gate with cloud-provision.
+
 
 ## Backlog
 
