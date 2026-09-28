@@ -31,12 +31,14 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: M20, the test-user handoff document aligned with the
-operator model, assigned from the Backlog and in progress under its plan
-accepted and authorized on 2026-09-28; the rewrite and T1 are done, so commit
-and push it and close it. M18 closed on 2026-09-28 (`0a3d4e4`, #28 closed):
+Next session entry point: no row is Ready in either section. M14 stays Blocked
+on G2 and M3 Deferred, so the next work follows owner direction or
+cloud-provision closing G2. One request awaits that direction:
+epicsarchiverap-maven asked on 2026-09-28 for an acceptance soak of its ETL pass
+scheduler on this deploy path (jeonghanlee/epicsarchiverap-maven#12). M20 closed on 2026-09-28 (`268a060`): the test-user
+handoff document follows the operator model. M18 closed on 2026-09-28 (`0a3d4e4`, #28 closed):
 the `archiver-dev-sqlite` species keeps the appliance configuration in SQLite.
-M14 stays Blocked on G2 and M3 Deferred. M21 closed on 2026-09-28 (`8a5c355`): archiver hosts reach
+M21 closed on 2026-09-28 (`8a5c355`): archiver hosts reach
 MariaDB over its Unix socket. M17 closed on 2026-09-28 with the pins at epicsarchiverap-env
 `d09dca7` and epicsarchiverap-maven `2fc12f01` (`940b63a`). Background follows. The schema load is fixed:
 epicsarchiverap-env's `sql.fill` fix (G3, jeonghanlee/epicsarchiverap-env#47) is on `modernize` at `1fc20a8`, and M14/T17 passed on a Rocky 8.10 and a Debian 13
@@ -157,7 +159,7 @@ verified on the production IOC server 2026-09-04 (con 1.1.0 replaced by 1.2.0,
 full mode carries every OS tree, second apply `failed=0`). Delivered in
 `fd4ff1c` and `13bc8e6`.
 
-Status tally: 18 Complete, 1 In progress, 0 Not started, 1 Deferred, 1 Blocked. 3 external gates (2 Complete, 1 Open).
+Status tally: 19 Complete, 0 In progress, 0 Not started, 1 Deferred, 1 Blocked. 3 external gates (2 Complete, 1 Open).
 
 ## Milestone
 
@@ -185,7 +187,7 @@ Status tally: 18 Complete, 1 In progress, 0 Not started, 1 Deferred, 1 Blocked. 
 | Core | M18 | Select SQLite as the archiver configuration database through its own operator | Milestone | Complete | No | M17, D19 | A `sqlite` operator installs the SQLite CLI, an `archiver-dev-sqlite` species puts it in place of `mariadb`, and `archiver_build` passes `DB_BACKEND=sqlite` and checks the schema with `make sql.show`; fresh Rocky 8.10 and Debian 13 `archiver_dev_sqlite` hosts build with no MariaDB server and persist PV configuration across a restart; delivered in `0a3d4e4`; [detail](#m18---select-sqlite-as-the-archiver-configuration-database-through-its-own-operator) |
 | Core | M19 | Add an ioc-group operator fixture account with linger | Milestone | Complete | No | | The `testusers` operator also creates `opc`, a member of the `ioc` group with systemd linger enabled, while `opa`, `opb`, `obs`, `usera` and `userb` keep their current membership and linger; a fresh iocrunner host applied through this repository shows that state and re-applies cleanly; delivered in `32ea95f`; [detail](#m19---add-an-ioc-group-operator-fixture-account-with-linger) |
 | Core | M21 | Reach the archiver MariaDB over its Unix socket | Milestone | Complete | No | M17 | `archiver_build` writes `DB_SOCKET` for the `mariadb` backend and the `archiver_dev` group returns to `skip-networking`; fresh Rocky 8.10 and Debian 13 `archiver_dev` hosts build with TCP closed, serve mgmt and persist PV configuration, and an installed TCP host moves over in one forced run; delivered in `8a5c355`; [detail](#m21---reach-the-archiver-mariadb-over-its-unix-socket) |
-| Core | M20 | Align the test-user handoff document with the operator model | Milestone | In progress | No | | `docs/test_users_handoff.md` names `roles/testusers`, `playbooks/operators/testusers.yml`, the `iocrunner` species order and the bake's species step instead of the retired `app_ioc_runner`, `roles/test_users`, `playbooks/07_test_users.yml`, `CONFIG_SITE` list and `site.yml`; [detail](#m20---align-the-test-user-handoff-document-with-the-operator-model) |
+| Core | M20 | Align the test-user handoff document with the operator model | Milestone | Complete | No | | `docs/test_users_handoff.md` names `roles/testusers`, `playbooks/operators/testusers.yml`, the `iocrunner` species order and the bake's species step instead of the retired `app_ioc_runner`, `roles/test_users`, `playbooks/07_test_users.yml`, `CONFIG_SITE` list and `site.yml`; delivered in `268a060`; [detail](#m20---align-the-test-user-handoff-document-with-the-operator-model) |
 | Gate | G1 | the production IOC server reaches the internal git host | External gate | Complete | No | | Reachability achieved through the site HTTP proxy's CONNECT tunnel (an ssh `ProxyCommand` over the proxy), not a firewall whitelist: the owner's key authenticates and `git ls-remote` returns the refs; confirmed 2026-09-03 by the successful iocserver clone (M4/T2) |
 | Gate | G2 | cloud-provision ships the middleware package baseline and the middleware VM | External gate | Open | No | | The middleware operator/species structure and OS package baseline (system OpenJDK 21, Tomcat 9.0.121, MariaDB; no Maven package) originate in cloud-provision (`docs/milestone-e260630.md` M11) as the normative source and a middleware VM is provisionable there, before ansible-provision mirrors the set and layers its roles; owned by the cloud-provision session |
 | Gate | G3 | epicsarchiverap-env ships a `sql.fill` that loads the configuration schema when the database and application account are provisioned externally | External gate | Complete | No | | Complete when the jeonghanlee/epicsarchiverap-env#47 fix commit is on `modernize` and epicsarchiverap-env records #47's acceptance as met: with only the application account, `make sql.fill` loads the schema, `make sql.show` lists `PVTypeInfo`, `PVAliases`, `ArchivePVRequests` and `ExternalDataServers`, and an absent database exits non-zero. Observing it on an archiver-dev host is M14/T17, not this gate; owned by the epicsarchiverap-env session; met 2026-09-23: the fix is `1fc20a8` on `modernize`, and #47 closed with epicsarchiverap-env's acceptance recorded |
@@ -218,7 +220,7 @@ Status tally: 18 Complete, 1 In progress, 0 Not started, 1 Deferred, 1 Blocked. 
 
 | Work Identity | From Canonical | To Canonical | Target Commit | Authority Moved At |
 | --- | --- | --- | --- | --- |
-| 38560eb / M20 | master, `docs/milestone-38560eb.md` `## Backlog` | master, `docs/milestone-38560eb.md` `## Milestone` | this synchronization commit | this synchronization commit |
+| 38560eb / M20 | master, `docs/milestone-38560eb.md` `## Backlog` | master, `docs/milestone-38560eb.md` `## Milestone` | `268a060` | `268a060` |
 
 ### Milestone Details
 
@@ -2457,7 +2459,7 @@ Out of scope: the SQLite backend (M18); remote database hosts.
 
 - Origin: 38560eb / M20
 - GitHub Issue: none
-- Status: In progress
+- Status: Complete
 
 ##### Summary
 
@@ -2543,6 +2545,16 @@ accepted 2026-07-05 state own; the cloud-provision bake script.
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
 | T1 | 2026-09-28T18:08:29Z | control host, working tree on `71fa108`; cloud-provision and epics-ioc-runner at their fetched `origin` | Passed | A grep of the rewritten `docs/test_users_handoff.md` finds none of `test_users`, `app_ioc_runner`, `site.yml`, `roles/test_users`, `07_test_users`, `SERVER_ONLY`, `CONFIG_SITE`, `04_nfs_sim`, `nfs_sim_nodes` or `Step 6/9`; all eight repository paths it names exist; `playbooks/species/iocrunner.yml` ends with `testusers` and `iocrunner_nfs.yml` imports `iocrunner.yml` then `nfs_sim`, as its Ordering states; `iocserver.yml` has no `testusers`; the bake's Steps 1-8 and its `iocrunner`/`iocrunner-nfs` assemblies match the Ordering and Integration rows; `gate/RUNBOOK.md` exists in epics-ioc-runner |
+
+##### Closure Evidence
+
+- Delivered in `268a060` (the rewritten `docs/test_users_handoff.md` and the
+  assignment of this item from the Backlog). No dedicated GitHub issue.
+- Landed: after a fetch at 2026-09-28T18:28:48Z,
+  `origin/m14-middleware-reconcile` stood at `268a060`; the branch is not yet
+  merged to `master`.
+- T1 Passed on 2026-09-28 against both completion criteria.
+
 
 ## Backlog
 
