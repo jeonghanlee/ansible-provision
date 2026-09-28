@@ -32,8 +32,8 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
 Next session entry point: M17, the aa-env pin moved to the journald and log4j2
-service model. Its draft plan awaits owner acceptance; start from its
-Implementation Plan step 1, deriving the aa-env range from `9eed006` and the
+service model, in progress under its plan accepted and authorized on
+2026-09-27; continue from its Implementation Plan step 1, deriving the aa-env range from `9eed006` and the
 aa-maven range from `3c96141d`. Background follows. The schema load is fixed:
 aa-env's `sql.fill` fix (G3, jeonghanlee/epicsarchiverap-env#47) is on `modernize` at `1fc20a8`, and M14/T17 passed on a Rocky 8.10 and a Debian 13
 host rebuilt through this operator at that ref on 2026-09-23: the operator's
@@ -48,10 +48,11 @@ on 2026-09-24, where T17 also passed at `9eed006`: all 100 PVs reached STS, MTS,
 LTS and a second LTS day partition, and PV configuration survived an appliance
 restart. M14/T21, the load test on the same host, passed on 2026-09-26: no
 instance or mgmt outage up to 903 PVs and a 6 h retrieval load (42417 requests,
-median 31 ms, all served), and the limit found is the STS-to-MTS ETL job time,
-which rose about 9 s per hour at any PV count to 277 s of the 300 s partition
-period when the run was ended with the disk 91% full; the two end events showed a
-quiet IOC restart and a 5 MB, 10836-line etl burst for 10 min of an unwritable
+median 31 ms, all served), and no limit was reached before the run was ended
+with the disk 91% full; each STS-to-MTS ETL pass took 0.4 s at 500 PVs and
+0.7-1.0 s at 903 PVs (the steadily rising "last job" metric read at first as a
+slowdown is a running sum); the two
+end events showed a quiet IOC restart and a 5 MB, 10836-line etl burst for 10 min of an unwritable
 MTS. All IOCs and the sampler are stopped; the appliance is left running with no
 PVs connected. The soak writes
 its 5-minute CSVs (host, per-process, per-log-stream, per-tier first arrival,
@@ -152,7 +153,7 @@ verified on the production IOC server 2026-09-04 (con 1.1.0 replaced by 1.2.0,
 full mode carries every OS tree, second apply `failed=0`). Delivered in
 `fd4ff1c` and `13bc8e6`.
 
-Status tally: 14 Complete, 0 In progress, 2 Not started, 1 Deferred, 1 Blocked. 3 external gates (2 Complete, 1 Open).
+Status tally: 14 Complete, 1 In progress, 1 Not started, 1 Deferred, 1 Blocked. 3 external gates (2 Complete, 1 Open).
 
 ## Milestone
 
@@ -176,7 +177,7 @@ Status tally: 14 Complete, 0 In progress, 2 Not started, 1 Deferred, 1 Blocked. 
 | Core | M14 | Middleware server provisioning (Archiver Appliance, Phoebus) | Milestone | Blocked | No | G2, G3 | A middleware species provisions the EPICS Archiver Appliance and Phoebus, each independently selectable, on a middleware host layered on the common+epics base - system Java (distribution OpenJDK 21 with `JAVA_HOME`), Tomcat 9.0.121, MariaDB, the applications from their binary distribution repositories (species `archiver`, `phoebus`) or from source (`archiver-dev`, `phoebus-dev`), combinable as `middleware`, group `mid` / user `mid-srv` - with internal specifics supplied through the site override layer; blocked until the cloud-provision operator/species structure, package baseline, and middleware VM land (G2); [detail](#m14---middleware-server-provisioning-archiver-appliance-phoebus) |
 | Core | M15 | Discipline lab-VM clocks from the KVM PTP clock in the common operator | Milestone | Complete | No | D17 | On a KVM guest the `common` operator loads `ptp_kvm`, links `/dev/ptp_kvm` through a udev rule gated on the KVM clock name, and adds a PHC refclock to the chrony configuration it writes, so `timedatectl` reports the clock synchronized with PHC0 selected; where no KVM PTP clock exists the configuration carries no refclock and the site pools serve as before; the first `apt update` on the Debian path retries on a signature-date failure; delivered in `57d9d3f` and `eb9ba56`; [detail](#m15---discipline-lab-vm-clocks-from-the-kvm-ptp-clock-in-the-common-operator) |
 | Core | M16 | Generate the MariaDB application password on the host | Milestone | Complete | No | D18 | The `mariadb` operator creates the application password on the target host, keeps it in a root-only file, and sets the account from that file; `archiver_build` reads the same file for aa-env; no credential travels from the control host, `raw_stdin` and its tests are removed, and the operator works over SSH and over a local connection alike; delivered in `3e89e33`; [detail](#m16---generate-the-mariadb-application-password-on-the-host) |
-| Core | M17 | Move the aa-env pin to the journald and log4j2 service model | Milestone | Not started | Yes | M16, D19 | `archiver_env_ref` and `archiver_maven_src_tag` move past aa-env `bbe0968` and aa-maven `67be91d7`, where the appliance runs its four Tomcats in the foreground under one journald service with a WAR log4j2 layout; the operator's install check, repair, stamp and documentation fit that unit, the host keeps a persistent, bounded journal, and a fresh `archiver_dev` build serves and persists PV configuration; [detail](#m17---move-the-aa-env-pin-to-the-journald-and-log4j2-service-model) |
+| Core | M17 | Move the aa-env pin to the journald and log4j2 service model | Milestone | In progress | No | M16, D19 | `archiver_env_ref` and `archiver_maven_src_tag` move past aa-env `bbe0968` and aa-maven `67be91d7`, where the appliance runs its four Tomcats in the foreground under one journald service with a WAR log4j2 layout; the operator's install check, repair, stamp and documentation fit that unit, the host keeps a persistent, bounded journal, and a fresh `archiver_dev` build serves and persists PV configuration; [detail](#m17---move-the-aa-env-pin-to-the-journald-and-log4j2-service-model) |
 | Core | M18 | Select SQLite as the archiver configuration database through its own operator | Milestone | Not started | No | M17, D19 | A `sqlite` operator installs the SQLite CLI, an `archiver-dev-sqlite` species puts it in place of `mariadb`, and `archiver_build` passes `DB_BACKEND=sqlite` and checks the schema with `make sql.show`; a fresh `archiver_dev_sqlite` host builds with no MariaDB server and persists PV configuration across a restart; [detail](#m18---select-sqlite-as-the-archiver-configuration-database-through-its-own-operator) |
 | Gate | G1 | the production IOC server reaches the internal git host | External gate | Complete | No | | Reachability achieved through the site HTTP proxy's CONNECT tunnel (an ssh `ProxyCommand` over the proxy), not a firewall whitelist: the owner's key authenticates and `git ls-remote` returns the refs; confirmed 2026-09-03 by the successful iocserver clone (M4/T2) |
 | Gate | G2 | cloud-provision ships the middleware package baseline and the middleware VM | External gate | Open | No | | The middleware operator/species structure and OS package baseline (system OpenJDK 21, Tomcat 9.0.121, MariaDB; no Maven package) originate in cloud-provision (`docs/milestone-e260630.md` M11) as the normative source and a middleware VM is provisionable there, before ansible-provision mirrors the set and layers its roles; owned by the cloud-provision session |
@@ -1475,7 +1476,7 @@ definition now (owner + LAB-CLOUD, 2026-09-14).
 | T17 | 2026-09-23T22:10:06Z | A Rocky 8.10 and a Debian 13 archiver-dev host rebuilt through this operator (`a3f9949`) at aa-env `1fc20a8` with `archiver_force_reinstall=true`; both hosts were removed afterwards | Passed | Observed between 22:07:52Z and 22:10:06Z on both hosts: the install stamp carries `envref=1fc20a8`; `CONFIG_SITE.local` carries `MAVEN_FLAGS:=-gs /etc/maven-proxy-settings.xml`, and the build log shows its use and `BUILD SUCCESS`; the four WARs carry the als classpathfiles; `sql.fill` loaded the schema and the operator's table check let the build continue, its first run inside a build; `make sql.show` lists `ArchivePVRequests`, `ExternalDataServers`, `PVAliases` and `PVTypeInfo`; mgmt answers 200, aa-env's health service and timer are installed, and mgmt logs no persistence error. The host then carrying the soak, now the pilot host, stayed at `6a026d4` with an empty configuration database; T17 there was the remaining check (owner decision 2026-09-23). |
 | T17 | 2026-09-24T09:15:13Z | The soak host: a fresh Rocky 8.10 archiver-dev VM, the full species applied from `dca2255` at aa-env `9eed006` with the README test store values | Passed | The apply ran 08:49:29Z-09:08:21Z with `failed=0`. The install stamp carries `envref=9eed006` and the store values; `CONFIG_SITE.local` carries `MAVEN_FLAGS` and the five store lines; the installed `policies.py` and the copy packed into the mgmt webapp carry `PARTITION_5MIN` hold 2, `PARTITION_HOUR` hold 2 and `PARTITION_DAY`; the build log shows the settings file and `BUILD SUCCESS`; the database holds the four tables; all four JVMs run `-Xms256M -Xmx256M`; the health service and timer are installed; mgmt answered 200 at 09:09:03Z once initialised and logs no missing-table error. After 100 PVs were registered, `PVTypeInfo` held 100 rows at 09:15:13Z. This settles the remaining check the 2026-09-23 row named, on a new host instead of the old one (owner decision 2026-09-24). |
 | T20 | 2026-09-25T09:27:24Z | The soak host (Rocky 8.10, 2 vCPU, 3.6 GiB) at operator `dca2255`, aa-env `9eed006` and the README test store values; 100 PVs registered at 2026-09-24T09:09:52Z | Passed | Over 23.9 h of 5-minute samples: the installed `policies.py` carries the test values and T17 passed on this host (row above); STS held all 100 PVs at 09:15Z, MTS at 09:30Z and LTS at 12:15Z, and the second LTS day partition existed for all 100 by 03:15Z on 2026-09-25, about 3 h 15 min after midnight; the unit stayed active with four instances, mgmt 200 and health success in every sample, one PID per JVM all day and kernel OOM 0; retrieval returned the full sample count in every window after the first. The appliance was restarted at 09:25:03Z on 2026-09-25, about 9 h 25 min after midnight: four new JVMs, mgmt 200 at 09:26:01Z, `PVTypeInfo` still 100 rows and all 100 PVs Being archived again, no missing-table error; archiving paused 55 s for the 1 Hz, 10 Hz and waveform PVs and 60 s for a 0.1 Hz PV. Resources: CPU idle mean 96%, MemAvailable 1.23-1.50 GB, no swap; JVM RSS 374-500 MiB each, heap used at most 241 MiB of 256M (etl), full GC 0; `/arch` 3.60 GB, of which LTS 3.11 GB (a 1000-element waveform about 0.69 GB per day, a 1 Hz scalar about 1.9 MB). Logs: the four logs directories together about 480 KB/h; mgmt `catalina.out` 151 KB/h, engine `catalina.out` 133 KB/h plus its dated JULI file 126 KB/h (CA client beacon and duplicate-response records), retrieval 52 KB/h, etl none after startup; ERROR 3, all during mgmt initialisation, and Exception 0. |
-| T21 | 2026-09-26T19:25:06Z | The soak host after T20, heap 256M, 100 day-1 PVs plus 400 1 Hz scalars from 09:46Z on 2026-09-25 (step 1) and 300 1 Hz scalars, 100 10 Hz VeryFast scalars and three waveforms from 15:46Z (step 2, 903 PVs); four retrieval clients 21:46Z-21:56Z (client lost to the kernel OOM killer, its own fault: whole responses buffered) and again 08:30Z-14:30Z on 2026-09-26 with a streaming client; load held to 18:55Z; end events 18:57Z and 19:00-19:10Z | Passed | No step lost an instance or mgmt: 404 samples with four instances, mgmt 200 (max 12 ms) and health success; the only kernel OOM kill was the first retrieval client. Every PV of both steps reached STS, MTS and LTS (step 2 in LTS by 18:55Z). The limit found is ETL: the STS-to-MTS last-job time rose about 9 s per hour at any PV count (0-30 s in step 1, 31-91 s in step 2, 241-277 s in the final hold), reaching 277 s of the 300 s partition period at 18:50Z while the STS file count still held; the run was ended there with the root disk 91% full (`/arch` 3.7 to 12.9 GB, about 0.3 GB/h at 903 PVs). Resources: CPU idle 90-95%; MemAvailable 1231 down to 1003 MiB over the run (JVM RSS 403 to 492 MiB mgmt, 374 to 449 engine, 375 to 431 etl, 377 to 422 retrieval); heap used peaked at 251 MiB of 256M on etl (10 full GCs, none on the others) and 227 on engine. Retrieval load: 42417 requests in 6 h, all 200, median 31 ms, p99 98 ms, max 479 ms, 156 GB served; the 10-minute first attempt got 1163 of 1167 answered (median 29 ms) until the client died; the four failures were one-day waveform requests that ended after about 6 s without a response, cause not isolated. Log growth: mgmt `catalina.out` about 140 KB/h and 800 lines/h at every step; engine 131 KB/h in step 1, 57 in step 2, 25 held, but 2.9 MB/h (21000 lines/h) under retrieval load; retrieval 54 KB/h idle and 12.8 MB/h (58000 lines/h, about 2 lines per request) under retrieval load; etl 2 KB/h. End events: the day-1 IOC restart (18:57:06Z) added about 30 engine application lines and 23 JULI lines with no ERROR; the MTS tree made unwritable for 10 min (19:00:11-19:10:11Z) made etl log 2709 "Exception processing" records with stack traces, 10836 lines and 5 MB, peaking at 1616 lines in one minute, STS files rose 3602 to 5410, and after the restore ETL cleared the backlog to 898 files within 15 min. |
+| T21 | 2026-09-26T19:25:06Z | The soak host after T20, heap 256M, 100 day-1 PVs plus 400 1 Hz scalars from 09:46Z on 2026-09-25 (step 1) and 300 1 Hz scalars, 100 10 Hz VeryFast scalars and three waveforms from 15:46Z (step 2, 903 PVs); four retrieval clients 21:46Z-21:56Z (client lost to the kernel OOM killer, its own fault: whole responses buffered) and again 08:30Z-14:30Z on 2026-09-26 with a streaming client; load held to 18:55Z; end events 18:57Z and 19:00-19:10Z | Passed | No step lost an instance or mgmt: 404 samples with four instances, mgmt 200 (max 12 ms) and health success; the only kernel OOM kill was the first retrieval client. Every PV of both steps reached STS, MTS and LTS (step 2 in LTS by 18:55Z). No limit was reached; the run was ended with the root disk 91% full (`/arch` 3.7 to 12.9 GB, about 0.3 GB/h at 903 PVs). The "Approximate time taken by last job in ETL(0>1)" figure rose about 9 s per hour to 277 s at 18:50Z, but it is a running sum of per-PV durations that resets only after 15 minutes without an update, which a 5-minute partition never gives; "Average time spent in ETL(0>1) (s/run)" is that sum over the run count (401 runs, 0.69 s at 18:50Z), a lifetime average. The sum's growth per run gives the time of each pass: 0.43 s in step 1 (500 PVs), 0.68 s and then 1.03 s in step 2 (903 PVs, 15:45Z-18:50Z and 18:50Z-21:45Z sample times), 0.73 s overnight, 0.78 s under the 6 h retrieval load and 0.69 s in the final hold; estimated weekly usage 0.18%. Read at first as ETL nearing the 300 s partition period, it is not a slowdown (correction 2026-09-27). Resources: CPU idle 90-95%; MemAvailable 1231 down to 1003 MiB over the run (JVM RSS 403 to 492 MiB mgmt, 374 to 449 engine, 375 to 431 etl, 377 to 422 retrieval); heap used peaked at 251 MiB of 256M on etl (10 full GCs, none on the others) and 227 on engine. Retrieval load: 42417 requests in 6 h, all 200, median 31 ms, p99 98 ms, max 479 ms, 156 GB served; the 10-minute first attempt got 1163 of 1167 answered (median 29 ms) until the client died; the four failures were one-day waveform requests that ended after about 6 s without a response, cause not isolated. Log growth: mgmt `catalina.out` about 140 KB/h and 800 lines/h at every step; engine 131 KB/h in step 1, 57 in step 2, 25 held, but 2.9 MB/h (21000 lines/h) under retrieval load; retrieval 54 KB/h idle and 12.8 MB/h (58000 lines/h, about 8 lines per request) under retrieval load; etl 2 KB/h. End events: the day-1 IOC restart (18:57:06Z) added about 30 engine application lines and 23 JULI lines with no ERROR; the MTS tree made unwritable for 10 min (19:00:11-19:10:11Z) made etl log 2709 "Exception processing" records with stack traces, 10836 lines and 5 MB, peaking at 1616 lines in one minute, STS files rose 3602 to 5410, and after the restore ETL cleared the backlog to 898 files within 15 min. |
 | T18 | 2026-09-21T15:33:55Z | Same three hosts | Passed | The root install steps ran and the appliance serves. On all three hosts: the four instances are installed under `/opt/epicsarchiverap-maven` and listen on 17665 mgmt, 17666 engine, 17667 etl and 17668 retrieval, `epicsarchiverap-maven.service` is enabled and active, `/arch` (0755), the install root and all four instance directories are owned `mid-srv:mid`, the appliance processes run as the `mid-srv` service account and not as root (so the build-as-root, run-as-service-account split is now observed rather than derived), and mgmt `/mgmt/bpl/getApplianceInfo` returns HTTP 200 with identity `appliance0` and version 2025-6. A PV archives and reads back (verified on the freshly provisioned host): a 1 Hz calc record submitted through `mgmt/bpl/archivePV` moved `Initial sampling` to `Appliance assigned` to `Being archived`; `retrieval/data/getData.json` then returned 68 points carrying the record `EGU`, the leading samples one second apart and incrementing; and the short-term store held the PV under `/arch/sts/ArchiverStore/` as `<segment before the colon>/<remainder>:<YYYY_MM_DD_HH>.pb`, the hour bucket in UTC because the appliance stores in UTC - the 15:33Z run produced the `_15` bucket and the first sample carried epoch 1790004766, which is 15:32:46Z. The test IOC and the PV were removed afterwards. Timing note for any future probe: mgmt answers 500 for roughly 20-30 s after a start, so a single-shot check misreads as failure. |
 | T19 | 2026-09-21T08:07:09Z | Rocky 8.10 and Debian 13 archiver-dev VMs | Passed | Re-apply reports `changed=0 failed=0` on both, with the launch step reporting all four instances live, and the installed state is unchanged across it: the install-tree fingerprint (file list and sizes, excluding `logs`, `temp` and `work`), all four per-instance JVM PIDs, and the unit `ActiveEnterTimestamp` were captured before and after and are identical on both hosts. The result is only trustworthy because of a defect found while producing it: an earlier re-apply reported `changed=0` while one host had a dead mgmt instance, because the check trusted `systemctl is-active` on a unit that stays active when one of its four Tomcat instances dies. The check now judges the four instances themselves and repairs with `restart`; verified by killing an instance and observing `changed=1` naming the missing instance, against a healthy control host reporting `changed=0`. |
 
@@ -1973,7 +1974,7 @@ the operator does not run; encrypting the file at rest (the installed
 #### M17 - Move the aa-env pin to the journald and log4j2 service model
 
 - Origin: 38560eb / M17
-- Status: Not started
+- Status: In progress
 
 ##### Summary
 
@@ -2018,22 +2019,40 @@ aa-env's own internals.
 - `D19` (owner, 2026-09-26): runs after M16.
 - The logging model agreed by aa-env and aa-maven (2026-09-24/25) assigns the
   host journal settings to this repository.
+- Owner decisions (2026-09-27): the journal settings go into a journald drop-in
+  written by `archiver_build`, so they reach archiver hosts only and leave the
+  IOC hosts' journals as they are; `ARCHAPPL_ROOT_LOGGER_LEVEL` becomes the
+  operator knob `archiver_root_logger_level`, empty by default so the aa-env
+  default (INFO) stands, since the load test showed retrieval logging about
+  eight INFO lines per request.
+- aa-maven `d9250d23` (on `modernize`, after `67be91d7`) moves three of those
+  retrieval lines to DEBUG: `DataRetrievalServlet` "Mime is", `RetrievalState`
+  "Update metrics for" and the per-store `PlainPBStoragePlugin` line. Still at
+  INFO are `DataRetrievalServlet` "For the complete request",
+  `MergeDedupConsumer` "Found a total of" and `PBOverHTTPStoragePlugin` "URL to
+  fetch data is" on every request, and `RetrievalState` "Found a data source"
+  on 79% of the T21 requests, about 3.8 lines per request on the T21 load
+  (checked against the T21 retrieval log and `modernize` on 2026-09-27).
+  Whether to move those as well is open on the aa-maven side; the knob's empty
+  default is reconsidered when that is decided.
 
 ##### Implementation Plan
 
-- Plan Status: draft
-- Plan Acceptance: none
-- Implementation Authorization: none
+- Plan Status: accepted
+- Plan Acceptance: 2026-09-27
+- Implementation Authorization: 2026-09-27
 - Superseded Plan Artifacts: none
 
 1. Derive the range from `9eed006` to the chosen aa-env head and from
    `3c96141d` to the chosen aa-maven ref: interface changes, operator statements
    whose truth changes, and the ref history to record.
 2. Move both refs; adapt the launch step's instance check, repair and comments
-   to the foreground unit; decide the log-level knob.
-3. Implement the journal settings where the owner decides (candidates: a
-   `common` drop-in for every host, or an `archiver_build` drop-in for archiver
-   hosts only).
+   to the foreground unit; add `archiver_root_logger_level` (written to
+   `../CONFIG_SITE.local` only when set, and recorded in the install stamp).
+3. Write the journal settings as a journald drop-in from `archiver_build`
+   (persistent storage, `MaxRetentionSec=8week`, a `SystemMaxUse` cap sized from
+   the T20/T21 figures, a per-unit rate limit), and restart journald only when
+   the drop-in changes.
 4. Verify on a fresh VM; update README and the ref history.
 
 ##### Test Plan
