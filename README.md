@@ -253,13 +253,15 @@ access through the socket, as provided by a fresh distribution installation;
 it converts that root account to socket-only authentication. Socket-activated `mariadb.socket` must be
 disabled before applying the service configuration.
 
-Security setup removes all anonymous accounts and remote root accounts using
-`DROP USER`. Following the distribution secure-installation scope, root entries
-at `localhost`, `127.0.0.1`, and `::1` are local; other root host entries are
-removed. It drops the `test` database, including its data, and deletes database
-grants for `test` and the default `test_*` patterns, including orphan grant rows.
-Other databases and non-anonymous, non-root accounts are preserved. Privileges
-are reloaded on every apply, including when no persistent rows need changing.
+Security setup removes all anonymous accounts and every root account except
+`root@localhost` using `DROP USER`. This is stricter than the distribution
+secure-installation, which keeps root at `127.0.0.1` and `::1`: under loopback
+TCP those are reachable, and this role gives no root account a password. With
+TCP off it also drops the application account's `127.0.0.1` host. It drops the
+`test` database, including its data, and deletes database grants for `test` and
+the default `test_*` patterns, including orphan grant rows. Other databases and
+other accounts are preserved. Privileges are reloaded on every apply, including
+when no persistent rows need changing.
 
 Re-apply compares configuration and account state and reports actual changes.
 Service configuration changes restart MariaDB; unchanged re-apply preserves
@@ -267,11 +269,9 @@ the running service. Package lists are available as `pkg_mariadb_redhat` and
 `pkg_mariadb_debian` defaults.
 
 epicsarchiverap-env owns the schema, its separate `admin` account workflow, application
-commands, and Tomcat JDBC configuration. Its current TCP commands and JDBC
-URL need UDS configuration before using the default socket-only server. The
-`archiver_dev` species does not use that default: it opts into loopback TCP
-through `mariadb_skip_networking: false`, which is the path the Archiver section
-describes.
+commands, and Tomcat JDBC configuration. From `90e4a04` its `DB_SOCKET` moves
+every one of those connections onto one socket, which `archiver_build` sets, so
+the `archiver_dev` species runs on the socket-only default.
 
 ### Archiver
 
@@ -306,13 +306,26 @@ The instances serve on 17665 (mgmt), 17666 (engine), 17667 (etl) and 17668
 20 to 30 seconds after a start while it initialises, so a single check issued
 immediately reads as a failure that is not one.
 
-The appliance authenticates to MariaDB over loopback TCP as the application
-account. The build reads the password from the file the `mariadb` operator made
+The appliance authenticates to MariaDB as the application account over the
+socket the `mariadb` operator manages: `archiver_db_socket` defaults to `auto`,
+which is `/run/mariadb/mariadb.sock` on Rocky and `/run/mysqld/mysqld.sock` on
+Debian, written to epicsarchiverap-env as `DB_SOCKET`; an absolute path names
+another socket. `DB_SOCKET` needs `archiver_env_ref` at `90e4a04` or later: an
+older ref ignores it and its appliance still connects over TCP, which the
+default then leaves closed, so PV configuration would not persist. An empty `archiver_db_socket` falls back to TCP at
+`archiver_db_host`:`archiver_db_port` and needs `mariadb_skip_networking: false`
+beside it, since the default closes TCP and drops the `127.0.0.1` account. The build reads the password from the file the `mariadb` operator made
 on the same host (`archiver_db_password_file`, which follows
 `mariadb_password_file`) and passes it to epicsarchiverap-env as `DB_USER_PASS`; the
 generated `../CONFIG_SITE.local` that carries it is readable by root only. A
-build refuses to start when that file is missing. The `archiver_dev` group_vars
-set `mariadb_skip_networking: false`, which is what opens the loopback listener.
+build refuses to start when that file is missing.
+
+A host installed over loopback TCP by an earlier operator moves to the socket in
+one run: apply the species with `-e archiver_force_reinstall=true`. The
+`mariadb` step runs first and closes TCP, so the running appliance loses its
+database until the rebuild later in the same run installs and starts it on the
+socket; a run without the flag stops at the changed knob set and leaves the
+appliance in that state until the species is applied again with the flag.
 
 Maven reads a proxy only from a settings file. This operator consumes the file
 the cloud-provision proxy contract owns at `/etc/maven-proxy-settings.xml` and

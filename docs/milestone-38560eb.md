@@ -32,8 +32,9 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
 Next session entry point: M21, the archiver MariaDB reached over its Unix
-socket, whose draft plan needs review and owner acceptance; M18 (SQLite)
-follows. M17 closed on 2026-09-28 with the pins at epicsarchiverap-env
+socket, in progress under its plan accepted and authorized on 2026-09-28;
+its implementation and T1-T3 are done, so commit and push it, close it, and
+have the three T2/T3 VMs removed. M18 (SQLite) follows. M17 closed on 2026-09-28 with the pins at epicsarchiverap-env
 `d09dca7` and epicsarchiverap-maven `2fc12f01` (`940b63a`). Background follows. The schema load is fixed:
 epicsarchiverap-env's `sql.fill` fix (G3, jeonghanlee/epicsarchiverap-env#47) is on `modernize` at `1fc20a8`, and M14/T17 passed on a Rocky 8.10 and a Debian 13
 host rebuilt through this operator at that ref on 2026-09-23: the operator's
@@ -153,7 +154,7 @@ verified on the production IOC server 2026-09-04 (con 1.1.0 replaced by 1.2.0,
 full mode carries every OS tree, second apply `failed=0`). Delivered in
 `fd4ff1c` and `13bc8e6`.
 
-Status tally: 16 Complete, 0 In progress, 2 Not started, 1 Deferred, 1 Blocked. 3 external gates (2 Complete, 1 Open).
+Status tally: 16 Complete, 1 In progress, 1 Not started, 1 Deferred, 1 Blocked. 3 external gates (2 Complete, 1 Open).
 
 ## Milestone
 
@@ -180,7 +181,7 @@ Status tally: 16 Complete, 0 In progress, 2 Not started, 1 Deferred, 1 Blocked. 
 | Core | M17 | Move the epicsarchiverap-env pin to the journald and log4j2 service model | Milestone | Complete | No | M16, D19 | `archiver_env_ref` and `archiver_maven_src_tag` move past epicsarchiverap-env `bbe0968` and epicsarchiverap-maven `67be91d7`, where the appliance runs its four Tomcats in the foreground under one journald service with a WAR log4j2 layout; the operator's install check, repair, stamp and documentation fit that unit, the host keeps a persistent, bounded journal, and a fresh `archiver_dev` build serves and persists PV configuration; delivered in `940b63a`; [detail](#m17---move-the-epicsarchiverap-env-pin-to-the-journald-and-log4j2-service-model) |
 | Core | M18 | Select SQLite as the archiver configuration database through its own operator | Milestone | Not started | Yes | M17, D19 | A `sqlite` operator installs the SQLite CLI, an `archiver-dev-sqlite` species puts it in place of `mariadb`, and `archiver_build` passes `DB_BACKEND=sqlite` and checks the schema with `make sql.show`; a fresh `archiver_dev_sqlite` host builds with no MariaDB server and persists PV configuration across a restart; [detail](#m18---select-sqlite-as-the-archiver-configuration-database-through-its-own-operator) |
 | Core | M19 | Add an ioc-group operator fixture account with linger | Milestone | Complete | No | | The `testusers` operator also creates `opc`, a member of the `ioc` group with systemd linger enabled, while `opa`, `opb`, `obs`, `usera` and `userb` keep their current membership and linger; a fresh iocrunner host applied through this repository shows that state and re-applies cleanly; delivered in `32ea95f`; [detail](#m19---add-an-ioc-group-operator-fixture-account-with-linger) |
-| Core | M21 | Reach the archiver MariaDB over its Unix socket | Milestone | Not started | Yes | M17 | `archiver_build` writes `DB_SOCKET` for the `mariadb` backend and the `archiver_dev` group returns to `skip-networking`; a fresh `archiver_dev` host builds with TCP closed, serves mgmt and persists PV configuration; [detail](#m21---reach-the-archiver-mariadb-over-its-unix-socket) |
+| Core | M21 | Reach the archiver MariaDB over its Unix socket | Milestone | In progress | No | M17 | `archiver_build` writes `DB_SOCKET` for the `mariadb` backend and the `archiver_dev` group returns to `skip-networking`; fresh Rocky 8.10 and Debian 13 `archiver_dev` hosts build with TCP closed, serve mgmt and persist PV configuration, and an installed TCP host moves over in one forced run; [detail](#m21---reach-the-archiver-mariadb-over-its-unix-socket) |
 | Gate | G1 | the production IOC server reaches the internal git host | External gate | Complete | No | | Reachability achieved through the site HTTP proxy's CONNECT tunnel (an ssh `ProxyCommand` over the proxy), not a firewall whitelist: the owner's key authenticates and `git ls-remote` returns the refs; confirmed 2026-09-03 by the successful iocserver clone (M4/T2) |
 | Gate | G2 | cloud-provision ships the middleware package baseline and the middleware VM | External gate | Open | No | | The middleware operator/species structure and OS package baseline (system OpenJDK 21, Tomcat 9.0.121, MariaDB; no Maven package) originate in cloud-provision (`docs/milestone-e260630.md` M11) as the normative source and a middleware VM is provisionable there, before ansible-provision mirrors the set and layers its roles; owned by the cloud-provision session |
 | Gate | G3 | epicsarchiverap-env ships a `sql.fill` that loads the configuration schema when the database and application account are provisioned externally | External gate | Complete | No | | Complete when the jeonghanlee/epicsarchiverap-env#47 fix commit is on `modernize` and epicsarchiverap-env records #47's acceptance as met: with only the application account, `make sql.fill` loads the schema, `make sql.show` lists `PVTypeInfo`, `PVAliases`, `ArchivePVRequests` and `ExternalDataServers`, and an absent database exits non-zero. Observing it on an archiver-dev host is M14/T17, not this gate; owned by the epicsarchiverap-env session; met 2026-09-23: the fix is `1fc20a8` on `modernize`, and #47 closed with epicsarchiverap-env's acceptance recorded |
@@ -2273,7 +2274,7 @@ runs; the retired paths elsewhere in `docs/test_users_handoff.md` (M20).
 
 - Origin: 38560eb / M21
 - GitHub Issue: none
-- Status: Not started
+- Status: In progress
 
 ##### Summary
 
@@ -2288,50 +2289,88 @@ account.
 
 ##### Scope
 
-`roles/archiver_build`: write `DB_SOCKET` (the distribution socket path per OS)
-for the `mariadb` backend and record it in the install stamp;
-`inventory/group_vars/archiver_dev.yml`: return to the operator default
-`skip-networking`; the `127.0.0.1` account then has no use; README.
+`roles/archiver_build`: a knob `archiver_db_socket`, defaulting to the socket
+the `mariadb` operator manages (`/run/mariadb/mariadb.sock` on Rocky,
+`/run/mysqld/mysqld.sock` on Debian; epicsarchiverap-env's Rocky example
+`/var/lib/mysql/mysql.sock` is not that path), written as `DB_SOCKET` and
+recorded in the install stamp, with the post-`sql.fill` table check over the
+same socket; an empty value keeps today's TCP path through `archiver_db_host`
+and `archiver_db_port`; `roles/mariadb`: drop the application account's `127.0.0.1`
+host when `skip-networking` is on; `inventory/group_vars/archiver_dev.yml`:
+return to the operator default `skip-networking`; README, including the move of
+an installed TCP host; every other statement that assumes loopback TCP for the
+archiver (`docs/ARCHITECTURE.md`, the `archiver_build` task header and
+`archiver_db_host` comment, the `mariadb` account-host comments).
 
 Out of scope: the SQLite backend (M18); remote database hosts.
 
 ##### Completion Criteria
 
-- A fresh `archiver_dev` host has no MariaDB TCP listener, builds, holds the
-  four tables, serves mgmt, and persists PV configuration across a restart.
-- A re-apply leaves it unchanged.
+- Fresh Rocky 8.10 and Debian 13 `archiver_dev` hosts have no MariaDB TCP
+  listener and no `127.0.0.1` application account, build, hold the four
+  tables, serve mgmt, and persist PV configuration across a restart; a
+  re-apply leaves them unchanged.
+- A host installed over TCP by the previous operator moves to the socket in one
+  run with `archiver_force_reinstall=true`, as README states, and then persists
+  PV configuration.
 
 ##### Dependencies And Decisions
 
-- Owner decision (2026-09-28): kept out of M17, which moves the epicsarchiverap-env pin
-  past `90e4a04` and so makes `DB_SOCKET` available.
+- Owner decision (2026-09-28): kept out of M17, which moves the
+  epicsarchiverap-env pin past `90e4a04` and so makes `DB_SOCKET` available.
+- Plan review (2026-09-28), confirmed: the post-`sql.fill` table check logs in
+  over TCP (`127.0.0.1:3306`) and would stop every build once TCP is closed;
+  and on an installed host the species runs `mariadb` first, which closes TCP
+  under the running appliance's TCP JDBC connection, after which
+  `archiver_build` reports drift and stops, leaving the appliance without its
+  database until a forced reinstall.
+- Owner decisions (2026-09-28): an installed TCP host moves in one run with
+  `archiver_force_reinstall=true`, documented in README and exercised as T3,
+  with no cross-role guard; the `mariadb` operator removes the `127.0.0.1`
+  application account under `skip-networking`; T2 covers Rocky 8.10 and
+  Debian 13, whose socket paths differ.
+- The socket directory is `mysql:mysql 755` and the socket `777` under the
+  `mariadb` operator, so the service account reaches it; epicsarchiverap-maven
+  `2fc12f01` carries the jna libraries the socket path needs (`85f0f179`).
+- Owner decision (2026-09-28): the socket path is the knob
+  `archiver_db_socket` with a per-OS default; empty keeps the TCP path, so the
+  host and port knobs stay meaningful and the change stays reversible.
 
 ##### Implementation Plan
 
-- Plan Status: draft
-- Plan Acceptance: none
-- Implementation Authorization: none
+- Plan Status: accepted
+- Plan Acceptance: 2026-09-28
+- Implementation Authorization: 2026-09-28
 - Superseded Plan Artifacts: none
 
-1. Confirm the socket path and its permissions on Rocky 8.10 and Debian 13.
-2. Write `DB_SOCKET` from `archiver_build` and record it in the stamp.
-3. Return the `archiver_dev` group to `skip-networking`; decide the fate of the
-   `127.0.0.1` account.
-4. Verify on a fresh VM; update README.
+1. `roles/archiver_build`: add `archiver_db_socket` (per-OS default), write
+   `DB_SOCKET` when it is set, run the table check over the socket then and
+   over TCP otherwise, and record the transport in the stamp.
+2. `roles/mariadb`: remove the `127.0.0.1` application account when
+   `skip-networking` is on, and report the change.
+3. `inventory/group_vars/archiver_dev.yml`: drop `mariadb_skip_networking:
+   false`; README: the socket transport, `archiver_db_socket` (an empty value
+   needs `mariadb_skip_networking: false` beside it, since the default closes
+   TCP and drops the `127.0.0.1` account), and the one-run move of an
+   installed TCP host; correct the other loopback-TCP statements named in the
+   scope.
+4. Run T1-T3; record the results.
 
 ##### Test Plan
 
 | Label | Layer | Method | Environment | Expected Result |
 | --- | --- | --- | --- | --- |
 | T1 | Mechanism | `--syntax-check`, the splitter over every `raw` task, and a render of the changed tasks | control host | All pass |
-| T2 | Integration | Apply `archiver_dev` on a fresh host; check for a TCP listener; register PVs; restart the appliance; re-apply | Fresh Rocky 8.10 VM | No MariaDB TCP listener; four tables; PV configuration persists; re-apply unchanged |
+| T2 | Integration | Apply `archiver_dev` on a fresh host; check for a MariaDB TCP listener and the application accounts; register a PV; restart the appliance; re-apply | Fresh Rocky 8.10 and Debian 13 VMs | No TCP listener; only the `localhost` application account; four tables; PV configuration persists; re-apply unchanged |
+| T3 | Integration | Build a host with the operator at `901563c` (loopback TCP), run from a `git worktree` checkout of that commit with `make archiver_dev.rocky8`; register a PV; apply the new operator with `archiver_force_reinstall=true` | Fresh Rocky 8.10 VM | One run succeeds; TCP closed, `127.0.0.1` account gone; the PV's configuration is still in the database and it archives again |
 
 ##### Verification Results
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
-| T1 | | | Pending | |
-| T2 | | | Pending | |
+| T1 | 2026-09-28T08:16Z | control host, working tree on `901563c` | Passed | `--syntax-check` passes for the `archiver_build` and `mariadb` operators and the `archiver_dev` species; the Ansible splitter accepts all 79 `raw` tasks; rendered with Ansible's templar, the `archiver_build` tasks with `archiver_db_socket` `auto` and empty, and the `mariadb` tasks with `mariadb_skip_networking` true and false, all pass `bash -n`; the stamp reads `db=archappl@socket:auto/archappl` and `db=archappl@127.0.0.1:3306/archappl` respectively, and the account cleanup renders `tcp=0` and `tcp=1` |
+| T2 | 2026-09-28T08:50Z | Fresh Rocky 8.10 and Debian 13 archiver-dev vacua (2 vCPU, 4 GiB) from cloud-provision, working tree on `901563c` | Passed | `make archiver_dev.rocky8` and `make archiver_dev.debian13` `failed=0` (finished by 08:45:11Z); on both the stamp reads `db=archappl@socket:auto/archappl`, `CONFIG_SITE.local` carries `DB_SOCKET:=/run/mariadb/mariadb.sock` (Rocky) or `/run/mysqld/mysqld.sock` (Debian), the rendered JDBC URL is `jdbc:mariadb://localhost/archappl?localSocket=<that socket>`, no listener on 3306, `@@skip_networking` 1, the only application account is `archappl@localhost`, four tables, mgmt 200, and all eight appliance connections come from `archappl@localhost`; a 1 Hz test PV reached `Being archived` with one `PVTypeInfo` row, stayed after `systemctl restart` (10 s) and archived again; a re-apply of the species reported `changed=0` on both |
+| T3 | 2026-09-28T08:51:18Z | A fresh Rocky 8.10 archiver-dev vacuum from cloud-provision | Passed | Built with the operator at `901563c` from a `git worktree` checkout: stamp `db=archappl@127.0.0.1:3306/archappl`, JDBC `jdbc:mariadb://127.0.0.1:3306/archappl`, one listener on 3306, accounts `archappl@127.0.0.1` and `archappl@localhost`, eight connections from `127.0.0.1`; a test PV registered, restarted and archiving. One run of the new operator with `-e archiver_force_reinstall=true` (08:49:13Z-08:50:47Z, `failed=0`, changed: the MariaDB configuration, the account cleanup and the build launch) left the socket stamp and JDBC URL, no listener on 3306, only `archappl@localhost`, eight connections from `archappl@localhost`, the test PV's `PVTypeInfo` row still present and the PV `Being archived` again |
 
 ## Backlog
 

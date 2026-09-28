@@ -193,8 +193,8 @@
     fi
     set -- "${client}" --no-defaults --protocol=SOCKET --socket="${socket}" --user=root --batch --skip-column-names
     # The application account is provisioned at 'localhost' (socket) and, when
-    # loopback TCP is enabled, additionally at '127.0.0.1' for the archiver
-    # species. Screen every host the account will hold.
+    # loopback TCP is enabled, additionally at '127.0.0.1' for a TCP client.
+    # Screen every host the account will hold.
     hosts=localhost
     if [ "${tcp}" = 1 ]; then hosts="localhost 127.0.0.1"; fi
     for host in ${hosts}; do
@@ -275,9 +275,9 @@
     password_hash=$(printf "SELECT PASSWORD('%s');\n" "${password}" | "$@")
 
     # The application account is held at 'localhost' (socket) and, when loopback
-    # TCP is enabled, also at '127.0.0.1' so the archiver species can connect over
-    # jdbc:mariadb://localhost:3306 with --protocol=tcp (IPv4 loopback only). root
-    # stays socket-authenticated at 'localhost' regardless.
+    # TCP is enabled, also at '127.0.0.1' so a TCP client can connect over the
+    # IPv4 loopback only. root stays socket-authenticated at 'localhost'
+    # regardless.
     hosts=localhost
     if [ "${tcp}" = 1 ]; then hosts="localhost 127.0.0.1"; fi
 
@@ -350,7 +350,7 @@
   register: mariadb_accounts
   changed_when: "(mariadb_accounts.stdout_lines | default([]) | last | default('') | trim) == 'changed'"
 
-- name: Remove anonymous accounts, remote root accounts, and test database access
+- name: Remove anonymous, remote root and unreachable TCP accounts and test database access
   ansible.builtin.raw: |
     set -eu
     export PATH=/usr/sbin:/usr/bin:/sbin:/bin
@@ -364,6 +364,8 @@
       client=/usr/bin/mariadb
     fi
     set -- "${client}" --no-defaults --protocol=SOCKET --socket="${socket}" --user=root --batch --skip-column-names
+    account={{ mariadb_user | quote }}
+    tcp={{ mariadb_skip_networking | ternary('0', '1') | quote }}
 
     # Keep only root@'localhost' (socket-authenticated); drop every other root
     # host and the anonymous users. Stricter than stock secure-installation,
@@ -372,6 +374,11 @@
     # built from a SELECT, so it works whether mysql.user is a table (<=10.3) or
     # a view (>=10.4), and IF EXISTS keeps a re-run idempotent under any race.
     account_filter="User='' OR (User='root' AND Host <> 'localhost')"
+    # With TCP off, the '127.0.0.1' host of the application account, left by an
+    # earlier loopback-TCP apply, can no longer be reached; drop it as well.
+    if [ "${tcp}" = 0 ]; then
+      account_filter="${account_filter} OR (User='${account}' AND Host='127.0.0.1')"
+    fi
     removals=$("$@" --raw -e "SET SESSION sql_mode=''; SELECT CONCAT('DROP USER IF EXISTS ',QUOTE(User),'@',QUOTE(Host),';') FROM mysql.user WHERE ${account_filter}")
     if [ -n "${removals}" ]; then
       printf '%s\n' "SET SESSION sql_mode='';" "${removals}" | "$@"

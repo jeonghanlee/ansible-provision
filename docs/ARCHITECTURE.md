@@ -65,7 +65,7 @@ ansible-provision/
 |   |-- lab.ini                      (host-free lab group relationships)
 |   `-- group_vars/
 |       |-- all.yml                  (values shared by more than one operator)
-|       |-- archiver_dev.yml         (mariadb loopback TCP for the archiver species)
+|       |-- archiver_dev.yml         (archiver species group; socket-only MariaDB)
 |       |-- debian12.yml             (epics_os_dir: debian-12)
 |       |-- debian13.yml             (epics_os_dir: debian-13)
 |       |-- rocky8.yml               (epics_os_dir, rocky 3.9 python overrides)

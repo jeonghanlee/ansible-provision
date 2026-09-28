@@ -119,7 +119,7 @@ archiver_config_stamp: >-
   heap={{ archiver_java_heapsize }}
   loglevel={{ archiver_root_logger_level or '-' }}
   site={{ archiver_site_id }}
-  db={{ archiver_db_name }}@{{ archiver_db_host }}:{{ archiver_db_port }}/{{ archiver_db_user }}
+  db={{ archiver_db_name }}@{{ ('socket:' ~ archiver_db_socket) if archiver_db_socket else (archiver_db_host ~ ':' ~ archiver_db_port) }}/{{ archiver_db_user }}
   account={{ archiver_user }}:{{ archiver_group }}
   storage={{ archiver_storage_top }}
   install={{ archiver_install_parent }}
@@ -127,9 +127,15 @@ archiver_config_stamp: >-
   envref={{ archiver_env_ref }}
   srctag={{ archiver_maven_src_tag }}
 
-# Database connection epicsarchiverap-env's context.xml renders (loopback TCP;
-# see the mariadb operator). Name and user reuse the mariadb operator's values
-# so both sides address the same account.
+# Database transport epicsarchiverap-env's context.xml renders. The socket is
+# written as DB_SOCKET: "auto" takes the socket the mariadb operator manages
+# (/run/mariadb/mariadb.sock on Rocky, /run/mysqld/mysqld.sock on Debian), an
+# absolute path names another, and an empty value falls back to TCP at
+# archiver_db_host:archiver_db_port, which needs mariadb_skip_networking: false
+# on the same host. DB_SOCKET needs archiver_env_ref 90e4a04 or later; an older
+# ref ignores it and connects over TCP. Name and user reuse the mariadb
+# operator's values so both sides address the same account.
+archiver_db_socket: "auto"
 archiver_db_host: "127.0.0.1"
 archiver_db_port: "3306"
 archiver_db_name: "{{ mariadb_database | default('archappl') }}"

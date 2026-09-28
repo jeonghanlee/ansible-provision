@@ -10,7 +10,7 @@
 #
 # Prerequisites come earlier in the archiver_dev species: the java operator
 # (JDK 21 + JAVA_HOME), the tomcat operator (/opt/tomcat9 shared CATALINA_HOME),
-# and the mariadb operator (loopback-TCP archappl DB and account). This
+# and the mariadb operator (archappl DB and account on its socket). This
 # operator installs its own build tools (git, make, unzip, sed, tree, curl),
 # mirroring epics_build; epicsarchiverap-env's install_os_packages.bash is
 # skipped.
@@ -42,6 +42,7 @@
     db_name="{{ archiver_db_name }}"
     db_user="{{ archiver_db_user }}"
     pass_file="{{ archiver_db_password_file }}"
+    db_socket="{{ archiver_db_socket }}"
     db_host="{{ archiver_db_host }}"
     db_port="{{ archiver_db_port }}"
     storage_top="{{ archiver_storage_top }}"
@@ -55,6 +56,20 @@
     root_level="{{ archiver_root_logger_level }}"
 
     top="${src_parent}/epicsarchiverap-env"
+
+    # --- Database transport: "auto" is the socket the mariadb operator
+    # manages; empty keeps TCP. ---
+    if [ "${db_socket}" = auto ]; then
+      if [ -f /etc/redhat-release ]; then
+        db_socket=/run/mariadb/mariadb.sock
+      else
+        db_socket=/run/mysqld/mysqld.sock
+      fi
+    fi
+    if [ -n "${db_socket}" ] && [ ! -S "${db_socket}" ]; then
+      echo "archiver_build: ${db_socket} is not a socket; apply the mariadb operator first" >&2
+      exit 1
+    fi
 
     # --- The application password is made on this host by the mariadb operator
     # and read here, so it never travels from the control host. The launch step
@@ -151,6 +166,12 @@
     # CONFIG_SITE, so it replaces the epicsarchiverap-env default. The file now
     # carries a credential, so only root reads it.
     printf 'DB_USER_PASS=%s\n' "${db_pass}" >> "${src_parent}/CONFIG_SITE.local"
+    # With a socket, every MariaDB connection of the appliance and of the
+    # epicsarchiverap-env clients uses it, and DB_HOST_NAME/DB_HOST_PORT go
+    # unused; left empty, the epicsarchiverap-env default keeps TCP.
+    if [ -n "${db_socket}" ]; then
+      printf 'DB_SOCKET:=%s\n' "${db_socket}" >> "${src_parent}/CONFIG_SITE.local"
+    fi
     chmod 0600 "${src_parent}/CONFIG_SITE.local"
     # Select the Maven settings file through the epicsarchiverap-env MAVEN_FLAGS
     # hook, which is appended to every mvn invocation. CONFIG_SITE.local is
@@ -198,10 +219,15 @@
     # and survives only in memory until the next restart. Count the tables
     # before treating the step as done, and stop here rather than install and
     # start on a database the appliance cannot write to; an unreadable count
-    # stops the build too. Ask over the same TCP path and account the appliance
-    # uses, which proves the application login too.
+    # stops the build too. Ask over the same transport (socket or TCP) and
+    # account the appliance uses, which proves the application login too.
     schema_query="SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='${db_name}'"
-    schema_tables=$(MYSQL_PWD="${db_pass}" mysql -h "${db_host}" -P "${db_port}" -u "${db_user}" -N -B -e "${schema_query}") || schema_tables=""
+    if [ -n "${db_socket}" ]; then
+      set -- --protocol=SOCKET --socket="${db_socket}"
+    else
+      set -- --protocol=TCP -h "${db_host}" -P "${db_port}"
+    fi
+    schema_tables=$(MYSQL_PWD="${db_pass}" mysql "$@" -u "${db_user}" -N -B -e "${schema_query}") || schema_tables=""
     # A forced reinstall stopped the previous appliance before this build began,
     # and install has not run yet, so its tree is intact but nothing is serving.
     # Say so on the way out, with the way back, rather than leave it down unnoticed.
@@ -346,6 +372,20 @@
       echo "Nothing was stopped and no build was started." >&2
       exit 1
     fi
+
+    # The database socket reaches epicsarchiverap-env only inside the build:
+    # "auto", an absolute path, or empty for TCP.
+    db_socket="{{ archiver_db_socket }}"
+    case "${db_socket}" in
+      ""|auto|/*) ;;
+      *)
+        if [ "${will_build}" = "yes" ]; then
+          echo "ARCHIVER_BUILD_PRECONDITION: archiver_db_socket must be auto, an absolute socket path, or empty for TCP (got [${db_socket}])." >&2
+          echo "Nothing was stopped and no build was started." >&2
+          exit 1
+        fi
+        ;;
+    esac
 
     # The root log level reaches epicsarchiverap-env only inside the build;
     # refuse a value log4j2 does not know before anything is torn down.
