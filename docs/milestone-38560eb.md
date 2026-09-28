@@ -153,7 +153,7 @@ verified on the production IOC server 2026-09-04 (con 1.1.0 replaced by 1.2.0,
 full mode carries every OS tree, second apply `failed=0`). Delivered in
 `fd4ff1c` and `13bc8e6`.
 
-Status tally: 15 Complete, 1 In progress, 1 Not started, 1 Deferred, 1 Blocked. 3 external gates (2 Complete, 1 Open).
+Status tally: 15 Complete, 1 In progress, 2 Not started, 1 Deferred, 1 Blocked. 3 external gates (2 Complete, 1 Open).
 
 ## Milestone
 
@@ -180,6 +180,7 @@ Status tally: 15 Complete, 1 In progress, 1 Not started, 1 Deferred, 1 Blocked. 
 | Core | M17 | Move the aa-env pin to the journald and log4j2 service model | Milestone | In progress | No | M16, D19 | `archiver_env_ref` and `archiver_maven_src_tag` move past aa-env `bbe0968` and aa-maven `67be91d7`, where the appliance runs its four Tomcats in the foreground under one journald service with a WAR log4j2 layout; the operator's install check, repair, stamp and documentation fit that unit, the host keeps a persistent, bounded journal, and a fresh `archiver_dev` build serves and persists PV configuration; [detail](#m17---move-the-aa-env-pin-to-the-journald-and-log4j2-service-model) |
 | Core | M18 | Select SQLite as the archiver configuration database through its own operator | Milestone | Not started | No | M17, D19 | A `sqlite` operator installs the SQLite CLI, an `archiver-dev-sqlite` species puts it in place of `mariadb`, and `archiver_build` passes `DB_BACKEND=sqlite` and checks the schema with `make sql.show`; a fresh `archiver_dev_sqlite` host builds with no MariaDB server and persists PV configuration across a restart; [detail](#m18---select-sqlite-as-the-archiver-configuration-database-through-its-own-operator) |
 | Core | M19 | Add an ioc-group operator fixture account with linger | Milestone | Complete | No | | The `testusers` operator also creates `opc`, a member of the `ioc` group with systemd linger enabled, while `opa`, `opb`, `obs`, `usera` and `userb` keep their current membership and linger; a fresh iocrunner host applied through this repository shows that state and re-applies cleanly; delivered in `32ea95f`; [detail](#m19---add-an-ioc-group-operator-fixture-account-with-linger) |
+| Core | M21 | Reach the archiver MariaDB over its Unix socket | Milestone | Not started | No | M17 | `archiver_build` writes `DB_SOCKET` for the `mariadb` backend and the `archiver_dev` group returns to `skip-networking`; a fresh `archiver_dev` host builds with TCP closed, serves mgmt and persists PV configuration; [detail](#m21---reach-the-archiver-mariadb-over-its-unix-socket) |
 | Gate | G1 | the production IOC server reaches the internal git host | External gate | Complete | No | | Reachability achieved through the site HTTP proxy's CONNECT tunnel (an ssh `ProxyCommand` over the proxy), not a firewall whitelist: the owner's key authenticates and `git ls-remote` returns the refs; confirmed 2026-09-03 by the successful iocserver clone (M4/T2) |
 | Gate | G2 | cloud-provision ships the middleware package baseline and the middleware VM | External gate | Open | No | | The middleware operator/species structure and OS package baseline (system OpenJDK 21, Tomcat 9.0.121, MariaDB; no Maven package) originate in cloud-provision (`docs/milestone-e260630.md` M11) as the normative source and a middleware VM is provisionable there, before ansible-provision mirrors the set and layers its roles; owned by the cloud-provision session |
 | Gate | G3 | aa-env ships a `sql.fill` that loads the configuration schema when the database and application account are provisioned externally | External gate | Complete | No | | Complete when the jeonghanlee/epicsarchiverap-env#47 fix commit is on `modernize` and aa-env records #47's acceptance as met: with only the application account, `make sql.fill` loads the schema, `make sql.show` lists `PVTypeInfo`, `PVAliases`, `ArchivePVRequests` and `ExternalDataServers`, and an absent database exits non-zero. Observing it on an archiver-dev host is M14/T17, not this gate; owned by the aa-env session; met 2026-09-23: the fix is `1fc20a8` on `modernize`, and #47 closed with aa-env's acceptance recorded |
@@ -2239,6 +2240,70 @@ runs; the retired paths elsewhere in `docs/test_users_handoff.md` (M20).
   next iocrunner bake at or past `32ea95f` carries `opc`, which the consumer
   tracks as its own gate with cloud-provision.
 
+
+#### M21 - Reach the archiver MariaDB over its Unix socket
+
+- Origin: 38560eb / M21
+- GitHub Issue: none
+- Status: Not started
+
+##### Summary
+
+The `archiver_dev` group sets `mariadb_skip_networking: false` because aa-env
+reached MariaDB only over TCP at `127.0.0.1:3306`. aa-env `90e4a04` adds
+`DB_SOCKET`: with a socket path in `../CONFIG_SITE.local`, the appliance's JDBC
+URL (`localSocket=`) and aa-env's own clients, `sql.fill` and `sql.show`
+included, use that socket, and the server may run with `skip-networking`. The
+account must be `<user>@'localhost'`, which the `mariadb` operator already
+creates, and the socket and its directory must be reachable by the service
+account.
+
+##### Scope
+
+`roles/archiver_build`: write `DB_SOCKET` (the distribution socket path per OS)
+for the `mariadb` backend and record it in the install stamp;
+`inventory/group_vars/archiver_dev.yml`: return to the operator default
+`skip-networking`; the `127.0.0.1` account then has no use; README.
+
+Out of scope: the SQLite backend (M18); remote database hosts.
+
+##### Completion Criteria
+
+- A fresh `archiver_dev` host has no MariaDB TCP listener, builds, holds the
+  four tables, serves mgmt, and persists PV configuration across a restart.
+- A re-apply leaves it unchanged.
+
+##### Dependencies And Decisions
+
+- Owner decision (2026-09-28): kept out of M17, which moves the aa-env pin
+  past `90e4a04` and so makes `DB_SOCKET` available.
+
+##### Implementation Plan
+
+- Plan Status: draft
+- Plan Acceptance: none
+- Implementation Authorization: none
+- Superseded Plan Artifacts: none
+
+1. Confirm the socket path and its permissions on Rocky 8.10 and Debian 13.
+2. Write `DB_SOCKET` from `archiver_build` and record it in the stamp.
+3. Return the `archiver_dev` group to `skip-networking`; decide the fate of the
+   `127.0.0.1` account.
+4. Verify on a fresh VM; update README.
+
+##### Test Plan
+
+| Label | Layer | Method | Environment | Expected Result |
+| --- | --- | --- | --- | --- |
+| T1 | Mechanism | `--syntax-check`, the splitter over every `raw` task, and a render of the changed tasks | control host | All pass |
+| T2 | Integration | Apply `archiver_dev` on a fresh host; check for a TCP listener; register PVs; restart the appliance; re-apply | Fresh Rocky 8.10 VM | No MariaDB TCP listener; four tables; PV configuration persists; re-apply unchanged |
+
+##### Verification Results
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T1 | | | Pending | |
+| T2 | | | Pending | |
 
 ## Backlog
 
