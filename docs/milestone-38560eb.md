@@ -2227,9 +2227,73 @@ runs.
 
 | Group | ID | Work unit | Type | Status | Ready | Deps | Done when / Evidence |
 | --- | --- | --- | --- | --- | --- | --- | --- |
+| Core | M20 | Align the test-user handoff document with the operator model | Milestone | Not started | Yes | | `docs/test_users_handoff.md` names `roles/testusers`, `playbooks/operators/testusers.yml`, the `iocrunner` species order and the bake's species step instead of the retired `app_ioc_runner`, `roles/test_users`, `playbooks/07_test_users.yml`, `CONFIG_SITE` list and `site.yml`; [detail](#m20---align-the-test-user-handoff-document-with-the-operator-model) |
 
-No unassigned work in this generation. Unassigned work belongs here; the
-release tally above excludes this section.
+Unassigned work belongs here; the release tally above excludes this section.
+
+### Backlog Details
+
+#### M20 - Align the test-user handoff document with the operator model
+
+- Origin: 38560eb / M20
+- GitHub Issue: none
+- Status: Not started
+
+##### Summary
+
+`docs/test_users_handoff.md` still describes the staged model: it names
+`app_ioc_runner`, `site.yml`, `roles/test_users`, `playbooks/07_test_users.yml`,
+a `SERVER_ONLY_PLAYBOOKS` entry in `configure/CONFIG_SITE`, `04_nfs_sim.yml`
+and `nfs_sim_nodes`, and says the cloud-provision bake runs `07_test_users.yml`
+as its Step 6/9. The fixture now lives in `roles/testusers`, runs through
+`playbooks/operators/testusers.yml` as the last operator of
+`playbooks/species/iocrunner.yml`, and the bake
+(`bin/bake_iocrunner_image.bash` in cloud-provision) applies that species
+assembly as its Step 4/8. The product `ioc-srv` account and `ioc` group come from
+`roles/iocrunner`, which runs the runner's `setup-system-infra.bash --full`.
+
+##### Scope
+
+Every mention of a retired name in `docs/test_users_handoff.md` (as of this
+entry, lines 8, 17, 23-28, 41 and 45-47), including the Integration table and
+Ordering and Data Flow.
+
+Out of scope: the Accounts table and Verification content, which M19 and the
+accepted 2026-07-05 state own; the cloud-provision bake script.
+
+##### Completion Criteria
+
+- Every path in this repository that the document names exists, and the
+  order it states matches `playbooks/species/iocrunner.yml`.
+- Every reference to another repository matches that repository's current
+  files (the cloud-provision bake script, the epics-ioc-runner RUNBOOK).
+
+##### Dependencies And Decisions
+
+- Owner decision (2026-09-27): kept out of M19 so that the fixture account for
+  the consumer's release gate stays a small change.
+
+##### Implementation Plan
+
+- Plan Status: draft
+- Plan Acceptance: none
+- Implementation Authorization: none
+- Superseded Plan Artifacts: none
+
+1. Rewrite the retired mentions against the current operator, species and
+   cloud-provision bake files.
+
+##### Test Plan
+
+| Label | Layer | Method | Environment | Expected Result |
+| --- | --- | --- | --- | --- |
+| T1 | Mechanism | `grep` the document for the retired names; `test -e` every path of this repository it names; compare the stated order with the species playbook and the whole Ordering list with Steps 1-8 of cloud-provision `bin/bake_iocrunner_image.bash` | control host | No retired name; all paths exist; the operator order and every bake step match |
+
+##### Verification Results
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T1 | | | Pending | |
 
 ## History
 
