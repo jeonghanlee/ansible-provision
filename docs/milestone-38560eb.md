@@ -2146,7 +2146,7 @@ group, which land after this role.
 #### M19 - Add an ioc-group operator fixture account with linger
 
 - Origin: 38560eb / M19
-- GitHub Issue: none
+- GitHub Issue: #27, https://github.com/jeonghanlee/ansible-provision/issues/27
 - Status: Not started
 
 ##### Summary
