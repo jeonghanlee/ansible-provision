@@ -186,7 +186,7 @@ must already exist, be root-owned, allow directory traversal by all users,
 and prohibit group/other writes.
 
 This operator supplies the shared Tomcat distribution. The application owns
-`CATALINA_BASE`, instance configuration, and service startup; aa-env supplies
+`CATALINA_BASE`, instance configuration, and service startup; epicsarchiverap-env supplies
 the Archiver Appliance instances. Services must set `JAVA_HOME` and
 `CATALINA_HOME` explicitly. See the Apache
 [multiple-instance instructions](https://tomcat.apache.org/tomcat-9.0-doc/RUNNING.txt).
@@ -215,7 +215,7 @@ operator stops without changing anything, because a running appliance may still
 log in with the password the account holds. This is the case on a host set up
 before the password file existed. Either write the account's current password
 into the file, if it meets the rule above, or apply once with
-`-e mariadb_password_rotate=true` to replace it with a generated one. The aa-env
+`-e mariadb_password_rotate=true` to replace it with a generated one. The epicsarchiverap-env
 default `archappl` is too short to keep, so a host still on it takes the second
 way. To rotate later, remove the file and apply with
 `-e mariadb_password_rotate=true`. After any change of the password, an
@@ -266,7 +266,7 @@ Service configuration changes restart MariaDB; unchanged re-apply preserves
 the running service. Package lists are available as `pkg_mariadb_redhat` and
 `pkg_mariadb_debian` defaults.
 
-aa-env owns the schema, its separate `admin` account workflow, application
+epicsarchiverap-env owns the schema, its separate `admin` account workflow, application
 commands, and Tomcat JDBC configuration. Its current TCP commands and JDBC
 URL need UDS configuration before using the default socket-only server. The
 `archiver_dev` species does not use that default: it opts into loopback TCP
@@ -286,7 +286,7 @@ make op.archiver_build.rocky8
 make archiver_dev.rocky8
 ```
 
-The operator drives aa-env's make sequence, which clones and builds aa-maven
+The operator drives epicsarchiverap-env's make sequence, which clones and builds epicsarchiverap-maven
 from source internally, and installs the four appliance instances under
 `/opt/epicsarchiverap-maven`, served by `epicsarchiverap-maven.service` as the
 `mid-srv` service account. The build runs as a detached systemd unit, so a
@@ -294,8 +294,8 @@ dropped connection cannot leave a half-built tree behind. The play polls that
 unit to a success sentinel and reports nothing until it finishes. Expect several
 minutes on a host with a cold Maven cache. The build unit keeps its own output:
 read `journalctl -u archiver-build.service` on the target while it runs, or
-after it fails. `archiver_env_ref` pins aa-env and `archiver_maven_src_tag`
-pins the aa-maven source. The operator passes Maven flags through aa-env's
+after it fails. `archiver_env_ref` pins epicsarchiverap-env and `archiver_maven_src_tag`
+pins the epicsarchiverap-maven source. The operator passes Maven flags through epicsarchiverap-env's
 `MAVEN_FLAGS` hook, so `archiver_env_ref` must be `84b38e5` or later; an older
 ref reads `MAVEN_OPTS` instead, and a proxied build then cannot reach Maven
 Central.
@@ -309,7 +309,7 @@ immediately reads as a failure that is not one.
 The appliance authenticates to MariaDB over loopback TCP as the application
 account. The build reads the password from the file the `mariadb` operator made
 on the same host (`archiver_db_password_file`, which follows
-`mariadb_password_file`) and passes it to aa-env as `DB_USER_PASS`; the
+`mariadb_password_file`) and passes it to epicsarchiverap-env as `DB_USER_PASS`; the
 generated `../CONFIG_SITE.local` that carries it is readable by root only. A
 build refuses to start when that file is missing. The `archiver_dev` group_vars
 set `mariadb_skip_networking: false`, which is what opens the loopback listener.
@@ -335,7 +335,7 @@ a service restart.
 The store policy of each tier is set with `archiver_store_sts_granularity`,
 `archiver_store_sts_hold`, `archiver_store_mts_granularity`,
 `archiver_store_mts_hold` and `archiver_store_lts_granularity`, which need
-`archiver_env_ref` at `9eed006` or later. Empty leaves the aa-env default: STS
+`archiver_env_ref` at `9eed006` or later. Empty leaves the epicsarchiverap-env default: STS
 `PARTITION_HOUR` hold 2, MTS `PARTITION_DAY` hold 2, LTS `PARTITION_YEAR`. A
 granularity is one of `PARTITION_5MIN`, `PARTITION_15MIN`, `PARTITION_30MIN`,
 `PARTITION_HOUR`, `PARTITION_DAY`, `PARTITION_MONTH` and `PARTITION_YEAR`. The
@@ -352,13 +352,13 @@ four Tomcats in the foreground, each under its own identifier, so one instance
 is read with `journalctl -u epicsarchiverap-maven.service -t archappl-mgmt`
 (likewise `archappl-engine`, `archappl-etl`, `archappl-retrieval`), and there is
 no `catalina.out`. An `archiver_env_ref` at this layout needs
-`archiver_maven_src_tag` at aa-maven `67be91d7` or later. The operator writes a
+`archiver_maven_src_tag` at epicsarchiverap-maven `67be91d7` or later. The operator writes a
 journald drop-in, `/etc/systemd/journald.conf.d/50-archiver.conf`, that keeps
 the host's whole journal, not only the appliance's entries, persistent for eight
 weeks within 1G (`archiver_journal_*`). These values are not part of the
 recorded knob set: a changed value is written on the next apply, and journald
 restarts only when the file changes. `archiver_root_logger_level`
-sets the appliance's root log level (empty keeps aa-env's `INFO`; one of `OFF`,
+sets the appliance's root log level (empty keeps epicsarchiverap-env's `INFO`; one of `OFF`,
 `FATAL`, `ERROR`, `WARN`, `INFO`, `DEBUG`, `TRACE`, `ALL`) and is part of the
 recorded knob set; a running appliance's levels change without a rebuild
 through `/opt/epicsarchiverap-maven/archappl.bash loglevel <component> [<logger> [<level>]]`.

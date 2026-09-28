@@ -1,18 +1,19 @@
 ---
 # roles/archiver_build/tasks/main.yml
 #
-# Installs the EPICS Archiver Appliance by driving aa-env's
-# (epicsarchiverap-env) make sequence, which clones and builds aa-maven from
-# source internally. This operator owns orchestration, refs, config, and the
-# service account; aa-env owns each make target's internals. It runs as root
-# like the other build operators; aa-env's internal sudo no-ops when already
-# root, so no build-user split is needed.
+# Installs the EPICS Archiver Appliance by driving the epicsarchiverap-env make
+# sequence, which clones and builds epicsarchiverap-maven from source
+# internally. This operator owns orchestration, refs, config, and the service
+# account; epicsarchiverap-env owns each make target's internals. It runs as
+# root like the other build operators; epicsarchiverap-env's internal sudo
+# no-ops when already root, so no build-user split is needed.
 #
 # Prerequisites come earlier in the archiver_dev species: the java operator
 # (JDK 21 + JAVA_HOME), the tomcat operator (/opt/tomcat9 shared CATALINA_HOME),
 # and the mariadb operator (loopback-TCP archappl DB and account). This
 # operator installs its own build tools (git, make, unzip, sed, tree, curl),
-# mirroring epics_build; aa-env's install_os_packages.bash is skipped.
+# mirroring epics_build; epicsarchiverap-env's install_os_packages.bash is
+# skipped.
 #
 # The build runs as a detached systemd transient unit (systemd-run), not inline
 # over the SSH session: a long `./mvnw` on a cold ~/.m2 cannot leave a dropped
@@ -96,8 +97,9 @@
     printf '%s\n' "archiver_build: maven proxy settings: ${maven_flags:-none}"
 
     # --- OS build-tool packages and JAVA_HOME (TOMCAT_HOME is /opt/tomcat9).
-    # The aa-env install_os_packages.bash is skipped; install its build tools
-    # here (mirrors epics_build). The -devel deps come with the epics operator.
+    # The epicsarchiverap-env install_os_packages.bash is skipped; install its
+    # build tools here (mirrors epics_build). The -devel deps come with the
+    # epics operator.
     . /etc/os-release
     case "${ID}" in
       rocky|rhel|centos)
@@ -114,8 +116,8 @@
     esac
 
     # --- Service group and runtime account (site-set GID; nologin) ---
-    # The aa-env install would create these too; pre-creating fixes the GID and
-    # aa-env then no-ops on the existing user/group.
+    # The epicsarchiverap-env install would create these too; pre-creating fixes
+    # the GID and epicsarchiverap-env then no-ops on the existing user/group.
     if ! getent group "${group}" >/dev/null; then
       if [ -n "${gid}" ]; then groupadd -g "${gid}" "${group}"; else groupadd "${group}"; fi
     fi
@@ -123,7 +125,8 @@
       useradd --system -g "${group}" -M -s /usr/sbin/nologin "${user}"
     fi
 
-    # --- Clone aa-env at the pinned ref; self-clean any partial tree first ---
+    # --- Clone epicsarchiverap-env at the pinned ref; self-clean any partial
+    # tree first ---
     rm -rf "${top}"
     install -d -m 0755 "${src_parent}"
     git clone "${repo}" "${top}"
@@ -145,21 +148,22 @@
       "AA_JAVA_HEAPSIZE=${heapsize}" \
       "ARCHAPPL_SITEID:=${site_id}" > "${src_parent}/CONFIG_SITE.local"
     # The password the mariadb operator set; this file is -included after
-    # CONFIG_SITE, so it replaces the aa-env default. The file now carries a
-    # credential, so only root reads it.
+    # CONFIG_SITE, so it replaces the epicsarchiverap-env default. The file now
+    # carries a credential, so only root reads it.
     printf 'DB_USER_PASS=%s\n' "${db_pass}" >> "${src_parent}/CONFIG_SITE.local"
     chmod 0600 "${src_parent}/CONFIG_SITE.local"
-    # Select the Maven settings file through the aa-env MAVEN_FLAGS hook, which is
-    # appended to every mvn invocation. CONFIG_SITE.local is included after the
-    # empty aa-env default, so this assignment wins. Left unset on a direct-net
-    # host, where the aa-env default stands and Maven goes direct. The hook is not
-    # MAVEN_OPTS: that name is the JVM-options variable of Maven itself.
+    # Select the Maven settings file through the epicsarchiverap-env MAVEN_FLAGS
+    # hook, which is appended to every mvn invocation. CONFIG_SITE.local is
+    # included after the empty epicsarchiverap-env default, so this assignment
+    # wins. Left unset on a direct-net host, where the epicsarchiverap-env
+    # default stands and Maven goes direct. The hook is not MAVEN_OPTS: that
+    # name is the JVM-options variable of Maven itself.
     if [ -n "${maven_flags}" ]; then
       printf 'MAVEN_FLAGS:=%s\n' "${maven_flags}" >> "${src_parent}/CONFIG_SITE.local"
     fi
-    # Store policy per tier. Each value is written only when set, so an unset one
-    # leaves the aa-env default in place; the launch step has already checked the
-    # names, the holds and the order across tiers.
+    # Store policy per tier. Each value is written only when set, so an unset
+    # one leaves the epicsarchiverap-env default in place; the launch step has
+    # already checked the names, the holds and the order across tiers.
     for store_setting in "ARCHAPPL_STS_GRANULARITY=${sts_gran}" "ARCHAPPL_STS_HOLD=${sts_hold}" \
         "ARCHAPPL_MTS_GRANULARITY=${mts_gran}" "ARCHAPPL_MTS_HOLD=${mts_hold}" \
         "ARCHAPPL_LTS_GRANULARITY=${lts_gran}"; do
@@ -172,29 +176,30 @@
       printf 'ARCHAPPL_ROOT_LOGGER_LEVEL:=%s\n' "${root_level}" >> "${src_parent}/CONFIG_SITE.local"
     fi
 
-    # --- Pin the aa-maven source ref (make init clones it at SRC_TAG) ---
+    # --- Pin the epicsarchiverap-maven source ref (make init clones it at
+    # SRC_TAG) ---
     printf 'SRC_TAG:=%s\n' "${src_tag}" > "${top}/configure/RELEASE.local"
 
-    # --- Build and install, aa-env driving aa-maven internally. conf.storage,
-    # install, and sd_start are the root steps; never `make build` wholesale,
-    # which bundles conf.storage. ---
+    # --- Build and install, epicsarchiverap-env driving epicsarchiverap-maven
+    # internally. conf.storage, install, and sd_start are the root steps; never
+    # `make build` wholesale, which bundles conf.storage. ---
     cd "${top}"
     make init
     make db.conf
     make conf.archapplproperties
     make build.mvn
     make sql.fill
-    # Before aa-env 1fc20a8 (jeonghanlee/epicsarchiverap-env#47), sql.fill exited
-    # 0 even when the schema load did nothing, leaving the database empty; the
-    # count stays as a guard, so no path that lets sql.fill pass can install on an
-    # empty database. On an empty one the appliance still starts, archives and
-    # serves, so every later check passes while PV configuration fails to
-    # persist, showing only as errors in the mgmt log, and survives only in
-    # memory until the next restart. Count the tables before treating the step
-    # as done, and stop here rather than install and start on a database the
-    # appliance cannot write to; an unreadable count stops the build too. Ask
-    # over the same TCP path and account the appliance uses, which proves the
-    # application login too.
+    # Before epicsarchiverap-env 1fc20a8 (jeonghanlee/epicsarchiverap-env#47),
+    # sql.fill exited 0 even when the schema load did nothing, leaving the
+    # database empty; the count stays as a guard, so no path that lets sql.fill
+    # pass can install on an empty database. On an empty one the appliance still
+    # starts, archives and serves, so every later check passes while PV
+    # configuration fails to persist, showing only as errors in the mgmt log,
+    # and survives only in memory until the next restart. Count the tables
+    # before treating the step as done, and stop here rather than install and
+    # start on a database the appliance cannot write to; an unreadable count
+    # stops the build too. Ask over the same TCP path and account the appliance
+    # uses, which proves the application login too.
     schema_query="SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='${db_name}'"
     schema_tables=$(MYSQL_PWD="${db_pass}" mysql -h "${db_host}" -P "${db_port}" -u "${db_user}" -N -B -e "${schema_query}") || schema_tables=""
     # A forced reinstall stopped the previous appliance before this build began,
@@ -210,7 +215,7 @@
       exit 1
     fi
     if [ "${schema_tables}" -eq 0 ]; then
-      echo "archiver_build: the aa-env sql.fill exited 0 but loaded no schema; ${db_name} has no tables, so the appliance would not persist PV configuration" >&2
+      echo "archiver_build: the epicsarchiverap-env sql.fill exited 0 but loaded no schema; ${db_name} has no tables, so the appliance would not persist PV configuration" >&2
       if [ -n "${stopped_note}" ]; then echo "${stopped_note}" >&2; fi
       exit 1
     fi
@@ -284,9 +289,9 @@
       exit 1
     fi
 
-    # The build hands aa-env the password the mariadb operator made on this host;
-    # without that file the appliance could not log in, so refuse before anything
-    # is torn down.
+    # The build hands epicsarchiverap-env the password the mariadb operator made
+    # on this host; without that file the appliance could not log in, so refuse
+    # before anything is torn down.
     pass_file="{{ archiver_db_password_file }}"
     if [ "${will_build}" = "yes" ] && [ ! -s "${pass_file}" ]; then
       echo "ARCHIVER_BUILD_PRECONDITION: ${pass_file} is missing or empty; apply the mariadb operator first." >&2
@@ -294,9 +299,10 @@
       exit 1
     fi
 
-    # The store policy reaches aa-env only inside the build, so check it here,
-    # before anything is torn down. aa-env rejects a bad name or hold only once
-    # the build is under way, and leaves the order across tiers to the operator.
+    # The store policy reaches epicsarchiverap-env only inside the build, so
+    # check it here, before anything is torn down. epicsarchiverap-env rejects a
+    # bad name or hold only once the build is under way, and leaves the order
+    # across tiers to the operator.
     sts_gran="{{ archiver_store_sts_granularity }}"
     sts_hold="{{ archiver_store_sts_hold }}"
     mts_gran="{{ archiver_store_mts_granularity }}"
@@ -341,8 +347,8 @@
       exit 1
     fi
 
-    # The root log level reaches aa-env only inside the build; refuse a value
-    # log4j2 does not know before anything is torn down.
+    # The root log level reaches epicsarchiverap-env only inside the build;
+    # refuse a value log4j2 does not know before anything is torn down.
     root_level="{{ archiver_root_logger_level }}"
     case "${root_level}" in
       ""|OFF|FATAL|ERROR|WARN|INFO|DEBUG|TRACE|ALL) ;;
@@ -355,8 +361,9 @@
         ;;
     esac
 
-    # An explicit reinstall was asked for: stop the appliance so aa-env installs
-    # over a quiet tree, drop the previous result, and fall through to the build.
+    # An explicit reinstall was asked for: stop the appliance so
+    # epicsarchiverap-env installs over a quiet tree, drop the previous result,
+    # and fall through to the build.
     if [ "${force}" = "true" ]; then
       systemctl stop epicsarchiverap-maven.service 2>/dev/null || true
       rm -f "${sentinel}" "${stamp}"

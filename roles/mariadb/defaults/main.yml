@@ -12,7 +12,7 @@ mariadb_user: "archappl"
 # account does not exist yet (see mariadb_password_rotate for an existing
 # account), and keeps it when present, so a site that wants its own password
 # places the file before the first apply. The password never leaves the
-# target; archiver_build reads the same file for aa-env.
+# target; archiver_build reads the same file for epicsarchiverap-env.
 mariadb_password_file: "/etc/ansible-provision/mariadb-{{ mariadb_user }}.pass"
 # When the application account already exists but the file is missing (a host
 # set up before the file existed, or a removed file), the operator stops rather

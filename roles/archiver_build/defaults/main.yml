@@ -1,42 +1,47 @@
 ---
 # roles/archiver_build/defaults/main.yml
-# Builds and installs the EPICS Archiver Appliance by driving aa-env's
-# (epicsarchiverap-env) make sequence, which clones and builds aa-maven from
-# source internally. This operator owns the orchestration, refs, config, and
-# service account; aa-env owns each make target's internals (WAR build,
-# instance layout, systemd unit, schema). Runs as root, like the other build
-# operators; aa-env's internal sudo no-ops when already root.
+# Builds and installs the EPICS Archiver Appliance by driving the
+# epicsarchiverap-env make sequence, which clones and builds
+# epicsarchiverap-maven from source internally. This operator owns the
+# orchestration, refs, config, and service account; epicsarchiverap-env owns
+# each make target's internals (WAR build, instance layout, systemd unit,
+# schema). Runs as root, like the other build operators; epicsarchiverap-env's
+# internal sudo no-ops when already root.
 
-# aa-env source repository and the ref this run pins. The build passes Maven
-# flags through aa-env's MAVEN_FLAGS hook, which aa-env introduced in 84b38e5; an
-# older ref reads MAVEN_OPTS instead, so a proxied build pinned to one cannot
-# reach Maven Central. Pin 84b38e5 or later; the store policy variables below
-# need 9eed006 or later, and archiver_root_logger_level needs 6302b12 or later.
-# From f75c84c the appliance runs its four Tomcats in the foreground under one
-# journald service, each instance logging as archappl-<instance>.
+# epicsarchiverap-env source repository and the ref this run pins. The build
+# passes Maven flags through epicsarchiverap-env's MAVEN_FLAGS hook, which
+# epicsarchiverap-env introduced in 84b38e5; an older ref reads MAVEN_OPTS
+# instead, so a proxied build pinned to one cannot reach Maven Central. Pin
+# 84b38e5 or later; the store policy variables below need 9eed006 or later, and
+# archiver_root_logger_level needs 6302b12 or later. From f75c84c the appliance
+# runs its four Tomcats in the foreground under one journald service, each
+# instance logging as archappl-<instance>.
 repo_archiver_env: "https://github.com/jeonghanlee/epicsarchiverap-env"
 archiver_env_ref: "d09dca7"
 
-# aa-maven source ref, written to configure/RELEASE.local as SRC_TAG. aa-env's
-# `make init` clones aa-maven and checks this out (a bare commit works there).
-# An aa-env ref past a707cf5 stops make install unless this build ships the
-# Tomcat log4j jars (aa-maven 9bbd69bf or later), and one past 1400ae7 needs the
+# epicsarchiverap-maven source ref, written to configure/RELEASE.local as
+# SRC_TAG. epicsarchiverap-env's `make init` clones epicsarchiverap-maven and
+# checks this out (a bare commit works there). An epicsarchiverap-env ref past
+# a707cf5 stops make install unless this build ships the Tomcat log4j jars
+# (epicsarchiverap-maven 9bbd69bf or later), and one past 1400ae7 needs the
 # log4j2 layout in every site's WARs (67be91d7 or later).
 archiver_maven_src_tag: "2fc12f01"
 
-# Where the aa-env source tree is cloned and built (aa-maven is cloned inside).
+# Where the epicsarchiverap-env source tree is cloned and built
+# (epicsarchiverap-maven is cloned inside).
 path_archiver_env_src: "/opt/epicsarchiverap-env-src"
 
-# Site id aa-env stamps into the build (ARCHAPPL_SITEID). aa-env copies its one
-# overlay, site-template/siteid, to src/sitespecific/<id>, but at the pinned ref
-# its Maven calls set the site to als regardless of this value, so another value
-# is not honoured end to end. Keep als.
+# Site id epicsarchiverap-env stamps into the build (ARCHAPPL_SITEID).
+# epicsarchiverap-env copies its one overlay, site-template/siteid, to
+# src/sitespecific/<id>, but at the pinned ref its Maven calls set the site to
+# als regardless of this value, so another value is not honoured end to end.
+# Keep als.
 archiver_site_id: "als"
 
 # Service account and group for the appliance, parallel to ioc / ioc-srv. The
-# operator pre-creates them so the GID is deterministic; aa-env's install then
-# no-ops on the existing user/group. The GID is a site override key; empty
-# leaves it to the site.
+# operator pre-creates them so the GID is deterministic; epicsarchiverap-env's
+# install then no-ops on the existing user/group. The GID is a site override
+# key; empty leaves it to the site.
 archiver_group: "mid"
 archiver_user: "mid-srv"
 archiver_gid: ""
@@ -45,22 +50,24 @@ archiver_gid: ""
 archiver_install_parent: "/opt"
 archiver_storage_top: "/arch"
 
-# Per-instance JVM heap, written to AA_JAVA_HEAPSIZE. aa-env derives
-# CATALINA_OPTS from it as both -Xms and -Xmx and applies the result to every
-# instance. The appliance runs four instances (mgmt, engine, etl, retrieval), so
-# a 1G heap each oversubscribes a lab vacuum alongside MariaDB and the OOM killer
-# takes an instance down; 256M keeps the four inside about 1 GB of heap. aa-env's
-# own default matches at the pinned ref; setting it here keeps the value part of
-# the install stamp, so a change on either side shows as drift.
+# Per-instance JVM heap, written to AA_JAVA_HEAPSIZE. epicsarchiverap-env
+# derives CATALINA_OPTS from it as both -Xms and -Xmx and applies the result to
+# every instance. The appliance runs four instances (mgmt, engine, etl,
+# retrieval), so a 1G heap each oversubscribes a lab vacuum alongside MariaDB
+# and the OOM killer takes an instance down; 256M keeps the four inside about
+# 1 GB of heap. epicsarchiverap-env's own default matches at the pinned ref;
+# setting it here keeps the value part of the install stamp, so a change on
+# either side shows as drift.
 archiver_java_heapsize: "256M"
 
-# Root level of the appliance's log4j2 configurations, written to the aa-env
-# ARCHAPPL_ROOT_LOGGER_LEVEL: one of OFF, FATAL, ERROR, WARN, INFO, DEBUG, TRACE
-# and ALL. Empty leaves the aa-env default (INFO). Under INFO the retrieval
-# instance logs several lines per request, so a host serving heavy retrieval may
-# set WARN; the launch step refuses any other value before a build starts. A
-# running appliance's levels change without a rebuild through aa-env's launcher
-# command `archappl.bash loglevel`.
+# Root level of the appliance's log4j2 configurations, written to the
+# epicsarchiverap-env ARCHAPPL_ROOT_LOGGER_LEVEL: one of OFF, FATAL, ERROR,
+# WARN, INFO, DEBUG, TRACE and ALL. Empty leaves the epicsarchiverap-env default
+# (INFO). Under INFO the retrieval instance logs several lines per request, so a
+# host serving heavy retrieval may set WARN; the launch step refuses any other
+# value before a build starts. A running appliance's levels change without a
+# rebuild through epicsarchiverap-env's launcher command
+# `archappl.bash loglevel`.
 archiver_root_logger_level: ""
 
 # Host journal settings for the appliance, which logs only to the journal: a
@@ -78,17 +85,18 @@ archiver_journal_system_max_use: "1G"
 archiver_journal_rate_limit_interval: "30s"
 archiver_journal_rate_limit_burst: "10000"
 
-# Store policy per tier, written to the aa-env ARCHAPPL_STS_GRANULARITY,
-# ARCHAPPL_STS_HOLD, ARCHAPPL_MTS_GRANULARITY, ARCHAPPL_MTS_HOLD and
-# ARCHAPPL_LTS_GRANULARITY, which aa-env renders into policies.py from 9eed006
-# on; an older ref ignores them. Empty leaves the aa-env default (STS
-# PARTITION_HOUR hold 2, MTS PARTITION_DAY hold 2, LTS PARTITION_YEAR). A
-# granularity is one of PARTITION_5MIN, PARTITION_15MIN, PARTITION_30MIN,
-# PARTITION_HOUR, PARTITION_DAY, PARTITION_MONTH and PARTITION_YEAR; the three are
-# set together or not at all, strictly finer to coarser from STS to LTS. A hold
-# is a positive integer and may be set on its own. The launch step refuses any
-# other value before a build starts. A test host shortens the chain to watch
-# samples reach all three tiers within hours; real deployments keep the defaults.
+# Store policy per tier, written to the epicsarchiverap-env
+# ARCHAPPL_STS_GRANULARITY, ARCHAPPL_STS_HOLD, ARCHAPPL_MTS_GRANULARITY,
+# ARCHAPPL_MTS_HOLD and ARCHAPPL_LTS_GRANULARITY, which epicsarchiverap-env
+# renders into policies.py from 9eed006 on; an older ref ignores them. Empty
+# leaves the epicsarchiverap-env default (STS PARTITION_HOUR hold 2, MTS
+# PARTITION_DAY hold 2, LTS PARTITION_YEAR). A granularity is one of
+# PARTITION_5MIN, PARTITION_15MIN, PARTITION_30MIN, PARTITION_HOUR,
+# PARTITION_DAY, PARTITION_MONTH and PARTITION_YEAR; the three are set together
+# or not at all, strictly finer to coarser from STS to LTS. A hold is a positive
+# integer and may be set on its own. The launch step refuses any other value
+# before a build starts. A test host shortens the chain to watch samples reach
+# all three tiers within hours; real deployments keep the defaults.
 archiver_store_sts_granularity: ""
 archiver_store_sts_hold: ""
 archiver_store_mts_granularity: ""
@@ -102,10 +110,11 @@ archiver_store_lts_granularity: ""
 # sets this true for the one run meant to apply it.
 archiver_force_reinstall: false
 
-# The knob set an install was configured with. The build records this line beside
-# its sentinel, and a later run compares the two to detect that the desired
-# configuration has moved away from what is installed. List every knob that
-# reaches the appliance only through the aa-env config and install steps.
+# The knob set an install was configured with. The build records this line
+# beside its sentinel, and a later run compares the two to detect that the
+# desired configuration has moved away from what is installed. List every knob
+# that reaches the appliance only through the epicsarchiverap-env config and
+# install steps.
 archiver_config_stamp: >-
   heap={{ archiver_java_heapsize }}
   loglevel={{ archiver_root_logger_level or '-' }}
@@ -118,17 +127,17 @@ archiver_config_stamp: >-
   envref={{ archiver_env_ref }}
   srctag={{ archiver_maven_src_tag }}
 
-# Database connection aa-env's context.xml renders (loopback TCP; see the
-# mariadb operator). Name and user reuse the mariadb operator's values so both
-# sides address the same account.
+# Database connection epicsarchiverap-env's context.xml renders (loopback TCP;
+# see the mariadb operator). Name and user reuse the mariadb operator's values
+# so both sides address the same account.
 archiver_db_host: "127.0.0.1"
 archiver_db_port: "3306"
 archiver_db_name: "{{ mariadb_database | default('archappl') }}"
 archiver_db_user: "{{ mariadb_user | default('archappl') }}"
 # The root-only file on this host that holds the application account password,
-# written by the mariadb operator (mariadb_password_file). The build reads it and
-# hands it to aa-env as DB_USER_PASS, which aa-env's JNDI resource and sql.fill
-# use, and the post-sql.fill table check logs in with it. Both roles name one
-# path: this follows mariadb_password_file the way archiver_db_name follows
-# mariadb_database.
+# written by the mariadb operator (mariadb_password_file). The build reads it
+# and hands it to epicsarchiverap-env as DB_USER_PASS, which
+# epicsarchiverap-env's JNDI resource and sql.fill use, and the post-sql.fill
+# table check logs in with it. Both roles name one path: this follows
+# mariadb_password_file the way archiver_db_name follows mariadb_database.
 archiver_db_password_file: "{{ mariadb_password_file | default('/etc/ansible-provision/mariadb-' ~ archiver_db_user ~ '.pass') }}"
