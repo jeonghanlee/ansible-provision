@@ -153,7 +153,7 @@ verified on the production IOC server 2026-09-04 (con 1.1.0 replaced by 1.2.0,
 full mode carries every OS tree, second apply `failed=0`). Delivered in
 `fd4ff1c` and `13bc8e6`.
 
-Status tally: 14 Complete, 1 In progress, 1 Not started, 1 Deferred, 1 Blocked. 3 external gates (2 Complete, 1 Open).
+Status tally: 14 Complete, 1 In progress, 2 Not started, 1 Deferred, 1 Blocked. 3 external gates (2 Complete, 1 Open).
 
 ## Milestone
 
@@ -179,6 +179,7 @@ Status tally: 14 Complete, 1 In progress, 1 Not started, 1 Deferred, 1 Blocked. 
 | Core | M16 | Generate the MariaDB application password on the host | Milestone | Complete | No | D18 | The `mariadb` operator creates the application password on the target host, keeps it in a root-only file, and sets the account from that file; `archiver_build` reads the same file for aa-env; no credential travels from the control host, `raw_stdin` and its tests are removed, and the operator works over SSH and over a local connection alike; delivered in `3e89e33`; [detail](#m16---generate-the-mariadb-application-password-on-the-host) |
 | Core | M17 | Move the aa-env pin to the journald and log4j2 service model | Milestone | In progress | No | M16, D19 | `archiver_env_ref` and `archiver_maven_src_tag` move past aa-env `bbe0968` and aa-maven `67be91d7`, where the appliance runs its four Tomcats in the foreground under one journald service with a WAR log4j2 layout; the operator's install check, repair, stamp and documentation fit that unit, the host keeps a persistent, bounded journal, and a fresh `archiver_dev` build serves and persists PV configuration; [detail](#m17---move-the-aa-env-pin-to-the-journald-and-log4j2-service-model) |
 | Core | M18 | Select SQLite as the archiver configuration database through its own operator | Milestone | Not started | No | M17, D19 | A `sqlite` operator installs the SQLite CLI, an `archiver-dev-sqlite` species puts it in place of `mariadb`, and `archiver_build` passes `DB_BACKEND=sqlite` and checks the schema with `make sql.show`; a fresh `archiver_dev_sqlite` host builds with no MariaDB server and persists PV configuration across a restart; [detail](#m18---select-sqlite-as-the-archiver-configuration-database-through-its-own-operator) |
+| Core | M19 | Add an ioc-group operator fixture account with linger | Milestone | Not started | Yes | | The `testusers` operator also creates `opc`, a member of the `ioc` group with systemd linger enabled, while `opa`, `opb`, `obs`, `usera` and `userb` keep their current membership and linger; a fresh iocrunner host applied through this repository shows that state and re-applies cleanly; [detail](#m19---add-an-ioc-group-operator-fixture-account-with-linger) |
 | Gate | G1 | the production IOC server reaches the internal git host | External gate | Complete | No | | Reachability achieved through the site HTTP proxy's CONNECT tunnel (an ssh `ProxyCommand` over the proxy), not a firewall whitelist: the owner's key authenticates and `git ls-remote` returns the refs; confirmed 2026-09-03 by the successful iocserver clone (M4/T2) |
 | Gate | G2 | cloud-provision ships the middleware package baseline and the middleware VM | External gate | Open | No | | The middleware operator/species structure and OS package baseline (system OpenJDK 21, Tomcat 9.0.121, MariaDB; no Maven package) originate in cloud-provision (`docs/milestone-e260630.md` M11) as the normative source and a middleware VM is provisionable there, before ansible-provision mirrors the set and layers its roles; owned by the cloud-provision session |
 | Gate | G3 | aa-env ships a `sql.fill` that loads the configuration schema when the database and application account are provisioned externally | External gate | Complete | No | | Complete when the jeonghanlee/epicsarchiverap-env#47 fix commit is on `modernize` and aa-env records #47's acceptance as met: with only the application account, `make sql.fill` loads the schema, `make sql.show` lists `PVTypeInfo`, `PVAliases`, `ArchivePVRequests` and `ExternalDataServers`, and an absent database exits non-zero. Observing it on an archiver-dev host is M14/T17, not this gate; owned by the aa-env session; met 2026-09-23: the fix is `1fc20a8` on `modernize`, and #47 closed with aa-env's acceptance recorded |
@@ -2134,6 +2135,84 @@ group, which land after this role.
 | --- | --- | --- | --- | --- |
 | T1 | Mechanism | `--syntax-check` on both species, the splitter, and a render of the changed tasks for each backend | control host | All pass; the SQLite render carries no MariaDB step |
 | T2 | Integration | Apply `archiver_dev_sqlite` on a fresh host; register PVs; restart the appliance; re-apply | Fresh Rocky 8.10 VM | No MariaDB server, four tables via `make sql.show`, PV configuration persists across the restart, re-apply unchanged |
+
+##### Verification Results
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T1 | | | Pending | |
+| T2 | | | Pending | |
+
+#### M19 - Add an ioc-group operator fixture account with linger
+
+- Origin: 38560eb / M19
+- GitHub Issue: none
+- Status: Not started
+
+##### Summary
+
+The `testusers` fixture serves the epics-ioc-runner multi-user scenarios.
+`opa` and `opb` belong to `ioc` without linger, and `usera` and `userb` have
+linger outside `ioc`. epics-ioc-runner 1.4.2 adds a scenario in which one
+account runs an IOC in local mode (`systemctl --user`, which needs linger) and
+then the same IOC as a system service (which needs `ioc` membership for the
+sudoers gate), so no current account fits. A new account keeps the existing
+accounts' meaning in the consumer's `gate/RUNBOOK.md`.
+
+##### Scope
+
+`roles/testusers`: a `test_users_operators_linger` list (default `[opc]`) and
+one task that creates each account, adds it to `test_users_ioc_group` and
+enables linger; an `opc` row in the Accounts table of
+`docs/test_users_handoff.md` and a separate verification line dated from
+M19/T2 (the existing Verification list records the 2026-07-05 accepted state
+and stays as it is).
+
+Out of scope: any change to `opa`, `opb`, `obs`, `usera` or `userb`; the
+consumer's RUNBOOK fixture table and fixture check
+(jeonghanlee/epics-ioc-runner); the golden bake itself, which cloud-provision
+runs.
+
+##### Completion Criteria
+
+- On a fresh Rocky 8.10 and a fresh Debian 13 iocrunner host applied through
+  this repository, `opc` exists, belongs to `ioc`, and has linger enabled; the
+  other five accounts are unchanged.
+- A re-apply of the operator succeeds and leaves the same state.
+
+##### Dependencies And Decisions
+
+- Requested by epics-ioc-runner on 2026-09-27 as an external gate of its 1.4.2
+  release; the owner chose a new account over enabling linger on an existing
+  one.
+- The consumer's release gate runs on a fresh bake, so the golden carries
+  `opc` from the next iocrunner bake after this lands; a running host gets it
+  by applying `playbooks/operators/testusers.yml`, which is not evidence for
+  the golden. The consumer's gate also requires its two running test consumers
+  to carry `opc`; this repository provides the operator, and the consumer side
+  applies it to them.
+
+##### Implementation Plan
+
+- Plan Status: draft
+- Plan Acceptance: none
+- Implementation Authorization: none
+- Superseded Plan Artifacts: none
+
+1. Add `test_users_operators_linger` to `roles/testusers/defaults/main.yml`.
+2. Add the create, `ioc` join and linger task to `roles/testusers/tasks/main.yml`.
+3. Add the `opc` row to the Accounts table of `docs/test_users_handoff.md`.
+4. Run T1 and T2 on fresh VMs, add the dated verification line to
+   `docs/test_users_handoff.md`, and report the commit to epics-ioc-runner and
+   cloud-provision, naming `make op.testusers.<vacuum>` as the way to give the
+   two running test consumers `opc`.
+
+##### Test Plan
+
+| Label | Layer | Method | Environment | Expected Result |
+| --- | --- | --- | --- | --- |
+| T1 | Mechanism | `--syntax-check` on `playbooks/operators/testusers.yml` and `playbooks/species/iocrunner.yml` | control host | Both pass |
+| T2 | Integration | `make iocrunner.<vacuum> RUNTIME_INVENTORY=<host inventory>`; check `id <account>` and `loginctl show-user <account> -p Linger` for all six accounts; re-apply with `make op.testusers.<vacuum> RUNTIME_INVENTORY=<host inventory>` | Fresh Rocky 8.10 and Debian 13 VMs | `opc` in `ioc` with `Linger=yes`; the other five as before; re-apply succeeds with the same state |
 
 ##### Verification Results
 
