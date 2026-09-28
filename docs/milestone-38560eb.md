@@ -196,9 +196,9 @@ Status tally: 18 Complete, 0 In progress, 0 Not started, 1 Deferred, 1 Blocked. 
 | D2 | Ubuntu 26 is excluded from the current source-build matrix and deferred to EPICS-env 1.3.1 or a later version. The 1.3.0 gate matrix does not include Ubuntu 26, and the `iocStats` GCC 15 fix is owned by EPICS-env. | Owner decision, 2026-08-17 |
 | D3 | The staged old model (`01_base`/`02_apps`/`03_epics`) and its retained roles `base_os` and `app_epics` are retired; the operator/species model supersedes them. Removing the old roles and playbooks is separate follow-up work. | Owner decision, 2026-08-29 |
 | D4 | Ubuntu 26 source-build is no longer deferred. The C17 bridge shipped under milestone 1.3.0 (`jeonghanlee/EPICS-env#29`), and `jeonghanlee/EPICS-env#63` (closed 2026-08-24) confirmed it fires for `iocStats` on the Ubuntu 26 source-build path; the complete `gz` path passed on 2026-08-27. Supersedes `D2`. | Owner decision, 2026-08-30 |
-| D5 | The EPICS OS package regression (`M5`) is fixed across all six vacua, `pkg_automation` is removed from `roles/epics_build` in the same change, ansible-provision drafts the cloud `docs/IMAGE_WORKFLOW.md` change for LAB-cloud to land, and the milestone and GitHub issue are recorded before implementation begins. | Owner decision, 2026-08-31 |
+| D5 | The EPICS OS package regression (`M5`) is fixed across all six vacua, `pkg_automation` is removed from `roles/epics_build` in the same change, ansible-provision drafts the cloud `docs/IMAGE_WORKFLOW.md` change for cloud-provision to land, and the milestone and GitHub issue are recorded before implementation begins. | Owner decision, 2026-08-31 |
 | D6 | `M5` closes on the golden pair (rocky8, debian13), verified on both acquisition paths. The four non-golden vacua (rocky10, debian12, ubuntu24, ubuntu26) have no iocrunner golden pipeline; they carry the same package lists (names dry-run-verified) and move to `M6` for Live-mode verification. The cloud-side golden bake-matrix expansion stays a separate cloud-provision item. | Owner decision, 2026-08-31 |
-| D7 | The `epics_build` source-build fragility surfaced during `M5` verification (LAB-cloud Finding B) is hardened as `M7`, not accepted. `M5`'s fix removed the known trigger (the NetworkManager restart); `M7` addresses the underlying structure so a dropped connection cannot leave a half-built tree. | Owner decision, 2026-08-31 |
+| D7 | The `epics_build` source-build fragility surfaced during `M5` verification (cloud-provision Finding B) is hardened as `M7`, not accepted. `M5`'s fix removed the known trigger (the NetworkManager restart); `M7` addresses the underlying structure so a dropped connection cannot leave a half-built tree. | Owner decision, 2026-08-31 |
 | D8 | The chrony per-server `minpoll`/`maxpoll` and `keyfile`/`leapsectz` directives dropped by the operator rewrite (`0012e2d`) are restored into `roles/common`, mirroring the `M5` EPICS-package regression from the same rewrite. Empty defaults keep the baseline render unchanged; site overrides (the production IOC server) render the production directives. | Owner decision, 2026-09-02 |
 | D9 | With `epics_install_group` set, the EPICS install root stays `root:<group>` `2775` (setgid) and gains a default ACL on local disk plus a system-wide git `safe.directory` on the deploy server, so any group member can run git on the single shared repository and write into it. Owner-owned roots (one deployer only), per-user `safe.directory` (per-member setup), a per-member subdirectory layout (the ioc-runner per-engineer model, unsuited to a single distribution tree), and a dedicated deploy account were rejected for the one-server-deploys/many-hosts-read topology. Site prerequisites (consistent group GID, `root_squash` pinning deploy to the filesystem server, NFSv4 idmapping) stay in the site provisioning record. | Owner decision, 2026-09-02 |
 | D11 | The con, procServ, and conserver roles and the EPICS role drop the install-once guard so a re-apply installs the requested version, replacing the installed one; whether the installed version matches the requested one is verified by the separate site verification tool, not by these roles. `con_version` is a git tag on the con repository, while `procserv_version` and `conserver_version` select a wrapper-repo ref whose upstream daemon version is pinned inside the wrapper (`configure/RELEASE` `SRC_TAG`), so the role controls the wrapper ref only. The EPICS distribution checkout adds `epics_clone_mode`: `minimal` (default) is a shallow, blob-filtered, single-OS sparse checkout for a Docker or single-OS host; `full` is a plain clone of every OS tree for a production NFS server. Both modes re-check out the requested tag in place, full disables sparse so a mode switch expands correctly, and an unknown mode value fails loudly. The roles keep `changed_when: false`. | Owner decision, 2026-09-04 |
@@ -504,8 +504,8 @@ debian13, ubuntu24, ubuntu26), reconciled from the retired `pkg_standard` and th
 pkg_automation `pkg-<os>/{common,epics,extra}` lists. Install it in `roles/epics`
 (distribution path) and `roles/epics_build` (source path), removing the
 `pkg_automation.bash` invocation. The normative operator definition in
-cloud-provision `docs/IMAGE_WORKFLOW.md` states the requirement first (LAB-cloud
-writes it).
+cloud-provision `docs/IMAGE_WORKFLOW.md` states the requirement first (that
+repository is its single writer).
 
 Out of scope: EPICS-env's own internal invocation of pkg_automation (EPICS-env
 repo); the source-build tag pins (`M1`/`M2`).
@@ -526,9 +526,9 @@ repo); the source-build tag pins (`M1`/`M2`).
 
 - Owner decisions `D5` (2026-08-31): all six vacua; remove pkg_automation in the
   same change; ansible-provision drafts the cloud `docs/IMAGE_WORKFLOW.md` change
-  for LAB-cloud; record the milestone and issue before starting.
+  for cloud-provision; record the milestone and issue before starting.
 - Cloud-first ordering: the normative operator definition (cloud-provision
-  `docs/IMAGE_WORKFLOW.md`, LAB-cloud single-writer) lands before the ansible
+  `docs/IMAGE_WORKFLOW.md`, cloud-provision single-writer) lands before the ansible
   implementation.
 
 ##### Implementation Plan
@@ -539,9 +539,9 @@ repo); the source-build tag pins (`M1`/`M2`).
 - Superseded Plan Artifacts: none
 
 1. Reconcile the per-OS EPICS package list (`work/plan-epics-os-packages.md`, Phase 0).
-2. Draft the cloud `docs/IMAGE_WORKFLOW.md` change; LAB-cloud lands it.
+2. Draft the cloud `docs/IMAGE_WORKFLOW.md` change; cloud-provision lands it.
 3. Install the list in `roles/epics`; remove `pkg_automation.bash` from `roles/epics_build`.
-4. Re-bake per OS via LAB-cloud; verify.
+4. Re-bake per OS via cloud-provision; verify.
 
 ##### Test Plan
 
@@ -621,7 +621,7 @@ EPICS-env-distribution publishing of the `debian-12` / `ubuntu-26.04` trees (ups
   distribution path for debian12/ubuntu26 is blocked upstream (tracked at
   jeonghanlee/EPICS-env-distribution#4); the source-build path is their verification
   route until the distribution ships those trees.
-- Package names dry-run-verified by LAB-cloud on 2026-08-31 (rocky10 needs `P_common`'s
+- Package names dry-run-verified by cloud-provision on 2026-08-31 (rocky10 needs `P_common`'s
   EPEL+CRB, which the species order provides).
 
 ##### Implementation Plan
@@ -631,9 +631,9 @@ EPICS-env-distribution publishing of the `debian-12` / `ubuntu-26.04` trees (ups
 - Implementation Authorization: none
 - Superseded Plan Artifacts: none
 
-1. Distribution path: LAB-cloud Live-applies the `iocrunner` species per OS with a
+1. Distribution path: cloud-provision Live-applies the `iocrunner` species per OS with a
    published tree (rocky10, ubuntu24), checks net-snmp + IOC link, discards the VM.
-2. Source-build path: LAB-cloud Live-applies the `epics_dev` species per OS (all four),
+2. Source-build path: cloud-provision Live-applies the `epics_dev` species per OS (all four),
    confirms the source build completes with `pkg_automation` gone, discards the VM.
 3. Record per-vacuum, per-path verification here.
 
@@ -664,7 +664,7 @@ EPICS-env-distribution publishing of the `debian-12` / `ubuntu-26.04` trees (ups
 ##### Summary
 
 `roles/epics_build` runs the whole EPICS-env source build as one long
-`ansible.builtin.raw` task over SSH. During `M5` verification (LAB-cloud Finding
+`ansible.builtin.raw` task over SSH. During `M5` verification (cloud-provision Finding
 B), a dropped SSH connection left the remote shell still running on the VM — the
 build kept progressing while ansible reported the task failed — so a failed run
 can leave a half-built tree, and a same-VM retry can race the surviving shell or
@@ -690,7 +690,7 @@ distribution path (`roles/epics`), which has no long build.
 
 ##### Dependencies And Decisions
 
-- Origin decision `D7` (2026-08-31): harden rather than accept (LAB-cloud Finding
+- Origin decision `D7` (2026-08-31): harden rather than accept (cloud-provision Finding
   B). `M5`'s `4b272a8` removed the known trigger; this row addresses the
   structure.
 
@@ -705,7 +705,7 @@ Structure: run the source build as a detached `systemd` transient unit that
 ansible polls, so a dropped SSH connection cannot leave a half-built tree or let
 a retry race a surviving shell. Chosen over the inline clean-on-retry guard
 because the detached unit removes the surviving-shell race at the root, matching
-`D7`'s intent; LAB-cloud validated the direction by manually detaching the build
+`D7`'s intent; cloud-provision validated the direction by manually detaching the build
 to survive kills during `M5` verification. All six vacua are systemd-based.
 
 1. Move the inline build body (`roles/epics_build/tasks/main.yml`, the
@@ -730,12 +730,11 @@ to survive kills during `M5` verification. All six vacua are systemd-based.
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
-| T1 | 2026-09-01 | rocky8 (lab-rocky8-epics-dev-t1) | Passed | Real path on a fresh rocky8 VM at master 72fa9a9: after the build unit went active, killing the local ansible process left the detached unit still building (single unit, no orphan); a retry reported `EPICS_ENV_BUILD_RUNNING` (changed=false, no second build); a genuine dnf failure was reported `FAILED rc=2` without hanging; a full `epics_dev` run completed (`ok=18 changed=6 failed=0`, Wait `DONE`, install tree `/opt/epics/1.3.0/rocky-8.10/7.0.10/setEpicsEnv.bash`, success sentinel present); a re-apply was idempotent (`ok=4 changed=0`). |
+| T1 | 2026-09-01 | rocky8 (a fresh lab VM) | Passed | Real path on a fresh rocky8 VM at master 72fa9a9: after the build unit went active, killing the local ansible process left the detached unit still building (single unit, no orphan); a retry reported `EPICS_ENV_BUILD_RUNNING` (changed=false, no second build); a genuine dnf failure was reported `FAILED rc=2` without hanging; a full `epics_dev` run completed (`ok=18 changed=6 failed=0`, Wait `DONE`, install tree `/opt/epics/1.3.0/rocky-8.10/7.0.10/setEpicsEnv.bash`, success sentinel present); a re-apply was idempotent (`ok=4 changed=0`). |
 
 ##### Closure Evidence
 
-- T1 passed 2026-09-01 on a fresh rocky8 VM (lab-rocky8-epics-dev-t1, provisioned
-  by LAB-cloud) against ansible-provision master 72fa9a9 (role commit 91a9470):
+- T1 passed 2026-09-01 on a fresh rocky8 VM (provisioned by cloud-provision) against ansible-provision master 72fa9a9 (role commit 91a9470):
   the detached systemd unit survives an ansible/SSH kill, a retry attaches to the
   running unit without starting a second build, a real failure is reported without
   hanging, a full source build completes with the install tree and success
@@ -1387,7 +1386,7 @@ repository); Maven as an installed package.
 Developed before `G2` rather than after: `G2` completes when cloud-provision M11
 merges to master, which follows M11/T2, which needs these M14 roles - so the
 non-deadlocking path is to develop on the branch against the M11 branch
-definition now (owner + LAB-CLOUD, 2026-09-14).
+definition now (owner and cloud-provision, 2026-09-14).
 
 1. Add the standalone `java` role and operator playbook, register `op.java`,
    and document its distribution JDK defaults and site override keys. Reuse
