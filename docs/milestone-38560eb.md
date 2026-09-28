@@ -31,12 +31,11 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: close #28 manually on the M18 verification and
-record the observed close in the M18 Closure Evidence (M18 closed on
-2026-09-28, `0a3d4e4`: the `archiver-dev-sqlite` species keeps the appliance
-configuration in SQLite). No Milestone-section row is then Ready: M14 stays
-Blocked on G2 and M3 Deferred; M20 is Ready in the Backlog and waits for
-assignment. M21 closed on 2026-09-28 (`8a5c355`): archiver hosts reach
+Next session entry point: no Milestone-section row is Ready. M18 closed on
+2026-09-28 (`0a3d4e4`, #28 closed): the `archiver-dev-sqlite` species keeps the
+appliance configuration in SQLite. M14 stays Blocked on G2 and M3 Deferred;
+M20 is Ready in the Backlog and waits for assignment. The next work therefore
+follows owner direction: assigning M20, or cloud-provision closing G2. M21 closed on 2026-09-28 (`8a5c355`): archiver hosts reach
 MariaDB over its Unix socket. M17 closed on 2026-09-28 with the pins at epicsarchiverap-env
 `d09dca7` and epicsarchiverap-maven `2fc12f01` (`940b63a`). Background follows. The schema load is fixed:
 epicsarchiverap-env's `sql.fill` fix (G3, jeonghanlee/epicsarchiverap-env#47) is on `modernize` at `1fc20a8`, and M14/T17 passed on a Rocky 8.10 and a Debian 13
@@ -2230,9 +2229,10 @@ Out of scope: the distribution-based `archiver-sqlite` species (with the
   was reported to epicsarchiverap-maven in the form of its SQLite and MariaDB
   backend checks, and cloud-provision confirmed its `8c9b6ba` definition matches
   the role.
-- #28 is open at this record (2026-09-28): the commit's `Closes #28` fires only
-  when the branch reaches `master`, so the issue is closed manually on this
-  verification as its own step.
+- #28 was closed manually on this verification (observed closed, reason
+  completed, at 2026-09-28T17:19:55Z, with its body synced to the result); the
+  commit's `Closes #28` footer has no further effect when the branch reaches
+  `master`.
 
 #### M19 - Add an ioc-group operator fixture account with linger
 
