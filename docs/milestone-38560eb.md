@@ -32,9 +32,10 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
 Next session entry point: M17, the aa-env pin moved to the journald and log4j2
-service model, in progress under its plan accepted and authorized on
-2026-09-27; continue from its Implementation Plan step 1, deriving the aa-env range from `9eed006` and the
-aa-maven range from `3c96141d`. Background follows. The schema load is fixed:
+service model (aa-env `d09dca7`, aa-maven `2fc12f01`), in progress under its
+plan accepted and authorized on 2026-09-27; its implementation and T1-T3 are
+done, so commit and push it, close it, and have the T2 VM removed; then M21
+(the MariaDB socket) and M18 (SQLite) follow. Background follows. The schema load is fixed:
 aa-env's `sql.fill` fix (G3, jeonghanlee/epicsarchiverap-env#47) is on `modernize` at `1fc20a8`, and M14/T17 passed on a Rocky 8.10 and a Debian 13
 host rebuilt through this operator at that ref on 2026-09-23: the operator's
 table check let the build continue and `make sql.show` lists `PVTypeInfo`,
@@ -2035,8 +2036,24 @@ aa-env's own internals.
   fetch data is" on every request, and `RetrievalState` "Found a data source"
   on 79% of the T21 requests, about 3.8 lines per request on the T21 load
   (checked against the T21 retrieval log and `modernize` on 2026-09-27).
-  Whether to move those as well is open on the aa-maven side; the knob's empty
-  default is reconsidered when that is decided.
+  Whether to move those as well is open on the aa-maven side
+  (jeonghanlee/epicsarchiverap-maven#13); the knob's empty default is
+  reconsidered when that is decided.
+- Range (plan step 1, 2026-09-28): aa-env `9eed006` to `d09dca7` (`modernize`
+  head; last code change `90e4a04`) and aa-maven `3c96141d` to `2fc12f01`
+  (`modernize` head, which aa-env's own `SRC_TAG` follows; it contains
+  `9bbd69bf`, `67be91d7` and `d9250d23`). Operator-facing changes: the unit
+  is `Type=simple` with `KillMode=mixed`, `TimeoutStopSec=300` and
+  `Requires=@DB_SYSTEMD_UNIT@`; `ARCHAPPL_LOG4J*` are gone (the operator sets
+  none); `ARCHAPPL_ROOT_LOGGER_LEVEL`, `DB_BACKEND`, `DB_SOCKET` and
+  `ARCHAPPL_STORAGE_ALARM_PERCENT` (health FAIL at or above 85% store
+  filesystem use) are new; `conf.storage` warns when the store shares the root
+  filesystem and still succeeds; Rocky 8 needs `java-21-openjdk-devel`, which
+  the `java` operator already installs.
+- Owner decisions (2026-09-28): the MariaDB socket transport (`DB_SOCKET`,
+  with `skip-networking` back on archiver hosts) is separate work after M17
+  (M21); `ARCHAPPL_STORAGE_ALARM_PERCENT` stays at the aa-env default with no
+  operator knob.
 
 ##### Implementation Plan
 
@@ -2069,9 +2086,9 @@ aa-env's own internals.
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
-| T1 | | | Pending | |
-| T2 | | | Pending | |
-| T3 | | | Pending | |
+| T1 | 2026-09-28T04:33Z | control host, working tree on `00cf104` | Passed | `--syntax-check` passes for the `archiver_build` operator and the `archiver_dev` species; the Ansible splitter accepts all 79 `raw` tasks; rendered with Ansible's templar from the role defaults, and again with `archiver_root_logger_level=WARN`, the build script, the new journal task and the launch step pass `bash -n`; the WARN render writes `ARCHAPPL_ROOT_LOGGER_LEVEL:=WARN` and `loglevel=WARN` in the stamp, the default render `loglevel=-` and no level line; the journal drop-in renders `Storage=persistent`, `MaxRetentionSec=8week`, `SystemMaxUse=1G`, `RateLimitIntervalSec=30s`, `RateLimitBurst=10000` |
+| T2 | 2026-09-28T04:55:20Z | A fresh Rocky 8.10 archiver-dev vacuum (2 vCPU, 4 GiB) from cloud-provision, working tree on `00cf104`, aa-env `d09dca7`, aa-maven `2fc12f01` | Passed | `make archiver_dev.rocky8` 04:45:37Z-04:51:50Z `failed=0`; stamp `loglevel=-` with `envref=d09dca7 srctag=2fc12f01` and no level line in `CONFIG_SITE.local`; the unit is `Type=simple`, `KillMode=mixed`, `TimeoutStopUSec=5min`, `Requires=mariadb.service`; four instances live, mgmt 200, four tables, no `catalina.out`; `journalctl -u epicsarchiverap-maven.service -t archappl-<instance>` holds every instance with priorities (mgmt 2 at 4 and 144 at 6, the others at 6 only); a 1 Hz test PV reached `Being archived` with one `PVTypeInfo` row, and after `systemctl restart` (10 s) mgmt answered 200 within 25 s, the row was still there and the PV was `Being archived` again |
+| T3 | 2026-09-28T04:58:45Z | Same VM | Passed | Re-apply of the species `changed=0 failed=0`; with the etl JVM killed the launcher stopped the other three and the unit ended `failed` (status 1), and a re-apply of the operator reported `ARCHIVER_BUILD_REPAIRED` (`changed=1`) and `ARCHIVER_JOURNAL_UNCHANGED`, with the four instances back; the drop-in carries the five settings and `/var/log/journal` exists; after a reboot (04:57:55Z) the unit was active and mgmt 200 on its own, `journalctl --list-boots` listed both boots with each instance's entries of the previous boot still readable, the journal took 24 MB, and the test PV's row remained |
 
 #### M18 - Select SQLite as the archiver configuration database through its own operator
 

@@ -51,6 +51,7 @@
     mts_gran="{{ archiver_store_mts_granularity }}"
     mts_hold="{{ archiver_store_mts_hold }}"
     lts_gran="{{ archiver_store_lts_granularity }}"
+    root_level="{{ archiver_root_logger_level }}"
 
     top="${src_parent}/epicsarchiverap-env"
 
@@ -166,6 +167,10 @@
         printf '%s\n' "${store_setting%%=*}:=${store_setting#*=}" >> "${src_parent}/CONFIG_SITE.local"
       fi
     done
+    # Root log level, written only when set; the launch step has checked it.
+    if [ -n "${root_level}" ]; then
+      printf 'ARCHAPPL_ROOT_LOGGER_LEVEL:=%s\n' "${root_level}" >> "${src_parent}/CONFIG_SITE.local"
+    fi
 
     # --- Pin the aa-maven source ref (make init clones it at SRC_TAG) ---
     printf 'SRC_TAG:=%s\n' "${src_tag}" > "${top}/configure/RELEASE.local"
@@ -222,6 +227,32 @@
     ARCHIVER_BUILD_SCRIPT
     chmod 0755 /usr/local/sbin/archiver-build.sh
   changed_when: false
+
+- name: Keep a persistent, bounded host journal for the appliance
+  ansible.builtin.raw: |
+    set -e
+    dropin="{{ archiver_journal_dropin }}"
+    want=$(printf '%s\n' \
+      "# Written by the ansible-provision archiver_build operator." \
+      "[Journal]" \
+      "Storage=persistent" \
+      "MaxRetentionSec={{ archiver_journal_max_retention }}" \
+      "SystemMaxUse={{ archiver_journal_system_max_use }}" \
+      "RateLimitIntervalSec={{ archiver_journal_rate_limit_interval }}" \
+      "RateLimitBurst={{ archiver_journal_rate_limit_burst }}")
+    # Restart journald only when the drop-in changes; with Storage=persistent it
+    # creates /var/log/journal and moves the volatile journal there on restart.
+    if [ -f "${dropin}" ] && [ "$(cat "${dropin}")" = "${want}" ]; then
+      echo "ARCHIVER_JOURNAL_UNCHANGED"
+      exit 0
+    fi
+    install -d -m 0755 "$(dirname "${dropin}")"
+    printf '%s\n' "${want}" > "${dropin}"
+    chmod 0644 "${dropin}"
+    systemctl restart systemd-journald.service
+    echo "ARCHIVER_JOURNAL_UPDATED"
+  register: archiver_journal
+  changed_when: "'ARCHIVER_JOURNAL_UPDATED' in archiver_journal.stdout"
 
 - name: Launch the detached archiver build unit
   ansible.builtin.raw: |
@@ -310,6 +341,20 @@
       exit 1
     fi
 
+    # The root log level reaches aa-env only inside the build; refuse a value
+    # log4j2 does not know before anything is torn down.
+    root_level="{{ archiver_root_logger_level }}"
+    case "${root_level}" in
+      ""|OFF|FATAL|ERROR|WARN|INFO|DEBUG|TRACE|ALL) ;;
+      *)
+        if [ "${will_build}" = "yes" ]; then
+          echo "ARCHIVER_BUILD_PRECONDITION: archiver_root_logger_level must be empty or one of OFF FATAL ERROR WARN INFO DEBUG TRACE ALL (got [${root_level}])." >&2
+          echo "Nothing was stopped and no build was started." >&2
+          exit 1
+        fi
+        ;;
+    esac
+
     # An explicit reinstall was asked for: stop the appliance so aa-env installs
     # over a quiet tree, drop the previous result, and fall through to the build.
     if [ "${force}" = "true" ]; then
@@ -317,13 +362,14 @@
       rm -f "${sentinel}" "${stamp}"
 
     # Already installed (the mgmt instance is present): do not rebuild, but
-    # ensure the appliance is actually serving. One unit launches four Tomcat
-    # instances through archappl.bash and systemd tracks only the main process,
-    # so the unit keeps reporting active after a single instance dies - measured
-    # on a host whose mgmt instance had been OOM-killed while the unit still read
-    # active and a re-apply reported no change. Judge by the four instances
-    # themselves, and repair with restart, which is what a nominally active but
-    # degraded unit needs; start would be a no-op there.
+    # ensure the appliance is actually serving. One unit runs the four Tomcat
+    # instances in the foreground under the archappl.bash launcher, which ends
+    # the service when any JVM dies: the survivors stop and the unit is left
+    # failed (Restart=no). The unit state alone would therefore catch a dead
+    # instance, but the four instances are checked as well, so a launcher that
+    # stays up without them is not taken for a serving appliance. Repair with
+    # restart, which starts a failed unit and replaces a degraded running one;
+    # start would be a no-op on the latter.
     elif ls -d "${install_root}/mgmt" >/dev/null 2>&1; then
       missing=""
       for instance in mgmt engine etl retrieval; do

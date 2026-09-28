@@ -347,6 +347,22 @@ host that watches samples reach all three tiers within hours uses STS
 `PARTITION_5MIN` hold 2, MTS `PARTITION_HOUR` hold 2 and LTS `PARTITION_DAY`;
 real deployments keep the defaults.
 
+The appliance logs only to the journal: `epicsarchiverap-maven.service` runs the
+four Tomcats in the foreground, each under its own identifier, so one instance
+is read with `journalctl -u epicsarchiverap-maven.service -t archappl-mgmt`
+(likewise `archappl-engine`, `archappl-etl`, `archappl-retrieval`), and there is
+no `catalina.out`. An `archiver_env_ref` at this layout needs
+`archiver_maven_src_tag` at aa-maven `67be91d7` or later. The operator writes a
+journald drop-in, `/etc/systemd/journald.conf.d/50-archiver.conf`, that keeps
+the host's whole journal, not only the appliance's entries, persistent for eight
+weeks within 1G (`archiver_journal_*`). These values are not part of the
+recorded knob set: a changed value is written on the next apply, and journald
+restarts only when the file changes. `archiver_root_logger_level`
+sets the appliance's root log level (empty keeps aa-env's `INFO`; one of `OFF`,
+`FATAL`, `ERROR`, `WARN`, `INFO`, `DEBUG`, `TRACE`, `ALL`) and is part of the
+recorded knob set; a running appliance's levels change without a rebuild
+through `/opt/epicsarchiverap-maven/archappl.bash loglevel <component> [<logger> [<level>]]`.
+
 After `sql.fill` the operator counts the tables in the configuration database and
 stops the build before install when there are none or they cannot be counted: an
 appliance on an empty database archives and serves, but never persists PV

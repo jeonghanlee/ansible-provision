@@ -11,13 +11,18 @@
 # flags through aa-env's MAVEN_FLAGS hook, which aa-env introduced in 84b38e5; an
 # older ref reads MAVEN_OPTS instead, so a proxied build pinned to one cannot
 # reach Maven Central. Pin 84b38e5 or later; the store policy variables below
-# need 9eed006 or later.
+# need 9eed006 or later, and archiver_root_logger_level needs 6302b12 or later.
+# From f75c84c the appliance runs its four Tomcats in the foreground under one
+# journald service, each instance logging as archappl-<instance>.
 repo_archiver_env: "https://github.com/jeonghanlee/epicsarchiverap-env"
-archiver_env_ref: "9eed006"
+archiver_env_ref: "d09dca7"
 
 # aa-maven source ref, written to configure/RELEASE.local as SRC_TAG. aa-env's
 # `make init` clones aa-maven and checks this out (a bare commit works there).
-archiver_maven_src_tag: "3c96141d"
+# An aa-env ref past a707cf5 stops make install unless this build ships the
+# Tomcat log4j jars (aa-maven 9bbd69bf or later), and one past 1400ae7 needs the
+# log4j2 layout in every site's WARs (67be91d7 or later).
+archiver_maven_src_tag: "2fc12f01"
 
 # Where the aa-env source tree is cloned and built (aa-maven is cloned inside).
 path_archiver_env_src: "/opt/epicsarchiverap-env-src"
@@ -49,6 +54,30 @@ archiver_storage_top: "/arch"
 # the install stamp, so a change on either side shows as drift.
 archiver_java_heapsize: "256M"
 
+# Root level of the appliance's log4j2 configurations, written to the aa-env
+# ARCHAPPL_ROOT_LOGGER_LEVEL: one of OFF, FATAL, ERROR, WARN, INFO, DEBUG, TRACE
+# and ALL. Empty leaves the aa-env default (INFO). Under INFO the retrieval
+# instance logs several lines per request, so a host serving heavy retrieval may
+# set WARN; the launch step refuses any other value before a build starts. A
+# running appliance's levels change without a rebuild through aa-env's launcher
+# command `archappl.bash loglevel`.
+archiver_root_logger_level: ""
+
+# Host journal settings for the appliance, which logs only to the journal: a
+# journald drop-in this operator writes on archiver hosts only. journald applies
+# it to the whole host journal, not only to the appliance's entries. It is not
+# part of the config stamp, so a changed value lands on the next apply without a
+# reinstall. Sized from the lab load test: the four instances log about 8 MB a
+# day at rest, so eight weeks fit well inside the cap, while sustained retrieval
+# at INFO writes about 380 MB a day and the cap then binds first, which matters
+# where the store shares the root filesystem. The rate limit states the systemd default; the largest burst
+# measured, an ETL failure storm, stayed near 800 lines per 30 s.
+archiver_journal_dropin: "/etc/systemd/journald.conf.d/50-archiver.conf"
+archiver_journal_max_retention: "8week"
+archiver_journal_system_max_use: "1G"
+archiver_journal_rate_limit_interval: "30s"
+archiver_journal_rate_limit_burst: "10000"
+
 # Store policy per tier, written to the aa-env ARCHAPPL_STS_GRANULARITY,
 # ARCHAPPL_STS_HOLD, ARCHAPPL_MTS_GRANULARITY, ARCHAPPL_MTS_HOLD and
 # ARCHAPPL_LTS_GRANULARITY, which aa-env renders into policies.py from 9eed006
@@ -79,6 +108,7 @@ archiver_force_reinstall: false
 # reaches the appliance only through the aa-env config and install steps.
 archiver_config_stamp: >-
   heap={{ archiver_java_heapsize }}
+  loglevel={{ archiver_root_logger_level or '-' }}
   site={{ archiver_site_id }}
   db={{ archiver_db_name }}@{{ archiver_db_host }}:{{ archiver_db_port }}/{{ archiver_db_user }}
   account={{ archiver_user }}:{{ archiver_group }}
