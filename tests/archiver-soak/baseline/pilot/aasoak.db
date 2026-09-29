@@ -1,0 +1,65 @@
+record(calc, "AASOAK:PLAIN") {
+  field(SCAN, "1 second")
+  field(CALC, "(A+1)%1000")
+  field(INPA, "AASOAK:PLAIN.VAL NPP")
+  field(EGU,  "counts")
+}
+record(calc, "AASOAK:ONE_UNDER") {
+  field(SCAN, "1 second")
+  field(CALC, "(A+1)%1000")
+  field(INPA, "AASOAK:ONE_UNDER.VAL NPP")
+  field(EGU,  "counts")
+}
+record(calc, "AASOAK:TWO_UNDER_SCORE") {
+  field(SCAN, "1 second")
+  field(CALC, "(A+1)%1000")
+  field(INPA, "AASOAK:TWO_UNDER_SCORE.VAL NPP")
+  field(EGU,  "counts")
+}
+record(calc, "AASOAK:DASH-NAME") {
+  field(SCAN, "1 second")
+  field(CALC, "(A+1)%1000")
+  field(INPA, "AASOAK:DASH-NAME.VAL NPP")
+  field(EGU,  "counts")
+}
+record(calc, "AASOAK:TRAIL9") {
+  field(SCAN, "1 second")
+  field(CALC, "(A+1)%1000")
+  field(INPA, "AASOAK:TRAIL9.VAL NPP")
+  field(EGU,  "counts")
+}
+record(calc, "AASOAK:NUM_12_34") {
+  field(SCAN, "1 second")
+  field(CALC, "(A+1)%1000")
+  field(INPA, "AASOAK:NUM_12_34.VAL NPP")
+  field(EGU,  "counts")
+}
+record(calc, "AASOAK:A_VERY_LONG_NAME_WITH_MANY_UNDERSCORES_HERE") {
+  field(SCAN, "1 second")
+  field(CALC, "(A+1)%1000")
+  field(INPA, "AASOAK:A_VERY_LONG_NAME_WITH_MANY_UNDERSCORES_HERE.VAL NPP")
+  field(EGU,  "counts")
+}
+record(calc, "AASOAK:MIX_1-2") {
+  field(SCAN, "1 second")
+  field(CALC, "(A+1)%1000")
+  field(INPA, "AASOAK:MIX_1-2.VAL NPP")
+  field(EGU,  "counts")
+}
+record(calc, "AASOAK:UPPER_lower") {
+  field(SCAN, "1 second")
+  field(CALC, "(A+1)%1000")
+  field(INPA, "AASOAK:UPPER_lower.VAL NPP")
+  field(EGU,  "counts")
+}
+record(calc, "AASOAK:SUB:NESTED") {
+  field(SCAN, "1 second")
+  field(CALC, "(A+1)%1000")
+  field(INPA, "AASOAK:SUB:NESTED.VAL NPP")
+  field(EGU,  "counts")
+}
+record(calc, "AASOAK:PFX_A:PFX_B:LEAF") {
+  field(SCAN, "1 second")
+  field(CALC, "(A+1)%1000")
+  field(INPA, "AASOAK:PFX_A:PFX_B:LEAF.VAL NPP")
+}

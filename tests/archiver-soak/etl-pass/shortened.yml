@@ -1,0 +1,7 @@
+---
+# work/soak-etl-pass-3bdf378c/shortened.yml
+archiver_store_sts_granularity: "PARTITION_5MIN"
+archiver_store_sts_hold: "2"
+archiver_store_mts_granularity: "PARTITION_HOUR"
+archiver_store_mts_hold: "2"
+archiver_store_lts_granularity: "PARTITION_DAY"

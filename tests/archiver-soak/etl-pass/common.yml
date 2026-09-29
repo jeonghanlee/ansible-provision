@@ -1,0 +1,7 @@
+---
+# work/soak-etl-pass-3bdf378c/common.yml
+archiver_env_ref: "d09dca7"
+archiver_maven_src_tag: "3bdf378c"
+archiver_db_backend: "mariadb"
+archiver_db_socket: "auto"
+archiver_java_heapsize: "256M"

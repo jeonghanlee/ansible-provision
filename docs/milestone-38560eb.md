@@ -31,13 +31,23 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: prepare the two parallel ETL scheduler soak runs in
-this document's M22 detail. The source refs and parallel execution are decided;
-the two VM inventories are available and actual Ansible access is verified.
-G4 still awaits the default-chain PV fixture and its storage assessment.
-Local deployment variables and the VM request sent to cloud-provision are in
-`work/soak-etl-pass-3bdf378c/`. Resolve those inputs before deployment and the
-24-hour observation windows. M14 stays Blocked on G2 and M3 Deferred.
+Next session entry point: inspect the two running ETL scheduler observations in
+this document's M22 detail. Both appliances restarted with verified GC and
+latency collection, preserving the same 903-PV fixture and existing stores.
+The replacement shortened observation began at 2026-09-29 01:06:22.691862 UTC
+and the default observation at 01:06:25.999358 UTC. Their whole-unit stop
+measurements are scheduled after 24 hours, at the corresponding times on
+2026-09-30 (2026-09-29 18:06 PDT). The previous windows were stopped early
+and preserved separately; they did not pass T4. Read the actual samples,
+pass records, GC/latency evidence, timer state and shutdown result before
+judging T4-T6; a scheduled action is not a passed test. T7-T8 passed their
+initial real-data checks; coverage throughout the new window remains T4.
+Preserved measurement/soak tools, fixtures and measurement methods are in
+`tests/archiver-soak/`. Private inputs, collected evidence and the active-run
+continuation procedure are in `work/soak-etl-pass-3bdf378c/`.
+The raw evidence remains on each VM under
+`/var/lib/etl-soak/`; preserve it and the separate inventories. G4 is Complete.
+M14 stays Blocked on G2 and M3 Deferred.
 M20 closed on 2026-09-28 (`268a060`): the test-user
 handoff document follows the operator model. M18 closed on 2026-09-28 (`0a3d4e4`, #28 closed):
 the `archiver-dev-sqlite` species keeps the appliance configuration in SQLite.
@@ -68,8 +78,8 @@ its 5-minute CSVs (host, per-process, per-log-stream, per-tier first arrival,
 retrieval, appliance metrics) and the load clients write `retrieval-load.csv`,
 all to
 `/var/tmp/aasoak9/` on the soak host from tools installed under
-`/usr/local/share/aasoak9/`; the tool sources are local working files, not in
-this repository. The run has ended: the IOCs, the sampler and the step timers
+`/usr/local/share/aasoak9/`; the tool sources are preserved under
+`tests/archiver-soak/baseline/`. The run has ended: the IOCs, the sampler and the step timers
 are stopped, and the day-1 and load-test CSVs and logs are copied to the local
 working directory. The pilot host - the Rocky 8.10 archiver-dev host kept from T17's
 original three at `6a026d4` - was removed on 2026-09-25 after its records were
@@ -162,7 +172,7 @@ verified on the production IOC server 2026-09-04 (con 1.1.0 replaced by 1.2.0,
 full mode carries every OS tree, second apply `failed=0`). Delivered in
 `fd4ff1c` and `13bc8e6`.
 
-Status tally: 19 Complete, 0 In progress, 0 Not started, 1 Deferred, 2 Blocked. 4 external gates (2 Complete, 2 Open).
+Status tally: 19 Complete, 1 In progress, 0 Not started, 1 Deferred, 1 Blocked. 4 external gates (3 Complete, 1 Open).
 
 ## Milestone
 
@@ -191,11 +201,11 @@ Status tally: 19 Complete, 0 In progress, 0 Not started, 1 Deferred, 2 Blocked. 
 | Core | M19 | Add an ioc-group operator fixture account with linger | Milestone | Complete | No | | The `testusers` operator also creates `opc`, a member of the `ioc` group with systemd linger enabled, while `opa`, `opb`, `obs`, `usera` and `userb` keep their current membership and linger; a fresh iocrunner host applied through this repository shows that state and re-applies cleanly; delivered in `32ea95f`; [detail](#m19---add-an-ioc-group-operator-fixture-account-with-linger) |
 | Core | M21 | Reach the archiver MariaDB over its Unix socket | Milestone | Complete | No | M17 | `archiver_build` writes `DB_SOCKET` for the `mariadb` backend and the `archiver_dev` group returns to `skip-networking`; fresh Rocky 8.10 and Debian 13 `archiver_dev` hosts build with TCP closed, serve mgmt and persist PV configuration, and an installed TCP host moves over in one forced run; delivered in `8a5c355`; [detail](#m21---reach-the-archiver-mariadb-over-its-unix-socket) |
 | Core | M20 | Align the test-user handoff document with the operator model | Milestone | Complete | No | | `docs/test_users_handoff.md` names `roles/testusers`, `playbooks/operators/testusers.yml`, the `iocrunner` species order and the bake's species step instead of the retired `app_ioc_runner`, `roles/test_users`, `playbooks/07_test_users.yml`, `CONFIG_SITE` list and `site.yml`; delivered in `268a060`; [detail](#m20---align-the-test-user-handoff-document-with-the-operator-model) |
-| Core | M22 | Verify the ETL pass scheduler on two parallel store chains | Milestone | Blocked | No | M17, M21, G4 | Both fixed-ref deployments run for at least 24 hours across UTC midnight; pass timing and metrics match the scheduler design, normal-load passes do not overrun, each unit stops within its configured timeout, and the earlier soak comparison is recorded; [detail](#m22---verify-the-etl-pass-scheduler-on-two-parallel-store-chains) |
+| Core | M22 | Verify the ETL pass scheduler on two parallel store chains | Milestone | In progress | No | M17, M21, G4 | Both fixed-ref deployments run for at least 24 hours across UTC midnight with the same 903-PV fixture; pass timing and metrics match the scheduler design, normal-load passes do not overrun, each unit stops within its configured timeout, and the earlier soak comparison is recorded; [detail](#m22---verify-the-etl-pass-scheduler-on-two-parallel-store-chains) |
 | Gate | G1 | the production IOC server reaches the internal git host | External gate | Complete | No | | Reachability achieved through the site HTTP proxy's CONNECT tunnel (an ssh `ProxyCommand` over the proxy), not a firewall whitelist: the owner's key authenticates and `git ls-remote` returns the refs; confirmed 2026-09-03 by the successful iocserver clone (M4/T2) |
 | Gate | G2 | cloud-provision ships the middleware package baseline and the middleware VM | External gate | Open | No | | The middleware operator/species structure and OS package baseline (system OpenJDK 21, Tomcat 9.0.121, MariaDB; no Maven package) originate in cloud-provision (`docs/milestone-e260630.md` M11) as the normative source and a middleware VM is provisionable there, before ansible-provision mirrors the set and layers its roles; owned by the cloud-provision session |
 | Gate | G3 | epicsarchiverap-env ships a `sql.fill` that loads the configuration schema when the database and application account are provisioned externally | External gate | Complete | No | | Complete when the jeonghanlee/epicsarchiverap-env#47 fix commit is on `modernize` and epicsarchiverap-env records #47's acceptance as met: with only the application account, `make sql.fill` loads the schema, `make sql.show` lists `PVTypeInfo`, `PVAliases`, `ArchivePVRequests` and `ExternalDataServers`, and an absent database exits non-zero. Observing it on an archiver-dev host is M14/T17, not this gate; owned by the epicsarchiverap-env session; met 2026-09-23: the fix is `1fc20a8` on `modernize`, and #47 closed with epicsarchiverap-env's acceptance recorded |
-| Gate | G4 | Prepare two independent ETL soak environments | External gate | Open | No | | The cloud-provision owner provides two fresh archiver-dev VM inventories; the default-chain PV fixture is identified by the owner before registration; [detail](#g4---prepare-two-independent-etl-soak-environments) |
+| Gate | G4 | Prepare two independent ETL soak environments | External gate | Complete | No | | Two fresh archiver-dev VM inventories are available; the owner selected the same existing 903-PV fixture for both chains, and initial disk and host capacity were assessed on 2026-09-28; [detail](#g4---prepare-two-independent-etl-soak-environments) |
 
 ### Decisions
 
@@ -2566,7 +2576,7 @@ accepted 2026-07-05 state own; the cloud-provision bake script.
 - Origin: 38560eb / M22
 - Identity History: none
 - GitHub Issue: none; external request `jeonghanlee/epicsarchiverap-maven#12`
-- Status: Blocked
+- Status: In progress
 
 ##### Summary
 
@@ -2587,7 +2597,7 @@ epicsarchiverap-maven `3bdf378c` without changing the role defaults.
 | Run | STS | MTS | LTS | PV fixture |
 | --- | --- | --- | --- | --- |
 | Shortened | PARTITION_5MIN, hold 2 | PARTITION_HOUR, hold 2 | PARTITION_DAY | Existing 903-PV fixture and rates from `work/soak-9eed006/pvs-all.csv`, served by its three IOC databases |
-| Default | PARTITION_HOUR, hold 2 | PARTITION_DAY, hold 2 | PARTITION_YEAR | Owner identifies the default fixture before registration; count, names and rates are recorded |
+| Default | PARTITION_HOUR, hold 2 | PARTITION_DAY, hold 2 | PARTITION_YEAR | The same existing 903-PV fixture and rates as the shortened run, served by a separate copy of the three IOC databases |
 
 Out of scope: scheduler code changes, repository-wide pin changes, host-sizing
 experiments, SQLite coverage, repeated retrieval stress, deliberate storage
@@ -2599,9 +2609,18 @@ failures, and disposal or reuse of the previous soak VM.
   effective properties, PV population and unit stop timeout.
 - Both observations run for at least 24 hours after readiness, cross UTC
   midnight, and retain complete pass logs and hourly ETL metrics.
-- After the startup pass, each pass follows the design's planned grid within
-  one 5-second tick under the normal soak load; ordering, completed-pass
-  counters and metric values agree with the pass records, with no overrun.
+- Both observations retain per-component GC before/after heap, collection
+  causes and pauses, complete jstat counters, RSS, retrieval freshness and
+  representative visibility bounds. Report collection gaps, restart and OOM
+  evidence, and distinguish observed heap maxima from continuous maxima.
+- After the startup pass, each pass retains the design's planned grid time.
+  Under normal soak load, a pass with no preceding-transition wait starts
+  within one 5-second tick of that time. A pass held by the ordering rule
+  starts at the first tick after the preceding transition ends, retaining its
+  original `plannedAt`. Verify both elapsed time from `plannedAt` and, when
+  waiting occurred, elapsed time from the preceding pass's `endedAt`.
+  Ordering, completed-pass counters and metric values agree with the pass
+  records, with no overrun.
 - A measured stop of the whole unit on each VM completes successfully within
   that unit's actual `TimeoutStopSec`, without forced termination.
 - A comparison records last-pass and average busy time and weekly usage against
@@ -2611,9 +2630,28 @@ failures, and disposal or reuse of the previous soak VM.
 ##### Dependencies And Decisions
 
 - Decision Date: 2026-09-28. The owner selected epicsarchiverap-maven `3bdf378c`
-  and epicsarchiverap-env `d09dca7`, then selected two VMs in parallel.
-- M17 and M21 are completed deployment prerequisites. G4 supplies the VM
-  inventories and the default fixture; resume as Not started when G4 completes.
+  and epicsarchiverap-env `d09dca7`, two VMs in parallel, and the same 903-PV
+  fixture for both chains, then authorized execution of this plan.
+- Decision Date: 2026-09-28. Correct the start-time criterion to include the
+  pinned scheduler design's ordering rule: a held pass starts at the first
+  tick after the preceding transition ends. Apply this criterion to the
+  ongoing observations; retain the original planned timestamps and measured
+  delays as evidence.
+- Decision Date: 2026-09-28. Add per-GC heap and pause evidence and collection
+  latency probes before restarting both appliance observations. Preserve the
+  earlier evidence and existing stores. Start a new 24-hour window only after
+  the additional instruments record real data and all 903 PVs are archiving.
+- Decision Date: 2026-09-28. Preserve the measurement methods, current ETL tools,
+  baseline soak tools and original fixtures under `tests/archiver-soak/`.
+  Keep run evidence and private inventory/configuration data outside that tree.
+- M17 and M21 are completed deployment prerequisites. G4 completed on
+  2026-09-28 with both VM inventories, the selected fixture and the initial
+  capacity assessment. Post-installation space remains a T2 check.
+- Both runs use `work/soak-9eed006/pvs-all.csv`, SHA256
+  `037a92691bc23a6dcac37ec3613ad19c9f80b93b689209ec8dc403b519eaf594`.
+  The fixture rates are one second for 783 PVs, 0.1 second for 110 PVs and
+  10 seconds for 10 PVs; the registration methods are 880
+  MONITOR and 23 SCAN. Both copies preserve the original policies and rates.
 - G2 remains specific to M14's remaining middleware work; it does not prevent
   the existing archiver-dev deploy path from running this soak.
 - The default chain's MTS-to-LTS cadence is capped at 8 hours, so its planned
@@ -2625,15 +2663,23 @@ failures, and disposal or reuse of the previous soak VM.
 
 ##### Implementation Plan
 
-- Plan Status: draft
-- Plan Acceptance: none
-- Implementation Authorization: none
+- Plan Status: accepted
+- Plan Acceptance: 2026-09-28; the owner selected the existing 903-PV fixture for both chains and directed execution, then accepted the correction for passes waiting on the preceding transition.
+- Implementation Authorization: 2026-09-28; deploy both selected inventories, verify readiness, run both observation windows and measure whole-unit shutdown; apply the accepted timing correction to the ongoing observations.
+- Measurement extension accepted and authorized: 2026-09-28. Record JFR
+  `GCHeapSummary`, `GarbageCollection`, and `GCPhasePause` events for all four
+  JVMs, retain GC logs and complete jstat counters, and add timed retrieval
+  probes. Preserve the superseded observation before the appliance restart.
+  Preserve the existing PV rates, heaps, source pins and stores; the restarted
+  run therefore begins with existing archived data. Per-GC maxima are observed
+  event maxima, not continuous heap high-water marks. All-PV freshness and
+  representative first-visibility bounds must remain distinct from exact
+  engine ingestion latency. Do not induce full GC to create a measurement.
 - Superseded Plan Artifacts: none
 
-1. Resolve G4. Freeze each inventory and PV fixture independently, check actual
-   storage headroom, and record the complete runtime configuration. The owner
-   has selected the source refs and parallel topology; the default PV fixture
-   remains unresolved.
+1. Keep each inventory separate and use the fixed 903-PV fixture on both VMs.
+   Record the complete runtime configuration and check actual storage headroom
+   again after deployment. G4 records the initial capacity assessment.
 2. Apply `make archiver_dev.rocky8` separately to each inventory, passing
    `work/soak-etl-pass-3bdf378c/common.yml` plus `shortened.yml` or `default.yml`.
    Keep a separate deployment log for each VM. Verify the installed source
@@ -2660,6 +2706,26 @@ failures, and disposal or reuse of the previous soak VM.
 6. Record T1-T6 from actual executions. Prepare the scheduler comparison and
    whole-unit stop measurements for the two upstream projects. Any external
    message or issue update follows its own authorization.
+7. Before restarting, stage and verify the additional measurement tools on
+   the real appliances. Record GC before/after heap, GC cause and pause
+   durations, and preserve raw JFR and GC logs. Extend jstat evidence with
+   generation occupancy and separate young/full/concurrent collection times.
+8. Record retrieval duration and newest archived source timestamp for all 903
+   PVs every five minutes. On representative scalar, fast, slow and waveform
+   PVs, record bounded polling of a real source timestamp until it becomes
+   retrievable. Preserve polling bounds, timestamp precision and timeouts;
+   do not label sample age or a polling upper bound as exact ingestion delay.
+9. Stop the old observation timers, preserve its evidence under a separate
+   private directory, and restart the appliance with the added JVM settings.
+   Verify real GC events, latency results, four JVMs and 903 connected,
+   archiving PVs before opening the replacement 24-hour observation. Schedule
+   the measured whole-unit stop against that replacement manifest.
+   Preserve DEBUG pass records across restart through a copy of the installed
+   log4j2 configuration with only the ETLPassDriver logger changed. Bound GC
+   log files to 16 MiB with three archives per JVM, and JFR to 64 MiB per JVM
+   for 26 hours. Keep ten-minute JFR snapshots at five-minute collection
+   intervals with an 8 MiB dump limit, a 512 MiB snapshot archive limit and a
+   2 GiB free-space check; collection-limit failures remain visible.
 
 ##### Test Plan
 
@@ -2668,37 +2734,61 @@ failures, and disposal or reuse of the previous soak VM.
 | T1 | Configuration | Use `ansible-inventory` to load each pair of runtime YAML files and run `ansible-playbook --syntax-check` on the shipped `archiver_dev` species with those files | Control host, static inventory only | Exact approved extra variables; socket MariaDB and 256M heap; shortened store values on one run and empty store overrides on the other; playbook syntax valid. Host-specific resolution remains T2 |
 | T2 | Deployment | Apply the shipped species, then inspect the installed commits, stamp, policies, effective properties, four instances, database, health and clock; verify fixture connection endpoints after registration | Both VMs | Configurations match their recorded inputs, each appliance connects to its intended IOC sources, and both are ready |
 | T3 | Collection | Run the sampler against each real appliance and compare its outputs with a completed-pass journal record and the live metrics response | Both VMs | Real pass evidence, metric fields, resource samples and UTC timestamps are preserved; failures remain visible |
-| T4 | Soak | Observe each real PV population for at least 24 hours across UTC midnight; evaluate every retained pass and hourly metric snapshot | Both VMs | Normal passes follow the grid and ordering, do not overrun, and agree with the reported metrics; outages or data gaps are reported |
+| T4 | Soak | Observe each real PV population for at least 24 hours across UTC midnight; evaluate every retained pass and hourly metric snapshot. Check start delay from `plannedAt`; when the preceding transition held a pass, also check its start against that transition's `endedAt` and the next tick | Both VMs | Normal passes with no preceding-transition wait start within one 5-second tick of their planned time; held passes start at the first tick after the preceding transition ends and retain their original `plannedAt`. Passes do not overrun, and counters and metrics agree with the records; outages or data gaps are reported |
 | T5 | Shutdown | Capture final metrics and time one whole-unit stop on each VM, preserving the unit result and journal | Both VMs after T4 | Successful orderly stops inside the actual timeout, without forced termination; elapsed times and effective wait settings recorded |
 | T6 | Comparison | Compare new busy time and weekly usage with the shipped M14/T21 evidence, accounting for population and load differences | Control host | A reproducible comparison with the retired running-sum metric excluded and the default-chain LTS limitation stated |
+| T7 | GC evidence | Read actual per-component JFR events and GC logs, correlate GC IDs and compare collected counters with the real JVM | Both VMs | Before/after heap and individual pauses are recorded for every observed GC; causes, PID, timestamps and incomplete records remain visible; no forced GC |
+| T8 | Latency evidence | Query all fixture PVs through the real retrieval service and poll representative real CA timestamps until visible | Both VMs | All-PV freshness, request duration and representative visibility bounds are recorded separately, with errors and polling resolution preserved |
 
 ##### Verification Results
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
 | T1 | 2026-09-28 19:19:10 UTC | Control host, working tree on `3060a7f` | Passed | The real `ansible-inventory --host localhost` loaded `common.yml` with each store file and returned the approved ten extra-variable values; the real `ansible-playbook --syntax-check` accepted `playbooks/species/archiver_dev.yml` with both file pairs. Only the static inventory was used; no target host was contacted. The existing PV lists contain 100, 400 and 403 entries, with 903 in `pvs-all.csv`, and all three IOC database files exist |
-| T2 | 2026-09-28 19:45:38 UTC | Both fresh Rocky 8.10 VMs | Pending | Actual inventories reach both VMs through Ansible raw with rc=0: Rocky 8.10, two online CPUs, a 20 GiB disk, 18054 MiB free on root, cloud-init done, and NTPSynchronized=no on each. Application deployment, post-deployment space, source refs and fixture connections remain unverified. The shipped species runs `common` first; its KVM PTP clock setup must be checked after application |
-| T3 | Not run | Both VMs | Pending | Collector adaptation and real appliance checks required |
-| T4 | Not run | Both VMs | Pending | No observation window started |
-| T5 | Not run | Both VMs | Pending | Requires completed observation windows |
+| T2 | 2026-09-28 21:34:54 UTC | Both Rocky 8.10 VMs; full archiver-dev species from `b8823c1` with recorded runtime variables | Passed | Each actual deployment returned rc=0, with 33 successful tasks and no failed or unreachable host. Installed commits are env `d09dca7a604840bc3f8dcd9edd7a7434fdf6992e` and Maven `3bdf378cb0a5eba42ad73648ec9e2c76b898bc1e`; stamps and rendered policies match the two approved chains. Four JVMs each use 256M minimum and maximum heaps. Socket MariaDB, health checks and KVM PTP synchronization succeed; `TimeoutStopSec` is 300 seconds. Post-installation free space was 13.69 GiB on each VM; at readiness 13.63/13.62 GiB remained. All 903 PVs are connected and archiving with the original sampling methods and periods, all 903 have STS files, and registration queues are empty. Both IOC listeners and all engine CA connections use loopback. The generated properties match the env site template copied into the Maven ALS site, SHA256 `5b91d9fca81adc7f25f82e75c6bd02e823de7b1acf496a33c215e1ab868f8bba`; no ETL worker or wait override is present, so the deployed source uses one worker per transition and a 60-second wait at each shutdown wait stage |
+| T3 | 2026-09-28 21:36:09 UTC | Both real appliances and the original 903-PV fixture | Passed | The real collector returned rc=0 on both VMs at 21:34:53/54 UTC, preserving journal cursors, raw pass records, raw metrics, process resources, services, database counts, stores and UTC timestamps. Each startup transition processed 903 PVs with zero failed, aborted or skipped jobs and no overrun. Actual record-to-metric assertions matched completed-pass counts, PV counts, job and movement counters, last busy time and average busy time at the metrics' display precision: shortened 76/4 ms and default 41/13 ms for transitions 0/1. These startup passes moved no partitions. Pre-readiness samples that ran while PVs were still being assigned returned failure and were retained. The actual systemd unit validation returned rc=0; the 24-hour shutdown path is configured and remains unverified until T5 |
+| T4 | 2026-09-29 01:07:59 UTC | Both VMs, unchanged source pins and 903-PV fixture; existing stores preserved | In progress | Replacement shortened start: 2026-09-29 01:06:22.691862 UTC; default start: 01:06:25.999358 UTC. Both schema-2 manifests retain readiness, fixture hash, boot ID, monotonic start and all four JVM PID/start identities. Both timers are active. The first automatic samples at 01:06:22.859989/26.185274 UTC completed with no collection errors, all 903 PVs connected and archiving, real GC events and six successful visibility probes; each run has three new closed-pass records. Free space is 12.37/12.36 GiB. Neither new 24-hour window has elapsed |
+| T5 | Scheduled for 2026-09-30 01:06:22.691862/25.999358 UTC | Both VMs | Pending | Each finish timer invokes final collection, preserves a full bounded JFR recording, measures one stop of the whole appliance unit and records the service result plus the remaining journal. The actual timeout is 300 seconds. The previous finish schedule was replaced. A scheduled timer does not establish shutdown success |
 | T6 | Not run | Control host | Pending | Requires new measurement evidence |
+| T7 | 2026-09-29 01:07:59 UTC | Both real appliances; all eight JVMs | Passed | The actual collector preserved JFR, GC logs, complete jstat fields and per-process RSS. Unique before/after GC pairs for mgmt/engine/etl/retrieval are 26/48/26/56 on shortened and 26/48/25/51 on default; none is unpaired, and every captured heap-event GC ID occurs in that JVM's GC log. Stored jstat fields equal the actual raw jstat output. Each component has real pause and collection events, unchanged 256M heaps and a PID matching its new manifest; full-GC counters are zero. No forced GC was requested. Evidence: local `measurement-start-shortened.json` and `measurement-start-default.json` under the work directory, plus the raw JFR and logs on each VM. This verifies initial collection; deduplicated full-window coverage remains T4 |
+| T8 | 2026-09-29 01:07:59 UTC | Both real retrieval services and original CA fixture | Passed | The first automatic samples queried all 903 PVs with two concurrent workers: 903 recent samples and zero request errors on each VM. Maximum request durations were 54.104/49.466 ms. All six representative CA timestamps were retrieved on each VM; source timestamp precision, poll attempts and visibility bounds are retained separately. In these samples all probes were visible on the first request, so lower bounds are zero and upper bounds include source sample age. These are not exact engine ingestion delays. Evidence: each sample's `freshness.json`, `visibility.json`, and `latency.csv`; full-window coverage remains T4 |
+
+The superseded windows began on 2026-09-28 at 21:36:06.273146/09.006321 UTC
+and were stopped before 24 hours to enable the additional measurements. Their
+manifests, samples, final journal, preparation-stop measurements and original
+tools remain under separate private `etl-soak-superseded-*` directories.
+Their preparation stops took 11.780/13.202 seconds; these do not satisfy T5
+for the replacement observation. Exact preservation paths are in the work
+directory README and each new observation's `restart.json`.
+
+The timing check observed at 2026-09-28 22:27:39 UTC examined the shortened
+chain's two passes planned for 22:10:00 UTC. STS-to-MTS ended at
+22:10:04.242661857, and MTS-to-LTS started at 22:10:08.788842393: 8.79 seconds
+after the shared planned time and 4.55 seconds after the preceding pass ended.
+The real pass records and deployed `ETLPassTicker.tickAll` agree with the
+design's first-tick-after-completion rule. This ordering check satisfies the
+corrected criterion; T4 remains In progress until the full window is evaluated.
 
 ##### Closure Evidence
 
-- None. No deployment or soak result is claimed.
+- Deployment, restart readiness and initial GC/latency collection are verified.
+  M22 remains In progress;
+  the 24-hour observations, whole-unit shutdown measurements and comparison
+  remain required. Runtime evidence is retained in the ignored work directory
+  and on each VM; no external result message has been sent.
 
 #### G4 - Prepare two independent ETL soak environments
 
 - Origin: 38560eb / G4
 - GitHub Issue: none
-- Status: Open
+- Status: Complete
 
 ##### Summary
 
 The cloud-provision owner supplies two independent, fresh Rocky 8.10 VMs and
-separate inventories for the `archiver-dev` species. The owner identifies the
-default-chain PV fixture. M22 depends on both inputs before deployment and
-registration.
+separate inventories for the `archiver-dev` species. Both use the existing
+903-PV fixture selected on 2026-09-28. M22 depends on these inputs and the
+initial capacity assessment before deployment and registration.
 
 ##### Completion Criteria
 
@@ -2713,10 +2803,13 @@ registration.
 | Observed At | Result | Evidence |
 | --- | --- | --- |
 | 2026-09-28 19:45:38 UTC | Pending | Cloud-provision delivered two separate inventories and reported 4096 MiB allocated to each VM. Actual access, OS, CPU, disk, free space, cloud-init and clock state were checked independently as recorded in M22/T2. The default inventory depends on the separate known-hosts file supplied beside it; preserve both. The default-chain fixture and its storage requirement remain pending |
+| 2026-09-28 21:10:29 UTC | Passed | The owner selected the existing 903-PV list for both runs. Actual inventory resolution and all eight species plays select exactly the intended single host for each run. The list has 903 unique names and the SHA256 recorded in M22; all three source IOC databases are available. The 20:22:47 UTC remote disk checks found 17.43 GiB free on the shortened VM and 17.63 GiB on the default VM. The earlier 903-PV measurements grew by 6.71 GiB per 24 hours over a 27-hour interval; this estimates data capacity, not a new default-chain result. The backing host filesystem has approximately 146 GiB free, and host MemAvailable is approximately 24.5 GiB. These inputs support deployment; actual installed footprint, logging allowance and observation headroom must still be checked in M22/T2 before PV registration |
 
 ##### Closure Evidence
 
-- None.
+- Complete on 2026-09-28: two independent inventories, the selected real fixture
+  and the initial capacity assessment are available. No application deployment
+  or soak acceptance is claimed by this gate.
 
 ## Backlog
 

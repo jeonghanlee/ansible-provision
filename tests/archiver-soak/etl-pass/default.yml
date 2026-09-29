@@ -1,0 +1,7 @@
+---
+# work/soak-etl-pass-3bdf378c/default.yml
+archiver_store_sts_granularity: ""
+archiver_store_sts_hold: ""
+archiver_store_mts_granularity: ""
+archiver_store_mts_hold: ""
+archiver_store_lts_granularity: ""
