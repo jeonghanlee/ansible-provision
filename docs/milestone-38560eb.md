@@ -42,6 +42,11 @@ and preserved separately; they did not pass T4. Read the actual samples,
 pass records, GC/latency evidence, timer state and shutdown result before
 judging T4-T6; a scheduled action is not a passed test. T7-T8 passed their
 initial real-data checks; coverage throughout the new window remains T4.
+The 2026-09-29 08:33 UTC checkpoint records successful interim ETL and
+retrieval checks. The default VM's disk was expanded online from 20 to 40 GiB,
+verified at 08:29:56 UTC, with no boot or JVM identity change; the 08:30 UTC
+automatic sample succeeded with 28.537 GiB free. The shortened VM retains its
+20 GiB disk. Preserve this capacity difference in the final comparison.
 Preserved measurement/soak tools, fixtures and measurement methods are in
 `tests/archiver-soak/`. Private inputs, collected evidence and the active-run
 continuation procedure are in `work/soak-etl-pass-3bdf378c/`.
@@ -2644,6 +2649,9 @@ failures, and disposal or reuse of the previous soak VM.
 - Decision Date: 2026-09-28. Preserve the measurement methods, current ETL tools,
   baseline soak tools and original fixtures under `tests/archiver-soak/`.
   Keep run evidence and private inventory/configuration data outside that tree.
+- Decision Date: 2026-09-29. Expand the default VM's disk from 20 to 40 GiB
+  online, retaining the existing observation window and data. Record the
+  capacity change in the test conditions; the shortened VM remains at 20 GiB.
 - M17 and M21 are completed deployment prerequisites. G4 completed on
   2026-09-28 with both VM inventories, the selected fixture and the initial
   capacity assessment. Post-installation space remains a T2 check.
@@ -2752,6 +2760,23 @@ failures, and disposal or reuse of the previous soak VM.
 | T6 | Not run | Control host | Pending | Requires new measurement evidence |
 | T7 | 2026-09-29 01:07:59 UTC | Both real appliances; all eight JVMs | Passed | The actual collector preserved JFR, GC logs, complete jstat fields and per-process RSS. Unique before/after GC pairs for mgmt/engine/etl/retrieval are 26/48/26/56 on shortened and 26/48/25/51 on default; none is unpaired, and every captured heap-event GC ID occurs in that JVM's GC log. Stored jstat fields equal the actual raw jstat output. Each component has real pause and collection events, unchanged 256M heaps and a PID matching its new manifest; full-GC counters are zero. No forced GC was requested. Evidence: local `measurement-start-shortened.json` and `measurement-start-default.json` under the work directory, plus the raw JFR and logs on each VM. This verifies initial collection; deduplicated full-window coverage remains T4 |
 | T8 | 2026-09-29 01:07:59 UTC | Both real retrieval services and original CA fixture | Passed | The first automatic samples queried all 903 PVs with two concurrent workers: 903 recent samples and zero request errors on each VM. Maximum request durations were 54.104/49.466 ms. All six representative CA timestamps were retrieved on each VM; source timestamp precision, poll attempts and visibility bounds are retained separately. In these samples all probes were visible on the first request, so lower bounds are zero and upper bounds include source sample age. These are not exact engine ingestion delays. Evidence: each sample's `freshness.json`, `visibility.json`, and `latency.csv`; full-window coverage remains T4 |
+
+Interim verification on 2026-09-29 supplements the initial rows above:
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T2 | 2026-09-29 08:29:56-08:30:29 UTC | Default VM; online disk, partition and XFS expansion | Passed | `virsh blockresize` increased the attached disk from 21474836480 to 42949672960 bytes. A `growpart -N` check preceded `growpart /dev/vda 5`; partition 5 retained start sector 2265088 and grew from 39677919 to 81620959 sectors. Partitions 1-4 were unchanged. `xfs_growfs /` increased data blocks from 4959739 to 10202619. The 08:29:56 UTC check matched the boot ID and all four JVM PID/start identities to the observation manifest; the live API reported 903 connected and archiving PVs. The automatic 08:30:00.176110 UTC sample had no collection or retrieval errors, six visible probes, all four GC components and 28.537 GiB free. The original finish timer remains 2026-09-30 01:06:25.999358 UTC. This verifies the capacity intervention, not a repeat deployment or final soak acceptance |
+| T4 | 2026-09-29 08:21:36-08:33:41 UTC | Both observations; default disk expanded during the window | In progress | At 08:21 UTC each VM had 88 full samples with zero collection failures and a maximum sample gap of 300 seconds; boot and all four JVM identities matched the manifests. The bounded appliance and kernel journal error searches at 08:22 UTC returned no OOM, killed-process or failed-unit matches. At 08:33 UTC, journal-cursor deduplication and parsing of `passes.jsonl` found 96 closed in-window passes on shortened (88 STS-to-MTS, 8 MTS-to-LTS) and 8 on default (7 and 1), with no unparsed records. No scheduled pass was missing before the 08:29 UTC cutoff; no overrun, aborted pass, failed/aborted/skipped job, space-driven stream deletion or PV-count mismatch was found. Maximum delay from planned time was 1.935457 seconds for shortened STS-to-MTS and 2.351970/2.359964 seconds for default transitions 0/1. All eight shortened MTS-to-LTS passes waited for the preceding transition; their maximum delay from its completion was 4.568742 seconds. These satisfy the interim five-second start-delay bound. Full-window coverage, tick-order and metrics reconciliation remain required |
+| T7 | 2026-09-29 08:33:38-08:33:41 UTC | Recorded heap events through the 08:30 UTC samples | Passed | The actual `gc-heap.csv` records were filtered from each manifest start and deduplicated by component, PID, event timestamp, GC ID and before/after marker. Maximum post-GC heap in mgmt/engine/etl/retrieval was 63.16/72.04/179.77/97.21 MiB on shortened and 51.99/69.82/89.17/67.31 MiB on default. Latest recorded post-GC ETL heap was 58.22/43.39 MiB. Maximum observed ETL heap across before/after events was 254.03/254.80 MiB; these are recorded-event maxima, not continuous maxima. All eight JVM full-GC counters were zero in the separately inspected 08:20 UTC jstat rows. This extends the interim evidence only; full-window boundary coverage and pause analysis remain required |
+| T8 | 2026-09-29 08:33:38-08:33:41 UTC | Both retrieval services; manifest-filtered `latency.csv` through 08:30 UTC | Passed | Each VM had 90 in-window latency samples with zero retrieval errors and zero failed representative visibility probes. Maximum recorded request duration was 99.448 ms on shortened and 99.790 ms on default. The expanded default VM's 08:30 UTC automatic sample still queried all 903 PVs and observed all six representative timestamps. These are interim retrieval checks, not exact ingestion latency or full-window acceptance |
+
+At 08:20 UTC the default VM had 8.733 GiB free and had consumed about
+0.494 GiB/hour over the preceding three hours. Continuing that rate would
+have reached the collector's 2 GiB minimum near 14:58 PDT, before the scheduled
+18:06 PDT finish. The online expansion removed that observed capacity risk;
+retain the intervention as a test-condition change when evaluating T4-T6.
+The shortened VM had 9.269 GiB free at 08:21:36 UTC and was not resized.
+The scheduled finish times and observation manifests remain unchanged.
 
 The superseded windows began on 2026-09-28 at 21:36:06.273146/09.006321 UTC
 and were stopped before 24 hours to enable the additional measurements. Their
