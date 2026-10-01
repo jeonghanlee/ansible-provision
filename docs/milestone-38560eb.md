@@ -1998,11 +1998,28 @@ the operator does not run; encrypting the file at rest (the installed
   consumer in `archiver_build`, `raw_stdin` and its test removed, the
   documentation); results recorded in `1864a1e`. Closes #26 when the branch
   reaches `master`.
+- Decision Date: 2026-09-30. The linked issue #26 remains Open until the
+  verified implementation commit `3e89e33` reaches `master`, where its
+  `Closes #26` footer will close the issue automatically. This is the explicit
+  issue-closure exception while the feature branch remains unmerged; the code
+  and T1-T4 verification are Complete.
 - Landed: after a fetch at 2026-09-27T05:59:01Z,
   `origin/m14-middleware-reconcile` stood at `1864a1e`, which contains
   `3e89e33`; the branch is not yet merged to `master`.
 - T1-T4 Passed on 2026-09-26/27 against every completion criterion, T2 again
   after the plan revision that guards an existing account.
+
+##### GitHub Projection
+
+- Issue: #26, https://github.com/jeonghanlee/ansible-provision/issues/26
+- Observed State: Open; the dated closure exception above applies.
+- Labels: `enhancement`
+- Milestone: `Backlog`
+- Assignee: `jeonghanlee`
+- GitHub Updated At: 2026-10-01T06:07:04Z
+- Body: reconciled with the guarded rotation behavior, implemented change,
+  acceptance results, verification summary, and remaining default-branch
+  dependency on 2026-09-30.
 
 
 #### M17 - Move the epicsarchiverap-env pin to the journald and log4j2 service model
