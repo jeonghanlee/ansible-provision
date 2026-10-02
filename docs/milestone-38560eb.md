@@ -31,24 +31,72 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: inspect the two running ETL scheduler observations in
-this document's M22 detail. Both appliances restarted with verified GC and
-latency collection, preserving the same 903-PV fixture and existing stores.
-The replacement shortened observation began at 2026-09-29 01:06:22.691862 UTC
-and the default observation at 01:06:25.999358 UTC. Their whole-unit stop
-measurements are scheduled after 24 hours, at the corresponding times on
-2026-09-30 (2026-09-29 18:06 PDT). The previous windows were stopped early
-and preserved separately; they did not pass T4. Read the actual samples,
-pass records, GC/latency evidence, timer state and shutdown result before
-judging T4-T6; a scheduled action is not a passed test. T7-T8 passed their
-initial real-data checks; coverage throughout the new window remains T4.
-The 2026-09-29 08:33 UTC checkpoint records successful interim ETL and
-retrieval checks. The default VM's disk was expanded online from 20 to 40 GiB,
-verified at 08:29:56 UTC, with no boot or JVM identity change; the 08:30 UTC
-automatic sample succeeded with 28.537 GiB free. The shortened VM retains its
-20 GiB disk. Preserve this capacity difference in the final comparison.
+Next session entry point: M22's journal-scenario amendment was accepted on
+2026-10-01 after all five third-person findings were incorporated.
+Local code implementation and verification were authorized on 2026-10-01.
+Dedicated VM acquisition and deployment were subsequently authorized on
+2026-10-01, with the owner selecting a 48-GiB disk. The actual Rocky 8.10
+baseline was verified at 2026-10-02 04:31:25 UTC; archiver-dev installation
+completed on the separate test VM. Actual source pins, four 256-MiB JVM
+heaps and the 39-dependency candidate bundle are verified. Both current
+journal tools now use systemctl --version. The corrected bundle was installed
+only on the dedicated VM at 2026-10-02 05:01:14 UTC, preserving its previous
+three files. Actual journal collection succeeds. At 2026-10-02 05:10:44 UTC,
+journald was restarted on the dedicated VM and configuration application was
+verified. Original fixture installation, registration and the approved override
+succeeded; all 903 expected PVs were connected and archiving at 05:15:17 UTC.
+The actual retention snapshot returned zero at 05:17:03 UTC. This is one raw
+measurement, not a retention proof: the abort unit is absent and GC/JFR
+instrumentation is not configured. The existing instrumentation/preparation
+entry points require a prior observation. Fresh-VM initialization was subsequently
+authorized on 2026-10-02. The actual initialize-fresh.py instruments command
+succeeded at 07:28:37 UTC with four running JFR recordings, nonempty GC logs
+and loaded 240/2700/2700-second sample/finish/abort services. All 40 candidate
+dependencies verify; 59 local checks passed at 07:26:16 UTC with no skips.
+Seven actual approved-load snapshots and GC/retrieval captures completed
+between 07:35:39 and 08:05:40 UTC. The retention-budget calculation failed at
+08:05:44 UTC, so measurements.json and preparation.json were not produced.
+At 08:25:26 UTC the measurement service is failed with exit status 1; the
+dependent preparation/chain/health checks did not execute. The six qualified
+five-minute intervals require 1,291,544,426 bytes against a 1-GiB cap. The
+additional 4.376-second final interval raises the required budget to
+34,248,546,484 bytes. Inspect this short-interval accounting and resolve the
+independently insufficient cap before retrying; no policy or cap change is
+authorized by this result update. A launcher
+wait timed out while the real oneshot service continued executing; this is
+preserved separately and is not a failed observation. No observation exists.
+On 2026-10-02 the earlier-schema sources were removed from the shipped tools.
+The standalone 20-dependency candidate, bundle SHA256
+567d629b11704a2291302eb603830e313d85a9b7bab37629a0656ec7a31c0726, passed 55
+local checks with no skips at 20:54:06 UTC. It is not installed; the dedicated
+VM last verified the 40-dependency candidate (5cd0f390) at 07:28:37 UTC.
+Install and verify the current candidate before the next measured preparation.
+Live scenario results remain pending. Continue the retention diagnosis before actual
+T22-T28 preparation/checks; verify both existing fixture
+adjustments before deployment to the retained VMs or another trial.
+The two schema-4 trials that started on 2026-10-01 at 07:19:39 UTC have both
+aborted with Incomplete verdicts: shortened ended at 18:25:26.991110 UTC and
+default at 21:35:37.251269 UTC. Both appliances and observation timers are
+inactive. The collector kept a pre-trial kernel cursor during a quiet kernel
+interval; that cursor became unavailable while the earliest retained system
+journal record still preceded the trial start. Preserve the manifests, raw
+samples, abort.json records, failed assertions and original frozen tools.
+The scenario revision is accepted; candidate tools are installed on the
+dedicated VM. Required live scenarios and replacement trials remain pending.
+Before a new manifest, the revised checks must run through the shipped paths,
+any tool change must produce a newly verified bundle, and both deployments
+must repeat actual preparation and readiness. T6/T20 comparison and T21's
+sanitized reproducible package remain required after successful full windows.
+Previous schema-4 preparation passed on both VMs with the approved service-specific
+journal interval 1us and burst 10000; prior 2010/11215/3741-message suppression
+failures remain preserved. The deployed schema-4 bundle passed 46 local
+checks and real runtime checks on both deployments. Shortened has a 40-GiB disk;
+default's approved expansion to 48 GiB was verified before the new trial.
+Keep the fixture, event-rate, existing-store-age and different disk conditions
+explicit in comparisons. Original 24-hour observations remain Incomplete;
+shortened's passing two-hour observation remains partial verification.
 Preserved measurement/soak tools, fixtures and measurement methods are in
-`tests/archiver-soak/`. Private inputs, collected evidence and the active-run
+`tests/archiver-soak/`. Private inputs, collected evidence and the retained-run
 continuation procedure are in `work/soak-etl-pass-3bdf378c/`.
 The raw evidence remains on each VM under
 `/var/lib/etl-soak/`; preserve it and the separate inventories. G4 is Complete.
@@ -2615,32 +2663,43 @@ item 10, defines the timing, metric meanings and comparison with M14/T21.
 
 ##### Scope
 
-Two fresh Rocky 8.10 `archiver_dev` deployments through the full species, with
-MariaDB over its Unix socket and a 256M heap per instance. Use the existing
-cloud-provision VM baseline, with matching resources on both VMs. Record the
-actual disk capacity and check space for the complete observation window
-before registration. Runtime variables pin epicsarchiverap-env `d09dca7` and
-epicsarchiverap-maven `3bdf378c` without changing the role defaults.
+Two independent Rocky 8.10 `archiver_dev` deployments made through the full
+species, with MariaDB over its Unix socket and a 256M heap per instance.
+The accepted plan reuses those deployments and preserves existing archived
+data. Shortened has a 40-GiB disk and default has a 48-GiB disk; verify current
+resources and space for the complete observation window. Runtime variables pin epicsarchiverap-env
+`d09dca7` and epicsarchiverap-maven `3bdf378c` without changing role defaults.
 
 | Run | STS | MTS | LTS | PV fixture |
 | --- | --- | --- | --- | --- |
-| Shortened | PARTITION_5MIN, hold 2 | PARTITION_HOUR, hold 2 | PARTITION_DAY | Existing 903-PV fixture and rates from `work/soak-9eed006/pvs-all.csv`, served by its three IOC databases |
-| Default | PARTITION_HOUR, hold 2 | PARTITION_DAY, hold 2 | PARTITION_YEAR | The same existing 903-PV fixture and rates as the shortened run, served by a separate copy of the three IOC databases |
+| Shortened | PARTITION_5MIN, hold 2 | PARTITION_HOUR, hold 2 | PARTITION_DAY | Original 903-PV registration list and three IOC databases; accepted plan uses the ten-record `retest-deadband.db` override |
+| Default | PARTITION_HOUR, hold 2 | PARTITION_DAY, hold 2 | PARTITION_YEAR | Separate copies of the same registration list, databases and accepted override |
 
 Out of scope: scheduler code changes, repository-wide pin changes, host-sizing
-experiments, SQLite coverage, repeated retrieval stress, deliberate storage
-failures, and disposal or reuse of the previous soak VM.
+experiments, SQLite coverage, repeated retrieval stress, deliberate archive-store
+failures, disposal or reuse of the previous soak VM, and an exhaustive audit
+of every source sample. The existing all-PV freshness and representative
+visibility probes do not establish lossless archival.
 
 ##### Completion Criteria
 
 - Both deployments identify the exact source commits, rendered store settings,
   effective properties, PV population and unit stop timeout.
-- Both observations run for at least 24 hours after readiness, cross UTC
-  midnight, and retain complete pass logs and hourly ETL metrics.
+- Both new observations run for at least 86400 seconds after readiness in
+  UTC and monotonic time, cross UTC midnight, and retain complete pass logs
+  and hourly ETL metrics. A short-trial verdict cannot satisfy this criterion.
 - Both observations retain per-component GC before/after heap, collection
   causes and pauses, complete jstat counters, RSS, retrieval freshness and
   representative visibility bounds. Report collection gaps, restart and OOM
   evidence, and distinguish observed heap maxima from continuous maxima.
+- Before a replacement window, T22-T26, T28 and T27's preparation portion
+  distinguish removal of an obsolete
+  pre-trial kernel anchor from loss of required, uncollected system records.
+  Quiet kernel intervals, rotation, real kernel-event delivery and final
+  collection must retain demonstrable coverage; unresolved gaps prevent
+  Passed. System and user journal retention are checked separately.
+  T27's in-window portion runs during T16 and closes at T19; its completion
+  is required for final acceptance, not for opening the observation.
 - After the startup pass, each pass retains the design's planned grid time.
   Under normal soak load, a pass with no preceding-transition wait starts
   within one 5-second tick of that time. A pass held by the ordering rule
@@ -2653,7 +2712,14 @@ failures, and disposal or reuse of the previous soak VM.
   that unit's actual `TimeoutStopSec`, without forced termination.
 - A comparison records last-pass and average busy time and weekly usage against
   the matching earlier load. The retired running-sum last-job value has no
-  counterpart. Measurements with different PV populations are labeled.
+  counterpart. Record actual event rate, retrieval concurrency, fixture,
+  store age and resource differences; equal PV count alone does not establish
+  equal load. Where earlier event-rate evidence is absent, label the numerical
+  comparison as descriptive and make no performance-improvement claim.
+- A recipient can identify the exact canonical plan/results version and
+  independently check sanitized pass timing, metric values, GC statistics,
+  fixture and tool hashes, window boundaries and evaluator output. Private
+  inventories, credentials and unsanitized logs remain local.
 
 ##### Dependencies And Decisions
 
@@ -2675,6 +2741,15 @@ failures, and disposal or reuse of the previous soak VM.
 - Decision Date: 2026-09-29. Expand the default VM's disk from 20 to 40 GiB
   online, retaining the existing observation window and data. Record the
   capacity change in the test conditions; the shortened VM remains at 20 GiB.
+- Decision Date: 2026-10-01. Expand default from 40 to 48 GiB while preserving
+  its stores and prior evidence. Actual projected usage on 40 GiB was 85.4005
+  percent, above the accepted health threshold. Shortened remains at 40 GiB.
+- Decision Date: 2026-10-01. Apply service-specific journal interval 1us and
+  burst 10000 to both VMs after the initial 0/0 settings still allowed an
+  observed 3741-message suppression on default. Preserve all previous failed
+  preparation evidence and repeat real capacity, shutdown journal and T15
+  checks before starting either full-window observation. The global journald
+  configuration remains unchanged.
 - M17 and M21 are completed deployment prerequisites. G4 completed on
   2026-09-28 with both VM inventories, the selected fixture and the initial
   capacity assessment. Post-installation space remains a T2 check.
@@ -2691,8 +2766,363 @@ failures, and disposal or reuse of the previous soak VM.
   passes with no eligible partition must still be observed and reported.
 - `ETLPassStopWaitSeconds` defaults to 60 seconds and can be applied twice,
   followed by consolidation; it is not a 60-second bound on the whole unit.
+- Decision Date: 2026-10-01. Apply all five findings from the first
+  third-person review of the journal-scenario amendment. Split T27's
+  preparation and in-window requirements; verify existing adjustments on
+  both VMs; define numerical retention criteria and failure handling;
+  add dedicated test-environment preparation; separate historical defects
+  from current findings. This direction authorizes plan edits only.
+- Decision Date: 2026-10-01. Accept the journal-scenario revision with all
+  five review corrections reflected. Implementation authorization remains
+  separate; dedicated test-environment selection/acquisition and all new
+  scenario executions remain pending.
+- Decision Date: 2026-10-01. Authorize collector correction, retention-budget
+  implementation and local verification under the accepted journal-scenario
+  revision. Preserve the original frozen tools and both terminal observations.
+  Dedicated environment selection and live execution remain pending.
+- Decision Date: 2026-10-01. Proceed with the accepted dedicated-VM plan,
+  preserving both retained soak deployments. Select disk option 2, 48 GiB,
+  with 2 vCPU and 4096 MiB RAM on the existing image-storage filesystem.
+  Record acquisition, inventory, execution authority and baseline evidence
+  in private `journal-test-environment.json`; scenario prerequisites remain
+  mandatory before any replacement observation.
+- Decision Date: 2026-10-01. Select option 1: replace the version command
+  with systemctl --version in both current journal tools, verify a new frozen
+  bundle, and apply it to the dedicated VM. Preserve original tools and both
+  retained soak deployments.
+- Decision Date: 2026-10-02. Proceed with a separate fresh-VM initializer and
+  the remaining accepted preparation sequence. Initialize GC/JFR and real
+  finite measurement units without manufacturing prior observation/terminal
+  records. Require actual source, fixture, unit, recording, retention and
+  capacity evidence; verify the new bundle on the dedicated VM before the
+  required live scenarios or replacement deployment.
+- Decision Date: 2026-10-02. Make the schema-5 tools standalone: remove the
+  schema-3 evaluator and the nineteen schema-4 files from the shipped tree and
+  bundle, and report an observation under any other schema as unsupported.
+  Keep the removed sources in the private evidence directory as
+  `legacy-sources-removed-from-tree-20261002/`. Add retained-evidence
+  checks for the Passed replay, missing scheduled pass, missing GC pair and
+  aborted observation cases after a schema-5 observation completes.
+- The dedicated journal test environment is a required preparation input for
+  live T22-T26/T28 checks. G4 supplies only the two retained soak deployments.
+  The subsequent owner direction authorized a separate VM; its baseline,
+  inventory and authority are now retained in the private environment record.
+  Archiver-dev installation is verified; measurement prerequisites remain
+  incomplete. Neither reuse nor changes to the
+  retained VMs follow from this dedicated-environment preparation.
 
 ##### Implementation Plan
+
+- Plan Status: accepted
+- Plan Acceptance: 2026-10-01; the owner accepted the journal-scenario revision with all five third-person review corrections reflected
+- Implementation Authorization: 2026-10-01; collector correction, retention-budget implementation and local verification; subsequent owner direction authorizes the accepted dedicated-VM plan and selects a 48-GiB disk. Replacement observations remain gated by the required live checks and fresh preparation
+- Revision Date: 2026-10-01
+- Scope: two independent, parallel observations of at least 24 hours each,
+  followed by measured shutdown, T6 comparison and independently checkable
+  result delivery. The accepted scope includes applying the same ten-record
+  deadband variant to both VMs while retaining the all-903-PV 30-second
+  freshness requirement. The earlier acceptance of the shortened two-hour
+  variant does not authorize this revised execution.
+- Previous accepted plans and their observations remain below. Their
+  authorizations do not authorize the current revision. Plan acceptance does
+  not start a new trial.
+
+The preceding two-chain revision was accepted on 2026-09-30. Its steps 1-2
+were authorized for implementation and local verification on that date;
+steps 3-7 were authorized on 2026-10-01 for preservation, frozen-bundle
+deployment, actual preparation and the two observations. Those observations
+are now terminal and remain Incomplete. This amendment adds required journal
+scenarios; it does not select a collector algorithm or a larger journald cap.
+
+###### Basis And Checks Still Required
+
+| Class | Finding | Evidence / Next Check |
+| --- | --- | --- |
+| Confirmed finding | The passing shortened trial covers two hours; both successful 24-hour windows and T6 remain required | T11/T12, original T4/T8 reassessment and Completion Criteria |
+| Confirmed finding | The corrected collector was applied after the passing trial | Post-terminal VM application evidence below; repeat hash-bound runtime preparation on both VMs |
+| Confirmed finding | Freshness is sampled latest-data availability; changed deadbands can change load | `measure.py`, `fixtures/retest-deadband.db`, original T8; report actual event-rate observations and avoid sample-preservation claims |
+| Confirmed finding | Both current VM fixtures already have the accepted adjustment | Actual read-only inspection at 2026-10-01 23:53:41 UTC: both adjustment records, overrides and IOC drop-ins exist; each real CA query returns twenty values of -1; preserve and verify both existing adjustments |
+| Confirmed finding | The frozen collector retains the last kernel cursor when no new kernel record exists; both trials aborted after that pre-trial cursor disappeared | `collect.py::collect_kernel`, both actual `abort.json` records and failed full samples at 18:20/18:25 UTC on shortened and 21:30/21:35 UTC on default; T22-T28 must distinguish obsolete anchors from required-record loss |
+| Confirmed finding | Earliest retained system records still preceded both trial starts during the post-abort inspection; a user journal can retain older records independently | Actual system-only journal inspection on 2026-10-01; shortened earliest system record 2026-09-30 07:55:01.063035 UTC and default 2026-10-01 06:49:49.287537 UTC; this observation alone does not prove all required records were retained |
+| Hypothesis | Replacement-tool coverage, retention headroom and comparison evidence will satisfy the full-window criteria | Resolve through T22-T28 and new T14-T20 executions; previous successful preparations do not prove the replacement tools or an entire 24-hour window |
+| Confirmed finding | Existing retest entry points require previous observation records; a separate initializer is required for the fresh dedicated VM | Actual preflight at 2026-10-02 05:17:03 UTC found no instrumentation or abort unit. Authorized initialize-fresh.py instrumentation succeeded at 07:28:37 UTC and preserves genuine configuration/JFR/GC evidence. Measured retention/capacity preparation and full-sample readiness remain pending. No synthetic observation or terminal record is permitted |
+
+###### Historical Findings And Implemented Corrections
+
+These findings describe the inputs to the 2026-09-30 implementation. They are
+not current missing features. Their dated verification remains below; full
+window acceptance and the newly identified stale-kernel-anchor defect remain
+separate requirements.
+
+| Historical finding | Current implemented behavior | Evidence / Remaining Check |
+| --- | --- | --- |
+| Preparation selected 7200 seconds and used only the shortened schedule | Schema-4 preparation and launch bind explicit 7200/86400-second duration and shortened/default configuration | T13 local checks and the actual two 86400-second manifests; replacement readiness and full windows still required |
+| Normal finish allowed a two-second tolerance and evaluation lacked independent duration/midnight checks | Current observer waits for both complete durations; evaluator checks duration and UTC midnight independently | T13/T19 local results; both new aborted runs correctly retain missing duration, with normal full-window completion still unverified |
+| Kernel queries restarted at the UTC-day boundary; result delivery depended on private uncommitted inputs | Current collector carries a persistent boundary/cursor; the T21 portable package contract is specified | Persistent cursor handling has the current stale-anchor defect; package execution and transferable evidence remain pending |
+| Fixture reapplication rejected an existing adjustment without a verification entry point | apply-fixture.py has --verify-existing; preparation preserves adjustment evidence | T14 local and actual VM results; both current deployments now use verification, with conflicting/partial adjustments still rejected |
+| Readiness hashes omitted helpers and JFR configuration | Current complete bundle covers eighteen dependencies, including resource_helpers.py and heap.jfc | Actual contract.verify_bundle execution during the first review confirms all eighteen entries; a replacement bundle and proofs remain required |
+| Exact timestamps inflated counts in overlapping JFR exports | Current aggregate.py uses matching payload and bounded integer-nanosecond clusters | Historical T18 replay and overlap regressions are recorded; new full-window GC coverage remains required |
+
+###### Accepted Review Corrections
+
+Decision Date: 2026-10-01. All five findings from the first third-person review
+were accepted for plan correction. The following changes are reflected in the
+accepted plan; they are not evidence that the new checks have executed.
+
+| Finding / Charter Item | Plan Correction | Execution State |
+| --- | --- | --- |
+| 1 / C3 preparation order | T15 requires only T27 preparation; T27 in-window checks run at T16 and close at T19 | Both T27 portions Pending |
+| 2 / C4 actual fixture state | Step 3 and T14 verify existing adjustments on both VMs; missing/conflicting inputs stop preparation | Actual twenty-field checks on both VMs observed at 23:53:41 UTC; replacement preparation Pending |
+| 3 / C2 numerical verdict | T27 defines gap limits, factor-two allowance, stream-byte budgets, freshness and retained-error/abort behavior | Schema-5 implementation and local arithmetic/parser checks verified; actual measurements, successful preparation and in-window integration Pending |
+| 4 / C1 execution environment | Dedicated environment input, acquisition authority, deployment, readiness and terminal preservation are specified | Selection/acquisition Pending; no VM changes authorized by this edit |
+| 5 / C4 current versus historical findings | Implemented duration/grid, finish, fixture/hash and overlap corrections move to the historical table; active defects remain in the current table | Existing dated evidence preserved; new full-window acceptance Pending |
+
+Private `work/soak-etl-pass-3bdf378c/journal-scenario-review-observations-20261001.json`
+retains the actual first-review CA queries, installed collector hashes and
+terminal/unit observations. Both units and observation timers were inactive;
+both original terminal verdicts remain Incomplete.
+
+###### Ordered Work
+
+1. **Generalize and verify observation control.** Update
+   `tests/archiver-soak/etl-pass/{prepare-retest,launch-retest,observe,verify-runtime,evaluate}.py`.
+   Carry explicit duration and chain identity through preparation, capacity,
+   verification, launch and the immutable manifest. Retain 7200-second support;
+   select 86400 seconds for these runs. Version the expanded manifest/evaluator
+   contract; replay historical observations with their original requirements
+   and tools without counting them as the new full-window verification.
+   Derive cadences from the verified deployed store configuration and reject
+   a chain/configuration mismatch.
+   Check the schedule against the pinned scheduler design, independently of
+   the manifest's expected list: shortened uses 300/3600-second cadences;
+   default uses 3600/28800 seconds; offsets are 300/600 seconds. Normally a
+   24-hour half-open interval contains 288/24 and 24/3 scheduled firings.
+   Compute identities from the manifest's half-open interval rather than
+   forcing those counts; reconcile additional final-capture passes separately.
+   Capture UTC and monotonic starts together after readiness checks; normal
+   finish must wait for both complete durations without subtracting tolerance.
+   Preserve boot identity, lifecycle locks, collision protection, abort
+   distinction and refusal of repeated shutdown. The evaluator must separately
+   validate duration, UTC midnight and each chain's schedule, so a wrong
+   manifest or early finish cannot report Passed. Verify T13 using shipped
+   code, the pinned design and retained real pass records.
+   Define one complete bundle hash contract shared by preparation, verification,
+   launch, the manifest and evaluation. Include every installed executable
+   dependency and measurement configuration, including `prepare-retest.py`,
+   `resource_helpers.py` and `heap.jfc`, as well as all currently hashed tools.
+   Reject missing or unexpected bundle entries. Check the installed bundle
+   against its frozen digests before accepting proofs or opening a manifest.
+   Verify that changing either the real helper or JFR configuration invalidates
+   old proofs, even when the nine currently hashed scripts are unchanged.
+2. **Prepare measurement and report coverage.** Extend `collect.py`, `measure.py`
+   and `evaluate.py` only where required for the missing evidence. Implement
+   T27 preparation/proof validation through `contract.py`, `prepare-retest.py`,
+   `verify-runtime.py` and `launch-retest.py`, and in-window/final enforcement
+   through `collect.py`, `observe.py` and `evaluate.py`. Missing, stale,
+   wrong-boot, wrong-policy or wrong-bundle proofs must refuse start;
+   missing/failing runtime budgets must remain errors. These are planned
+   additions for live deployment; the schema-5 local candidate implements the
+   proof contract, while currently installed readiness proofs do not implement T27. Implement
+   the existing-adjustment verification path in `apply-fixture.py` and verify
+   repeated preparation/verification and conflicting-input rejection locally
+   with the shipped tools and fixture before deploying either VM.
+   Implement `tests/archiver-soak/etl-pass/aggregate.py` with the input/output
+   contract below. Verify the numerical aggregation and overlap handling on
+   retained real observations before freezing the tool bundle. Preserve raw
+   event-rate metric names, component/source, values, units, observation times
+   and the pinned implementation's averaging interval; distinguish engine
+   arrival/write rate from IOC scan rate. Existing responses contain event-rate
+   rows, but their semantics must be checked before comparison. Capture actual
+   appliance/engine rates; exclude benchmark-writing rows from load statistics.
+   Report sampled-rate means and coverage; use time-weighted means only for
+   known nonoverlapping intervals and label any gaps. Capture per-component
+   heap before/after GC, GC counts/causes/pauses, full jstat,
+   sampled heap and RSS, plus complete application, health and kernel journal
+   coverage from the manifest start through final capture. Empty kernel
+   searches do not prove coverage. Detect cursor loss, suppressed records,
+   missing periodic samples, JFR DataLoss and recording/rotation limits.
+   Reconcile required metrics and GC evidence in the evaluator; required
+   missing evidence prevents Passed. Add meaningful regressions to
+   `test_retest.py`/`test_evidence.py`, run the actual shipped paths with only
+   external boundaries substituted locally, and replay preserved real inputs.
+   Keep original failures visible. Finish all tool implementation and required
+   local verification, including `apply-fixture.py` and `aggregate.py`, before
+   updating the tool README and SHA256SUMS and freezing the complete bundle
+   digests. Include the aggregation tool and its executable dependencies in
+   that contract. The following VM preparation, runtime checks and observations
+   use these exact frozen sources. A later tool change requires a new verified
+   bundle and fresh preparation proofs before an observation can start.
+   For the journal amendment, first resolve the dedicated environment input
+   and complete its preparation described below. Run local checks, freeze a
+   candidate bundle and install that candidate only on the authorized test
+   environment. Complete T22-T26 and T28's local/live checks against its exact
+   digests before marking it the final replacement bundle. Any subsequent
+   executable change invalidates those checks and requires a new candidate
+   and re-execution. Preserve the currently deployed defective
+   bundle and run the same T22 regression against it: a regression that never
+   fails on its stale-kernel-anchor behavior cannot establish correction.
+3. **Preserve and prepare both stopped deployments.** Check actual terminal
+   completion and idle services/timers before archiving each prior observation
+   and its tools in separate private directories. Preserve original fixture
+   databases, registration CSV, previous failures and existing stores. Install
+   the same frozen, verified measurement bundle on both VMs. Use the completed
+   `apply-fixture.py --verify-existing` path on both shortened and default.
+   Retain each existing override, drop-in and adjustment evidence; verify
+   their digests and effective IOC command against the original three
+   databases and approved override, then read all twenty actual MDEL/ADEL
+   fields on each VM. Both adjustments were already observed on 2026-10-01.
+   If either expected adjustment is absent, partial or conflicting, stop
+   preparation and preserve that evidence. Do not select initial application
+   or overwrite an existing adjustment as a fallback.
+   Both paths require MDEL/ADEL = -1 on exactly the ten approved records.
+   A missing, partial or conflicting existing adjustment prevents preparation;
+   retain its evidence without replacing it. Keep PV names, policies, sampling
+   settings and eight 1000-element waveforms unchanged. Require the local
+   repeated-preparation and conflicting-input checks from step 2 before this
+   VM operation. Preserve the original refusal of an unrequested replacement.
+   Record env/Maven full commits, tool/fixture hashes, JVM/GC options, four
+   256M heaps, actual vCPU/RAM/disk, same-VM MariaDB, CA source isolation,
+   effective stores, initial store sizes/partition ages and stop timeout.
+   Derive 24-hour data, application-log, journal, JFR and measurement growth
+   from retained evidence plus current measured growth. Include capture
+   allowance and recording limits; require projected usage below the actual
+   85-percent health threshold and at least 2 GiB free. Shortened's 40-GiB and
+   default's approved 48-GiB disks still
+   require this check. Insufficient or unsupported projection prevents start;
+   no data deletion or new capacity change is implied by this plan.
+   T27's preparation portion additionally checks journal retention
+   headroom independently of free disk space. Rate-limit prevention and
+   retained-record coverage are separate
+   checks; the approved 1us/10000 service settings do not prove retention.
+4. **Execute fresh real runtime preparation on each VM.** Require T13/T14,
+   completed T22-T26/T28 in their stated environments and a passing T27
+   preparation result for each actual VM,
+   then repeat hash-bound health, empty-data, early-finish and abort checks
+   through the installed tools, real appliance, IOC, MariaDB and systemd.
+   Preserve probe evidence separately from the trial. The empty-data check
+   uses the real retrieval path with its clock boundary changed; label that
+   boundary explicitly. Exercise the corrected collector during a genuine
+   activating health invocation with a recent completed success; retain every
+   actual completion and ensure a later success cannot erase a failure.
+   Record each VM's actual health contract and cause/correction separately;
+   do not copy the shortened VM's historical storage failure onto default.
+   After the abort probe, restart and require two distinct accepted health
+   completions and two successful full samples, four JVMs with real heap/pause
+   events, synchronized clocks, all 903 PVs connected/archiving/recent, six
+   visible probes and all twenty verified deadband fields. Old proofs with
+   different hashes under the complete bundle contract cannot qualify.
+   Recheck readiness age, current capacity
+   and hashes immediately before opening each manifest. This verifies the
+   current collector without another preliminary two-hour soak.
+5. **Observe both chains in parallel.** Open separate manifests only after T15.
+   Record independent starts, both clock deadlines, UTC-midnight crossing,
+   chain-specific schedules, startup-pass records and metric baselines.
+   Collect full samples every five minutes, explicit initial/final samples,
+   every closed pass and complete journals. Preserve all-PV outcomes and six
+   bounded visibility probes with two retrieval workers; record actual request
+   counts/rates and concurrency, without adding the historical four-client
+   stress workload. Confirm each planned pass once, five-second start timing
+   including preceding-transition waits, ordering, zero normal-load overrun
+   and job errors, and metric/counter agreement including startup passes.
+   Track actual event rate, disk growth, OOM signatures, JVM/boot identities
+   and per-component resources throughout. Preserve midnight samples and
+   daily ETL/metric behavior, and
+   execute T27's in-window portion at each five-minute collection and final
+   capture; it is not a pre-launch dependency. Retain every budget or coverage
+   failure even if a later sample succeeds.
+   Record partitions/bytes moved; default hold-two
+   day partitions can produce legitimate empty MTS-to-LTS passes. Existing
+   eligible data must be identified by age; no fresh-data LTS coverage is
+   inferred from pass counts.
+6. **Finish once and evaluate the complete windows.** Only after both clocks
+   reach 86400 seconds on a VM and UTC midnight has crossed, stop its timers,
+   wait for active collection, retain the final full sample and four complete
+   JFR recordings, then measure one whole-unit stop against actual
+   `TimeoutStopSec`. Before stop, wait with a recorded bounded deadline for
+   required in-window passes to close; a missing completion prevents Passed.
+   Keep shutdown-aborted final-capture passes separate from normal-load checks.
+   Capture current ETL work/pass state immediately before stop and remaining
+   application/health/kernel journals after it. Report
+   whether shutdown occurred idle or with work in progress; an idle stop does
+   not establish behavior under a forced busy load. Retain orderly/forced
+   signals, service result, actual elapsed time and final consolidation.
+   Preserve the existing abort policy: two consecutive failed full samples or
+   free space below 2 GiB request early abort; a single genuine health,
+   collection or freshness failure already prevents Passed. Abort/missing
+   required coverage is Incomplete with failures retained; completed windows
+   with failed assertions are Failed. Successful stop alone cannot pass a run.
+7. **Produce the comparison and transferable evidence.** Run the frozen
+   `tests/archiver-soak/etl-pass/aggregate.py` on each completed observation.
+   Its planned CLI accepts `--input` for a coherent evidence directory,
+   `--output` for a JSON aggregate, and optional `--compare` for a reference
+   JSON aggregate. It reads the manifest, terminal record, raw samples/metrics,
+   pass records, heap/collection/pause CSVs, GC logs, jstat, RSS, retrieval and
+   coverage evidence through paths relative to that input directory. It writes
+   a deterministic, versioned JSON result with source/tool digests, units, event/sample counts,
+   numerical statistics, failed assertions and missing/ambiguous coverage.
+   Missing or malformed required inputs and comparison mismatches return
+   nonzero; no private absolute path is an input requirement. Implement and
+   locally verify this contract in step 2; step 7 executes the frozen tool.
+   Filter all aggregates by the immutable manifest; deduplicate overlapping JFR data before counts
+   and pause totals, preserving GC IDs, paired heap and incomplete records.
+   Define event identity using component, JVM identity, event kind and GC ID,
+   retaining the before/after marker for heap events and phase identity for
+   pause events. For overlapping exports of the same event, require matching
+   payload and a maximum timestamp span of two microseconds per duplicate
+   cluster, measured with integer nanoseconds. Retain original timestamps and
+   report the deduplication counts. Do not merge distinct pause events sharing
+   a GC ID; conflicting heap-pair payloads, ambiguous event identity or
+   unsupported timestamp variation prevent the corresponding aggregate from
+   qualifying as complete. The step-2 regression uses retained real
+   shortened/default JFR exports, reconciles GC counts with GC logs/jstat,
+   and verifies that overlap leaves event counts and pause totals unchanged.
+   Exact timestamp equality alone must fail that regression. Apply the same
+   counter and coverage checks to the new completed observations.
+   Report per transition last/mean/min/max busy time, planned and
+   ordering-adjusted delays, overruns, pass/job counts, partitions/bytes moved
+   and weekly usage with the pinned design's partial-day denominator. For
+   each JVM report observed GC-event and sampled heap maxima, post-GC heap
+   range/trend, young/full/concurrent counts and times, pause totals/maxima
+   and sampled RSS maxima; retain units and event/sample counts. Report
+   event-rate range/mean and averaging semantics, request latency/visibility
+   bounds and all-PV freshness separately. Compare with original 24-hour,
+   shortened two-hour and M14/T21 evidence using explicit fixture, event-rate,
+   store-age, resource and retrieval-load differences. The old 0.69-second
+   value is a lifetime average; compare matching metric meanings and periods,
+   exclude the retired 277-second running sum and do not infer improvement
+   from unmatched load. Missing prior event rates remain marked unmeasured.
+   Update canonical T13-T21 results from actual executions and prepare
+   sanitized machine-readable aggregates, pass/metric evidence, GC statistics,
+   manifest/terminal/evaluator output, tool sources and checksums. Include the
+   exact canonical document snapshot/checksum and carrying commit when one
+   exists; explicitly identify uncommitted content. Preserve originals and
+   record both original and sanitized package checksums. Use coherent portable
+   evidence paths and retain all numerical values and failure/coverage fields.
+   Package adjacent Python tools under `tools/`, coherent sanitized evidence
+   under `runs/shortened/` and `runs/default/`, and reference JSON aggregates
+   under `aggregates/shortened.json` and `aggregates/default.json`. Generate
+   those reference aggregates from the sanitized inputs, retaining the original
+   private aggregates and original/sanitized digest mapping separately. The
+   package README names required runtimes, evaluator invocation and both
+   aggregation commands. From the package root, create `regenerated/` and run
+   the planned aggregation interface:
+
+   ```bash
+   python3 tools/aggregate.py --input=runs/shortened --output=regenerated/shortened.json --compare=aggregates/shortened.json
+   python3 tools/aggregate.py --input=runs/default --output=regenerated/default.json --compare=aggregates/default.json
+   ```
+
+   T21 must replay the shipped evaluator and both aggregation commands using
+   only this package. Compare parsed JSON values independently of object-key
+   order: counts, integer timestamps, digests, failure/coverage fields and
+   statistics at their declared output precision must match exactly. A
+   nonzero command or any mismatch prevents T21 from passing. The recipient
+   must also locate every cited test row without access to this host's private
+   work directory. Commit/push and external
+   delivery require their own authorization. Overall M22 acceptance requires
+   both full-window results and T6; retain all earlier results separately.
+
+###### Previous Accepted Observation Plans
 
 - Plan Status: accepted
 - Plan Acceptance: 2026-09-28; the owner selected the existing 903-PV fixture for both chains and directed execution, then accepted the correction for passes waiting on the preceding transition.
@@ -2758,6 +3188,135 @@ failures, and disposal or reuse of the previous soak VM.
    intervals with an 8 MiB dump limit, a 512 MiB snapshot archive limit and a
    2 GiB free-space check; collection-limit failures remain visible.
 
+###### Focused Two-Hour Retest
+
+- Plan Status: accepted
+- Plan Acceptance: 2026-09-29; the owner approved the two-hour shortened-chain
+  retest with all accepted review findings reflected below.
+- Implementation Authorization: 2026-09-29; implement and verify the approved
+  preparation, measurement, two-hour observation and terminal paths. The
+  observation remains conditional on the documented start prerequisites.
+- Fixture Amendment Acceptance And Authorization: 2026-09-29; retain the
+  all-903-PV 30-second freshness criterion and change the ten deadband records'
+  MDEL and ADEL to -1 through a separate `retest-deadband.db` override. Preserve
+  the original databases and registration CSV, PV names, calculation inputs,
+  one-second scans, methods, periods and policies. Verify the actual twenty
+  fields before readiness and during full samples. This variant is separate
+  from the original 24-hour fixture and its evidence.
+- Start-Time Amendment Acceptance And Authorization: 2026-09-30; start
+  immediately after actual readiness instead of waiting for HH:54:30 UTC.
+  Cancel the previous launch timer, retain the 7200-second duration and
+  calculate expected firings and finish from the actual manifest boundaries.
+- Scope: verify health reporting, measurement collection, ETL ordering and
+  final collection followed by whole-unit shutdown on the shortened VM.
+  Retain env `d09dca7`, Maven `3bdf378c`, all 903 PVs and their original
+  rates, 256 MiB heaps, local MariaDB and existing archived data. Apply only the
+  accepted ten-record deadband override in the focused retest.
+- Existing T4-T8 evidence and the original 24-hour completion criteria remain
+  applicable. A two-hour result does not establish absence of a late health
+  failure, full-window GC coverage or default-chain behavior.
+
+1. Inspect the shortened VM's actual health unit, command, accepted exit
+   statuses and bounded journal around the failed samples. Distinguish a
+   genuine command failure from a collector interpretation error. The check
+   in `tests/archiver-soak/etl-pass/collect.py` currently requires exit 0;
+   verify the installed unit's contract before proposing a change. Count
+   failed sample observations separately from failed health invocations.
+   Document the cause of the prior genuine health failures, the corrective
+   action and its verification through the actual health command and
+   collector. An explanation or a single successful readiness sample does
+   not close this prerequisite. Do not open the retest while the cause,
+   corrective action or executed verification remains unresolved. Preserve
+   the verification inputs, tool identity, invocation results and timestamps.
+   Extend collection to preserve the health unit's journal for the entire
+   retest, with a separate cursor and invocation identities, exit statuses,
+   results and timestamps. Include the interval between the last full sample
+   and appliance shutdown. Detect journal gaps or suppressed records and
+   report incomplete health coverage. Validate every retained invocation
+   against the installed command and accepted exit-status contract; checking
+   the unit state once every five minutes is insufficient.
+2. Prepare the necessary changes to `measure.py`, `collect.py` and `observe.py` under
+   `tests/archiver-soak/etl-pass/`. Support an explicit 7200-second window
+   while retaining the 24-hour default and manifest replacement safeguards.
+   Preserve a distinct reference to the final full sample when the later
+   journal-only sample updates `latest.json`. Retain real nonzero failures.
+   Verify the installed finish path, including full JFR checkpoints and
+   shutdown evidence. Add an explicit early-abort path to `observe.py` that
+   can terminate a retest before its scheduled finish without weakening the
+   normal finish guard. Verify both finish and abort through the actual tools,
+   including failure evidence and collision safeguards. Review the concrete
+   changes before deployment.
+   Treat `no_sample_in_window` as a failed freshness check and retain it
+   separately from HTTP request errors. Require all 903 fixture PVs to have
+   recent archived samples in each 30-second query window. Verify the real
+   freshness, collector and readiness paths with the shipped fixture,
+   including an HTTP 200 response containing no data. A function-level check
+   with only the HTTP transport substituted is local validation; VM acceptance
+   still requires the actual appliance, IOC, database and systemd paths.
+3. Preserve the completed observation and its tools privately before opening
+   a separate retest. `restart-observation.py` refuses schema-2 or finished
+   observations and is not a rerun entry point. Prepare a start procedure for
+   the completed appliance state with collision checks and preserved stores.
+   Check current access, service state, source pins, instruments and disk
+   capacity. Require projected data and measurement growth for two hours to
+   leave at least 2 GiB free; resolve insufficient capacity before starting.
+4. Open the 7200-second manifest only after a successful full readiness sample
+   with four JVMs, synchronized time and all 903 PVs connected and archiving.
+   Require the completed health-correction verification from step 1, zero
+   full-sample errors, 903 PVs with recent archived data and six successful
+   visibility probes before opening the manifest.
+   Apply the accepted immediate-start amendment after readiness. The original
+   HH:54:30 UTC target is superseded. Record the actual start and finish;
+   normal completion requires
+   the manifest duration to elapse. Compute the expected planned firings in
+   the half-open interval [manifest start, manifest finish): transition 0 has
+   cadence 300 seconds and offset 300 seconds; transition 1 has cadence 3600
+   seconds and offset 600 seconds, relative to the epoch. A normal two-hour
+   window contains 24 STS-to-MTS and two MTS-to-LTS scheduled firings. Match
+   every expected (transition, cadence, plannedAt) to one completed pass after
+   journal-cursor deduplication. Report missing, duplicate and unexpected
+   firings and reconcile counters against the pre-window baseline, including
+   startup passes where the counters include them. Exclude startup passes
+   from grid checks and require both scheduled MTS-to-LTS passes to complete.
+5. Collect every five minutes, including explicit initial and final full
+   samples, and preserve every closed pass and metrics response. Record
+   per-component GC heap, causes, pauses, jstat counters and RSS, all-PV
+   freshness and six representative visibility probes. Deduplicate JFR events.
+   Require `pvs_with_recent_samples=903` in every full sample, including the
+   readiness and final samples. Preserve the per-PV outcomes privately and
+   report missing-data counts separately from HTTP error counts. Zero HTTP
+   errors and six visible representatives do not establish all-PV freshness.
+   Report incomplete GC pairs; induce no GC. Compare pass counts and metric
+   values, verify five-second timing and ordering, and report OOM, PID changes,
+   collection failures and disk headroom. Request early abort after two
+   consecutive failed full samples or immediately when available space falls
+   below 2 GiB. Record the triggering sample, reason and actual elapsed time.
+   Stop both sample and finish timers, wait for an active sampler with a
+   bounded deadline, and record any timeout. Preserve available final
+   evidence; attempt JFR checkpoints only while the reserve check succeeds,
+   recording any skipped or failed capture. Measure and record the appliance
+   stop and collect the remaining appliance and health journals. Write a
+   distinct terminal abort record and classify the shortened observation as
+   Incomplete while retaining each failed assertion. Prevent a later normal
+   finish from repeating shutdown or reporting that aborted run as Passed.
+   Any genuine health invocation failure or full-sample collection/freshness
+   error, even once and even if explained or later recovered, prevents Passed.
+   Evaluate health success against the installed accepted exit-status contract;
+   an accepted nonzero status is not itself a failure. Two consecutive failed
+   full samples control early abort only; that threshold does not permit one
+   failure in a passing observation.
+6. Preserve final full-sample and complete JFR results, measure whole-unit
+   shutdown against the actual timeout, then collect the remaining journal.
+   Require an active appliance before the stop, successful collection and
+   shutdown, and no forced termination. Record this retest separately from
+   the original T4-T8 results and continue analyzing the preserved 24-hour
+   observations before an overall verdict.
+   A completed observation with any failed assertion is Failed. An aborted
+   observation or missing required coverage is Incomplete, with failed
+   assertions retained. Passed requires every planned assertion, including
+   zero full-sample errors, all-PV freshness and complete health coverage, to
+   succeed throughout the manifest window and the required final collection.
+
 ##### Test Plan
 
 | Label | Layer | Method | Environment | Expected Result |
@@ -2770,6 +3329,187 @@ failures, and disposal or reuse of the previous soak VM.
 | T6 | Comparison | Compare new busy time and weekly usage with the shipped M14/T21 evidence, accounting for population and load differences | Control host | A reproducible comparison with the retired running-sum metric excluded and the default-chain LTS limitation stated |
 | T7 | GC evidence | Read actual per-component JFR events and GC logs, correlate GC IDs and compare collected counters with the real JVM | Both VMs | Before/after heap and individual pauses are recorded for every observed GC; causes, PID, timestamps and incomplete records remain visible; no forced GC |
 | T8 | Latency evidence | Query all fixture PVs through the real retrieval service and poll representative real CA timestamps until visible | Both VMs | All-PV freshness, request duration and representative visibility bounds are recorded separately, with errors and polling resolution preserved |
+| T9 | Retest preparation | Resolve and verify the prior health failures through the actual command and collector; verify complete health-journal collection, empty-data rejection, normal finish and early-abort paths, evidence preservation and capacity | Control host and shortened VM | Cause, correction and executed verification recorded before retest; empty HTTP 200 data cannot satisfy freshness/readiness; both terminal paths preserve errors and prevent repeated shutdown; completed observations protected; projected free space at least 2 GiB |
+| T10 | Retest readiness | Require T9 and successful full readiness samples before opening a separate manifest; the accepted immediate-start amendment supersedes HH:54:30 UTC | Shortened VM, accepted ten-record deadband variant of the original 903-PV fixture | Verified health correction, four JVMs, synchronized clock, 903 connected and archiving PVs with recent data, six visible probes, real GC evidence and zero sample errors; exact 7200-second boundary, expected schedule and counter baseline recorded |
+| T11 | Focused soak | Observe the real fixture for 7200 seconds with five-minute collection, complete appliance and health journals, and pass-to-schedule and metrics comparisons | Shortened VM | Every expected firing has exactly one completed pass, normally 24 STS-to-MTS and two MTS-to-LTS; correct ordering and timing; counters and metrics agree; all 903 PVs have recent data in every full sample; zero genuine health failures or sample errors, no coverage gaps, OOM, JVM restart or normal-load overrun; any failure prevents Passed |
+| T12 | Retest finish | Preserve the final full sample and complete JFR checkpoint, measure the whole-unit stop and collect both final journals; use the distinct abort path if a stop condition occurs early | Shortened VM after T11 or an early-abort trigger | Normal finish requires successful final collection and an active appliance stopping inside its timeout without forced termination; early abort preserves its cause, capture failures and stop result, records Incomplete, and cancels the scheduled finish |
+| T13 | Observation control | Run shipped preparation/launcher/observer/evaluator paths with external clock/filesystem/command boundaries; check both grids against the pinned design and retained real pass records; reject shortened/default mismatch, early UTC/monotonic finish, absent midnight, stale hash proofs and repeated stop; change the actual helper/JFR configuration separately and require old-proof rejection | Control host; retained real observations and original tools | Explicit 86400-second duration is consistent throughout; shortened and default schedules are independently correct; complete bundle hashes include executable dependencies and JFR configuration, with missing/unexpected entries rejected; invalid duration/grid/coverage or a changed dependency cannot yield Passed; legacy two-hour verdicts remain separately reproducible |
+| T14 | Preparation and load | First complete local shipped-tool/fixture repeated-preparation and conflicting-input checks, then freeze and install the bundle; preserve completed observations; verify existing adjustments on both VMs through --verify-existing; verify source pins, equal fixture/override, CA isolation, 256M heaps, MariaDB, real resources/store ages and measured 24-hour capacity projection | Both stopped/restarted VMs; local checks before bundle freeze and deployment | Implementation and local checks precede hash freeze; installed tools match the frozen bundle; both existing adjustments and original databases remain intact; absent/mismatched/partial adjustments are rejected without initial-application fallback; all 903 names/settings and twenty actual deadband fields match; actual disks are 40 GiB on shortened and 48 GiB on default; data and measurement growth leave at least 2 GiB and usage below the installed health limit; original data and evidence preserved |
+| T15 | Current-tool runtime readiness | Require completed T22-T26/T28 and T27 preparation evidence for the replacement bundle; install identical complete bundle hashes, including preparation, executable helpers and JFR configuration; execute real health, empty-data rejection, early-finish rejection and abort probe; exercise collector during a real activating health invocation; restart and obtain two successful health completions and two full samples | Both real appliances, IOC fixtures, MariaDB and systemd | Current proofs bind to the complete installed bundle and frozen digests; no failed/missing/stale health completion hidden; four real GC components, synchronized clock, all 903 PVs connected/archiving/recent, six visible probes and zero full-sample errors; no manifest before readiness or while pre-launch journal checks remain unverified; T27 in-window completion is deferred to T16/T19 |
+| T16 | Full-window soak | Run both actual store chains in parallel for at least 86400 seconds in both clocks across UTC midnight; collect every five minutes plus initial/final samples and complete journals | Both VMs after T15 | Each VM independently meets duration/midnight, freshness, identity and coverage criteria; zero genuine health/sample failures, OOM or JVM restart; abort is Incomplete with failures retained |
+| T17 | Scheduler and load metrics | Evaluate every expected pass and raw metric snapshot against the verified chain grid and pinned metric definitions; aggregate actual event rates and retrieval workload | Both completed observations | Exactly one completion per expected identity, no normal overrun/job errors; start within five seconds of planned/ordering-ready time; counters, busy time and weekly usage reconcile; numerical results, rate semantics, intervals and units available |
+| T18 | Memory and GC | Parse real JFR recordings, heap/collection/pause CSVs, GC logs, jstat and RSS; use the specified event identity, matching payload and bounded two-microsecond timestamp clusters; exercise aggregation on retained real overlapping exports, preserve distinct pauses and reject conflicts/ambiguity; check recording/rotation coverage and counter agreement | All eight actual JVMs; retained real shortened/default exports for aggregation regression | Overlap does not inflate counts or pause totals, and exact-timestamp-only deduplication fails the regression; original timestamps and duplicate counts remain available; complete window evidence without DataLoss, missing pairs or unresolved conflicts; per-component observed heap/post-GC heap, GC counts/times, pause totals/maxima and RSS reported with counts/units; no continuous-max or heap-sizing claim |
+| T19 | Normal terminal path | After both duration checks and in-window completion, capture final full sample/four complete JFRs; record ETL work state, time one unit stop, capture remaining journals and replay evaluator | Each VM after T16, or separate abort path | Successful final collection and orderly stop inside actual timeout; idle/in-progress state and elapsed time retained; no repeated stop; stop success cannot hide failed assertions or missing coverage |
+| T20 | Earlier-result comparison | Complete T6 using M14/T21, original 24-hour, focused two-hour and new full-window inputs; reconcile last/average busy time and weekly usage meanings and intervals | Control host; preserved real evidence | Reproducible numerical comparison with fixture/event-rate, store-age, resource and retrieval-load differences stated; old unmeasured event rates identified; retired running sum excluded; no unsupported improvement claim |
+| T21 | Recipient evidence | Build the specified sanitized package with tools, per-chain replay inputs, reference aggregates, canonical snapshot and checksums; replay the shipped evaluator and both documented aggregate.py commands solely from that package; compare regenerated JSON values and check every cited row | Control host; recipient-equivalent package paths | Both commands return zero and regenerated counts, timestamps, digests, numerical values at declared precision and failure/coverage fields match their reference aggregates exactly; per-chain verdicts and numerical evidence are reproducible without private host access; checksums resolve exact plan/results/tool versions; uncommitted content identified; no secrets or private endpoint identifiers; sending remains separately authorized |
+| T22 | Obsolete kernel anchor | Establish a pre-trial kernel cursor through the shipped collector, collect quiet intervals, then remove only the archived journal file containing that anchor while retaining the entire required collection interval; repeat collection twice and compare the preserved defective bundle with the candidate | Dedicated Rocky 8.10 test VM; real systemd 239 journal files; real shipped collector and fixture | Actual old cursor becomes unavailable; original collector reproduces the error; candidate retains proven interval coverage and has no kernel_journal error or false abort. An unproved interval cannot be accepted by clearing the cursor |
+| T23 | Empty kernel interval | Collect at least three successive intervals containing real system records but no kernel records; also query retained files with no kernel row at or before the initial boundary | Dedicated test VM; actual journal files, collector and state persistence | Empty kernel output remains distinct from missing system-journal coverage; verified quiet intervals succeed, zero observed memory events are reported with coverage, and state survives repeated collection without depending on a pre-trial kernel row |
+| T24 | Rotation and event delivery | Generate uniquely tagged benign records through the real kernel logging path before/after collection and across an actual rotation; run full and journal-only collection repeatedly, including final capture; rotate during collection in a separate case | Dedicated test VM; actual journald, journalctl, collector and terminal paths | Every independently recorded kernel marker in the required interval is archived exactly once after cursor deduplication; no omission across rotation or final capture. A collection/rotation race must establish coverage or return an explicit incomplete result |
+| T25 | Required-record loss | Remove an archived system journal file containing known, not-yet-collected in-window markers; retain an older user journal and later system records; repeat with a missing application or health interval and replay the evaluator | Dedicated test VM plus preserved file copies; real collector and evaluator | Known loss or unresolved continuity cannot yield coverage_complete=true or Passed; an older user record cannot prove system coverage. Failed assertions remain visible after later successful collection; no silent reset to now |
+| T26 | Boundaries and boot identity | Place actual retained records before, at and after collection cutoffs, across UTC midnight and before/after a real test-VM reboot; replay shipped paths against those real files with only the external clock/filesystem boundary substituted locally | Control host and dedicated test VM; real journal timestamps/cursors and boot IDs | Adjacent interval boundaries neither omit nor double-count records; midnight does not reset coverage. A changed boot or unavailable required boundary is rejected, including initial preparation and post-stop capture |
+| T27 | Retention and capacity | Preparation: measure effective caps, system/user write rates and file sizes, then apply the calculation below and bind a fresh result to each actual VM/bundle. In-window: repeat budget and continuity checks at every full collection and final capture; close this portion at T19 | Both actual deployments; real journald measurements, preparation/launcher, collector and evaluator | Passing preparation permits T15/start; in-window completion is required only for final acceptance. Maximum gaps, factor-two safety allowance and byte/time inequalities are recorded. Missing inputs or a failed inequality refuse start; during a trial they create a retained sample error, using the existing two-consecutive-failure abort policy. Disk reserve, retention and suppression remain separate assertions |
+| T28 | Failure and terminal integration | Run T22's quiet/obsolete-anchor case through two real full samples; separately cause T25's required-record loss, observe two failed full samples, actual abort dispatch and journal-only final collection, then replay the frozen evaluator and attempt normal finish | Dedicated complete test deployment with the shipped 903-PV fixture, appliance, IOC, MariaDB and systemd; retained real abort inputs for local replay | Proven quiet coverage does not request abort. Real loss retains both sample failures, requests abort once, records final capture/stop outcomes, stops timers and yields Incomplete. Later success or normal finish cannot hide errors, repeat stop or turn the aborted run into Passed |
+
+###### Journal Scenario Procedure And Start Gate
+
+T22-T28 are planned checks, not executed verification. Their results remain
+pending until the named shipped paths run and their artifacts are inspected.
+The scenarios specify required behavior without selecting between a collector
+correction, retention-capacity adjustment or both. Any implementation choice
+or capacity change remains a separate owner decision.
+
+###### Dedicated Journal Test Environment
+
+Resolve the environment before live scenario execution. Record the selected
+inventory, environment owner and explicit execution authority in private
+`work/soak-etl-pass-3bdf378c/journal-test-environment.json`; none is supplied
+by G4 or created by this plan edit. If any input is missing, keep live
+T22-T26/T28 Pending and do not proceed to deployment or observation launch.
+
+Prepare the selected environment through the shipped archiver_dev species on
+Rocky 8.10/systemd 239 with the same full source commits, local MariaDB,
+four 256M heaps, original 903-PV fixture and approved deadband override.
+Record actual CPU/RAM/disk, isolated CA endpoints and a measured space budget
+for the declared scenario duration, raw journal reference copies, GC/JFR and
+final capture. Require projected usage below 85 percent and at least 2 GiB
+free. Any acquisition or resource-size choice remains an owner decision.
+
+Install the candidate bundle and record its complete digests. Require actual
+source/configuration checks, twenty deadband values of -1, 903 connected and
+archiving PVs, two accepted health completions and two successful full samples
+before destructive probes. Each probe uses a separate evidence directory and
+records its boot, boundaries and expected negative outcome. Keep the retained
+soak inventories and stores separate. After live scenarios, stop test timers
+and the test appliance through the shipped terminal path and preserve the
+probe evidence; VM deletion and data removal are not part of this amendment.
+
+###### Journal Scenario Procedure
+
+1. Preserve the two terminal observations, their original bundle, manifests,
+   collection state, raw journals, errors and abort records before any new
+   preparation. Run destructive rotation/retention scenarios only on a
+   dedicated test deployment or disposable copies of its genuine journal
+   files. Do not vacuum either retained soak VM's journal, remove its evidence,
+   change its clock or force an OOM. No new VM is provisioned by this document
+   update. Record the environment, systemd/Python versions and exact tool
+   digests for every execution.
+2. Produce inputs through the actual journald and kernel logging paths.
+   Record independently emitted marker identities, their actual journal
+   cursors/timestamps and the journal-file inventory before and after each
+   operation. Use actual rotation and verify that the intended old cursor
+   is absent and required interval records are retained or deliberately lost.
+   File removal occurs only in the disposable test data; preserve a complete
+   reference copy for independent comparison. A scenario whose intended
+   retention state was not observed is inconclusive, not passed.
+3. Exercise `collect.py::sample` and its shipped kernel/application/health
+   collection and state persistence, followed by the shipped observer and
+   evaluator where required. Local replay may substitute only the external
+   journal transport, filesystem or clock to select actual captured inputs.
+   It must not replace an internal collector function, synthesize journal
+   JSON, hand-build sample/terminal evidence or reconstruct the fixture.
+   T24 and T28 additionally require the live paths; local replay alone cannot
+   satisfy their integration portions. The frozen defective collector must
+   fail the same obsolete-anchor regression used for the candidate.
+4. Inspect system-journal coverage separately from user journals and separately
+   for application, health and kernel streams. Retain collection boundaries,
+   boot identity, continuity evidence, raw query exit status, returned cursor
+   identities and durable archive/checkpoint evidence. An empty kernel query,
+   successful journalctl exit, arbitrary replacement cursor or one old
+   unfiltered record is insufficient proof. Required records already archived
+   do not need indefinite source retention; every not-yet-collected interval
+   must still have independently checkable coverage.
+5. T24 verifies benign kernel-event delivery, not OOM detection. Replay actual
+   retained OOM evidence through the shipped detection path before making an
+   OOM-detection claim; if suitable real records are unavailable, report that
+   portion as unverified. Preserve real suppression and missing-record inputs
+   as negative cases; neither a changed cursor nor a later success may erase
+   them. Unresolved coverage remains Incomplete with failures retained.
+6. Retention planning must record its measured growth rate, interval, effective
+   byte/time caps, archived-file granularity and allowance for query/capture
+   delay. Account for system and user journals sharing the cap. Prove that the
+   oldest still-required source boundary survives the declared maximum gap;
+   do not infer this from the 24-hour disk-growth calculation or the nominal
+   MaxRetentionSec alone. Actual in-window continuity remains required even
+   after the preparation estimate passes.
+7. Require T22-T26/T28, T27 preparation and existing T13-T15 before opening
+   another manifest. T27 in-window checks run during T16 and must complete
+   through T19 before final acceptance. Keep
+   negative scenario failures in separate probe evidence; an expected rejection
+   passes its negative check, but never makes a failed probe an accepted soak.
+   Any executable change requires local regression, updated frozen bundle
+   hashes and newly generated runtime proofs on each actual VM. Then obtain
+   two distinct accepted health completions and two zero-error full samples
+   per VM and recheck source/fixture identity and capacity immediately before
+   launch. Retain the original two-independent-window requirement: at least
+   86400 seconds in UTC and monotonic time, UTC midnight, measured shutdown
+   and T6/T20/T21. These short scenarios cannot replace either 24-hour trial.
+
+###### Journal Retention Calculation And Failure Handling (T27)
+
+Measure at least six consecutive five-minute intervals under the approved
+903-PV load and current logging policy. For system and user journals, retain
+separate physical byte-write/allocation bounds, file inventories and rotation
+or vacuum evidence. A flat disk-usage total at a cap is not a zero write rate.
+Intervals with unaccounted removed files, reset counters or missing accounting
+cannot supply a bound. Use the highest measured rate per stream, also taking
+the maximum with any applicable retained higher rate under the same policy.
+Record the source intervals, units, file digests and accounting method.
+
+Use these definitions and inequalities, rounding byte quantities upward:
+
+```text
+P = evaluator sample-gap limit in seconds
+A = effective sample-service TimeoutStartSec in seconds
+T = max(effective finish-service TimeoutStartSec,
+        effective abort-service TimeoutStartSec) in seconds
+G_periodic = P + A
+G_terminal = P + T
+G_required = max(G_periodic, G_terminal)
+S = 2
+H = S * G_required
+R_system = peak measured system-journal physical bytes per second
+R_user = peak measured user-journal physical bytes per second
+F_system = max(effective system journal file-size limit,
+               largest observed system journal file) in bytes
+F_user = max(effective user journal file-size limit,
+             largest observed user journal file) in bytes
+U = current retained user-journal bytes
+B_system = ceil(R_system * H) + 2 * F_system
+B_user = U + ceil(R_user * H) + 2 * F_user
+B_required = B_system + B_user
+B_required <= C_effective
+H <= effective finite retention time limit, when applicable
+```
+
+`C_effective` is the usable combined journal byte cap after resolving the
+actual SystemMaxUse and filesystem free-space restrictions, including
+SystemKeepFree and other journal consumers. Unresolved effective defaults,
+limits or accounting refuse preparation; do not assume a larger cap.
+Current source values specify P=320 seconds, A=240 seconds and T=2700 seconds,
+so G_periodic=560, G_terminal=3020 and H=6040 seconds. These are conservative
+budget bounds, not permission to miss a 320-second full-sample requirement.
+Read installed limits before each calculation; unbounded timeouts refuse
+preparation. A changed limit or tool invalidates the previous proof.
+
+Before launch, require successful byte/time inequalities, unchanged measured
+policy, current caps and a result checked within 120 seconds. Keep the
+existing capacity-input freshness and 24-hour disk-growth checks in T14.
+Preserve raw inputs and the result privately under
+`work/soak-etl-pass-3bdf378c/journal-retention/` and bind the proof to the actual
+boot, bundle, logging policy and measurement interval. T15 requires only this
+preparation portion; a future in-window result cannot authorize launch.
+
+During T16 and final capture, record the actual elapsed collection gap,
+oldest uncollected boundary, caps, stream rates and archive continuity.
+Use at least the preparation rate bounds; a higher observed rate raises the
+budget immediately. Missing input, an inequality failure or a gap beyond the
+declared bound produces a retained `journal_retention_budget` sample error;
+actual missing records are additionally reported as a coverage gap. A single
+error prevents Passed, two consecutive failed full samples invoke the existing
+abort policy, and the 2-GiB reserve rule remains unchanged. Final capture
+retains the budget result or its failure even after an orderly stop. Complete
+the in-window portion only when every required check and terminal coverage
+has been evaluated; do not relabel either aborted historical run as Passed.
 
 ##### Verification Results
 
@@ -2817,13 +3557,249 @@ The real pass records and deployed `ETLPassTicker.tickAll` agree with the
 design's first-tick-after-completion rule. This ordering check satisfies the
 corrected criterion; T4 remains In progress until the full window is evaluated.
 
+Original 24-hour evidence analysis on 2026-09-30:
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T4 | 2026-09-30; original manifest-filtered archives | Both original 903-PV observations | Incomplete; failed assertions retained | Each has 290 full samples with maximum gaps of 300.019/300.034 seconds. Shortened completed all 288 STS-to-MTS and 24 MTS-to-LTS firings; default completed 24 and three, with no missing, duplicate or unexpected scheduled pass, failed/aborted/skipped job, overrun or PV-count mismatch. Maximum readiness-relative start delays are 3.792/4.569 seconds on shortened and 4.014/3.934 on default. All 290 metric snapshots per VM match completed counters, last-pass fields and busy times. Shortened has 14 failed full samples, including its final sample, and 124 actual recorded storage-threshold health failures. Default has zero recorded sample or retained health failures, but neither VM retains the health journal for the full window. Sampled JVM identities and boot IDs are unchanged. The appliance journals contain no OOM or forced-termination signatures; bounded kernel journal queries returned no entries and do not establish coverage. UTC intervals reach 24 hours; recorded monotonic intervals are approximately 3 ms shorter, with both retained. Default transition 1 moved no data to LTS |
+| T5 | 2026-09-30 01:06:43/46 UTC terminal records | Both original observations | Passed for whole-unit shutdown | Both appliances were active before stopping and inactive with Result=success afterward. Actual stop commands returned rc=0 in 11.830/12.549 seconds against the 300-second timeout, with no forced-stop signature in the preserved appliance journal. Four complete JFR checkpoints and final journals were retained on each VM. Shortened final full collection returned rc=1 due to health failure; default returned rc=0. Successful shutdown does not establish successful final collection or overall soak acceptance |
+| T7 | 2026-09-30; original-window GC aggregates | Four JVMs on both VMs, 256 MiB heaps | Analyzed | GC events were deduplicated by component, PID, GC ID and identical payload within a 2 microsecond cluster; no before/after pair is incomplete. The integer-nanosecond replay at 17:30 UTC measured maximum timestamp variation of 217/350 ns on shortened/default, superseding the earlier floating-point approximation. Maximum post-GC heap for mgmt/engine/etl/retrieval is 63.16/81.69/253.05/133.83 MiB on shortened and 51.99/74.24/89.17/67.31 on default. Maximum observed ETL heap is 255.16/254.80 MiB. Shortened ETL has four full GCs, consistent with jstat; each reduced 247.93-252.23 MiB to 26.55-28.64 MiB. Default and the other components have zero full GC. Maximum ETL pause is 118.186/22.111 ms, with total observed pauses 33.402/1.480 seconds. The retained fixed-population runs do not select a safe heap size for other loads |
+| T8 | 2026-09-30; reassessed stored source timestamps | Both original retrieval services and unchanged deadband fixture | Failed for all-PV freshness assertion | HTTP errors and representative visibility failures are zero. Request maxima are 99.448/99.790 ms; P99 is 21.073/12.862 ms. Visibility upper-bound maxima are 9.722/6.695 seconds and include source age, rather than exact ingestion delay. Every full sample contains stale latest timestamps among the ten original deadband PVs, at most nine per sample. Comparing retained latest timestamps with request start minus 30 seconds yields 1499/1505 stale PV observations. The exact query-construction timestamp was not retained. The original collector accepted last-known returned data without a timestamp-window check, so its recorded 903-recent count does not establish all-PV freshness; initial and interim 903-recent claims above are superseded by this reassessment |
+
+Private inputs, aggregate JSON, analysis scripts, report and checksums are retained
+under the work directory with the `analysis-24h-` prefix. The original T6
+comparison with the earlier matching load remains pending. The completed
+two-hour retest is a separate observation and is excluded from these aggregates.
+
+Focused retest preparation observations on 2026-09-30:
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T9 | 2026-09-30 07:00:28 UTC | Shortened VM, installed measurement tools and real appliance | Partial | The prior health failures were actual storage-threshold failures at 85 percent usage. The disk, partition 5 and XFS were expanded from 20 to 40 GiB with existing data preserved. Actual negative collection obtained 903 empty HTTP 200 responses and prevented observation start. The installed early-finish guard rejected an unelapsed window; the real abort preserved a final full sample and complete JFR for all four components, stopped the appliance in 11.377 seconds with rc=0 and no terminal errors, retained Incomplete and rejected repeated finish. These checks do not establish successful normal two-hour completion |
+| T10 | 2026-09-30 07:03:05 UTC | Restarted shortened appliance, accepted deadband variant | Preparation verified | The post-restart full collector initially recorded HTTP 500 and retrieval errors; that pre-window evidence is retained. Subsequent real verification obtained two distinct successful health invocations and two zero-error full samples with 903 archiving PVs. Actual twenty deadband fields equal -1 and original registration CSV is unchanged. A systemd timer is active for readiness dispatch at 07:54:00 UTC, targeting observation start at 07:54:30 UTC. The observation has not opened; launch repeats actual readiness and capacity checks |
+| T11 | 2026-09-30 09:13:49 UTC | Shortened VM, accepted ten-record deadband variant | Passed | The actual 7200-second manifest retained 26 full samples with zero errors and all 903 PVs recent. All 26 scheduled firings completed with no missing, duplicate or unexpected identity. Health coverage includes 233 completed invocations in the observation/final interval; failed assertions, missing coverage and incomplete GC pairs are zero. UTC finish-start interval is 7200.000216 seconds. The recorded monotonic interval is 7199.981597 seconds and is retained separately; the installed normal-finish guard allows two seconds of tolerance |
+| T12 | 2026-09-30 09:13:49 UTC | Shortened VM, installed real observe.py and systemd paths | Passed | Actual normal finish began after the UTC manifest boundary, retained the final full sample, complete JFR for all four components and the final journal. Stop returned rc=0 in 11.378 seconds against the actual 300-second timeout; boot identity is unchanged and terminal errors are empty. The embedded evaluator reports Passed. The original collector hash identifies the code used throughout this trial |
+
+The owner selected immediate start on 2026-09-30, superseding the 07:54:30 UTC
+reservation. The old launch timer was stopped. The actual launcher repeated
+readiness, succeeded and opened the manifest at 07:13:32.389373 UTC with
+earliest finish 09:13:32.389373 UTC and duration 7200 seconds. The manifest
+contains 26 expected scheduled firings. Its explicit initial sampler returned
+rc=0, and the full sample at 07:13:32.623399 UTC retained zero errors.
+T10 start was verified. The actual normal terminal record at 09:13:49.519860 UTC
+now establishes T11/T12 Passed. The separately captured private completed
+evidence replays through the shipped evaluator without changing its verdict.
+
+Accepted collector and verification corrections on 2026-09-30:
+
+| Scope | Environment | Observed Result | Evidence |
+| --- | --- | --- | --- |
+| Health collection | Control host; local shipped collector and real health recorder | Local correction verified | The collector evaluates the latest completed health invocation, requiring accepted status and completion within 120 seconds. An activating invocation does not replace that evidence. Missing, stale or failed completions remain errors; explicit readiness retains the strict completed-current-invocation requirement. Local recorder/collector tests and the terminal tests total 16 passing checks |
+| Normal terminal path | Control host; shipped observe.py with external command/filesystem boundaries | Local failure handling verified | An unelapsed wall or monotonic interval cannot stop the appliance. An elapsed finish writes shutdown.json, retains collection/JFR errors and refuses a second stop. Abort writes its separate Incomplete record. Local verification does not establish the VM's normal shutdown |
+| Final evaluation | Control host; test_evidence.py and real captured completed evidence | Eight checks passed at 2026-09-30 09:14 UTC | The shipped evaluator replays the actual passing observation without internal mocks. Negative tests change temporary external file copies and confirm Failed for single full-sample/freshness/health failures, Incomplete for missing scheduled passes/GC pairs or abort, and retained failures with missing final coverage. Original inputs are unchanged. Together with 16 local checks, all 24 executed checks pass |
+| VM application | Shortened VM; completed control-host user service | Applied and hash-verified at 2026-09-30 09:14:44 UTC | The owner selected application after this trial ends. After actual terminal completion the prepared job ran immediately; its later timer was stopped to prevent duplication. It verified pinned sources, passed all 24 checks and installed the revised collector only after services/timers were idle. The old collector is archived. Installed hash equals the reviewed source, and the completed manifest, measurement configuration and terminal hashes remain unchanged. Service Result=success and ExecMainStatus=0. No new observation was opened; new runtime readiness for the changed tools remains unverified and requires fresh preparation proofs |
+
+Local implementation verification on 2026-09-30:
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T13 | 2026-09-30 17:28:48 UTC | Control host; Python 3.13.5; shipped tools, original fixture and retained observations | Local checks passed; runtime pending | The complete suite ran 45 checks with zero failures and zero skips: 17 terminal/health checks, 12 evidence checks and 16 contract/aggregation checks. Real preparation ran for both durations and chains with filesystem/command boundaries replaced; wrong duration/chain, unexpected bundle entries and changed helper/JFC inputs were rejected. Independent grids match actual 288/24 and 24/3 pass identities. Schema-3 passing evidence still replays separately. Invalid grid/duration/coverage and malformed GC retain non-passing verdicts. All 18 dependency hashes match frozen bundle.json; all 59 SHA256SUMS entries match. All 38 Python files compile and parse with Python 3.9 grammar; this is not a Python 3.9 runtime execution |
+| T14 | 2026-09-30 17:28:48 UTC | Control host; real installer, adjustment and preparation code with shipped fixture | Local preparation checks passed; VM pending | Initial adjustment, repeated existing-adjustment verification and repeated preparation preserve original CSV/database bytes, adjustment and completed terminal evidence. Conflicting or unrequested reapplication is rejected. Preparation checks both 7200/86400 seconds and both chains, archives the previous tools/units, installs the complete bundle and sets the bounded terminal service timeout to 45 minutes. Capacity checks bind separate historical/current measured sources, digests, duration/chain and current age. The real chain verifier reads the shipped 903 names through an external HTTP boundary and rejects wrong stores. Actual VM installation, twenty CA fields, source/resource/store-age checks and measured 24-hour headroom remain required |
+| T15 | 2026-09-30; before VM application | Both VMs | Pending at local implementation completion | New health/empty-data/early-finish/abort preparation and successful real full samples require separate VM execution authority. Prior schema-3 proofs cannot qualify. Actual later executions are recorded below |
+| T16 | Not run for the revised plan | Both VMs | Pending | No new observation was opened during local implementation; each chain still requires 86400 seconds in both clocks across UTC midnight |
+| T17 | 2026-09-30 17:30:13 UTC | Control host; both retained original 24-hour inputs and pinned Maven source | Historical numerical replay verified; new runs pending | Frozen aggregate.py retains chain-specific pass counts, busy-time/delay/job/movement statistics and partial-day weekly usage. rate-semantics.json identifies the pinned engine/PV implementation, cumulative connection-dependent intervals, raw metric names and units; benchmark writing rows are excluded. The real retained metric-input regression preserves both arrival/write rows. Both historical outputs remain Incomplete, retaining freshness failures and missing coverage; shortened also retains health failures. New-load scheduler and metric acceptance remains T17 after T16 |
+| T18 | 2026-09-30 17:28:48-17:30:13 UTC | Control host; original heap/collection/pause CSVs and approved copies of eight JVM GC logs | Historical aggregation checks passed; new coverage pending | Integer-nanosecond clusters reduce shortened heap rows from 276370 to 79002 and default from 85552 to 24076; maximum actual variation is 217/350 ns. Duplicating real exports preserves unique counts and pause totals. Exact timestamp keys retain excess heap events; conflicting real-event payloads are rejected. Each JVM's retained JFR collection IDs occur in its GC logs. Young/full/concurrent jstat values are reported separately; absent original command-time bounds remain missing coverage, including boundary count differences. Incremental GC capture tests retain rotations and reject truncation. New full-window JFR/DataLoss/rotation/jstat coverage still requires actual VM execution |
+| T19 | 2026-09-30 17:28:48 UTC | Control host; shipped observe.py, external clock/filesystem/command boundaries | Local terminal checks passed; VM pending | The normal terminal path with 0.25 seconds remaining waits until the full monotonic duration. The same shipped regression executed against the preserved schema-3 observer fails at 7199.75 seconds for a required 7200 seconds. Current early-finish, repeat-stop, abort and collection-error paths retain their distinct outcomes. Final pass waiting, four complete JFRs, ETL work state, coordinated health completion and the actual whole-unit stop remain real-VM checks |
+| T20 | Not run with new full-window results | Control host | Pending | T6 and the earlier-load comparison require both new completed observations; historical descriptive aggregates do not establish performance improvement |
+| T21 | 2026-09-30 17:28:48 UTC | Control host; shipped aggregate.py CLI and coherent retained evidence directories | Local CLI checks passed; recipient package pending | Repeated actual CLI executions produce exactly matching parsed JSON values and no comparison mismatch for both historical inputs. Their missing coverage deliberately keeps exit status nonzero. A changed reference or missing input returns nonzero; missing input retains earlier failures. The specified sanitized two-run package, canonical snapshot, package-only evaluator replay and successful reference comparisons remain pending |
+
+The initially verified bundle is preserved in the private
+`work/soak-etl-pass-3bdf378c/schema4-approved-bundle.tar`; its bundle.json SHA256 is
+`e00e1d7167a80eb1d776800be6b71754c6ce5d0aa021b95905fae678ace75ee8`.
+It includes the current executable dependencies, JFC configuration, rate
+definitions and historical schema-3 evaluator. The remaining schema-3 tools
+are preserved under `tests/archiver-soak/etl-pass/legacy/schema3/`.
+Local results are uncommitted working-tree evidence based on
+`f7aba721463461ca8ea61a15819cd99041edbe5b`; no carrying commit exists yet.
+The private `work/soak-etl-pass-3bdf378c/implementation-verification/` directory
+retains `local-verification.json`, `legacy-finish-regression.json`,
+`aggregate-replay.json`, both coherent input directories and both aggregate
+JSON files. Final aggregate SHA256 values are
+`05115825302bd7e49714df1825c1fd2d4004778598d2e01e7be34bd9a38f07cc`
+for shortened and
+`a9de01bfeebe4327bc24b0a1fc98fdf52d8adb70267eea57fd356a02737c9054`
+for default. The approved GC-log copies preserve only the four manifest JVMs
+and their rotations from each original run; original evidence is unchanged.
+
+Actual VM preparation observations on 2026-10-01:
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T13 | 2026-10-01; local verification before staging at 05:37 UTC | Control host; all real retained inputs and shipped fixtures | 46 local checks passed; zero skips | The added first-boundary regression requires the real collector to issue a reverse lookup for past journal records. Actual VM journalctl returned no rows for the original --until/--lines query and one retained row with --reverse. Both collector boundary queries now use --reverse. The complete 46-check suite exits zero; result is retained in implementation-verification/local-verification-kernel-fix.json. A new complete bundle was frozen after verification; all original 24-hour failures remain visible |
+| T14 | 2026-10-01 05:17:29-05:37:33 UTC | Both actual stopped deployments; separate private backups and staging paths | Preservation verified; capacity preparation pending | Both original terminal/manifest digests are recorded in schema4-staging.json and copied under separate etl-soak-before-schema4-* directories. Appliance and old timers were stopped before staging. The initial capacity-only attempt on shortened rejected an incorrect PV API path and stopped normally. Subsequent real 903-PV/four-JVM measurements retain their collection failures separately from a soak. A private probe-directory permission correction allowed actual four-component JFR dumps. Default's first data interval declined during existing-data processing and is rejected by the capacity contract; it is not converted to zero growth. Both probes stopped normally at 05:36:31/39 UTC. New capacity-only measurements use separate stable historical/current intervals before installation. Earlier 24-hour data-growth rates remain an additional projection floor; no ready/start claim is made |
+| T18 | 2026-10-01 05:37:12-13 UTC | Both actual VMs; frozen corrected collector and actual journalctl | Bounded kernel path verified; full-window coverage pending | The shipped collect_kernel path retains the actual pre-boundary proof and returns complete coverage for the preparation interval on each VM, with zero observed kernel memory events. No internal function or transport is substituted in this check. This verifies the bounded current query, not a new 24-hour observation. Evidence: schema4-kernel-staging.json and each VM's live-kernel-verification directory |
+
+The current `tests/archiver-soak/etl-pass/bundle.json` SHA256 is
+`0c646646a5be06c6ea199403df23131ae4ea08aa9c74625b278df161c2a22b5c`.
+The previous bundle and failed preparation records remain intact. The corrected
+bundle was staged in separate directories before installation at 05:48 UTC.
+`schema4-kernel-staging.json` records both exact staging
+paths and bounded real verification results. Each VM's capacity-only services
+record their own samples, rejected intervals, terminal state and source JSON;
+these do not establish T15 or T16 success.
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T14 | 2026-10-01 05:48:03-06 UTC | Both real VMs; frozen bundle, approved fixture and preserved stores | Installation/fixture/capacity passed at this time | Both actual prepare-retest.py executions exit zero, preserve the terminal observation/tools/units and leave observation_started=false. Installed dependency hashes equal the current frozen bundle. Source pins and actual stamp are checked through the shipped preparation path. Shortened verifies the existing adjustment; default initially applies it and reads all twenty fields as -1. The original CSV and three database hashes remain preserved. Required 24-hour growth including capture allowance is 13766908018/13717123951 bytes. Original 24-hour data-growth floors are 6957496455/8840668796 bytes and do not exceed the measured data contributions. Actual available bytes are 22570323968/20118503424; projected free bytes are 8803415950/6401379473 and usage is 78.929/84.678 percent. These values satisfy the accepted 2-GiB and 85-percent conditions at installation; a changed logging policy requires new growth evidence. Private source receipts: schema4-installation.json, original-data-growth-floor.json and both capacity-installation-check.json files |
+| T15 | 2026-10-01 05:51:45-05:59:02 UTC | Both actual appliances/IOCs/MariaDB/systemd; installed schema-4 tools | Partial; failed preparation retained; start refused | Both actual chain verifiers read all 903 deployed configurations and pass. Both first two-health/two-full-sample checks pass. Shortened then verifies the real health collection path while the unit is activating: starts=27, completions=26, the previous accepted completion is used and no internal function/transport is substituted. A subsequent actual full collection exits zero. Its negative retrieval check obtains 903 HTTP-200 PVs without samples and rejects observation start. Early finish and repeated finish are rejected; actual abort retains final full collection and four complete JFR files and stops in 11.218 seconds with rc=0. Final journal collection fails because journald dropped 11215 appliance messages, so abort readiness is rejected. Default's repeated health/full check fails on an actual journald report of 2010 dropped appliance messages. That failure is not treated as a transient healthy result. Neither VM has all required current runtime proofs |
+| T15 | 2026-10-01 06:09:39-50 UTC | Both actual VMs; preparation held | Appliances stopped; no new observation | Shortened was already inactive after the failed abort verification. Default preparation is stopped with rc=0 in 11.120 seconds and Result=success; both health timers are stopped. No main observation.json exists on either VM. A successful preparation stop does not establish T19 success. Actual errors, original records and failed/preliminary attempts remain preserved in schema4-runtime-preparation-held.json and VM staging/evidence directories |
+
+The original observed journal configuration is `SystemMaxUse=1G`,
+`RateLimitIntervalSec=30s`, `RateLimitBurst=10000` in the existing journald
+drop-in. Installed systemd 239 includes service-level LogRateLimit settings
+in its shipped manual. Decision Date: 2026-10-01. The owner selected retaining
+the logging detail and disabling the appliance service's rate limit.
+At 06:24:34/38 UTC, both inactive preparations were preserved in distinct
+directories before creating fresh preparation records. The isolated service
+drop-in `50-soak-journal-rate.conf` sets `LogRateLimitIntervalSec=0` and
+`LogRateLimitBurst=0`; actual daemon-reload, unit verification and effective
+properties succeed. Existing stores and the frozen bundle are unchanged.
+The global journald configuration is unchanged. The initial 0/0 setting did
+not establish dropped-message prevention; subsequent executions are recorded
+below. Fresh measured
+capacity and actual T15 must pass before opening either 24-hour window.
+Do not advance a journal cursor or erase a dropped-message record merely to
+make a preparation sample pass.
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T14 | 2026-10-01 06:29:31-06:35:54 UTC | Both actual VMs with initial 0/0 service settings | Shortened capacity passed; default capacity rejected | Both real five-minute probes retain two successful full samples and zero shutdown journal errors. Required growth was 13752009292/13794889718 bytes; projected usage was 79.3928/85.4005 percent. Default's 40-GiB disk cannot satisfy the accepted less-than-85-percent threshold; no observation opened |
+| T14 | 2026-10-01 06:40:43 UTC | Default VM and its actual hypervisor | Approved 48-GiB expansion verified | Virtual disk grew from 42949672960 to 51539607552 bytes. Actual partition 5 and XFS expansion succeeded; partitions 1-4, partition start/UUID and boot identity were preserved. Root filesystem total is 50369376256 bytes. Private default-disk-48g.json retains the actual before/after evidence |
+| T14 | 2026-10-01 06:41:20-06:47:30 UTC | Default VM with 48-GiB disk and initial 0/0 settings | Capacity and shutdown journal checks passed at this time | Actual required growth is 13814281247 bytes, available 28360671232, projected free 14546389985 and projected usage 71.1206 percent. Both full samples and final shutdown journal capture have zero errors. These sources do not qualify after the later journal configuration change |
+| T15 | 2026-10-01 06:37:45-06:51:13 UTC | Both real deployments with initial 0/0 settings | Shortened readiness passed at this time; default readiness rejected | Shortened completes all six runtime checks, including genuine activating health collection, 903 empty-data responses, four complete abort JFRs, an orderly 10.217-second stop and successful post-abort health/full samples. Default passes earlier checks and an orderly 10.260-second abort stop but its post-abort full sample detects Suppressed 3741 messages from the appliance service. That real failure prevents start and remains retained. No main observation exists |
+| T14/T15 | 2026-10-01 07:02:30/40 UTC | Both stopped deployments | Approved 1us/10000 settings installed; runtime verification pending | Actual daemon reload and unit verification succeed; effective properties are LogRateLimitIntervalUSec=1us and LogRateLimitBurst=10000. Each previous preparation is preserved separately. All eighteen frozen dependencies and existing stores remain unchanged. New actual five-minute capacity and shutdown-journal probes began at 07:08 UTC. Installation is not proof of full-window journal coverage |
+| T14 | 2026-10-01 07:08:13-07:14:27 UTC | Both actual deployments with approved 1us/10000 settings | Actual capacity and shutdown journal checks passed | Both full samples per VM and both final shutdown journal captures have zero errors; actual whole-unit stops return zero. Shortened/default required growth is 13747207630/13814372762 bytes, projected free 8252199474/14444693094 and projected usage 80.2482/71.3225 percent at measurement. Running systemd exports actual per-service interval 1 and burst 10000. Source windows, stop results and hashes are preserved under separate explicit-rate directories and schema4-journal-explicit-20261001.json. Fresh capacity was installed at 07:15:46/47 UTC with current available bytes and original 24-hour data-growth floors retained; actual 40/48-GiB disk resources are recorded |
+| T15 | 2026-10-01 07:15:46-07:18:25 UTC | Both real appliances, original IOC fixture with accepted deadband override, MariaDB and systemd | Current actual runtime readiness passed | Both installed chain verifiers, initial two-health/two-full collection, genuine activating-health collection, following full collection, 903-PV empty-data rejection, abort checks and post-abort two-health/two-full checks return zero. Empty-data substitution is confined to the external clock boundary. Actual abort stops take 10.253332/10.234633 seconds on shortened/default, with zero terminal errors and four complete JFR recordings each. Early finish and repeated finish are refused. After real restart both have 903 connected/archiving/recent PVs, six visible probes, four JVMs with real heap/pause events, synchronized clocks and zero full-sample errors. Proofs bind to all eighteen frozen dependencies. Every earlier failed attempt remains separate |
+| T16 | 2026-10-01 07:19:39-07:20:17 UTC | Both independent real VMs; approved 1us/10000 policy and frozen schema-4 bundle | Started; full-window outcome pending | Actual launchers return zero and open separate immutable 86400-second manifests at 07:19:39.849341/07:19:39.843094 UTC on shortened/default. Both UTC finish deadlines are on 2026-10-02 at the same respective times; monotonic starts are 214963.222810312/214921.173292255 seconds. Expected natural firings are 288/24 and 24/3. Both initial and 07:20 periodic samples succeed with all 903 PVs recent, six probes visible and zero errors. Appliance, health, sample and finish timers are active. Full duration, midnight behavior, complete coverage and final shutdown are not yet verified. Private schema4-24h-launch-20261001.json retains complete actual manifests, digests, readiness and unit observations |
+
+Private schema4-journal-rate-recheck-20261001.json retains the initial 0/0
+attempts, capacity results and the actual 3741-message failure. Later approved
+1us/10000 evidence is retained separately; no earlier failure is replaced.
+
+Actual terminal and journal observations on 2026-10-01 supersede the ongoing
+state reported by the dated start row above. The private
+`work/soak-etl-pass-3bdf378c/journal-scenario-basis-20261001.json` preserves the
+actual read-only terminal observations and subsequent system-journal findings.
+Its source records remain `/var/lib/etl-soak/abort.json`, the failed
+`raw/*/sample.json` files and actual system-only journal queries on each VM.
+The earliest retained system timestamp alone does not establish gap-free
+coverage or absence of OOM throughout either interval.
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T16 | 2026-10-01 18:25:26.991110 UTC terminal; inspected at 21:52:50 UTC | Shortened; original frozen schema-4 bundle | Incomplete; automatically aborted | Actual abort reason is consecutive_sample_failures after kernel_journal errors at 18:20:00.244021 and 18:25:00.236807 UTC. Duration from manifest start to terminal finish is about 11 h 6 min, below 24 hours and before UTC midnight. Embedded evaluator retains final_journal, final_sample, kernel_journal and observation_duration failures plus missing coverage. Both observation timers and the appliance are inactive |
+| T16 | 2026-10-01 21:35:37.251269 UTC terminal; inspected at 21:52:51 UTC | Default; original frozen schema-4 bundle | Incomplete; automatically aborted | Actual abort reason is consecutive_sample_failures after kernel_journal errors at 21:30:00.165243 and 21:35:00.159159 UTC. Duration from manifest start to terminal finish is about 14 h 16 min, below 24 hours and before UTC midnight. Embedded evaluator retains the same failed assertion classes and missing coverage. Both observation timers and the appliance are inactive |
+| T18 | 2026-10-01; post-terminal read-only journal inspection | Both VMs; shipped collect_kernel and actual journalctl | Stale-anchor defect identified; correction unverified | Stored kernel cursors correspond to 2026-09-30 05:56:25.272527 UTC on shortened and 2026-10-01 06:39:45.870859 UTC on default. Their actual kernel lookups return no rows. Earliest retained system records are 2026-09-30 07:55:01.063035 and 2026-10-01 06:49:49.287537 UTC, still before trial starts. The collector retains an old kernel cursor when no new kernel record exists and rejects its later disappearance. No full-window coverage or OOM-absence conclusion follows from these findings |
+| T19 | 2026-10-01; actual abort records inspected at 21:52 UTC | Both aborted observations | Orderly abort stops observed; normal terminal criterion unmet | Actual stop commands return zero in 11.540977/23.008912 seconds with inactive units and Result=success. Final full samples and final journal collection retain kernel-cursor failures; abort.json records final_sample and final_journal errors. Successful early stops do not establish T19's successful full-window final capture |
+| T22 | Not executed for the journal-scenario revision | Dedicated test VM and preserved defective/candidate tools | Pending | Obsolete-anchor reproduction and candidate regression are specified above; no correction or regression execution occurred during this document update |
+| T23 | Not executed for the journal-scenario revision | Dedicated test VM; real quiet system-journal intervals | Pending | Repeated quiet-kernel collection and absence of an initial kernel row require actual execution |
+| T24 | Not executed for the journal-scenario revision | Dedicated test VM; live kernel/journald and terminal paths | Pending | Tagged benign events, rotation, race and final-capture comparisons require actual execution |
+| T25 | Not executed for the journal-scenario revision | Disposable real journal copies and dedicated test VM | Pending | Required-record loss with an older surviving user journal and persistent failed assertions requires actual execution |
+| T26 | Not executed for the journal-scenario revision | Retained actual boundary/midnight/boot inputs and test VM | Pending | Boundary continuity and changed-boot rejection require actual shipped-path execution |
+| T27 | Not executed for the journal-scenario revision | Both stopped soak deployments | Preparation Pending; in-window Pending | Gap arithmetic was checked against shipped limits: 320+240=560 seconds, 320+2700=3020 seconds and factor-two allowance gives 6040 seconds. This verifies the written calculation only. Stream-write measurements, effective-cap inequalities, launch proof validation and complete in-window/terminal checks remain unexecuted; no retention-cap change or passing budget is claimed |
+| T28 | Not executed for the journal-scenario revision | Dedicated complete test deployment and retained real abort inputs | Pending | Quiet-case non-abort and loss-case full-sample/dispatch/terminal/evaluator integration remain required |
+
+Local journal-candidate verification supplements the pending live checks:
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T13/T14 | 2026-10-02 02:49:08 UTC | Control host; schema-5 sources and retained real runtime/export/fixture inputs | Local checks Passed; live preparation Pending | The shipped unittest discovery ran 57 checks in 37.944 seconds, rc=0 and no skips. It replays historical real evidence, exercises actual aggregation CLI comparisons, fixture checks and missing-retention-proof rejection without modifying retained inputs. Current preparation requires schema 5 and rejects schema 4. The preceding run's one missing-schema test-input error remains separately preserved; the successful run is `work/soak-etl-pass-3bdf378c/schema5-final-candidate-verification.json`. No successful new preparation or live collection is inferred |
+| T27; T26 cursor-parser unit coverage | 2026-10-02 02:49:08 UTC | Control host; shipped budget arithmetic/parser code and retained actual application journal | Local unit portions Passed; live scenarios Pending | Budget arithmetic derives 560/3020-second gaps and a 6040-second horizon; byte/time/file-count failures refuse the calculation, and retained file allocation/user bytes are reserved. Actual cursor parsing and wrong-boot/missing-sequence rejection execute on preserved rows. The input is a filtered application journal, not a complete system/user sequence. No stale-anchor correction, event delivery, rotation, loss, reboot, OOM detection or final-capture integration claim follows |
+| T13 | 2026-10-02; local candidate integrity check | Control host; frozen schema-5 candidate and private schema-4 preservation | Passed within local scope | `contract.verify_bundle` accepts all 39 candidate dependencies; all bundled Python sources compile. Candidate `bundle.json` SHA256 is `5673fc8cae3e272c2cfb55c07c8d2d637636e13240cbc6e5f57b008438dffd6f`. All nineteen preserved schema-4 files match the original bytes, including original bundle SHA256 `0c646646a5be06c6ea199403df23131ae4ea08aa9c74625b278df161c2a22b5c`. The candidate is not the final replacement bundle; live T22-T26/T28 and actual T27 preparation remain required |
+| T26 cursor-parser unit coverage | 2026-10-02 03:26:10 UTC | Control host; actual retained 20-second all-journal export | Passed within parser-replay scope | All eleven shipped journal tests ran with no failures, errors or skips. The real validator accepts 6,399 actual records with 6,399 unique numeric entries, one sequence stream and no numeric gap. Removing one actual interior entry is rejected as missing records. Source bytes and tool hashes remain unchanged. Private `schema5-real-journal-sequence-verification.json` preserves execution evidence. This does not verify live collection, mixed-stream continuity, rotation, reboot, retention preparation or a full observation |
+| T22-T28 environment input | 2026-10-02 04:31:25 UTC | Separate dedicated Rocky VM; actual libvirt resources, SSH and cloud-init | Baseline verified; deployment in progress | Actual domain has 2 vCPU, 4096 MiB assigned RAM and a 51,539,607,552-byte virtual disk. The guest reports Rocky 8.10, systemd 239, completed cloud-init with zero errors, and 48,784,998,400 root bytes available before species installation. Initial creator readiness returned nonzero because of an older SSH key at the reused address; the global known_hosts file is preserved and actual SSH verification succeeds with a separate per-VM file. The generated inventory contains only the dedicated host; all eight actual species plays select exactly one host and syntax-check returns zero. Private creation, baseline, preflight and environment records retain the evidence. Candidate instrumentation, 903-PV readiness, measured capacity and all live scenarios remain pending |
+| T13/T27 dedicated deployment and prerequisite | 2026-10-02T04:45:20.648809+00:00 | Separate dedicated Rocky 8.10 VM; real species deployment and installed candidate CLI | Source/bundle/JVM checks Passed; measurement preparation Incomplete | Actual archiver-dev apply returns zero. The installed env and Maven HEADs match the two approved full pins; all four JVMs use -Xms256M and -Xmx256M, appliance and MariaDB are active, Python is 3.9.25, and the clock is synchronized. contract.verify_bundle accepts the 39 installed dependencies and candidate SHA256 remains 5673fc8cae3e272c2cfb55c07c8d2d637636e13240cbc6e5f57b008438dffd6f. Running the actual installed journal_retention.py snapshot returns 1 with FileNotFoundError for systemd in the declared PATH; the actual systemctl --version command returns zero and reports systemd 239. No live retention proof, fixture readiness, scenario pass or replacement observation is claimed. Private journal-test-deployment-verification.json and journal-test-tool-prerequisite-check.json preserve the observations |
+| T13/T14 corrected version command | 2026-10-02 05:00:13 UTC local; 05:01:14 UTC installation | Control host and dedicated Rocky 8.10 VM; current schema-5 bundle | Local checks and installation Passed | Actual unittest discovery ran 57 checks in 41.694 seconds, rc=0 and no skips, using retained runtime/export/fixture inputs and the actual 20-second all-journal export. All 39 bundle dependencies verify, 81 listed checksums match, bundled Python sources compile, and nineteen original schema-4 files remain byte-identical. New bundle SHA256 is 6ffbb8a541787a237c54e058bffa44e71b096a2b3146fe471b3f1d5c9c315168. Only journal_coverage.py, journal_retention.py and bundle.json were replaced on the dedicated VM after source pins, boot and absence of an observation were checked. Previous files are preserved. Private schema5-systemctl-candidate-verification.json and journal-test-systemctl-deployment-verification.json retain the evidence |
+| T23 single-collection prerequisite; T27 snapshot prerequisite | 2026-10-02T05:02:22.377393+00:00 | Dedicated VM; actual installed journal_coverage.collect and journal_retention.py snapshot | Single collection Passed; retention preparation Incomplete | Actual root-owned journal collection returns zero, validates six sequence records with one required record, and records coverage_complete=true for that one bounded interval. The actual snapshot CLI advances beyond version detection but returns 1 with Journal configuration application to the running daemon is unverified; no snapshot is produced. Private journal-test-systemctl-prerequisite-check.json and VM raw collection files preserve results. This single collection does not complete repeated quiet-interval T23, other live scenarios, retention preparation or a full observation |
+| T27 journald configuration application | 2026-10-02T05:10:44.065538+00:00 | Dedicated Rocky VM; actual daemon and installed configuration | Application prerequisite Passed; preparation Pending | Preflight found one of two configuration files newer than the daemon. A scoped restart returns zero, replaces the daemon identity, and leaves journald active; both unchanged configuration files now precede daemon start. The subsequent actual snapshot reaches the missing fixture-adjustment input. Configuration caps remain persistent storage, 1 GiB and eight weeks. Private journal-test-daemon-configuration-preflight-20261002.json and journal-test-journald-application-20261002.json retain results; retained soak VMs are unchanged |
+| T14 dedicated fixture readiness | 2026-10-02T05:15:17.787255+00:00 | Dedicated VM; shipped install-fixture.py, apply-fixture.py and register.py with original fixture | Fixture installation and registration Passed; full measurement readiness Pending | Actual installation, override application, registration and verify-existing commands all return zero. The actual API reports exactly 903 unique expected PVs, all connected and Being archived. The real CA check verifies all twenty MDEL/ADEL values as -1. Original databases and configuration are preserved by the shipped installers. No observation manifest was created. Private journal-test-fixture-installation-20261002.json retains commands, responses and counts |
+| T27 single raw snapshot and fresh-host prerequisite | 2026-10-02T05:17:03.399818+00:00 | Dedicated VM; actual installed journal_retention.py snapshot and systemctl unit properties | Raw snapshot collected; retention proof and instrumentation Pending | The actual snapshot CLI returns zero and records the approved load and ten verified adjusted records. Sample and finish units are loaded with 4min/15min timeouts; abort is not-found while systemctl still reports its default 1min 30s timeout. That default is not an installed abort bound and this snapshot cannot qualify preparation. measurement-config.json and the instrumentation drop-in are absent, as are prior observation/terminal records. Existing retest entry points cannot initialize this fresh deployment. Private journal-test-fresh-preparation-preflight-20261002.json preserves the actual snapshot and properties. Seven qualified load measurements, hash-bound budgets, health/full samples and all required live scenarios remain pending |
+| T13/T14 fresh initializer local checks | 2026-10-02T07:26:16.394059+00:00 | Control host; shipped schema-5 tools and retained real runtime/export/fixture inputs | Local checks Passed; measured preparation Pending | Actual unittest discovery ran 59 checks in 40.347 seconds, rc=0 and no skips. All 40 runtime dependencies and 82 checksums verify; nineteen original schema-4 files remain byte-identical. Candidate bundle SHA256 is 5cd0f390f42e7ed3d9bb8b9fcd88f3e42ab2dcf68d566f21912bca40c30553c6. Actual fresh-initializer guard paths reject previous observations and absent measurement inputs without changing retained evidence. Private schema5-fresh-initializer-local-verification.json records execution. These local guards do not prove fresh-VM preparation or any journal scenario |
+| T14/T27 fresh instrumentation prerequisites | 2026-10-02T07:28:37.931661+00:00 | Dedicated VM; actual installed initialize-fresh.py instruments and journal_retention.py snapshot | Instrument initialization Passed; measured preparation Pending | The current 40-dependency bundle verifies. Before installing the abort unit, the actual retention CLI rejects the missing loaded sample/finish/abort prerequisite. The actual instruments command returns zero, preserves originals and records four 256M JVMs with running JFR recordings and nonempty GC logs. Real sample/finish/abort timeouts are 240/2700/2700 seconds. Existing tools are privately preserved; no observation exists. Private journal-test-fresh-initializer-deployment-20261002.json retains commands and initialization evidence. Two accepted health completions, two full samples, retention/capacity proofs and required live scenarios remain pending |
+| T27 measured preparation execution | 2026-10-02T07:36:53.093134+00:00 | Dedicated VM; real initialize-fresh.py measure service | Running; no preparation verdict | The finite 45-minute oneshot service is loaded and activating with an actual process. One real journal snapshot and one GC/retrieval progress record exist; measurements.json and observation.json do not exist. The launcher wait timed out after 30 seconds while the service continued; journal-test-fresh-measurements-launch-20261002.json preserves that failure. Seven consecutive approved-load snapshots, two measured capacity windows and successful budget evaluation remain required |
+| T14/T27 measurement progress and queued checks | 2026-10-02T07:48:03.568699+00:00 | Dedicated VM; actual subsystem captures and systemd jobs | Measurement running; followup waiting | Three journal snapshots and three GC/retrieval captures exist. Actual snapshot times are 07:35:39.932971, 07:40:40.014429 and 07:45:40.091088 UTC; the latest capture reports 903 recent PVs, six visible probes and all four GC components. A root-initiated followup is genuinely queued with After/Requires on the running measurement service and a finite 35-minute timeout. It runs the shipped prepare action from actual completed inputs, then verify-chain.py and verify-health.py; the latter performs two real health/full-sample checks. It preserves failures and opens no manifest. No followup result is inferred. Private journal-test-fresh-followup-launch-20261002.json records exact executable source and the successful queue operation; journal-test-chain-preflight-verified-20261002.json separately records two completed captures and one actual fixture PV matching shortened stores. This one-PV check does not replace all-903 chain verification |
+| T27 dedicated measured retention budget | 2026-10-02T08:05:44.772270+00:00 calculation; observed at 08:25:26 and re-derived at 08:26:54 UTC | Dedicated VM; seven actual snapshots and shipped journal_retention calculation | Failed; preparation and dependent checks did not execute | All seven snapshots retain the actual 903-PV load and ten verified adjusted records. Six intervals last 300.064-300.084 seconds, with peak physical write bound 61,778.213 bytes/s per stream; shipped calculation requires 1,291,544,426 bytes against the effective 1,073,741,824-byte cap and fails independently. The final 4.376396-second interval records 12,210,176 written bytes, raising the bound to 2,790,006.860 bytes/s per stream, required bytes to 34,248,546,484 and required files to 259 against 100. The measurement service exits 1 and preserves its failed proof; measurements.json, preparation.json, chain/health verification and observation.json are absent. Root has 43,213,418,496 bytes free at diagnosis. No passing preparation, full-sample readiness or 24-hour launch is inferred. Actual VM measurement sources and private journal-test-fresh-measurements-result-20261002.json retain evidence; diagnose the short-interval accounting and resolve cap sufficiency before another execution |
+| T13 standalone schema-5 bundle | 2026-10-02 20:54:06 UTC | Control host; Python 3.13.5; shipped schema-5 tools and retained real runtime/export/fixture inputs | Local checks Passed; dedicated installation and live scenarios Pending | Earlier-schema sources were removed from the shipped tools: `BUNDLE_FILES` no longer lists the schema-3 evaluator or the nineteen schema-4 files, and the evaluator returns Incomplete with `unsupported_observation_schema` for any other schema. Actual unittest discovery ran 55 checks in 36.505 seconds, rc=0 and no skips. `contract.verify_bundle` accepts all 20 dependencies and all 51 checksums verify. Candidate bundle SHA256 is 567d629b11704a2291302eb603830e313d85a9b7bab37629a0656ec7a31c0726; it supersedes the 40-dependency candidate recorded above and is not installed on any VM. Four retained-evidence cases now relabel the pre-schema-5 input and require a non-Passed verdict with the expected failed assertion. Four cases are removed because they exercised the removed schema-3 evaluator: Passed replay, missing scheduled pass, missing GC pair and aborted observation. The current evaluator has no retained-evidence coverage for those four until a schema-5 observation completes; add them then. The removed sources remain in the private evidence directory as `legacy-sources-removed-from-tree-20261002/` |
+
 ##### Closure Evidence
 
-- Deployment, restart readiness and initial GC/latency collection are verified.
-  M22 remains In progress;
-  the 24-hour observations, whole-unit shutdown measurements and comparison
-  remain required. Runtime evidence is retained in the ignored work directory
-  and on each VM; no external result message has been sent.
+- Deployment, initial GC/latency collection, the focused retest, its actual
+  normal shutdown and the accepted post-terminal collector correction are
+  verified. M22 remains In progress: the original 24-hour runs retain failed
+  freshness assertions and incomplete health coverage, and T6 comparison
+  remains pending. The revised two-chain 24-hour plan was accepted on
+  2026-09-30; code implementation and local verification of steps 1-2 are
+  authorized and locally verified: the initial bundle passed 45 local checks;
+  the deployed schema-4 bundle passed all 46 local
+  checks. Local portions of T13/T14/T17/T18/T19/T21 are recorded above;
+  their full-window or recipient-package portions, T16-T21 and T6 remain
+  pending. VM application, runtime preparation and new observation execution
+  were authorized on 2026-10-01. Installation and initial measured capacity
+  passed, but actual T15 failures prevented start. The owner selected the
+  service-specific rate-limit exception on 2026-10-01. After the initial 0/0
+  setting still allowed 3741 suppressed messages on default, the separately
+  approved 1us/10000 settings were installed on both VMs. Prior preparation
+  failures are preserved. Fresh real capacity and shutdown journal rechecks
+  passed at 07:14 UTC and real T15 runtime preparation passed on both VMs at
+  07:18 UTC. Both 24-hour observations started at 07:19:39 UTC; initial and
+  first periodic samples passed. Both trials later aborted with Incomplete
+  verdicts after the pre-trial kernel cursor became unavailable. Shortened
+  finished at 18:25:26.991110 UTC and default at 21:35:37.251269 UTC on
+  2026-10-01; neither reached its 24-hour deadline or UTC midnight. The actual
+  abort stops succeeded, but final collection retained errors. Both
+  appliances and observation timers are inactive. The 2026-10-01 scenario
+  revision adds T22-T28 and was accepted on 2026-10-01, with all seven checks pending;
+  all five first-review findings are reflected in the plan.
+  Local code implementation and verification were authorized on 2026-10-01.
+  The schema-5 local candidate implements system-only terminal checkpoints,
+  bounded all-stream sequence coverage, retention measurement/proof validation
+  and runtime/evaluator budget checks. It passed 57 local checks with no skips
+  at 2026-10-02 02:49:08 UTC; all nineteen original schema-4 files remain
+  byte-identical. This verifies only the stated local scope.
+  The subsequent dedicated-VM direction and 48-GiB disk selection are recorded;
+  the actual baseline, inventory and species source/JVM/bundle checks are
+  verified. The owner-selected systemctl version command is implemented and
+  the new bundle passed 57 local checks with no skips at 05:00:13 UTC.
+  Dedicated installation verified all 39 dependencies at 05:01:14 UTC,
+  preserving the previous files. Actual journal collection succeeds for one
+  bounded interval. The dedicated journald restart verifies configuration
+  application at 05:10:44 UTC; fixture installation and registration verify
+  all 903 expected connected/archiving PVs and twenty approved field values
+  at 05:15:17 UTC. One actual snapshot succeeds at 05:17:03 UTC, but the
+  abort unit and instrumentation are absent. The default timeout reported
+  for a not-found abort unit is not qualified preparation evidence. A fresh
+  initialization path was authorized on 2026-10-02 because existing retest
+  tools require prior observation/terminal records. The new 40-dependency
+  bundle passed 59 local checks at 07:26:16 UTC; actual GC/JFR initialization
+  and loaded 240/2700/2700-second units are verified at 07:28:37 UTC.
+  Seven actual approved-load subsystem captures completed by 08:05:40 UTC.
+  The real retention-budget calculation failed at 08:05:44 UTC. Both the
+  six qualified intervals and the additional short final interval exceed
+  the 1-GiB cap; the latter materially increases the bound and requires
+  diagnosis. The dependent preparation, all-PV chain and health/full-sample
+  checks did not execute. No observation exists and no cap/policy change
+  is authorized by this evidence update. The full T27 proof and replacement checks
+  remain pending. T27 in-window completion is
+  required at final acceptance and is not a start prerequisite;
+  live collector correction and replacement observation execution are not
+  established by the local checks. Runtime, launch, abort and scenario
+  basis evidence are retained in the ignored work directory and on each VM;
+  no external result message has been sent. The standalone schema-5 candidate
+  without earlier-schema sources passed 55 local checks with no skips at
+  2026-10-02 20:54:06 UTC and is not installed on any VM. Retained-evidence
+  coverage of the Passed replay, missing scheduled pass, missing GC pair and
+  aborted observation cases awaits a completed schema-5 observation.
+  No carrying commit exists for the current code or results.
 
 #### G4 - Prepare two independent ETL soak environments
 
