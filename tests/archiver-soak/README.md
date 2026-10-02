@@ -4,8 +4,9 @@
 
 Preserve the tools, fixtures and measurement methods used for the archiver
 functional/load soak and the parallel ETL scheduler observations. The source
-files are copies of the executed tools; their fixed runtime paths and command
-interfaces are preserved. This directory is suitable for Git tracking.
+baseline files preserve the executed tools. The ETL collector and observation
+tools provide versioned 7200/86400-second workflows for both chains. This directory is
+suitable for Git tracking.
 
 Out of scope: VM inventories, SSH settings, credentials, application
 configuration backups, measured CSVs, logs, JFR recordings and live run status.
@@ -20,8 +21,18 @@ verification results are in [the work register](../../docs/milestone-38560eb.md)
 | `etl-pass/measure.py`, `heap.jfc` | Capture GC heap/collection/pause events, complete jstat fields, retrieval freshness and representative visibility bounds |
 | `etl-pass/resource_helpers.py` | Host, process and JVM helpers imported by the collector; preserves the baseline sampler source |
 | `etl-pass/install-fixture.py` | Install the loopback IOC and systemd collection units on an empty appliance, without registering PVs |
+| `etl-pass/initialize-fresh.py` | Initialize GC/JFR and finite measurement units on a fresh deployment; prepare from actual journal and capacity proofs |
 | `etl-pass/register.py` | Register a CSV fixture through the real mgmt API and retain the registration response status |
-| `etl-pass/observe.py` | Open a 24-hour observation after readiness checks, or collect final evidence and measure whole-unit shutdown |
+| `etl-pass/observe.py` | Open a default 24-hour or explicit 7200-second observation; preserve final evidence and measure shutdown or early abort |
+| `etl-pass/prepare-retest.py`, `apply-fixture.py` | Preserve completed evidence, install measurement tools and verify the accepted existing deadband override before observation |
+| `etl-pass/health-event.py`, `verify-health.py` | Retain actual health invocation results and verify the installed exit-status contract through real collection |
+| `etl-pass/verify-runtime.py`, `launch-retest.py` | Verify real negative freshness and abort paths, then refresh readiness at a UTC launch target |
+| `etl-pass/evaluate.py`, `test_retest.py` | Evaluate schedule, metrics, health and measurement coverage; exercise shipped code with external transport boundaries |
+| `etl-pass/test_evidence.py` | Replay retained completed runtime evidence through the actual evaluator and verify failed or missing input handling |
+| `etl-pass/contract.py`, `bundle.json`, `verify-chain.py` | Bind duration, actual stores, measured capacity and the complete frozen bundle |
+| `etl-pass/aggregate.py`, `evidence.py`, `rate-semantics.json` | Portable numerical aggregation, bounded GC overlap handling and pinned metric meanings |
+| `etl-pass/journal_coverage.py`, `journal_retention.py`, `test_journal.py` | System-only checkpoints, bounded sequence coverage, measured retention budgets and local arithmetic/parser checks |
+| `etl-pass/test_contract.py` | Contract, bundle, fixture-preservation and retained-export replay checks |
 | `etl-pass/restart-observation.py` | Preserve a previous observation and restart its appliance with bounded GC/JFR settings and persistent ETL pass logging |
 | `etl-pass/common.yml`, `shortened.yml`, `default.yml` | Fixed source pins, heap/database settings and the two store-chain configurations |
 | `fixtures/` | Three IOC databases and four PV lists for the 100/500/903-PV populations |
@@ -35,11 +46,11 @@ The current sources originate from `work/soak-etl-pass-3bdf378c/`; baseline
 sources and fixtures originate from `work/soak-9eed006/`. The registration
 client is shared by both workflows. `resource_helpers.py` and the baseline
 sampler retain separate filenames because the current collector imports that
-module name. Original working copies remain available for the active runs.
+module name. Original working copies remain in private evidence directories.
 
 ## Environment And Fixture
 
-The ETL tools target Rocky Linux 8.10, systemd, Python 3.9 or later, OpenJDK 21,
+The ETL tools target Rocky Linux 8.10, systemd 239, Python 3.9 or later, OpenJDK 21,
 and the EPICS 1.3.0 distribution with Base 7.0.10. The executed VM baseline is
 2 vCPU, 4096 MiB allocated RAM and a 20 GiB disk, with MariaDB on the same VM.
 The current collector uses the MariaDB Unix socket. Each of mgmt, engine, etl
@@ -64,6 +75,19 @@ keys must remain unique.
 The preserved `fixtures/pvs-all.csv` SHA256 is
 `037a92691bc23a6dcac37ec3613ad19c9f80b93b689209ec8dc403b519eaf594`.
 The same list, IOC databases, registration methods and rates serve both chains.
+
+The accepted retest variant loads `fixtures/retest-deadband.db` after the
+original three databases. It changes only MDEL and ADEL to -1 on the ten
+deadband records, retaining their calculations, one-second scans, PV names and
+registration settings. `apply-fixture.py` preserves the original IOC files and
+verifies all twenty fields through actual CA reads. Every full sample checks
+the file hashes and those fields. This variant has separate evidence from the
+original fixture. The retained shortened/default disks are 40/48 GiB; each requires a measured capacity
+projection that preserves at least 2 GiB free and stays below 85 percent usage.
+The revised 24-hour plan applies this same variant to both chains.
+`apply-fixture.py --verify-existing` preserves and verifies an existing
+adjustment, including hashes, effective IOC command and twenty actual fields.
+Conflicting inputs are rejected without replacement.
 
 ## Execution Contracts
 
@@ -113,21 +137,136 @@ The archived current collector requires these active JFR settings. Fixture
 installation alone does not provide that prerequisite. These scripts preserve
 the separate installation and existing-observation extension operations; a
 fresh-host installation must establish instrumentation before using the current
-collector or opening its observation.
+collector or opening its observation. `initialize-fresh.py` supplies that path
+without a previous observation or synthetic terminal record.
+The four-file extension interface is preserved for its historical sources.
+Schema-5 tools require their complete bundle and journal retention evidence
+through `prepare-retest.py`.
+
+### Fresh Deployment Initialization
+
+After fixture installation, registration and the approved deadband adjustment,
+run `initialize-fresh.py instruments` as root from the installed tools directory.
+It requires the approved source pins, synchronized time, an active appliance,
+IOC and MariaDB, all 903 expected PVs connected and archiving, and inactive
+observation timers. Existing instrumentation, observation or terminal records
+prevent replacement. The original configuration and units are preserved.
+
+The initializer installs bounded GC/JFR settings, ETL pass logging, the health
+completion hook and actual sample/finish/abort timeouts of 240/2700/2700 seconds.
+It restarts the appliance and checks four real 256M JVMs, their active JFR
+recordings and their GC log files. Run its `check` action after the PV population
+has reconnected to reverify source/configuration identity, units and instruments.
+These actions do not create an observation or start the sample timer.
+
+From `/usr/local/share/etl-soak`:
+
+```bash
+python3 initialize-fresh.py instruments
+python3 initialize-fresh.py check
+```
+
+Complete the qualified journal measurements below and separate historical/current
+capacity-growth measurements. Both proofs must match the actual deployment,
+unchanged policy, duration and chain. The `measure` action runs seven actual
+load-bound snapshots 300-320 seconds apart, captures real GC/JFR and two-worker
+retrieval evidence, and records two separate capacity-growth windows. It keeps
+the appliance and IOC active without starting an observation. It requires a new
+private measurement directory and refuses missing recordings, incomplete
+retrieval, changed tools/policy, excessive intervals and failed growth/budgets.
+
+```bash
+measurements=/var/lib/etl-soak-fresh-measurements
+measure_args=(--measurements="$measurements" --duration-seconds=86400 --chain=shortened)
+python3 initialize-fresh.py measure "${measure_args[@]}"
+```
+
+After successful measurement, run the prepare action with both real inputs:
+
+```bash
+retention="$measurements/retention/proof.json"
+capacity="$measurements/capacity/input.json"
+fresh_args=(--journal-retention-evidence="$retention" --capacity-evidence="$capacity")
+fresh_args+=(--duration-seconds=86400 --chain=shortened)
+python3 initialize-fresh.py prepare "${fresh_args[@]}"
+```
+
+Use `--chain=default` for a default deployment. Preparation preserves the actual
+proof/source bytes and store data, and refuses missing/stale evidence,
+insufficient capacity, a changed initialization or an existing preparation.
+It creates the schema-5 preparation and initial collection boundaries from the
+observed current time. Deployed-chain, health, full-sample and runtime verification
+remain required through the existing shipped tools before any observation.
 
 ### Observation And Shutdown
 
-`observe.py start` requires a successful full sample less than 120 seconds old,
+`observe.py start` requires explicit duration/chain and a successful full sample less than 120 seconds old,
 903 archiving PVs, real closed-pass records, synchronized time, all four JVMs
 with actual heap/pause events, and six successful visibility probes. It writes
-`observation.json`, captures JVM PID/start identities and starts five-minute
-sampling plus the 24-hour finish timer.
+an immutable schema-5 `observation.json`, captures JVM PID/start identities and starts five-minute
+sampling plus the finish timer. Select 86400 seconds for the full window;
+`--duration-seconds 7200` selects the accepted retest. All 903 PVs must contain
+actual archived timestamps inside the preceding 30-second query window.
+An HTTP 200 response containing empty or older data does not establish freshness.
+The initial sampler result is retained separately in `initial-sample.json`.
+Normal finish requires the complete interval in both clocks. A 86400-second
+result must cross UTC midnight. Both durations require the approved variant.
+
+For the retest, `prepare-retest.py` archives an existing terminal observation
+and its tools, preserving stores and registration. It installs the collector,
+health completion hook and abort unit without opening a window.
+`verify-runtime.py empty` substitutes only the clock boundary while querying
+the real retrieval service and verifies that negative collection prevents start.
+`verify-runtime.py abort` uses a separate evidence directory to exercise early
+finish rejection, actual abort collection and shutdown, and repeated finish
+rejection; it restarts the appliance only after successful verification.
+`verify-health.py` requires two distinct successful real health invocations and
+full samples. Readiness binds these proofs to the installed tool hashes.
+Preparation, chain/runtime verification and launch require explicit
+`--duration-seconds` (7200 or 86400) and `--chain` (shortened or default).
+`verify-chain.py` queries every shipped PV's actual `dataStores`, verifies
+granularities/hold-two sources and binds its proof to fixture, boot, duration,
+configuration and complete tool hashes. `launch-retest.py` refreshes chain,
+health and measured capacity checks. An omitted `--start-at` starts immediately
+after readiness; an explicit timezone-aware target must be within 120 seconds.
+Runtime proofs expire after one hour; the full sample must be under 120 seconds
+old, and store/capacity verification under 600 seconds old.
 
 `observe.py finish` runs after the manifest's full interval. It stops the sample
-timer, collects a final full sample and bounded full JFR recordings, measures
+timer, waits at most 180 seconds for in-window passes, collects a final full
+sample and bounded full JFR recordings, captures current ETL metrics, measures
 the whole-unit stop and collects the remaining journal. `shutdown-started.json`
 precedes the stop; `shutdown.json` records the outcome. The appliance timeout
-is 300 seconds. The IOC, data, VM and inventories are retained.
+is read from the actual unit (300 seconds in the retained deployments).
+Health scheduling stops and active health work drains before the intentional
+appliance stop; this coverage boundary is recorded. Preparation preserves old
+units and sets a separate 45-minute bound on finish/abort services to cover
+collection and shutdown deadlines. The IOC, data, VM and inventories are retained.
+
+`observe.py abort` records Incomplete and cancels both timers. Two consecutive
+failed full samples request abort; less than 2 GiB free requests immediate
+abort. A single genuine health failure or full-sample error prevents Passed.
+Journal collection preserves invocation IDs, accepted exit statuses, cursors
+and completion events; missing or suppressed coverage prevents success.
+The collector requires the latest completed health invocation to be successful
+and no more than 120 seconds old. An invocation still running does not replace
+that completion. Explicit preparation verification still requires the current
+invocation to finish successfully. Final journal-only collection also requires
+every started health invocation to have its completion record.
+Final collection errors and skipped JFR captures remain visible in the terminal
+record. An aborted observation cannot later receive a normal finish.
+
+`evaluate.py` derives the half-open schedule independently of the manifest's
+list. A 24-hour shortened window normally has 288/24 firings; default has 24/3.
+It reconciles
+metrics against the initial counters, checks five-second timing and ordering,
+and evaluates health, freshness, JVM identity and GC coverage. Missing required
+coverage is Incomplete; a completed window with a failed assertion is Failed.
+Passed requires all assertions and the actual normal terminal path to succeed.
+An observation recorded under any other schema is Incomplete with
+`unsupported_observation_schema`; earlier-schema sources are not shipped.
+Schema-2 inputs
+can be numerically aggregated but cannot qualify under the current contract.
 
 The automatic services continue after SSH disconnects. Do not reinstall,
 register again or restart an appliance during its active observation.
@@ -148,8 +287,15 @@ The collector retains each failure instead of treating absent data as success.
 | `raw/*/freshness.json` | All 903 PVs queried over the previous 30 seconds with two workers; response duration/status/size/hash and latest source timestamp |
 | `raw/*/visibility.json` | Six representative source timestamps, retrieval attempts, matching archived timestamps and visibility bounds |
 | `latency.csv`, `samples.csv`, `latest.json` | Per-sample measurement counts, failures and the latest collection state |
+| `latest-full.json` | Latest full sample retained independently of journal-only collection |
+| `health-invocations.csv`, `raw/*/health-journal.jsonl` | Health invocation completion evidence and cursor continuity |
+| `journal-retention-proof.json`, `journal-retention-sources/` | Hash-bound measurement intervals, logging policy and preparation budgets |
+| `raw/*/journal-{sequence,coverage,marker}.*`, query receipts | Bounded all-stream sequence evidence with system-only anchor and terminal marker |
+| `raw/*/journal-retention-{snapshot,budget}.json` | Actual journal inventory, effective caps, measured rates, collection gap and retained budget verdict |
+| `health-verification.json`, `empty-data-verification.json`, `terminal-path-verification.json` | Executed preparation proofs bound to tool hashes |
 | `jvm/`, `raw/*/*.jfr`, `final-gc/` | Rotating GC logs, JFR snapshots and final recordings |
 | `shutdown.json`, final journal | Actual elapsed observation, whole-unit stop duration and service result |
+| `abort.json`, `shutdown.json`, `fixture-adjustment.json` | Terminal result with embedded evaluation and retained assertion failures, and the accepted fixture variant |
 
 JFR enables `GCHeapSummary`, `GarbageCollection`, `GCPhasePause` and `DataLoss`.
 Each JVM's recording is bounded to 64 MiB and 26 hours, with a recording saved
@@ -159,11 +305,30 @@ collection takes ten-minute JFR snapshots limited to 8 MiB each, checks a
 A limit or JFR data-loss event is a collection failure.
 
 Snapshots overlap. Before counting events or summing pause durations,
-deduplicate by component, PID, event type, GC ID, event timestamp and `when`.
+deduplicate by component, JVM identity, event type, GC ID and heap marker or
+pause phase. Matching payloads may differ by at most two microseconds per
+cluster, compared with integer nanoseconds. Exact timestamp equality alone is
+insufficient. Distinct pauses remain separate; conflicts or unsupported
+timestamp variation prevent complete coverage.
 Filter by the observation manifest, check boundary coverage and retain
 incomplete before/after pairs as incomplete. The maximum observed heap is a
 maximum at recorded GC/sample times, not a continuous heap high-water mark.
 No full GC is induced to obtain a measurement.
+Periodic collection retains incremental GC logs across rotations. JFR summary
+bounds, byte/digest integrity, full-export counts and DataLoss are checked.
+jstat includes actual request/response times; young/full counters reconcile
+with collections, and concurrent counters with remark/cleanup pauses.
+`G1Old` includes concurrent mark and undo events and differs from jstat `CGC`.
+Schema-5 kernel collection archives all journal entries between system-only
+checkpoints, then extracts the kernel rows. Quiet intervals advance a root-owned
+terminal marker without depending on the last kernel entry. Systemd 239's
+shared numeric sequence must be continuous across all journal files; per-file
+sequence identities remain recorded separately. The evaluator recomputes
+continuity and budgets from the archived source rows, query receipts and
+snapshots. Missing records, changed boot/daemon identity, failed queries or
+suppression leave incomplete coverage. An empty memory-error search cannot
+establish coverage. Actual rotation, loss, reboot and terminal integration
+require the dedicated journal scenarios in the canonical plan.
 
 Visibility probes read six representative scalar, fast, slow and waveform CA
 timestamps with one-microsecond precision, then query matching archived samples
@@ -181,6 +346,154 @@ after the preceding transition ends. Preserve both delays. Exclude startup
 passes from grid checks and shutdown-aborted passes from normal-load overruns.
 The default MTS-to-LTS cadence is 00:10, 08:10 and 16:10 UTC; its hold of two
 day partitions means a fresh 24-hour run does not establish new data in LTS.
+
+## Frozen Current Bundle And Numerical Interface
+
+After local verification, `contract.py --freeze` writes `bundle.json` with
+exactly `BUNDLE_FILES`: preparation, runtime/aggregation dependencies, helpers,
+JFR configuration and rate meanings. Schema 5 has 20 dependencies.
+Missing/unexpected
+entries or changed bytes invalidate readiness. Installed relative paths
+must remain intact. Changed tools need
+a verified new freeze and new runtime proofs. A locally frozen candidate
+qualifies for dedicated testing; it becomes a replacement bundle only after
+the required live scenarios pass.
+
+### Journal Retention Preparation
+
+Run this procedure as root only on an authorized deployment. The complete
+candidate, original fixture CSV and existing adjustment evidence must be
+available. Verify the effective logging policy and finite sample/finish/abort
+timeouts before measuring; preparation or a policy change that alters them
+requires new measurements. Keep the evidence directory private, outside the
+observation directory that preparation archives.
+
+With the approved 903 PVs actually connected and archiving, record seven
+snapshots named `snapshot-000.json` through `snapshot-006.json`. Start each
+snapshot 300-320 seconds after the preceding one, using its monotonic time.
+Each snapshot retains actual PV status, twenty verified deadband fields,
+boot/daemon identity, effective configuration, physical write counters and
+system/user file inventories. A capped or unchanged directory total cannot
+supply a zero write rate. The synchronized daemon write counter bounds each
+stream conservatively; the calculation also includes allocated-file growth.
+
+From the installed directory, set `index=000` for the first snapshot. At each
+following five-minute boundary set it to 001, 002, 003, 004, 005 and 006, then
+repeat the snapshot command. The directory must already exist with root-only
+access.
+
+```bash
+bundle=/usr/local/share/etl-soak
+evidence=/var/lib/etl-soak-retention
+cd "$bundle"
+index=000
+python3 journal_retention.py snapshot --output="$evidence/snapshot-$index.json"
+```
+
+After all seven measurements, create the proof and check it again. Success
+returns zero; a failed budget retains its calculation and returns nonzero.
+Supply each applicable historical higher-rate measurement proof with
+`--history-evidence`; its original source files must remain below the same
+evidence root with coherent relative paths and digests.
+
+```bash
+python3 journal_retention.py prepare --measurements="$evidence" --output="$evidence/proof.json"
+python3 journal_retention.py check --output="$evidence/proof.json"
+```
+
+The budget uses the largest measured rate under the unchanged policy, plus
+retained user-journal bytes and two file-size allowances per stream. Its
+factor-two horizon covers the sample-gap limit plus the effective collection
+or terminal timeout. With 320/240/2700-second limits the horizon is 6040 seconds.
+Actual byte, retention-time and file-count caps must all permit that budget;
+no command raises a cap. A current check must be within 120 seconds of launch.
+The 320-second full-sample limit remains independently required.
+
+Measure while the load is active, then complete its authorized terminal path
+and preserve the terminal record before calling `prepare-retest.py`. Supply
+`--journal-retention-evidence="$evidence/proof.json"` alongside the existing
+bundle, capacity, duration and chain arguments. Preparation validates and
+copies the original proof/source bytes before archiving the old observation;
+it leaves stores intact. Runtime verification, launch and observer start
+recheck the current caps and proof identity. Policy, boot, daemon or bundle
+changes require new evidence.
+
+Each collection and final capture preserves its actual snapshot, gap and
+budget. A higher observed rate increases the retained bound. Missing/failing
+input remains a sample error; one error prevents Passed, two consecutive
+failed full samples request abort, and the 2-GiB reserve rule still applies.
+Live preparation and the T22-T28 scenarios establish integration behavior;
+local arithmetic/parser checks alone do not authorize a new observation.
+
+Capacity inputs are private schema-1 JSON with `duration_seconds`, the normalized
+`configuration` and `windows`. Each window has `role` (`historical` or `current`),
+`source_path` and `source_sha256`. Both roles and separate measured intervals
+are required. Each source has `start`/`end` objects with `observed_at`, matching
+`boot_id` and a `bytes` map covering `data`, `application_logs`, `journal`, `jfr`
+and `measurement`. Current growth must match this boot and end within 600
+seconds. Unsupported resets/rotations prevent preparation. The projection
+uses the greater measured rate for each category over the selected duration,
+plus 512 MiB. Preparation takes `--capacity-evidence` and
+`--projected-growth-bytes` at least that value, retains source inputs and checks
+85-percent usage and the 2-GiB reserve again before start.
+
+From the installed tool directory, take snapshots across an actual collection
+interval; `after.json` must follow `before.json`. Build both role sources before
+preparation. Repeat readiness after the abort probe before launch.
+
+```bash
+python3 contract.py --capacity-snapshot=before.json
+python3 contract.py --capacity-snapshot=after.json
+python3 contract.py --capacity-window before.json after.json --output=current.json
+python3 verify-chain.py --duration-seconds=86400 --chain=shortened
+python3 verify-runtime.py empty --duration-seconds=86400 --chain=shortened
+python3 verify-runtime.py abort --duration-seconds=86400 --chain=shortened
+python3 launch-retest.py --duration-seconds=86400 --chain=shortened
+```
+
+`aggregate.py` reads coherent manifest/terminal, raw samples/metrics, pass and
+GC CSVs/logs, jstat, RSS and retrieval files. Relative paths stay inside the
+input directory; historical absolute `raw/` paths are rebased. Its deterministic
+schema-1 JSON includes source/tool digests, integer timestamps, counts, units,
+statistics at six decimal places and failure/coverage fields. It reports busy
+time, planned/ordering-adjusted delays, movement, partial-day weekly usage,
+heap/post-GC range and change, GC counts/times, RSS, rates and retrieval bounds.
+Startup/final-capture passes remain separate. Raw source timestamps independently
+determine freshness. No private absolute path is required in the result.
+
+`rate-semantics.json` pins the engine definitions: per-PV cumulative averages
+since initial/latest connection or reset are summed. Benchmark writing rows
+are excluded. Sampled means are arithmetic; overlapping intervals do not yield
+a time-weighted rate or IOC scan rate. GC-event and sampled maxima do not
+establish a continuous maximum or prescribe heap sizes.
+
+Missing/malformed required inputs return nonzero with Incomplete and retained
+failures. `--compare` checks parsed values regardless of key order and returns
+nonzero on mismatch. A matching historical Incomplete replay still returns
+nonzero. These commands run beside the Python modules:
+
+```bash
+python3 evaluate.py --input=/private/run
+python3 aggregate.py --input=/private/run --output=/private/result.json
+python3 aggregate.py --input=/private/run --output=/private/replay.json --compare=/private/result.json
+```
+
+The complete local suite also needs `ETL_SOAK_ARCHIVE_ROOT`, containing retained
+`analysis-24h-{shortened,default}.tar` and actual `retest-fixture-adjustment.json`,
+and `ETL_SOAK_EXTRACTED_ROOT`, containing coherent extracted per-chain inputs
+with actual GC logs. Together with `ETL_SOAK_EVIDENCE`, these enable historical
+replay, real numerical CLI comparisons, fixture preservation and missing-proof
+preparation rejection. Set `ETL_SOAK_JOURNAL_SEQUENCE` to an actual retained
+JSON journal file for the cursor parser checks. A filtered application-only
+file exercises missing-sequence rejection; it cannot prove all-stream coverage.
+Only external HTTP, command, filesystem and clock boundaries are replaced.
+Budget arithmetic is unit coverage. Historical collector transport checks and
+schema-5 negative cases do not establish new journal integration or successful
+schema-5 preparation. Those require the dedicated live environment.
+
+```bash
+python3 -B -m unittest discover -s tests/archiver-soak/etl-pass -p 'test_*.py'
+```
 
 ## Baseline Tools
 
@@ -205,16 +518,59 @@ privilege assumptions; they are not part of the current ETL timer workflow.
 
 ## Evidence Retention And Verification
 
+Run the local retest checks from the repository root:
+
+```bash
+python3 -B -m unittest discover -s tests/archiver-soak/etl-pass -p test_retest.py -v
+```
+
+Local checks exercise the shipped code with substitutes only at external
+command, HTTP, filesystem and clock boundaries. They do not establish a real
+two-hour observation or successful normal shutdown; those require retained
+runtime evidence from the real appliance.
+
+To verify the evaluator, set `ETL_SOAK_EVIDENCE` to a private captured evidence
+directory containing `shutdown.json`, `state.json`, `passes.jsonl`,
+`gc-heap.csv`, the manifest's baseline metrics and `raw/*/{sample,metrics}.json`
+with each sample's `journal.jsonl`. Use a real completed passing observation.
+The tests copy those inputs into a temporary directory and adjust filesystem
+paths. Each negative case relabels the manifest to the current schema and then
+changes one external evidence input; no evaluator
+helper is replaced. Original evidence remains intact.
+
+```bash
+export ETL_SOAK_EVIDENCE=/absolute/private/evidence-directory
+python3 -B -m unittest discover -s tests/archiver-soak/etl-pass -p test_evidence.py -v
+```
+
+Without that environment variable the evidence tests are skipped; skips
+do not establish Passed/Failed/Incomplete verification. The retained input
+predates schema 5, so each case relabels its manifest to the current schema and
+the evaluator must not return Passed. Single sample, freshness and health
+failures must appear as failed assertions, and missing final coverage must
+retain existing failures. A Passed replay and the missing scheduled pass, GC
+pair and aborted observation cases require completed schema-5 evidence and are
+not covered.
+
+Apply accepted collector revisions only after the current terminal record is
+written and the appliance, sampler, finish, abort and health services are idle.
+Stop-state verification precedes replacement. Preserve the original collector
+and the completed manifest, measurement configuration and terminal record.
+Record the revision separately; new installed hashes require fresh preparation
+proofs before another observation.
+
 Keep raw run evidence private and separate for each VM. Exclude
 `archappl.conf.before-fixture` from exported evidence; configuration backups can
 contain credentials. Sanitize journal/API content before including it in a
 report. SSH addresses, private inventories and active-run timestamps stay in
 the private handoff document.
 
-Preservation checks comprise byte comparison against the original tools,
-Python/Bash/XML/YAML syntax, fixture regeneration with the real generators and
-comparison against the shipped fixture, and a source/configuration credential
-scan. These local checks establish archive fidelity. Runtime verification
+Archive preservation uses byte comparison for unchanged baseline tools.
+Current-tool verification uses syntax checks,
+the shipped regression suites, retained real evidence and frozen digests.
+Fixture regeneration uses the real generators and compares their output
+against the shipped fixture. Source/configuration scans check for credentials.
+Runtime verification
 requires the real appliance, IOC, database and systemd paths; mocks or a
 reconstructed substitute do not establish integration success. A timer being
 configured does not establish a completed 24-hour observation or a successful

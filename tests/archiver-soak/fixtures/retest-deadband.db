@@ -1,0 +1,50 @@
+record(calc, "AASOAK:DB:CH01") {
+    field(MDEL, "-1")
+    field(ADEL, "-1")
+}
+
+record(calc, "AASOAK:DB:CH02") {
+    field(MDEL, "-1")
+    field(ADEL, "-1")
+}
+
+record(calc, "AASOAK:DB:CH03") {
+    field(MDEL, "-1")
+    field(ADEL, "-1")
+}
+
+record(calc, "AASOAK:DB:CH04") {
+    field(MDEL, "-1")
+    field(ADEL, "-1")
+}
+
+record(calc, "AASOAK:DB:CH05") {
+    field(MDEL, "-1")
+    field(ADEL, "-1")
+}
+
+record(calc, "AASOAK:DB:CH06") {
+    field(MDEL, "-1")
+    field(ADEL, "-1")
+}
+
+record(calc, "AASOAK:DB:CH07") {
+    field(MDEL, "-1")
+    field(ADEL, "-1")
+}
+
+record(calc, "AASOAK:DB:CH08") {
+    field(MDEL, "-1")
+    field(ADEL, "-1")
+}
+
+record(calc, "AASOAK:DB:CH09") {
+    field(MDEL, "-1")
+    field(ADEL, "-1")
+}
+
+record(calc, "AASOAK:DB:CH10") {
+    field(MDEL, "-1")
+    field(ADEL, "-1")
+}
+

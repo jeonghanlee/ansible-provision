@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "source_commit": "3bdf378cb0a5eba42ad73648ec9e2c76b898bc1e",
+  "source_sha256": {
+    "engine/epics/EngineMetrics.java": "ca56f74e6d7cb6d5a13dc78e8cbc1aabbe0933ff9b38cf3fc6ec6fbac8041614",
+    "engine/pv/PVMetrics.java": "0abc3695da94f18f9b3486553343028e47e1307aa84c9b00360f1833dd8f9dae"
+  },
+  "metrics": {
+    "Event Rate (in events/sec)": {
+      "unit": "events/second",
+      "averaging": "sum of per-PV eventCounts divided by integer elapsed seconds since its initial or latest connection/reset",
+      "interval": "overlapping, connection-dependent cumulative intervals",
+      "meaning": "engine accepted events; separate from raw scan events and benchmark write throughput"
+    },
+    "Data Rate (in bytes/sec)": {
+      "unit": "bytes/second",
+      "averaging": "sum of per-PV raw event bytes divided by integer elapsed seconds since its initial or latest connection/reset",
+      "interval": "overlapping, connection-dependent cumulative intervals",
+      "meaning": "engine event storage estimate; separate from benchmark write throughput"
+    }
+  }
+}

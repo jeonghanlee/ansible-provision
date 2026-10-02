@@ -15,6 +15,7 @@ import urllib.parse
 import urllib.request
 
 import resource_helpers
+import evidence
 
 JAVA_BIN = Path('/usr/lib/jvm/java-21-openjdk/bin')
 CAGET = '/opt/epics/1.3.0/rocky-8.10/7.0.10/base/bin/linux-x86_64/caget'
@@ -32,6 +33,7 @@ JFR_DUMP_RESERVE_BYTES = 72 * 1024 * 1024
 MINIMUM_FREE_BYTES = 2 * 1024 * 1024 * 1024
 JSTAT_FIELDS = ('S0C', 'S1C', 'S0U', 'S1U', 'EC', 'EU', 'OC', 'OU', 'MC', 'MU',
                 'CCSC', 'CCSU', 'YGC', 'YGCT', 'FGC', 'FGCT', 'CGC', 'CGCT', 'GCT')
+RECORDING_LIMIT_BYTES = 64 * 1024 * 1024
 
 
 def command(args, timeout=90):
@@ -72,6 +74,38 @@ def dump_jfr(out, raw, component, pid, complete=False):
     return destination
 
 
+def gc_logs(out, raw, pid, complete):
+    state_path = out / 'gc-log-state.json'
+    state = json.loads(state_path.read_text()) if state_path.exists() else {}
+    copied = []
+    for source in sorted((out / 'jvm').glob('gc-' + str(pid) + '-*.log*')):
+        identity = str(source.stat().st_ino)
+        old = state.get(identity, {})
+        offset = old.get('offset', 0)
+        with source.open('rb') as stream:
+            if source.stat().st_size < offset:
+                raise RuntimeError('GC log was truncated')
+            stream.seek(max(0, offset - 128))
+            tail = stream.read(min(offset, 128))
+            if old and hashlib.sha256(tail).hexdigest() != old['tail_sha256']:
+                raise RuntimeError('GC log prefix changed')
+            stream.seek(0 if complete else offset)
+            data = stream.read()
+        length = data.rfind(b'\n') + 1
+        data = data[:length]
+        destination = raw / source.name
+        destination.write_bytes(data)
+        new_offset = length if complete else offset + length
+        with source.open('rb') as stream:
+            stream.seek(max(0, new_offset - 128))
+            tail = stream.read(min(new_offset, 128))
+        state[identity] = {'offset': new_offset, 'tail_sha256': hashlib.sha256(tail).hexdigest()}
+        copied.append({'path': str(destination.relative_to(out)), 'sha256': hashlib.sha256(data).hexdigest(),
+                       'bytes': length, 'source_offset': 0 if complete else offset})
+    state_path.write_text(json.dumps(state, indent=2) + '\n')
+    return copied
+
+
 def gc(out, raw, ts, complete=False):
     pids = resource_helpers.jvm_pids()
     if set(pids) != set(INSTANCES):
@@ -79,18 +113,39 @@ def gc(out, raw, ts, complete=False):
     summary = {}
     for component in INSTANCES:
         pid = pids[component]
+        jstat_started = datetime.datetime.now(datetime.timezone.utc).isoformat()
         data = command([str(JAVA_BIN / 'jstat'), '-gc', pid])
+        jstat_finished = datetime.datetime.now(datetime.timezone.utc).isoformat()
         (raw / (component + '-jstat.txt')).write_text(data)
         lines = data.splitlines()
         fields = dict(zip(lines[0].split(), lines[1].split()))
-        row = {'ts': ts, 'component': component, 'pid': pid}
+        row = {'ts': ts, 'component': component, 'pid': pid,
+               'request_started': jstat_started, 'response_finished': jstat_finished}
         for key in JSTAT_FIELDS:
             value = fields.get(key, '')
             if value and value != '-':
                 float(value)
             row[key] = value
-        append(out / 'jstat.csv', ['ts', 'component', 'pid', *JSTAT_FIELDS], [row])
+        append(out / 'jstat.csv', ['ts', 'component', 'pid', 'request_started', 'response_finished', *JSTAT_FIELDS], [row])
         recording = dump_jfr(out, raw, component, pid, complete)
+        metadata_text = command([str(JAVA_BIN / 'jfr'), 'summary', str(recording)])
+        (raw / (component + '-jfr-summary.txt')).write_text(metadata_text)
+        start_match = re.search(r'^\s*Start:\s+(.+?)\s*$', metadata_text, re.MULTILINE)
+        duration_match = re.search(r'^\s*Duration:\s+(\d+) s\s*$', metadata_text, re.MULTILINE)
+        if not start_match or not duration_match:
+            raise RuntimeError('JFR recording bounds are unavailable: ' + component)
+        began = datetime.datetime.strptime(start_match[1], '%Y-%m-%d %H:%M:%S (UTC)').replace(tzinfo=datetime.timezone.utc)
+        seconds = int(duration_match[1])
+        bounds = {'start_lower_ns': evidence.timestamp_ns(began.isoformat()),
+                  'end_lower_ns': evidence.timestamp_ns((began + datetime.timedelta(seconds=seconds)).isoformat()),
+                  'summary_precision_seconds': 1}
+        coverage = False
+        manifest_path = out / 'observation.json'
+        if complete and manifest_path.exists():
+            manifest = json.loads(manifest_path.read_text())
+            coverage = (bounds['start_lower_ns'] + 1000000000 <= evidence.timestamp_ns(manifest['started_at']) and
+                        bounds['end_lower_ns'] >= evidence.timestamp_ns(manifest['earliest_finish_at']) and
+                        recording.stat().st_size < RECORDING_LIMIT_BYTES)
         data = command([str(JAVA_BIN / 'jfr'), 'print', '--json', '--events', EVENTS,
                         str(recording)])
         events = json.loads(data)['recording']['events']
@@ -114,11 +169,16 @@ def gc(out, raw, ts, complete=False):
         append(out / 'gc-collections.csv', ['component', 'pid', 'ts', 'gc_id', 'name', 'cause',
                                            'duration', 'sumOfPauses', 'longestPause'], collections)
         after = [row['heap_bytes'] for row in heaps if row['when'] == 'After GC']
+        copied_logs = gc_logs(out, raw, pid, complete)
         summary[component] = {'pid': pid, 'heap_events': len(heaps), 'pause_events': len(pauses),
                               'collection_events': len(collections),
                               'last_after_gc_bytes': after[-1] if after else None,
                               'max_observed_heap_bytes': max((row['heap_bytes'] for row in heaps), default=None),
-                              'recording_bytes': recording.stat().st_size}
+                              'recording_bytes': recording.stat().st_size,
+                              'recording_sha256': hashlib.sha256(recording.read_bytes()).hexdigest(),
+                              'recording_path': str(recording.relative_to(out)),
+                              'bounds': bounds, 'coverage_complete': coverage,
+                              'data_loss_events': 0, 'gc_logs': copied_logs}
     return summary
 
 
@@ -151,10 +211,16 @@ def timestamp(sample):
 def freshness(row):
     pv = row['pv']
     ended = time.time()
-    result = {'pv': pv, 'method': row['method'], 'period': row['period'], 'policy': row['policy']}
+    result = {'pv': pv, 'method': row['method'], 'period': row['period'], 'policy': row['policy'],
+              'query_start': iso(ended - FRESHNESS_WINDOW_SECONDS), 'query_end': iso(ended)}
     try:
         samples, response = request(pv, ended - FRESHNESS_WINDOW_SECONDS, ended)
         result.update(response)
+        returned = len(samples)
+        samples = [sample for sample in samples
+                   if ended - FRESHNESS_WINDOW_SECONDS <= timestamp(sample) <= ended]
+        result['returned_samples'] = returned
+        result['out_of_window_samples'] = returned - len(samples)
         latest = max(samples, key=timestamp) if samples else None
         result.update({'samples': len(samples), 'latest_secs': latest['secs'] if latest else None,
                        'latest_nanos': latest['nanos'] if latest else None,
@@ -209,14 +275,17 @@ def latency(out, raw, fixture, ts):
         probes = list(executor.map(visibility, REPRESENTATIVES))
     (raw / 'visibility.json').write_text(json.dumps(probes, indent=2) + '\n')
     errors = sum(row['outcome'] == 'error' for row in results)
+    missing = sum(row['outcome'] == 'no_sample_in_window' for row in results)
     failed = sum(row['outcome'] != 'visible' for row in probes)
     summary = {'ts': ts, 'queried_pvs': len(results), 'retrieval_errors': errors,
+               'pvs_without_recent_samples': missing,
                'pvs_with_recent_samples': sum(row['outcome'] == 'observed' for row in results),
                'visibility_probes': len(probes), 'visible_probes': len(probes) - failed,
                'max_request_ms': max((row.get('duration_ms', 0) for row in results), default=0),
                'freshness_window_seconds': FRESHNESS_WINDOW_SECONDS,
                'retrieval_workers': RETRIEVAL_WORKERS}
     append(out / 'latency.csv', list(summary), [summary])
-    if errors or failed:
-        raise RuntimeError('Latency probe incomplete: retrieval=' + str(errors) + ', visibility=' + str(failed))
+    if errors or missing or failed:
+        raise RuntimeError('Latency probe incomplete: retrieval=' + str(errors) +
+                           ', missing=' + str(missing) + ', visibility=' + str(failed))
     return summary
