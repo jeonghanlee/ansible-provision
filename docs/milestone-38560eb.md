@@ -3836,10 +3836,11 @@ package names.
 
 ##### Completion Criteria
 
-- On each of the six vacua, after the `epics` operator applies,
+- On each of the six vacua, after the `common`, `provenance`, `python` and
+  `epics` operators apply in that order,
   `perl -MJSON::PP -MDigest::SHA -MTest::More -MPod::Checker -e 1` exits 0
   and `podchecker` is on `PATH`.
-- A re-apply of the operator succeeds.
+- A re-apply of the `epics` operator succeeds.
 
 ##### Dependencies And Decisions
 
@@ -3847,6 +3848,12 @@ package names.
   this milestone does not block it.
 - `D20` (2026-10-02): the four Rocky module packages and `perl` on the
   Debian family.
+- Owner decision (2026-10-02): T2 applies the smallest product the operator
+  order allows for `epics` (`common`, `provenance`, `python`, `epics` on a
+  bare vacuum), not a full species. It exercises the distribution path;
+  `epics_build` installs the same list with the same package commands, and
+  its source-build path is observed on the next `epics_dev` apply rather
+  than here.
 
 ##### Implementation Plan
 
@@ -3859,21 +3866,21 @@ package names.
    `rocky8.yml` and `rocky10.yml`.
 2. Add `perl` to the four Debian-family lists.
 3. Run T1 on the control host.
-4. Run T2 on fresh vacua and report the commit to EPICS-env.
+4. Report the commit to EPICS-env and run T2 on fresh bare vacua.
 
 ##### Test Plan
 
 | Label | Layer | Method | Environment | Expected Result |
 | --- | --- | --- | --- | --- |
 | T1 | Mechanism | Parse the six group_vars files as YAML; `--syntax-check` on `playbooks/operators/epics.yml` and `playbooks/operators/epics_build.yml`; resolve each module with `dnf repoquery --whatprovides 'perl(<Module>)'` on Rocky 8.10 and Rocky 10; in a throwaway container per OS, install the added names and run the module check from the Completion Criteria | control host; Rocky 8.10, Rocky 10, Debian 12, Debian 13, Ubuntu 24.04 and Ubuntu 26.04 containers | All files parse and both playbooks pass; each module resolves to the added Rocky name; the module check passes in every container |
-| T2 | Integration | `make op.epics.<vacuum> RUNTIME_INVENTORY=<host inventory>`; `perl -MJSON::PP -MDigest::SHA -MTest::More -MPod::Checker -e 1` and `command -v podchecker`; re-apply with the same target | Fresh rocky8, rocky10, debian12, debian13, ubuntu24 and ubuntu26 vacua | The apply succeeds, the module check exits 0 and `podchecker` is found on every vacuum; the re-apply succeeds |
+| T2 | Integration | With a `bare` generated inventory, `make op.<operator>.<vacuum> RUNTIME_INVENTORY=<host inventory>` for `common`, `provenance`, `python` and `epics` in that order; `perl -MJSON::PP -MDigest::SHA -MTest::More -MPod::Checker -e 1` and `command -v podchecker`; re-apply with `make op.epics.<vacuum>` | Fresh rocky8, rocky10, debian12, debian13, ubuntu24 and ubuntu26 bare vacua from cloud-provision | Every apply succeeds, the module check exits 0 and `podchecker` is found on every vacuum; the re-apply succeeds |
 
 ##### Verification Results
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
 | T1 | 2026-10-03T00:55:07Z | control host, working tree on `4e7f115`; `rockylinux/rockylinux:8.10`, a Rocky 10.2 EPICS image, `debian:12`, `debian:13`, `ubuntu:24.04` and `ubuntu:26.04` containers | Passed | The six lists parse with no duplicate entries; `--syntax-check` exits 0 for both playbooks; `git diff --check` is clean; `dnf repoquery --whatprovides` maps `Digest::SHA`, `JSON::PP`, `Pod::Checker` (and `podchecker`) and `Test::More` to `perl-Digest-SHA`, `perl-JSON-PP`, `perl-Pod-Checker` and `perl-Test-Simple` on Rocky 8.10 and 10.2; before installation the Rocky 8.10 image has none of the four modules, the Rocky 10.2 image lacks `Test::More` and `Pod::Checker`, and the Debian-family images lack `JSON::PP`; after installing the added names, the module check passes and `podchecker` is found in all six containers |
-| T2 | | | Pending | |
+| T2 | 2026-10-03T05:14:47Z | Fresh rocky8, rocky10, debian12, debian13, ubuntu24 and ubuntu26 bare vacua from cloud-provision (4 GiB, no proxy precondition), `bare` generated inventories, working tree on `4dfb290` | Passed | On every vacuum `make op.common`, `op.provenance`, `op.python` and `op.epics` exit 0 with `failed=0` in that order; the module check prints `MODULES_OK` with `podchecker` at `/bin/podchecker` (Rocky) or `/usr/bin/podchecker` (Debian family); the `make op.epics.<vacuum>` re-apply exits 0 with `failed=0`. All test VMs were removed afterwards |
 
 ##### Closure Evidence
 
