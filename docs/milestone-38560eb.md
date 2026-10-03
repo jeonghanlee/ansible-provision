@@ -225,7 +225,7 @@ verified on the production IOC server 2026-09-04 (con 1.1.0 replaced by 1.2.0,
 full mode carries every OS tree, second apply `failed=0`). Delivered in
 `fd4ff1c` and `13bc8e6`.
 
-Status tally: 19 Complete, 2 In progress, 0 Not started, 1 Deferred, 1 Blocked. 4 external gates (3 Complete, 1 Open).
+Status tally: 20 Complete, 1 In progress, 0 Not started, 1 Deferred, 1 Blocked. 4 external gates (3 Complete, 1 Open).
 
 ## Milestone
 
@@ -255,7 +255,7 @@ Status tally: 19 Complete, 2 In progress, 0 Not started, 1 Deferred, 1 Blocked. 
 | Core | M21 | Reach the archiver MariaDB over its Unix socket | Milestone | Complete | No | M17 | `archiver_build` writes `DB_SOCKET` for the `mariadb` backend and the `archiver_dev` group returns to `skip-networking`; fresh Rocky 8.10 and Debian 13 `archiver_dev` hosts build with TCP closed, serve mgmt and persist PV configuration, and an installed TCP host moves over in one forced run; delivered in `8a5c355`; [detail](#m21---reach-the-archiver-mariadb-over-its-unix-socket) |
 | Core | M20 | Align the test-user handoff document with the operator model | Milestone | Complete | No | | `docs/test_users_handoff.md` names `roles/testusers`, `playbooks/operators/testusers.yml`, the `iocrunner` species order and the bake's species step instead of the retired `app_ioc_runner`, `roles/test_users`, `playbooks/07_test_users.yml`, `CONFIG_SITE` list and `site.yml`; delivered in `268a060`; [detail](#m20---align-the-test-user-handoff-document-with-the-operator-model) |
 | Core | M22 | Verify the ETL pass scheduler on two parallel store chains | Milestone | In progress | No | M17, M21, G4 | Both fixed-ref deployments run for at least 24 hours across UTC midnight with the same 903-PV fixture; pass timing and metrics match the scheduler design, normal-load passes do not overrun, each unit stops within its configured timeout, and the earlier soak comparison is recorded; [detail](#m22---verify-the-etl-pass-scheduler-on-two-parallel-store-chains) |
-| Core | M23 | Add the Perl modules for the EPICS-env installed-tree utility to the EPICS OS package set | Milestone | In progress | No | D20 | `epics_os_packages` carries `perl-Digest-SHA`, `perl-JSON-PP`, `perl-Pod-Checker` and `perl-Test-Simple` on rocky8 and rocky10 and `perl` on debian12, debian13, ubuntu24 and ubuntu26; after the `epics` operator applies on each vacuum, the four modules load and `podchecker` runs; [detail](#m23---add-the-perl-modules-for-the-epics-env-installed-tree-utility-to-the-epics-os-package-set) |
+| Core | M23 | Add the Perl modules for the EPICS-env installed-tree utility to the EPICS OS package set | Milestone | Complete | No | D20 | `epics_os_packages` carries `perl-Digest-SHA`, `perl-JSON-PP`, `perl-Pod-Checker` and `perl-Test-Simple` on rocky8 and rocky10 and `perl` on debian12, debian13, ubuntu24 and ubuntu26; after the `epics` operator applies on each vacuum, the four modules load and `podchecker` runs; delivered in `4dfb290`, verified on all six vacua (`300ccc7`); [detail](#m23---add-the-perl-modules-for-the-epics-env-installed-tree-utility-to-the-epics-os-package-set) |
 | Gate | G1 | the production IOC server reaches the internal git host | External gate | Complete | No | | Reachability achieved through the site HTTP proxy's CONNECT tunnel (an ssh `ProxyCommand` over the proxy), not a firewall whitelist: the owner's key authenticates and `git ls-remote` returns the refs; confirmed 2026-09-03 by the successful iocserver clone (M4/T2) |
 | Gate | G2 | cloud-provision ships the middleware package baseline and the middleware VM | External gate | Open | No | | The middleware operator/species structure and OS package baseline (system OpenJDK 21, Tomcat 9.0.121, MariaDB; no Maven package) originate in cloud-provision (`docs/milestone-e260630.md` M11) as the normative source and a middleware VM is provisionable there, before ansible-provision mirrors the set and layers its roles; owned by the cloud-provision session |
 | Gate | G3 | epicsarchiverap-env ships a `sql.fill` that loads the configuration schema when the database and application account are provisioned externally | External gate | Complete | No | | Complete when the jeonghanlee/epicsarchiverap-env#47 fix commit is on `modernize` and epicsarchiverap-env records #47's acceptance as met: with only the application account, `make sql.fill` loads the schema, `make sql.show` lists `PVTypeInfo`, `PVAliases`, `ArchivePVRequests` and `ExternalDataServers`, and an absent database exits non-zero. Observing it on an archiver-dev host is M14/T17, not this gate; owned by the epicsarchiverap-env session; met 2026-09-23: the fix is `1fc20a8` on `modernize`, and #47 closed with epicsarchiverap-env's acceptance recorded |
@@ -3807,7 +3807,7 @@ Local journal-candidate verification supplements the pending live checks:
 
 - Origin: 38560eb / M23
 - GitHub Issue: #29, https://github.com/jeonghanlee/ansible-provision/issues/29
-- Status: In progress
+- Status: Complete
 
 ##### Summary
 
@@ -3884,7 +3884,17 @@ package names.
 
 ##### Closure Evidence
 
-- None yet.
+- Delivered in `4dfb290` (the four Rocky module packages, `perl` on the
+  Debian family, this row and detail); T2 recorded in `300ccc7`.
+- T1-T2 Passed against every completion criterion. #29's body was synced to
+  the result and the issue was closed manually (observed closed, reason
+  completed, at 2026-10-03T05:55:38Z); the `Closes #29` footer in `300ccc7`
+  has no further effect when the branch reaches `master`.
+- Landed: `origin/m14-middleware-reconcile` stood at `300ccc7` after its
+  push; the branch is not yet merged to `master`.
+- The result was reported to EPICS-env on 2026-10-02 with the commit and the
+  Debian-family addition. The matching `configure/epics-packages` change in
+  cloud-provision, the normative source, is cloud-provision's.
 
 #### G4 - Prepare two independent ETL soak environments
 
