@@ -402,7 +402,12 @@ python3 journal_retention.py check --output="$evidence/proof.json"
 ```
 
 The budget uses the largest measured rate under the unchanged policy, plus
-retained user-journal bytes and two file-size allowances per stream. Its
+retained user-journal bytes and two file-size allowances per stream. The
+daemon's one `write_bytes` counter covers both streams, so it bounds the
+system stream only; the user stream is bounded by its own allocation growth.
+An interval shorter than 300 seconds between the last measurement and a
+preparation or check snapshot is checked for continuity but is not a rate
+bound. Its
 factor-two horizon covers the sample-gap limit plus the effective collection
 or terminal timeout. With 320/240/2700-second limits the horizon is 6040 seconds.
 Actual byte, retention-time and file-count caps must all permit that budget;
@@ -486,6 +491,9 @@ replay, real numerical CLI comparisons, fixture preservation and missing-proof
 preparation rejection. Set `ETL_SOAK_JOURNAL_SEQUENCE` to an actual retained
 JSON journal file for the cursor parser checks. A filtered application-only
 file exercises missing-sequence rejection; it cannot prove all-stream coverage.
+Set `ETL_SOAK_RETENTION_EVIDENCE` to a directory of actual retention snapshots
+(`snapshot-*.json`) and the `proof.json` whose `latest` snapshot follows them;
+the shared write-counter and short-interval regressions replay those inputs.
 Only external HTTP, command, filesystem and clock boundaries are replaced.
 Budget arithmetic is unit coverage. Historical collector transport checks and
 schema-5 negative cases do not establish new journal integration or successful

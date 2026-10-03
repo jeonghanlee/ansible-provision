@@ -60,18 +60,21 @@ At 08:25:26 UTC the measurement service is failed with exit status 1; the
 dependent preparation/chain/health checks did not execute. The six qualified
 five-minute intervals require 1,291,544,426 bytes against a 1-GiB cap. The
 additional 4.376-second final interval raises the required budget to
-34,248,546,484 bytes. Inspect this short-interval accounting and resolve the
-independently insufficient cap before retrying; no policy or cap change is
-authorized by this result update. A launcher
+34,248,546,484 bytes. The 2026-10-02 diagnosis found that the one daemon
+write counter was counted for both streams and that the short final interval
+was taken as a rate bound; the owner chose to correct the accounting, leaving
+the cap, logging policy and VM size unchanged. A launcher
 wait timed out while the real oneshot service continued executing; this is
 preserved separately and is not a failed observation. No observation exists.
 On 2026-10-02 the earlier-schema sources were removed from the shipped tools.
-The standalone 20-dependency candidate, bundle SHA256
-567d629b11704a2291302eb603830e313d85a9b7bab37629a0656ec7a31c0726, passed 55
-local checks with no skips at 20:54:06 UTC. It is not installed; the dedicated
-VM last verified the 40-dependency candidate (5cd0f390) at 07:28:37 UTC.
-Install and verify the current candidate before the next measured preparation.
-Live scenario results remain pending. Continue the retention diagnosis before actual
+The accounting-corrected 20-dependency candidate, bundle SHA256
+e11d3ebc820f14d961bbefbf1dc1e514c2b304733fdf21ce1d8aa1f30871f98c, passed 58
+local checks with no skips at 2026-10-03 06:12:06 UTC and replaces the
+standalone candidate 567d629b. It is not installed; the dedicated VM last
+verified the 40-dependency candidate (5cd0f390) at 07:28:37 UTC on 2026-10-02.
+Next: with separate authorization, install and verify this candidate on the
+dedicated VM and run a new measured preparation in a new evidence directory.
+Live scenario results remain pending before actual
 T22-T28 preparation/checks; verify both existing fixture
 adjustments before deployment to the retained VMs or another trial.
 The two schema-4 trials that started on 2026-10-01 at 07:19:39 UTC have both
@@ -2805,6 +2808,14 @@ visibility probes do not establish lossless archival.
   `legacy-sources-removed-from-tree-20261002/`. Add retained-evidence
   checks for the Passed replay, missing scheduled pass, missing GC pair and
   aborted observation cases after a schema-5 observation completes.
+- Decision Date: 2026-10-02. Correct the retention accounting in the shipped
+  tools rather than raise the journal cap, change the archiver logging policy
+  or resize the VM. The single daemon `write_bytes` counter is counted once,
+  as the system-stream bound; the user-stream bound is the user journal's own
+  allocation growth. A preparation or validation interval shorter than 300
+  seconds is no longer a rate bound; its identity and accounting continuity
+  are still checked. Installation on the dedicated VM and a new measured
+  preparation remain separately authorized steps.
 - The dedicated journal test environment is a required preparation input for
   live T22-T26/T28 checks. G4 supplies only the two retained soak deployments.
   The subsequent owner direction authorized a separate VM; its baseline,
@@ -2828,6 +2839,33 @@ visibility probes do not establish lossless archival.
 - Previous accepted plans and their observations remain below. Their
   authorizations do not authorize the current revision. Plan acceptance does
   not start a new trial.
+
+###### Retention Accounting Correction
+
+- Plan Status: accepted
+- Plan Acceptance: 2026-10-02; the owner accepted correcting the accounting instead of the cap, logging policy or VM size
+- Implementation Authorization: 2026-10-02; code correction, bundle regeneration and local verification only
+- Superseded Plan Artifacts: none
+
+1. `tests/archiver-soak/etl-pass/journal_retention.py`: `rates()` returns
+   `max(write delta, system allocation growth) / duration` for the system
+   stream and `user allocation growth / duration` for the user stream.
+   `prepare()` and `validate()` still run `elapsed()` and `rates()` on the
+   interval from the last measured snapshot to the current one, but take it
+   as a rate bound only when it lasts at least 300 seconds. `runtime()` and
+   the evaluator keep their per-stream shape and use the corrected `rates()`.
+2. `tests/archiver-soak/etl-pass/test_journal.py`: a real-input regression
+   replays the seven actual dedicated-VM snapshots and the failed proof's
+   actual final snapshot through the shipped functions. It must fail on the
+   tools at `55ae31a` and pass on the corrected tools. Arithmetic tests cover
+   the shared counter and the short-interval rule.
+3. Regenerate `bundle.json` and `SHA256SUMS`, then run the shipped local
+   suite with and without the private evidence paths.
+4. Installing the corrected bundle on the dedicated VM and a new measured
+   preparation in a new evidence directory need separate authorization.
+
+Steps 1-3 are implemented and locally verified (results below); step 4 is
+not authorized.
 
 The preceding two-chain revision was accepted on 2026-09-30. Its steps 1-2
 were authorized for implementation and local verification on that date;
@@ -3731,6 +3769,8 @@ Local journal-candidate verification supplements the pending live checks:
 | T27 measured preparation execution | 2026-10-02T07:36:53.093134+00:00 | Dedicated VM; real initialize-fresh.py measure service | Running; no preparation verdict | The finite 45-minute oneshot service is loaded and activating with an actual process. One real journal snapshot and one GC/retrieval progress record exist; measurements.json and observation.json do not exist. The launcher wait timed out after 30 seconds while the service continued; journal-test-fresh-measurements-launch-20261002.json preserves that failure. Seven consecutive approved-load snapshots, two measured capacity windows and successful budget evaluation remain required |
 | T14/T27 measurement progress and queued checks | 2026-10-02T07:48:03.568699+00:00 | Dedicated VM; actual subsystem captures and systemd jobs | Measurement running; followup waiting | Three journal snapshots and three GC/retrieval captures exist. Actual snapshot times are 07:35:39.932971, 07:40:40.014429 and 07:45:40.091088 UTC; the latest capture reports 903 recent PVs, six visible probes and all four GC components. A root-initiated followup is genuinely queued with After/Requires on the running measurement service and a finite 35-minute timeout. It runs the shipped prepare action from actual completed inputs, then verify-chain.py and verify-health.py; the latter performs two real health/full-sample checks. It preserves failures and opens no manifest. No followup result is inferred. Private journal-test-fresh-followup-launch-20261002.json records exact executable source and the successful queue operation; journal-test-chain-preflight-verified-20261002.json separately records two completed captures and one actual fixture PV matching shortened stores. This one-PV check does not replace all-903 chain verification |
 | T27 dedicated measured retention budget | 2026-10-02T08:05:44.772270+00:00 calculation; observed at 08:25:26 and re-derived at 08:26:54 UTC | Dedicated VM; seven actual snapshots and shipped journal_retention calculation | Failed; preparation and dependent checks did not execute | All seven snapshots retain the actual 903-PV load and ten verified adjusted records. Six intervals last 300.064-300.084 seconds, with peak physical write bound 61,778.213 bytes/s per stream; shipped calculation requires 1,291,544,426 bytes against the effective 1,073,741,824-byte cap and fails independently. The final 4.376396-second interval records 12,210,176 written bytes, raising the bound to 2,790,006.860 bytes/s per stream, required bytes to 34,248,546,484 and required files to 259 against 100. The measurement service exits 1 and preserves its failed proof; measurements.json, preparation.json, chain/health verification and observation.json are absent. Root has 43,213,418,496 bytes free at diagnosis. No passing preparation, full-sample readiness or 24-hour launch is inferred. Actual VM measurement sources and private journal-test-fresh-measurements-result-20261002.json retain evidence; diagnose the short-interval accounting and resolve cap sufficiency before another execution |
+| T27 retention budget diagnosis | 2026-10-03T06:09:18Z | Control host; shipped `journal_retention` at `55ae31a` on the seven actual dedicated-VM snapshots, the failed proof and the 07:35:00-08:06:00 UTC actual journal export (46,062 entries) | Diagnosed; correction accepted | Re-derivation reproduces the recorded values exactly: six 300.064-300.084-second intervals with write deltas of 14,544,896-18,538,496 bytes, peak 61,778.213 bytes/s, 1,291,544,426 required bytes, and 34,248,546,484 bytes with the 4.376-second final interval, equal to the failed proof's budget. `rates()` applies the one daemon `write_bytes` counter to both streams, so the rate term is counted twice; over the six intervals the user journal's allocation grew by 4,096 bytes and the system journal's by 25,165,824 bytes in 8-MiB steps. Every write delta is a multiple of 4,096 bytes; the counter records about 3.9 times the actual file growth and about 2.2 times the exported JSON size (7,368,071-7,603,388 bytes per interval). The final interval holds one 6,367-entry latency-probe burst, which each five-minute interval also contains. Counting the rate term once gives 918,404,021 bytes. Page-granular re-dirtying of journald's memory-mapped pages is the likely source of the excess over file growth; it was not tested |
+| T13/T27 accounting-corrected candidate | 2026-10-03T06:12:06Z | Control host; Python 3.13.5; shipped tools with the corrected `journal_retention.py`; private evidence, archive, extracted, journal-sequence and retention-snapshot paths | Local checks Passed; live preparation Pending | `contract.py --freeze` rewrote `bundle.json` (SHA256 `e11d3ebc820f14d961bbefbf1dc1e514c2b304733fdf21ce1d8aa1f30871f98c`) and `contract.verify_bundle` accepts all 20 dependencies; all 51 `SHA256SUMS` entries verify. Unittest discovery runs 58 checks with no skips and rc=0 with every private path set, and 37 pass with 21 skipped without them. On the actual snapshots the corrected tools bound the system stream at 61,778.213 bytes/s and the user stream at 13.650 bytes/s from its allocation growth, exclude the 4.376-second final interval, and require 918,486,465 bytes and 11 files against 1,073,741,824 bytes and 100 files: passed. The new shared-counter checks fail on the tools at `55ae31a` (user bound equal to the write rate); the real-input short-interval check errors there because the interval rule does not exist. No VM was contacted |
 | T13 standalone schema-5 bundle | 2026-10-02 20:54:06 UTC | Control host; Python 3.13.5; shipped schema-5 tools and retained real runtime/export/fixture inputs | Local checks Passed; dedicated installation and live scenarios Pending | Earlier-schema sources were removed from the shipped tools: `BUNDLE_FILES` no longer lists the schema-3 evaluator or the nineteen schema-4 files, and the evaluator returns Incomplete with `unsupported_observation_schema` for any other schema. Actual unittest discovery ran 55 checks in 36.505 seconds, rc=0 and no skips. `contract.verify_bundle` accepts all 20 dependencies and all 51 checksums verify. Candidate bundle SHA256 is 567d629b11704a2291302eb603830e313d85a9b7bab37629a0656ec7a31c0726; it supersedes the 40-dependency candidate recorded above and is not installed on any VM. Four retained-evidence cases now relabel the pre-schema-5 input and require a non-Passed verdict with the expected failed assertion. Four cases are removed because they exercised the removed schema-3 evaluator: Passed replay, missing scheduled pass, missing GC pair and aborted observation. The current evaluator has no retained-evidence coverage for those four until a schema-5 observation completes; add them then. The removed sources remain in the private evidence directory as `legacy-sources-removed-from-tree-20261002/` |
 
 ##### Closure Evidence

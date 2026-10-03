@@ -181,7 +181,7 @@ def snapshot(require_load=False):
         'policy_sha256': hashlib.sha256((version + config + service_policy + adjustment_sha +
                                         contract.FIXTURE_SHA + json.dumps(timeout_values, sort_keys=True)).encode()).hexdigest(),
         'config_files_sha256': {str(path): digest(path) for path in config_paths},
-        'accounting': 'Synchronized daemon write_bytes is a conservative upper bound for each stream; allocation growth is also bounded',
+        'accounting': 'Synchronized daemon write_bytes covers both streams and bounds the system stream once; each stream is also bounded by its allocation growth',
         'write_bytes': io['write_bytes'], 'cancelled_write_bytes': io['cancelled_write_bytes'],
         'inventory': inventory, 'available_bytes': available, 'filesystem_bytes': total,
         'caps': {'effective_bytes': max(0, min(maximum, used + max(0, available - keep_free)) - other),
@@ -221,12 +221,19 @@ def rates(first, last):
         raise RuntimeError('Journal write accounting reset')
     if writes == 0 and first['inventory'] != last['inventory']:
         raise RuntimeError('Changed journal files lack write accounting')
-    result = {}
-    for stream in ('system', 'user'):
-        allocation = sum(max(0, row['allocated_bytes'] - first['inventory'].get(path, {}).get('allocated_bytes', 0))
-                         for path, row in last['inventory'].items() if row['stream'] == stream)
-        result[stream] = max(writes, allocation) / duration
-    return result
+    allocation = {stream: sum(max(0, row['allocated_bytes'] - first['inventory'].get(path, {}).get('allocated_bytes', 0))
+                              for path, row in last['inventory'].items() if row['stream'] == stream)
+                  for stream in ('system', 'user')}
+    # The daemon counter covers both streams, so it bounds the system stream once.
+    return {'system': max(writes, allocation['system']) / duration,
+            'user': allocation['user'] / duration}
+
+
+def bounded_interval(bounds, first, last):
+    measured = rates(first, last)
+    if elapsed(first, last) < INTERVAL_SECONDS:
+        return bounds
+    return {stream: max(bounds[stream], measured[stream]) for stream in bounds}
 
 
 def calculation(current, bounds):
@@ -322,8 +329,7 @@ def prepare(directory, output, tools, histories=()):
                                     'sha256': row['sha256']} for row in group])
     bounds = historical_bounds({'historical_sources': history_groups}, output.parent, samples[0], bounds)
     current = snapshot()
-    elapsed(samples[-1], current)
-    bounds = {stream: max(bounds[stream], rates(samples[-1], current)[stream]) for stream in bounds}
+    bounds = bounded_interval(bounds, samples[-1], current)
     budget = calculation(current, bounds)
     proof = {'schema': contract.SCHEMA, 'observed_at': current['observed_at'],
         'boot_id': current['boot_id'], 'daemon': current['daemon'],
@@ -347,8 +353,7 @@ def validate(proof_path, tools, current=None, fresh=True):
     latest = proof['latest']
     if any(proof.get(key) != latest.get(key) for key in ('boot_id', 'daemon', 'policy_sha256')):
         raise RuntimeError('Journal retention proof identity is inconsistent')
-    measured = rates(samples[-1], latest)
-    baseline = {stream: max(baseline[stream], measured[stream]) for stream in baseline}
+    baseline = bounded_interval(baseline, samples[-1], latest)
     if proof['budget'] != calculation(latest, baseline) or not proof['budget']['passed']:
         raise RuntimeError('Journal retention calculation is inconsistent or failed')
     current = current or snapshot()
@@ -357,8 +362,7 @@ def validate(proof_path, tools, current=None, fresh=True):
            datetime.datetime.fromisoformat(current['observed_at'])).total_seconds()
     if fresh and not 0 <= age <= PROOF_MAX_AGE:
         raise RuntimeError('Journal retention proof is stale')
-    bounds = rates(latest, current)
-    result = calculation(current, {stream: max(baseline[stream], bounds[stream]) for stream in baseline})
+    result = calculation(current, bounded_interval(baseline, latest, current))
     if not result['passed']:
         raise RuntimeError('Current journal retention budget failed')
     return {**proof, 'checked_at': current['observed_at'], 'current': current, 'current_budget': result}

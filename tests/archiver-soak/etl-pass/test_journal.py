@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Check budget arithmetic and parse retained real inputs; live scenarios are separate."""
 
+import datetime
 import json
 import os
 from pathlib import Path
@@ -10,6 +11,7 @@ import journal_coverage
 import journal_retention as retention
 
 REAL_INPUT = os.environ.get('ETL_SOAK_JOURNAL_SEQUENCE')
+RETENTION_INPUT = os.environ.get('ETL_SOAK_RETENTION_EVIDENCE')
 
 
 class BudgetArithmeticTests(unittest.TestCase):
@@ -80,6 +82,25 @@ class BudgetArithmeticTests(unittest.TestCase):
         self.assertEqual(result['file_bytes']['system'], 256 * 1024 ** 2)
         self.assertEqual(result['required_files'], 4)
 
+    def snapshot(self, seconds, written, user_bytes, boot='b'):
+        start = datetime.datetime(2026, 1, 1, tzinfo=datetime.timezone.utc)
+        return {'boot_id': boot, 'daemon': 'd', 'policy_sha256': 'p', 'monotonic': seconds,
+                'observed_at': (start + datetime.timedelta(seconds=seconds)).isoformat(),
+                'write_bytes': written, 'cancelled_write_bytes': 0,
+                'inventory': {'system.journal': {'stream': 'system', 'allocated_bytes': 8 * 1024 ** 2},
+                              'user-1000.journal': {'stream': 'user', 'allocated_bytes': user_bytes}}}
+
+    def test_shared_counter_is_counted_once_and_short_intervals_are_not_bounds(self):
+        first = self.snapshot(0, 0, 8 * 1024 ** 2)
+        later = self.snapshot(300, 3000000, 8 * 1024 ** 2 + 3000)
+        self.assertEqual(retention.rates(first, later), {'system': 10000, 'user': 10})
+        bounds = {'system': 1, 'user': 1}
+        self.assertEqual(retention.bounded_interval(bounds, first, later), {'system': 10000, 'user': 10})
+        burst = self.snapshot(304, 7000000, 8 * 1024 ** 2 + 3000)
+        self.assertEqual(retention.bounded_interval(bounds, later, burst), bounds)
+        with self.assertRaises(RuntimeError):
+            retention.bounded_interval(bounds, later, self.snapshot(304, 7000000, 0, boot='other'))
+
     def test_timestamp_conversion_preserves_microseconds_and_timezone(self):
         self.assertEqual(journal_coverage.timestamp('1970-01-01 00:00:01.000001 UTC'), 1000001)
         self.assertEqual(journal_coverage.timestamp('1970-01-01T01:00:01.000001+01:00'), 1000001)
@@ -118,6 +139,29 @@ class RealJournalInputTests(unittest.TestCase):
         else:
             with self.assertRaisesRegex(RuntimeError, 'missing records'):
                 journal_coverage.validate_interval(self.rows, self.rows[0], self.rows[-1], self.boot)
+
+
+@unittest.skipUnless(RETENTION_INPUT, 'Retained actual retention snapshots are required')
+class RealRetentionInputTests(unittest.TestCase):
+    def setUp(self):
+        root = Path(RETENTION_INPUT)
+        self.samples = [json.loads(path.read_text()) for path in sorted(root.glob('snapshot-*.json'))]
+        self.latest = json.loads((root / 'proof.json').read_text())['latest']
+        self.assertGreaterEqual(len(self.samples), retention.MINIMUM_INTERVALS + 1)
+
+    def test_shared_write_counter_bounds_only_the_system_stream(self):
+        for first, last in zip(self.samples, self.samples[1:]):
+            writes = (last['write_bytes'] - first['write_bytes']) / retention.elapsed(first, last)
+            measured = retention.rates(first, last)
+            self.assertGreaterEqual(measured['system'], writes)
+            self.assertLess(measured['user'], writes)
+
+    def test_measured_load_fits_the_cap_without_the_final_short_interval(self):
+        self.assertLess(retention.elapsed(self.samples[-1], self.latest), retention.INTERVAL_SECONDS)
+        measured = retention.measured_bounds(self.samples)
+        bounds = retention.bounded_interval(measured, self.samples[-1], self.latest)
+        self.assertEqual(bounds, measured)
+        self.assertTrue(retention.calculation(self.latest, bounds)['passed'])
 
 
 if __name__ == '__main__':
