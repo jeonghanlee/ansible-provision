@@ -42,3 +42,4 @@ epics_os_packages:
   - libhidapi-libusb0
   - cmake
   - re2c
+  - perl

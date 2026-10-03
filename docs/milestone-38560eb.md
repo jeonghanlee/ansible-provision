@@ -225,7 +225,7 @@ verified on the production IOC server 2026-09-04 (con 1.1.0 replaced by 1.2.0,
 full mode carries every OS tree, second apply `failed=0`). Delivered in
 `fd4ff1c` and `13bc8e6`.
 
-Status tally: 19 Complete, 1 In progress, 0 Not started, 1 Deferred, 1 Blocked. 4 external gates (3 Complete, 1 Open).
+Status tally: 19 Complete, 2 In progress, 0 Not started, 1 Deferred, 1 Blocked. 4 external gates (3 Complete, 1 Open).
 
 ## Milestone
 
@@ -255,6 +255,7 @@ Status tally: 19 Complete, 1 In progress, 0 Not started, 1 Deferred, 1 Blocked. 
 | Core | M21 | Reach the archiver MariaDB over its Unix socket | Milestone | Complete | No | M17 | `archiver_build` writes `DB_SOCKET` for the `mariadb` backend and the `archiver_dev` group returns to `skip-networking`; fresh Rocky 8.10 and Debian 13 `archiver_dev` hosts build with TCP closed, serve mgmt and persist PV configuration, and an installed TCP host moves over in one forced run; delivered in `8a5c355`; [detail](#m21---reach-the-archiver-mariadb-over-its-unix-socket) |
 | Core | M20 | Align the test-user handoff document with the operator model | Milestone | Complete | No | | `docs/test_users_handoff.md` names `roles/testusers`, `playbooks/operators/testusers.yml`, the `iocrunner` species order and the bake's species step instead of the retired `app_ioc_runner`, `roles/test_users`, `playbooks/07_test_users.yml`, `CONFIG_SITE` list and `site.yml`; delivered in `268a060`; [detail](#m20---align-the-test-user-handoff-document-with-the-operator-model) |
 | Core | M22 | Verify the ETL pass scheduler on two parallel store chains | Milestone | In progress | No | M17, M21, G4 | Both fixed-ref deployments run for at least 24 hours across UTC midnight with the same 903-PV fixture; pass timing and metrics match the scheduler design, normal-load passes do not overrun, each unit stops within its configured timeout, and the earlier soak comparison is recorded; [detail](#m22---verify-the-etl-pass-scheduler-on-two-parallel-store-chains) |
+| Core | M23 | Add the Perl modules for the EPICS-env installed-tree utility to the EPICS OS package set | Milestone | In progress | No | D20 | `epics_os_packages` carries `perl-Digest-SHA`, `perl-JSON-PP`, `perl-Pod-Checker` and `perl-Test-Simple` on rocky8 and rocky10 and `perl` on debian12, debian13, ubuntu24 and ubuntu26; after the `epics` operator applies on each vacuum, the four modules load and `podchecker` runs; [detail](#m23---add-the-perl-modules-for-the-epics-env-installed-tree-utility-to-the-epics-os-package-set) |
 | Gate | G1 | the production IOC server reaches the internal git host | External gate | Complete | No | | Reachability achieved through the site HTTP proxy's CONNECT tunnel (an ssh `ProxyCommand` over the proxy), not a firewall whitelist: the owner's key authenticates and `git ls-remote` returns the refs; confirmed 2026-09-03 by the successful iocserver clone (M4/T2) |
 | Gate | G2 | cloud-provision ships the middleware package baseline and the middleware VM | External gate | Open | No | | The middleware operator/species structure and OS package baseline (system OpenJDK 21, Tomcat 9.0.121, MariaDB; no Maven package) originate in cloud-provision (`docs/milestone-e260630.md` M11) as the normative source and a middleware VM is provisionable there, before ansible-provision mirrors the set and layers its roles; owned by the cloud-provision session |
 | Gate | G3 | epicsarchiverap-env ships a `sql.fill` that loads the configuration schema when the database and application account are provisioned externally | External gate | Complete | No | | Complete when the jeonghanlee/epicsarchiverap-env#47 fix commit is on `modernize` and epicsarchiverap-env records #47's acceptance as met: with only the application account, `make sql.fill` loads the schema, `make sql.show` lists `PVTypeInfo`, `PVAliases`, `ArchivePVRequests` and `ExternalDataServers`, and an absent database exits non-zero. Observing it on an archiver-dev host is M14/T17, not this gate; owned by the epicsarchiverap-env session; met 2026-09-23: the fix is `1fc20a8` on `modernize`, and #47 closed with epicsarchiverap-env's acceptance recorded |
@@ -283,6 +284,7 @@ Status tally: 19 Complete, 1 In progress, 0 Not started, 1 Deferred, 1 Blocked. 
 | D17 | The lab-VM time-sync fix handed off by cloud-provision (jeonghanlee/cloud-provision#44: lab VMs never reach NTP sync because the public pools are unreachable behind the site proxy, and one Debian apply failed its first `apt update` on a signature date) is implemented in ansible-provision's `common` operator, the single writer of `chrony.conf`, not in cloud-init. | Owner decision, 2026-09-25 |
 | D18 | The MariaDB application password is generated on the target host by the `mariadb` operator and kept in a root-only file there, read by `archiver_build` for epicsarchiverap-env, replacing the control-host `mariadb_password_hash` carried to the target through the `raw_stdin` action. Carrying the credential was the source of the plugin, its SSH-only constraint and its dedicated tests; a site that wants its own password places the file before the first apply. | Owner decision, 2026-09-25 |
 | D19 | An archiver host gets exactly one configuration-database operator, `mariadb` (as today) or a new `sqlite`, chosen by species (`archiver-dev` or `archiver-dev-sqlite`, later `archiver` or `archiver-sqlite`) with the underscore group carrying `archiver_db_backend`; no new VM selector. Agreed with cloud-provision on 2026-09-25 (its `OPERATOR_MODEL.md` and generator follow this repository's role). The work runs in the order M16, M17, M18, because M16 and M18 both change the database handling in `archiver_build` and M18 needs an epicsarchiverap-env ref at or past `bbe0968`, which M17 brings. Owner decisions 2026-09-28 (M21 and M18 details): M21, the MariaDB socket, ran between M17 and M18, and for M18 cloud-provision landed its generator and definition first (`8c9b6ba`). | Owner decision, 2026-09-26 |
+| D20 | The Perl modules EPICS-env's installed-tree utility uses (`JSON::PP`, `Digest::SHA`, `Test::More`, `Pod::Checker`) are added to `epics_os_packages`: `perl-Digest-SHA`, `perl-JSON-PP`, `perl-Pod-Checker` and `perl-Test-Simple` on rocky8 and rocky10, and `perl` on debian12, debian13, ubuntu24 and ubuntu26, whose `perl-base` alone does not carry them. Each Rocky module package is named even where another package already pulls it in, because the utility uses the modules directly. | Owner decision, 2026-10-02 |
 
 ### Assignment History
 
@@ -3800,6 +3802,82 @@ Local journal-candidate verification supplements the pending live checks:
   coverage of the Passed replay, missing scheduled pass, missing GC pair and
   aborted observation cases awaits a completed schema-5 observation.
   No carrying commit exists for the current code or results.
+
+#### M23 - Add the Perl modules for the EPICS-env installed-tree utility to the EPICS OS package set
+
+- Origin: 38560eb / M23
+- GitHub Issue: #29, https://github.com/jeonghanlee/ansible-provision/issues/29
+- Status: In progress
+
+##### Summary
+
+EPICS-env is moving its installed-tree utility from Python to Perl. The
+runtime uses `JSON::PP` and `Digest::SHA`; its tests and checks use
+`Test::More` and `podchecker` (`Pod::Checker`). A Rocky 8.10 base image
+provides none of the four modules, and a Rocky 10.2 EPICS image lacks
+`Test::More` and `Pod::Checker`. On Debian and Ubuntu the modules ship in
+`perl-modules-<version>` and `libperl<version>`, which the `perl` package
+depends on; `perl-base` alone does not carry them, and no Debian-family
+`epics_os_packages` list names `perl`.
+
+##### Scope
+
+`epics_os_packages` in `inventory/group_vars/rocky8.yml` and
+`inventory/group_vars/rocky10.yml` gains `perl-Digest-SHA`, `perl-JSON-PP`,
+`perl-Pod-Checker` and `perl-Test-Simple`; the lists in `debian12.yml`,
+`debian13.yml`, `ubuntu24.yml` and `ubuntu26.yml` gain `perl`. Both
+`roles/epics` and `roles/epics_build` install the list, so the distribution
+and source-build paths carry the modules alike.
+
+Out of scope: the EPICS-env utility itself; the pkg_automation per-OS lists,
+the reference baseline, whose matching change EPICS-env proposes separately;
+a rocky9 vacuum, which this repository does not define; versioned Debian
+package names.
+
+##### Completion Criteria
+
+- On each of the six vacua, after the `epics` operator applies,
+  `perl -MJSON::PP -MDigest::SHA -MTest::More -MPod::Checker -e 1` exits 0
+  and `podchecker` is on `PATH`.
+- A re-apply of the operator succeeds.
+
+##### Dependencies And Decisions
+
+- Requested by EPICS-env on 2026-10-02; its Perl work has not started, so
+  this milestone does not block it.
+- `D20` (2026-10-02): the four Rocky module packages and `perl` on the
+  Debian family.
+
+##### Implementation Plan
+
+- Plan Status: accepted
+- Plan Acceptance: 2026-10-02
+- Implementation Authorization: 2026-10-02
+- Superseded Plan Artifacts: none
+
+1. Add the four Rocky package names after the existing Perl entries in
+   `rocky8.yml` and `rocky10.yml`.
+2. Add `perl` to the four Debian-family lists.
+3. Run T1 on the control host.
+4. Run T2 on fresh vacua and report the commit to EPICS-env.
+
+##### Test Plan
+
+| Label | Layer | Method | Environment | Expected Result |
+| --- | --- | --- | --- | --- |
+| T1 | Mechanism | Parse the six group_vars files as YAML; `--syntax-check` on `playbooks/operators/epics.yml` and `playbooks/operators/epics_build.yml`; resolve each module with `dnf repoquery --whatprovides 'perl(<Module>)'` on Rocky 8.10 and Rocky 10; in a throwaway container per OS, install the added names and run the module check from the Completion Criteria | control host; Rocky 8.10, Rocky 10, Debian 12, Debian 13, Ubuntu 24.04 and Ubuntu 26.04 containers | All files parse and both playbooks pass; each module resolves to the added Rocky name; the module check passes in every container |
+| T2 | Integration | `make op.epics.<vacuum> RUNTIME_INVENTORY=<host inventory>`; `perl -MJSON::PP -MDigest::SHA -MTest::More -MPod::Checker -e 1` and `command -v podchecker`; re-apply with the same target | Fresh rocky8, rocky10, debian12, debian13, ubuntu24 and ubuntu26 vacua | The apply succeeds, the module check exits 0 and `podchecker` is found on every vacuum; the re-apply succeeds |
+
+##### Verification Results
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T1 | 2026-10-03T00:55:07Z | control host, working tree on `4e7f115`; `rockylinux/rockylinux:8.10`, a Rocky 10.2 EPICS image, `debian:12`, `debian:13`, `ubuntu:24.04` and `ubuntu:26.04` containers | Passed | The six lists parse with no duplicate entries; `--syntax-check` exits 0 for both playbooks; `git diff --check` is clean; `dnf repoquery --whatprovides` maps `Digest::SHA`, `JSON::PP`, `Pod::Checker` (and `podchecker`) and `Test::More` to `perl-Digest-SHA`, `perl-JSON-PP`, `perl-Pod-Checker` and `perl-Test-Simple` on Rocky 8.10 and 10.2; before installation the Rocky 8.10 image has none of the four modules, the Rocky 10.2 image lacks `Test::More` and `Pod::Checker`, and the Debian-family images lack `JSON::PP`; after installing the added names, the module check passes and `podchecker` is found in all six containers |
+| T2 | | | Pending | |
+
+##### Closure Evidence
+
+- None yet.
 
 #### G4 - Prepare two independent ETL soak environments
 

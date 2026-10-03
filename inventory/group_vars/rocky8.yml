@@ -43,6 +43,10 @@ epics_os_packages:
   - flex-devel
   - ncurses-devel
   - perl-devel
+  - perl-Digest-SHA
+  - perl-JSON-PP
+  - perl-Pod-Checker
+  - perl-Test-Simple
   - net-snmp
   - net-snmp-utils
   - pcre-devel
