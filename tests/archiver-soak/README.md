@@ -374,8 +374,8 @@ snapshot 300-320 seconds after the preceding one, using its monotonic time.
 Each snapshot retains actual PV status, twenty verified deadband fields,
 boot/daemon identity, effective configuration, physical write counters and
 system/user file inventories. A capped or unchanged directory total cannot
-supply a zero write rate. The synchronized daemon write counter bounds each
-stream conservatively; the calculation also includes allocated-file growth.
+supply a zero write rate. The synchronized daemon write counter bounds the
+system stream; each stream is also bounded by its allocated-file growth.
 
 From the installed directory, set `index=000` for the first snapshot. At each
 following five-minute boundary set it to 001, 002, 003, 004, 005 and 006, then

@@ -70,10 +70,20 @@ On 2026-10-02 the earlier-schema sources were removed from the shipped tools.
 The accounting-corrected 20-dependency candidate, bundle SHA256
 e11d3ebc820f14d961bbefbf1dc1e514c2b304733fdf21ce1d8aa1f30871f98c, passed 58
 local checks with no skips at 2026-10-03 06:12:06 UTC and replaces the
-standalone candidate 567d629b. It is not installed; the dedicated VM last
-verified the 40-dependency candidate (5cd0f390) at 07:28:37 UTC on 2026-10-02.
-Next: with separate authorization, install and verify this candidate on the
-dedicated VM and run a new measured preparation in a new evidence directory.
+standalone candidate 567d629b. A second dedicated Rocky 8.10 VM, created by
+cloud-provision on 2026-10-03 on the control host, carries this candidate: its
+measured preparation passed at 07:33:25 UTC with 964,562,529 required bytes
+against the 1-GiB cap, and fresh preparation succeeded at 07:35:14 UTC. The
+first dedicated VM was last verified with the 40-dependency candidate
+(5cd0f390) on 2026-10-02 and has not been contacted from the control host.
+Next: deployed-chain, health, full-sample and empty/abort runtime
+verification on the second VM, then launch; each needs owner authorization.
+Reach the second VM through the inventory and known-hosts file named in
+private `work/soak-etl-pass-3bdf378c/journal-test-20261003/environment.json`;
+the commands are in `tests/archiver-soak/README.md`: section Observation And
+Shutdown for `verify-health.py` (two health completions and full samples) and
+section Journal Retention Preparation for `verify-chain.py`,
+`verify-runtime.py empty|abort` and `launch-retest.py`.
 Live scenario results remain pending before actual
 T22-T28 preparation/checks; verify both existing fixture
 adjustments before deployment to the retained VMs or another trial.
@@ -2820,9 +2830,14 @@ visibility probes do not establish lossless archival.
   live T22-T26/T28 checks. G4 supplies only the two retained soak deployments.
   The subsequent owner direction authorized a separate VM; its baseline,
   inventory and authority are now retained in the private environment record.
-  Archiver-dev installation is verified; measurement prerequisites remain
-  incomplete. Neither reuse nor changes to the
-  retained VMs follow from this dedicated-environment preparation.
+  Archiver-dev installation is verified there; its measurement prerequisites
+  remain incomplete. A second dedicated VM, created on the control host on
+  2026-10-03 and recorded in private
+  `journal-test-20261003/environment.json`, has completed archiver-dev
+  installation, fixture, instrumentation, measured preparation and fresh
+  preparation; its runtime verification and the live scenarios remain.
+  Neither reuse nor changes to the retained VMs follow from either
+  dedicated-environment preparation.
 
 ##### Implementation Plan
 
@@ -2844,7 +2859,7 @@ visibility probes do not establish lossless archival.
 
 - Plan Status: accepted
 - Plan Acceptance: 2026-10-02; the owner accepted correcting the accounting instead of the cap, logging policy or VM size
-- Implementation Authorization: 2026-10-02; code correction, bundle regeneration and local verification only
+- Implementation Authorization: 2026-10-02; code correction, bundle regeneration and local verification. 2026-10-03; step 4 (candidate installation and measured preparation) on a second dedicated VM, together with its species deployment and fixture before it and the fresh preparation after it
 - Superseded Plan Artifacts: none
 
 1. `tests/archiver-soak/etl-pass/journal_retention.py`: `rates()` returns
@@ -2864,8 +2879,8 @@ visibility probes do not establish lossless archival.
 4. Installing the corrected bundle on the dedicated VM and a new measured
    preparation in a new evidence directory need separate authorization.
 
-Steps 1-3 are implemented and locally verified (results below); step 4 is
-not authorized.
+Steps 1-3 are implemented and locally verified; step 4 ran on a second
+dedicated VM on 2026-10-03 (results below).
 
 The preceding two-chain revision was accepted on 2026-09-30. Its steps 1-2
 were authorized for implementation and local verification on that date;
@@ -2885,7 +2900,7 @@ scenarios; it does not select a collector algorithm or a larger journald cap.
 | Confirmed finding | The frozen collector retains the last kernel cursor when no new kernel record exists; both trials aborted after that pre-trial cursor disappeared | `collect.py::collect_kernel`, both actual `abort.json` records and failed full samples at 18:20/18:25 UTC on shortened and 21:30/21:35 UTC on default; T22-T28 must distinguish obsolete anchors from required-record loss |
 | Confirmed finding | Earliest retained system records still preceded both trial starts during the post-abort inspection; a user journal can retain older records independently | Actual system-only journal inspection on 2026-10-01; shortened earliest system record 2026-09-30 07:55:01.063035 UTC and default 2026-10-01 06:49:49.287537 UTC; this observation alone does not prove all required records were retained |
 | Hypothesis | Replacement-tool coverage, retention headroom and comparison evidence will satisfy the full-window criteria | Resolve through T22-T28 and new T14-T20 executions; previous successful preparations do not prove the replacement tools or an entire 24-hour window |
-| Confirmed finding | Existing retest entry points require previous observation records; a separate initializer is required for the fresh dedicated VM | Actual preflight at 2026-10-02 05:17:03 UTC found no instrumentation or abort unit. Authorized initialize-fresh.py instrumentation succeeded at 07:28:37 UTC and preserves genuine configuration/JFR/GC evidence. Measured retention/capacity preparation and full-sample readiness remain pending. No synthetic observation or terminal record is permitted |
+| Confirmed finding | Existing retest entry points require previous observation records; a separate initializer is required for the fresh dedicated VM | Actual preflight at 2026-10-02 05:17:03 UTC found no instrumentation or abort unit. Authorized initialize-fresh.py instrumentation succeeded at 07:28:37 UTC and preserves genuine configuration/JFR/GC evidence. On the second dedicated VM on 2026-10-03, initialize-fresh.py measured retention/capacity preparation passed at 07:33:25 UTC and its prepare action succeeded at 07:35:14 UTC; full-sample readiness remains pending. No synthetic observation or terminal record is permitted |
 
 ###### Historical Findings And Implemented Corrections
 
@@ -3746,7 +3761,7 @@ coverage or absence of OOM throughout either interval.
 | T24 | Not executed for the journal-scenario revision | Dedicated test VM; live kernel/journald and terminal paths | Pending | Tagged benign events, rotation, race and final-capture comparisons require actual execution |
 | T25 | Not executed for the journal-scenario revision | Disposable real journal copies and dedicated test VM | Pending | Required-record loss with an older surviving user journal and persistent failed assertions requires actual execution |
 | T26 | Not executed for the journal-scenario revision | Retained actual boundary/midnight/boot inputs and test VM | Pending | Boundary continuity and changed-boot rejection require actual shipped-path execution |
-| T27 | Not executed for the journal-scenario revision | Both stopped soak deployments | Preparation Pending; in-window Pending | Gap arithmetic was checked against shipped limits: 320+240=560 seconds, 320+2700=3020 seconds and factor-two allowance gives 6040 seconds. This verifies the written calculation only. Stream-write measurements, effective-cap inequalities, launch proof validation and complete in-window/terminal checks remain unexecuted; no retention-cap change or passing budget is claimed |
+| T27 | Not executed for the journal-scenario revision | Both stopped soak deployments | Preparation Pending; in-window Pending | Gap arithmetic was checked against shipped limits: 320+240=560 seconds, 320+2700=3020 seconds and factor-two allowance gives 6040 seconds. This verifies the written calculation only. Stream-write measurements, effective-cap inequalities, launch proof validation and complete in-window/terminal checks remain unexecuted; no retention-cap change or passing budget is claimed. The passing dedicated-VM preparation of 2026-10-03, recorded in the supplementary rows below, does not satisfy T27 on these deployments |
 | T28 | Not executed for the journal-scenario revision | Dedicated complete test deployment and retained real abort inputs | Pending | Quiet-case non-abort and loss-case full-sample/dispatch/terminal/evaluator integration remain required |
 
 Local journal-candidate verification supplements the pending live checks:
@@ -3771,6 +3786,9 @@ Local journal-candidate verification supplements the pending live checks:
 | T27 dedicated measured retention budget | 2026-10-02T08:05:44.772270+00:00 calculation; observed at 08:25:26 and re-derived at 08:26:54 UTC | Dedicated VM; seven actual snapshots and shipped journal_retention calculation | Failed; preparation and dependent checks did not execute | All seven snapshots retain the actual 903-PV load and ten verified adjusted records. Six intervals last 300.064-300.084 seconds, with peak physical write bound 61,778.213 bytes/s per stream; shipped calculation requires 1,291,544,426 bytes against the effective 1,073,741,824-byte cap and fails independently. The final 4.376396-second interval records 12,210,176 written bytes, raising the bound to 2,790,006.860 bytes/s per stream, required bytes to 34,248,546,484 and required files to 259 against 100. The measurement service exits 1 and preserves its failed proof; measurements.json, preparation.json, chain/health verification and observation.json are absent. Root has 43,213,418,496 bytes free at diagnosis. No passing preparation, full-sample readiness or 24-hour launch is inferred. Actual VM measurement sources and private journal-test-fresh-measurements-result-20261002.json retain evidence; diagnose the short-interval accounting and resolve cap sufficiency before another execution |
 | T27 retention budget diagnosis | 2026-10-03T06:09:18Z | Control host; shipped `journal_retention` at `55ae31a` on the seven actual dedicated-VM snapshots, the failed proof and the 07:35:00-08:06:00 UTC actual journal export (46,062 entries) | Diagnosed; correction accepted | Re-derivation reproduces the recorded values exactly: six 300.064-300.084-second intervals with write deltas of 14,544,896-18,538,496 bytes, peak 61,778.213 bytes/s, 1,291,544,426 required bytes, and 34,248,546,484 bytes with the 4.376-second final interval, equal to the failed proof's budget. `rates()` applies the one daemon `write_bytes` counter to both streams, so the rate term is counted twice; over the six intervals the user journal's allocation grew by 4,096 bytes and the system journal's by 25,165,824 bytes in 8-MiB steps. Every write delta is a multiple of 4,096 bytes; the counter records about 3.9 times the actual file growth and about 2.2 times the exported JSON size (7,368,071-7,603,388 bytes per interval). The final interval holds one 6,367-entry latency-probe burst, which each five-minute interval also contains. Counting the rate term once gives 918,404,021 bytes. Page-granular re-dirtying of journald's memory-mapped pages is the likely source of the excess over file growth; it was not tested |
 | T13/T27 accounting-corrected candidate | 2026-10-03T06:12:06Z | Control host; Python 3.13.5; shipped tools with the corrected `journal_retention.py`; private evidence, archive, extracted, journal-sequence and retention-snapshot paths | Local checks Passed; live preparation Pending | `contract.py --freeze` rewrote `bundle.json` (SHA256 `e11d3ebc820f14d961bbefbf1dc1e514c2b304733fdf21ce1d8aa1f30871f98c`) and `contract.verify_bundle` accepts all 20 dependencies; all 51 `SHA256SUMS` entries verify. Unittest discovery runs 58 checks with no skips and rc=0 with every private path set, and 37 pass with 21 skipped without them. On the actual snapshots the corrected tools bound the system stream at 61,778.213 bytes/s and the user stream at 13.650 bytes/s from its allocation growth, exclude the 4.376-second final interval, and require 918,486,465 bytes and 11 files against 1,073,741,824 bytes and 100 files: passed. The new shared-counter checks fail on the tools at `55ae31a` (user bound equal to the write rate); the real-input short-interval check errors there because the interval rule does not exist. No VM was contacted |
+| Second dedicated environment and fixture | 2026-10-03T07:02:04Z | A fresh Rocky 8.10 VM created by cloud-provision on the control host (2 vCPU, 4096 MiB, 48 GiB), shipped `archiver_dev` species at `8bfa611` with `common.yml`, `shortened.yml` and the full source pins | Passed | The species apply returned rc=0 with 33 successful tasks and no failed or unreachable host. The installed tools verify the 20-dependency bundle `e11d3ebc`. The species wrote the journald drop-in 49 ms before the daemon started, so the daemon ran with it, but `journal_retention.py snapshot` derives the start from the whole-second boot time and refused the application as unverified; one `systemd-journald` restart made it verifiable, after which the snapshot refused only the absent measurement units. `install-fixture.py` and `apply-fixture.py` returned rc=0 (10 records, 20 fields); `register.py` received 903 replies; all 903 PVs were connected and archiving with no unexpected PV; `--verify-existing` passed. `initialize-fresh.py instruments` returned rc=0 with four JVMs, and `check` returned rc=0 after the population reconnected. The second environment's inventory, owner and execution authority are recorded in private `work/soak-etl-pass-3bdf378c/journal-test-20261003/environment.json`, beside its step records; `journal-test-environment.json` remains the first environment's record |
+| T27 measured retention budget on the second VM | 2026-10-03T07:33:25Z | Second dedicated VM; shipped `initialize-fresh.py measure` with the corrected candidate under the approved 903-PV load | Passed; first attempt failed | The first attempt at 07:02:22 UTC, 76 seconds after the instrumentation restart, stopped after one snapshot: one of 903 retrieval requests returned an HTTP error, and three later requests for the same PV returned HTTP 200. Its directory is preserved on the VM. The second attempt from 07:03:20 UTC took seven snapshots 300.074-300.128 seconds apart with every latency probe complete; write deltas per interval were 16,326,656, 17,776,640, 19,234,816, 19,619,840, 20,832,256 and 20,197,376 bytes. The system bound is 69,421.028 bytes/s and the user bound 0 bytes/s; 964,562,529 bytes and 11 files are required against 1,073,741,824 bytes and 100 files, so the budget passed with about 10 percent headroom. The capacity projection requires 11,838,250,087 bytes of growth for 86400 seconds. No observation was opened |
+| T15 fresh preparation on the second VM | 2026-10-03T07:35:14Z | Second dedicated VM; shipped `initialize-fresh.py prepare` with the measured retention proof and capacity input, 86400 seconds, shortened chain | Passed; runtime verification Pending | rc=0. `preparation.json`, the copied retention proof and its sources and the capacity inputs exist under `/var/lib/etl-soak/`; the sample and finish timers are inactive and no observation exists. Deployed-chain, health, full-sample and empty/abort runtime verification remain required before launch |
 | T13 standalone schema-5 bundle | 2026-10-02 20:54:06 UTC | Control host; Python 3.13.5; shipped schema-5 tools and retained real runtime/export/fixture inputs | Local checks Passed; dedicated installation and live scenarios Pending | Earlier-schema sources were removed from the shipped tools: `BUNDLE_FILES` no longer lists the schema-3 evaluator or the nineteen schema-4 files, and the evaluator returns Incomplete with `unsupported_observation_schema` for any other schema. Actual unittest discovery ran 55 checks in 36.505 seconds, rc=0 and no skips. `contract.verify_bundle` accepts all 20 dependencies and all 51 checksums verify. Candidate bundle SHA256 is 567d629b11704a2291302eb603830e313d85a9b7bab37629a0656ec7a31c0726; it supersedes the 40-dependency candidate recorded above and is not installed on any VM. Four retained-evidence cases now relabel the pre-schema-5 input and require a non-Passed verdict with the expected failed assertion. Four cases are removed because they exercised the removed schema-3 evaluator: Passed replay, missing scheduled pass, missing GC pair and aborted observation. The current evaluator has no retained-evidence coverage for those four until a schema-5 observation completes; add them then. The removed sources remain in the private evidence directory as `legacy-sources-removed-from-tree-20261002/` |
 
 ##### Closure Evidence
