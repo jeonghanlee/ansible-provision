@@ -57,7 +57,7 @@ The current collector uses the MariaDB Unix socket. Each of mgmt, engine, etl
 and retrieval has a 256M minimum and maximum heap.
 
 `common.yml` pins epicsarchiverap-env `d09dca7` and epicsarchiverap-maven
-`3bdf378c`. Apply it with exactly one store configuration through the shipped
+`254a6542`. Apply it with exactly one store configuration through the shipped
 `archiver_dev` species, using a separately supplied private inventory.
 
 | Configuration | STS | MTS | LTS |
@@ -220,6 +220,8 @@ the real retrieval service and verifies that negative collection prevents start.
 `verify-runtime.py abort` uses a separate evidence directory to exercise early
 finish rejection, actual abort collection and shutdown, and repeated finish
 rejection; it restarts the appliance only after successful verification.
+Before a launch no finish timer exists, so the terminal path stops only the
+observation timers that are loaded and records each timer's load state.
 `verify-health.py` requires two distinct successful real health invocations and
 full samples. Readiness binds these proofs to the installed tool hashes.
 Preparation, chain/runtime verification and launch require explicit
@@ -376,6 +378,10 @@ boot/daemon identity, effective configuration, physical write counters and
 system/user file inventories. A capped or unchanged directory total cannot
 supply a zero write rate. The synchronized daemon write counter bounds the
 system stream; each stream is also bounded by its allocated-file growth.
+An interval with no counted writes is refused when a file's size, allocation
+or identity changed or a file appeared or disappeared; a changed modification
+time alone is not growth, because the inventory and counters are read at
+different instants.
 
 From the installed directory, set `index=000` for the first snapshot. At each
 following five-minute boundary set it to 001, 002, 003, 004, 005 and 006, then
@@ -405,9 +411,9 @@ The budget uses the largest measured rate under the unchanged policy, plus
 retained user-journal bytes and two file-size allowances per stream. The
 daemon's one `write_bytes` counter covers both streams, so it bounds the
 system stream only; the user stream is bounded by its own allocation growth.
-An interval shorter than 300 seconds between the last measurement and a
-preparation or check snapshot is checked for continuity but is not a rate
-bound. Its
+An interval shorter than 300 seconds, whether between the last measurement
+and a preparation or check snapshot or between two collections, is checked
+for continuity but is not a rate bound. Its
 factor-two horizon covers the sample-gap limit plus the effective collection
 or terminal timeout. With 320/240/2700-second limits the horizon is 6040 seconds.
 Actual byte, retention-time and file-count caps must all permit that budget;
@@ -424,7 +430,8 @@ recheck the current caps and proof identity. Policy, boot, daemon or bundle
 changes require new evidence.
 
 Each collection and final capture preserves its actual snapshot, gap and
-budget. A higher observed rate increases the retained bound. Missing/failing
+budget. A higher rate observed over at least 300 seconds increases the
+retained bound; a shorter gap is still checked against its gap limit. Missing/failing
 input remains a sample error; one error prevents Passed, two consecutive
 failed full samples request abort, and the 2-GiB reserve rule still applies.
 Live preparation and the T22-T28 scenarios establish integration behavior;
@@ -494,6 +501,12 @@ file exercises missing-sequence rejection; it cannot prove all-stream coverage.
 Set `ETL_SOAK_RETENTION_EVIDENCE` to a directory of actual retention snapshots
 (`snapshot-*.json`) and the `proof.json` whose `latest` snapshot follows them;
 the shared write-counter and short-interval regressions replay those inputs.
+Set `ETL_SOAK_RUNTIME_RETENTION_EVIDENCE` to a directory holding two actual
+consecutive collection snapshots (`first.json`, `second.json`) taken less than
+300 seconds apart and the first collection's budget (`first-budget.json`).
+Set `ETL_SOAK_MTIME_RETENTION_EVIDENCE` to a directory holding two actual
+snapshots (`first.json`, `second.json`) between which no writes were counted
+and only a journal file's modification time changed.
 Only external HTTP, command, filesystem and clock boundaries are replaced.
 Budget arithmetic is unit coverage. Historical collector transport checks and
 schema-5 negative cases do not establish new journal integration or successful

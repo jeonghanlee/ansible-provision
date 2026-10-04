@@ -128,9 +128,8 @@ def journal_checks(out, manifest, samples, missing, failures):
             if snapshot['daemon'] != proof['daemon'] or snapshot['boot_id'] != boot:
                 raise RuntimeError('Journal coverage and retention identities differ')
             gap = journal_retention.elapsed(prior_snapshot, snapshot)
-            measured = journal_retention.rates(prior_snapshot, snapshot)
-            peak = {stream: max(peak[stream], measured[stream], budget['rates_bytes_per_second'][stream])
-                    for stream in peak}
+            peak = journal_retention.bounded_interval(peak, prior_snapshot, snapshot)
+            peak = {stream: max(peak[stream], budget['rates_bytes_per_second'][stream]) for stream in peak}
             if any(budget['rates_bytes_per_second'][stream] < peak[stream] for stream in peak):
                 raise RuntimeError('Journal rate budget omits a measured higher rate')
             prior_snapshot = snapshot

@@ -41,6 +41,14 @@ def checked(args):
     return result['stdout'].strip()
 
 
+def stop_loaded(units):
+    # A finish timer exists only after an observation opens; an unloaded unit has nothing to cancel.
+    states = {unit: checked(['systemctl', 'show', unit, '--value', '-p', 'LoadState']) for unit in units}
+    loaded = [unit for unit in units if states[unit] == 'loaded']
+    result = command(['systemctl', 'stop', *loaded]) if loaded else {'command': [], 'rc': 0, 'stdout': '', 'stderr': ''}
+    return {**result, 'load_states': states}
+
+
 def unit_state():
     return checked(['systemctl', 'show', collect.UNIT, '-p', 'ActiveState', '-p', 'SubState',
                     '-p', 'Result', '-p', 'ExecMainStatus', '-p', 'TimeoutStopUSec',
@@ -261,7 +269,7 @@ def terminal(aborted=False, reason=None):
             result['errors'].append(name)
         collect.write_json(marker, result)
 
-    capture('cancel_timers', lambda: command(['systemctl', 'stop', SAMPLER + '.timer', FINISH + '.timer']))
+    capture('cancel_timers', lambda: stop_loaded([SAMPLER + '.timer', FINISH + '.timer']))
     capture('sampler_wait', wait_sampler)
     if not aborted and manifest.get('measurement_schema') == contract.SCHEMA:
         capture('required_pass_wait', lambda: wait_passes(manifest))

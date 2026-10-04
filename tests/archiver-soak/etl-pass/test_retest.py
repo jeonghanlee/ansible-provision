@@ -222,7 +222,18 @@ class RetestTests(unittest.TestCase):
     def test_normal_finish_waits_for_complete_monotonic_duration(self):
         self.terminal_boundary(aborted=False, remaining=0.25)
 
-    def terminal_boundary(self, aborted, remaining=None):
+    def test_abort_before_launch_skips_the_unloaded_finish_timer(self):
+        record = self.terminal_boundary(aborted=True, finish_timer='not-found')
+        self.assertNotIn('cancel_timers', record['errors'])
+        self.assertEqual(record['cancel_timers']['command'],
+                         ['systemctl', 'stop', observe.SAMPLER + '.timer'])
+        self.assertEqual(record['cancel_timers']['load_states'][observe.FINISH + '.timer'], 'not-found')
+
+    def test_failed_stop_of_a_loaded_timer_remains_an_error(self):
+        record = self.terminal_boundary(aborted=True, timer_stop_rc=1)
+        self.assertIn('cancel_timers', record['errors'])
+
+    def terminal_boundary(self, aborted, remaining=None, finish_timer='loaded', timer_stop_rc=0):
         with tempfile.TemporaryDirectory() as directory:
             out = Path(directory)
             now = datetime.datetime.now(datetime.timezone.utc)
@@ -235,7 +246,9 @@ class RetestTests(unittest.TestCase):
             def transport(args, **kwargs):
                 stdout, rc = '', 0
                 if args[:2] == ['systemctl', 'show']:
-                    if 'TimeoutStopUSec' in args:
+                    if 'LoadState' in args:
+                        stdout = finish_timer if observe.FINISH + '.timer' in args else 'loaded'
+                    elif 'TimeoutStopUSec' in args:
                         stdout = '5min'
                     elif observe.SAMPLER + '.service' in args:
                         stdout = 'inactive'
@@ -243,6 +256,8 @@ class RetestTests(unittest.TestCase):
                         stdout = 'ActiveState=' + ('inactive' if stops else 'active') + '\nResult=success'
                 elif args[:3] == ['systemctl', 'stop', collect.UNIT]:
                     stops.append(args)
+                elif args[:2] == ['systemctl', 'stop'] and observe.SAMPLER + '.timer' in args:
+                    rc = 5 if finish_timer != 'loaded' and observe.FINISH + '.timer' in args else timer_stop_rc
                 elif args[0] == '/usr/bin/python3':
                     rc = 1
                 elif args[0] == 'pgrep':
@@ -284,6 +299,7 @@ class RetestTests(unittest.TestCase):
                 with self.assertRaisesRegex(RuntimeError, 'terminal operation'):
                     observe.finish()
                 self.assertEqual(len(stops), 1)
+                return record
 
     def test_installed_timeout_parser(self):
         self.assertEqual(observe.timeout_seconds('5min'), 300)

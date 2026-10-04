@@ -23,7 +23,7 @@ import observe
 
 ENV_SOURCE = Path('/opt/epicsarchiverap-env-src/epicsarchiverap-env')
 SOURCE_PINS = {'env_head': 'd09dca7a604840bc3f8dcd9edd7a7434fdf6992e',
-               'maven_head': '3bdf378cb0a5eba42ad73648ec9e2c76b898bc1e'}
+               'maven_head': '254a6542f92411304b91f2e00c234f20030ae459'}
 INSTALL = Path('/opt/epicsarchiverap-maven')
 STAMP = Path('/var/tmp/archiver-build.config')
 LOGGER = 'org.epics.archiverappliance.etl.common.ETLPassDriver'

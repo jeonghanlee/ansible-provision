@@ -213,13 +213,19 @@ def elapsed(first, last):
     return duration
 
 
+def content(inventory):
+    # Inventory and counters are read at different instants; a modification time alone is not growth.
+    return {path: {key: value for key, value in row.items() if key != 'mtime_ns'}
+            for path, row in inventory.items()}
+
+
 def rates(first, last):
     duration = elapsed(first, last)
     writes = last['write_bytes'] - first['write_bytes']
     cancellations = last['cancelled_write_bytes'] - first['cancelled_write_bytes']
     if writes < 0 or cancellations < 0:
         raise RuntimeError('Journal write accounting reset')
-    if writes == 0 and first['inventory'] != last['inventory']:
+    if writes == 0 and content(first['inventory']) != content(last['inventory']):
         raise RuntimeError('Changed journal files lack write accounting')
     allocation = {stream: sum(max(0, row['allocated_bytes'] - first['inventory'].get(path, {}).get('allocated_bytes', 0))
                               for path, row in last['inventory'].items() if row['stream'] == stream)
@@ -398,24 +404,27 @@ def install_proof(source, destination):
     install_payload(preservation_payload(source), destination)
 
 
+def interval_budget(current, bounds, old, terminal=False):
+    result = calculation(current, bounds)
+    if old:
+        gap = elapsed(old, current)
+        result = calculation(current, bounded_interval(result['rates_bytes_per_second'], old, current))
+        gap_limit = result['terminal_gap_seconds'] if terminal else result['periodic_gap_seconds']
+        result['actual_gap_seconds'] = gap
+        if gap > gap_limit:
+            result['passed'] = False
+    return result
+
+
 def runtime(out, raw, tools, previous, terminal=False):
     current = snapshot()
     save(raw / 'journal-retention-snapshot.json', current)
     proof_path = out / 'journal-retention-proof.json'
     checked = validate(proof_path, tools, current=current, fresh=False)
-    result = calculation(current, {stream: max(value,
+    result = interval_budget(current, {stream: max(value,
         previous.get('journal_retention_bounds', {}).get(stream, 0))
-        for stream, value in checked['current_budget']['rates_bytes_per_second'].items()})
-    old = previous.get('journal_retention_snapshot')
-    if old:
-        gap = elapsed(old, current)
-        observed = rates(old, current)
-        bounds = {stream: max(result['rates_bytes_per_second'][stream], observed[stream]) for stream in observed}
-        result = calculation(current, bounds)
-        gap_limit = result['terminal_gap_seconds'] if terminal else result['periodic_gap_seconds']
-        result['actual_gap_seconds'] = gap
-        if gap > gap_limit:
-            result['passed'] = False
+        for stream, value in checked['current_budget']['rates_bytes_per_second'].items()},
+        previous.get('journal_retention_snapshot'), terminal)
     save(raw / 'journal-retention-budget.json', result)
     if not result['passed']:
         raise RuntimeError('In-window journal retention budget or collection gap failed')
