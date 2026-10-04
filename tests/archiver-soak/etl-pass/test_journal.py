@@ -14,6 +14,9 @@ REAL_INPUT = os.environ.get('ETL_SOAK_JOURNAL_SEQUENCE')
 RETENTION_INPUT = os.environ.get('ETL_SOAK_RETENTION_EVIDENCE')
 RUNTIME_INPUT = os.environ.get('ETL_SOAK_RUNTIME_RETENTION_EVIDENCE')
 MTIME_INPUT = os.environ.get('ETL_SOAK_MTIME_RETENTION_EVIDENCE')
+HOLES_INPUT = os.environ.get('ETL_SOAK_SEQUENCE_HOLE_EVIDENCE')
+ACCOUNTING_INPUT = os.environ.get('ETL_SOAK_SEQUENCE_ACCOUNTING_EVIDENCE')
+HEADER_INPUT = os.environ.get('ETL_SOAK_JOURNAL_HEADER_EVIDENCE')
 
 
 class BudgetArithmeticTests(unittest.TestCase):
@@ -125,6 +128,40 @@ class BudgetArithmeticTests(unittest.TestCase):
         self.assertFalse(result['passed'])
         self.assertTrue(retention.interval_budget(late, bounds, first, terminal=True)['passed'])
 
+    def journal_file(self, name, first, last, entries):
+        return {'file': name, 'first_sequence': first, 'last_sequence': last, 'entries': entries}
+
+    def test_sequence_accounting_starts_at_the_oldest_retained_system_file(self):
+        files = [self.journal_file('user-1000@old.journal', 5, 9, 2),
+                 self.journal_file('system@a.journal', 20, 59, 38),
+                 self.journal_file('system.journal', 60, 99, 39),
+                 self.journal_file('user-1000.journal', 10, 100, 9),
+                 self.journal_file('user-1001.journal', 0, 0, 0)]
+        partial = {'user-1000.journal': {'returned': 9, 'returned_in_range': 4}}
+        result = journal_coverage.accounting(files, partial, [[12, 13], [30, 31], [98, 98]])
+        self.assertEqual((result['first_sequence'], result['last_sequence'], result['expected_entries']), (20, 100, 81))
+        self.assertEqual((result['stored_entries_least'], result['stored_entries_most']), (81, 81))
+        self.assertEqual((result['unreturned_in_range'], result['unreturned_outside_range']), (3, 2))
+        self.assertFalse(result['passed'])
+        self.assertTrue(journal_coverage.accounting(files, partial, [[30, 31], [98, 98]])['passed'])
+        files[1]['entries'] -= 1
+        self.assertFalse(journal_coverage.accounting(files, partial, [])['passed'])
+
+    def test_unplaced_entries_of_a_partial_file_only_widen_the_accepted_count(self):
+        files = [self.journal_file('system.journal', 20, 99, 76),
+                 self.journal_file('user-1000.journal', 10, 100, 12)]
+        partial = {'user-1000.journal': {'returned': 9, 'returned_in_range': 4}}
+        result = journal_coverage.accounting(files, partial, [])
+        self.assertEqual((result['stored_entries_least'], result['stored_entries_most']), (80, 83))
+        self.assertTrue(result['passed'])
+        files[0]['entries'] = 72
+        self.assertFalse(journal_coverage.accounting(files, partial, [])['passed'])
+        partial['user-1000.journal']['returned'] = 13
+        with self.assertRaisesRegex(RuntimeError, 'returns more entries'):
+            journal_coverage.accounting(files, partial, [])
+        with self.assertRaisesRegex(RuntimeError, 'No retained system journal'):
+            journal_coverage.accounting(files[1:], partial, [])
+
     def test_timestamp_conversion_preserves_microseconds_and_timezone(self):
         self.assertEqual(journal_coverage.timestamp('1970-01-01 00:00:01.000001 UTC'), 1000001)
         self.assertEqual(journal_coverage.timestamp('1970-01-01T01:00:01.000001+01:00'), 1000001)
@@ -150,19 +187,73 @@ class RealJournalInputTests(unittest.TestCase):
         with self.assertRaisesRegex(RuntimeError, 'boot identity'):
             journal_coverage.coordinates(self.rows[0], other)
 
-    def test_complete_sequence_requires_every_actual_entry(self):
+    def test_checkpoints_are_required_and_unreturned_numbers_are_counted(self):
         first = journal_coverage.coordinates(self.rows[0], self.boot)[1]
         last = journal_coverage.coordinates(self.rows[-1], self.boot)[1]
-        unique = {journal_coverage.coordinates(row, self.boot)[1] for row in self.rows}
-        if len(unique) == last - first + 1:
-            result = journal_coverage.validate_interval(self.rows, self.rows[0], self.rows[-1], self.boot)
-            self.assertEqual(len(result), last - first + 1)
-            if len(result) > 2:
-                with self.assertRaisesRegex(RuntimeError, 'missing records'):
-                    journal_coverage.validate_interval(result[:1] + result[2:], result[0], result[-1], self.boot)
-        else:
-            with self.assertRaisesRegex(RuntimeError, 'missing records'):
-                journal_coverage.validate_interval(self.rows, self.rows[0], self.rows[-1], self.boot)
+        result = journal_coverage.validate_interval(self.rows, self.rows[0], self.rows[-1], self.boot)
+        holes = journal_coverage.sequence_holes(result, self.boot)
+        missing = sum(end - start + 1 for start, end in holes)
+        self.assertEqual(len(result) + missing, last - first + 1)
+        for rows in (self.rows[1:], self.rows[:-1]):
+            with self.assertRaisesRegex(RuntimeError, 'missing its system checkpoint'):
+                journal_coverage.validate_interval(rows, self.rows[0], self.rows[-1], self.boot)
+        if len(result) > 2:
+            removed = journal_coverage.coordinates(result[1], self.boot)[1]
+            shorter = journal_coverage.validate_interval(result[:1] + result[2:], result[0], result[-1], self.boot)
+            counted = journal_coverage.sequence_holes(shorter, self.boot)
+            self.assertEqual(sum(end - start + 1 for start, end in counted), missing + 1)
+            self.assertTrue(any(start <= removed <= end for start, end in counted))
+
+
+@unittest.skipUnless(HOLES_INPUT, 'A retained actual interval with unreturned sequence numbers is required')
+class RealSequenceHoleInputTests(unittest.TestCase):
+    def test_actual_interval_with_unreturned_numbers_is_accepted_and_counted(self):
+        root = Path(HOLES_INPUT)
+        rows = [json.loads(line) for line in (root / 'journal-sequence.jsonl').read_text().splitlines()]
+        tail = json.loads((root / 'system-journal-tail.jsonl').read_text())
+        boot = tail['_BOOT_ID']
+        interval = journal_coverage.validate_interval(rows, rows[0], tail, boot)
+        holes = journal_coverage.sequence_holes(interval, boot)
+        missing = sum(end - start + 1 for start, end in holes)
+        self.assertGreater(missing, 0)
+        first = journal_coverage.coordinates(rows[0], boot)[1]
+        last = journal_coverage.coordinates(tail, boot)[1]
+        self.assertEqual(len(interval) + missing, last - first + 1)
+        returned = {journal_coverage.coordinates(row, boot)[1] for row in interval}
+        for start, end in holes:
+            self.assertFalse(returned & set(range(start, end + 1)))
+
+
+@unittest.skipUnless(ACCOUNTING_INPUT, 'Retained actual sequence accounting records are required')
+class RealSequenceAccountingInputTests(unittest.TestCase):
+    def test_actual_journal_files_store_one_entry_per_sequence_number(self):
+        records = [json.loads(path.read_text()) for path in sorted(Path(ACCOUNTING_INPUT).glob('*.json'))]
+        self.assertTrue(any(len(record['files']) > 2 for record in records))
+        for record in records:
+            result = journal_coverage.accounting(record['files'], record['partial_files'], [])
+            self.assertTrue(result['passed'])
+            self.assertEqual(result['stored_entries_least'], result['expected_entries'])
+            self.assertEqual({key: record[key] for key in result}, result)
+            lost = [dict(row) for row in record['files']]
+            newest = max(lost, key=lambda row: row['last_sequence'])
+            newest['entries'] -= 1
+            self.assertFalse(journal_coverage.accounting(lost, record['partial_files'], [])['passed'])
+
+
+@unittest.skipUnless(HEADER_INPUT, 'A retained actual journal file and its systemd 239 header listing are required')
+class RealJournalHeaderInputTests(unittest.TestCase):
+    def test_direct_header_read_matches_the_journalctl_listing(self):
+        root = Path(HEADER_INPUT)
+        listed = dict(line.split(': ', 1) for line in (root / 'header-239.txt').read_text().splitlines() if ': ' in line)
+        row = journal_coverage.read_header(next(root.glob('*.journal')))
+        self.assertEqual((row['file_id'], row['boot_id'], row['sequence_id']),
+                         (listed['File ID'], listed['Boot ID'], listed['Sequential Number ID']))
+        self.assertEqual((row['first_sequence'], row['last_sequence'], row['entries']),
+                         (int(listed['Head Sequential Number'].split()[0]),
+                          int(listed['Tail Sequential Number'].split()[0]), int(listed['Entry Objects'])))
+        self.assertGreater(row['entries'], 0)
+        with self.assertRaisesRegex(RuntimeError, 'Unsupported journal file header'):
+            journal_coverage.read_header(root / 'header-239.txt')
 
 
 @unittest.skipUnless(RETENTION_INPUT, 'Retained actual retention snapshots are required')

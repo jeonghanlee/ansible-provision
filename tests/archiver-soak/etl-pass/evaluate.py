@@ -105,7 +105,17 @@ def journal_checks(out, manifest, samples, missing, failures):
                     any(any(term in str(row.get('MESSAGE', '')).lower() for term in ('suppressed', 'missed'))
                         for row in required)):
                 raise RuntimeError('Required journal rows differ from the archived interval')
+            holes = journal_coverage.sequence_holes(interval, boot)
+            record = json.loads((raw / 'journal-sequence-accounting.json').read_text())
+            accounted = journal_coverage.accounting(record['files'], record['partial_files'], holes)
+            if (any(record[key] != value for key, value in accounted.items()) or not accounted['passed'] or
+                    record['boot_id'] != boot or proof['sequence_accounting'] != {'boot_id': boot, **accounted} or
+                    any(row['boot_id'] != boot for row in record['files'] if row['entries']) or
+                    accounted['last_sequence'] < journal_coverage.coordinates(tails[0], boot)[1]):
+                raise RuntimeError('Stored journal entries do not account for the interval')
             if (proof['boot_id'] != boot or len(interval) != proof['sequence_records'] or
+                    proof['sequence_holes'] != holes or
+                    proof['sequence_missing'] != sum(last - first + 1 for first, last in holes) or
                     contract.digest(raw / 'journal-sequence.jsonl') != proof['source_sha256'] or
                     not proof['coverage_complete'] or
                     proof['daemon'] != prepared['current']['daemon'] or

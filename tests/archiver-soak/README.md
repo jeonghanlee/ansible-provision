@@ -293,6 +293,7 @@ The collector retains each failure instead of treating absent data as success.
 | `health-invocations.csv`, `raw/*/health-journal.jsonl` | Health invocation completion evidence and cursor continuity |
 | `journal-retention-proof.json`, `journal-retention-sources/` | Hash-bound measurement intervals, logging policy and preparation budgets |
 | `raw/*/journal-{sequence,coverage,marker}.*`, query receipts | Bounded all-stream sequence evidence with system-only anchor and terminal marker |
+| `raw/*/journal-sequence-accounting.json` | Journal file headers and the stored-entry count for the retained sequence range at each collection |
 | `raw/*/journal-retention-{snapshot,budget}.json` | Actual journal inventory, effective caps, measured rates, collection gap and retained budget verdict |
 | `health-verification.json`, `empty-data-verification.json`, `terminal-path-verification.json` | Executed preparation proofs bound to tool hashes |
 | `jvm/`, `raw/*/*.jfr`, `final-gc/` | Rotating GC logs, JFR snapshots and final recordings |
@@ -323,11 +324,23 @@ with collections, and concurrent counters with remark/cleanup pauses.
 `G1Old` includes concurrent mark and undo events and differs from jstat `CGC`.
 Schema-5 kernel collection archives all journal entries between system-only
 checkpoints, then extracts the kernel rows. Quiet intervals advance a root-owned
-terminal marker without depending on the last kernel entry. Systemd 239's
-shared numeric sequence must be continuous across all journal files; per-file
-sequence identities remain recorded separately. The evaluator recomputes
-continuity and budgets from the archived source rows, query receipts and
-snapshots. Missing records, changed boot/daemon identity, failed queries or
+terminal marker without depending on the last kernel entry. Each interval
+must return its system anchor and terminal marker; per-file sequence
+identities remain recorded separately. `journalctl` before systemd 248 does
+not return an entry whose boot, timestamp and content equal the entry before
+it (corrected upstream by systemd commit `b17f651a17cd`, not present in
+239-82.el8_10.19), so identical lines written in one burst leave unreturned
+numbers in the shared sequence although the entries are stored. Each interval
+records those numbers as `sequence_holes` instead of failing. Each interval
+then reads every journal file header directly, twice a few milliseconds
+apart until both reads agree, and requires one stored entry per sequence
+number from the oldest retained system file through the newest entry
+(`journal-sequence-accounting.json`); an unreturned number outside that range
+fails the interval. A file that begins before the range is enumerated for the
+entries it returns inside it. The evaluator recomputes the unreturned numbers,
+the accounting and the budgets from the archived source rows, query receipts,
+file headers and snapshots. A missing anchor or marker, a stored-entry count
+that differs from the range, changed boot/daemon identity, failed queries or
 suppression leave incomplete coverage. An empty memory-error search cannot
 establish coverage. Actual rotation, loss, reboot and terminal integration
 require the dedicated journal scenarios in the canonical plan.
@@ -497,7 +510,15 @@ with actual GC logs. Together with `ETL_SOAK_EVIDENCE`, these enable historical
 replay, real numerical CLI comparisons, fixture preservation and missing-proof
 preparation rejection. Set `ETL_SOAK_JOURNAL_SEQUENCE` to an actual retained
 JSON journal file for the cursor parser checks. A filtered application-only
-file exercises missing-sequence rejection; it cannot prove all-stream coverage.
+file exercises checkpoint rejection and unreturned-number counting; it cannot
+prove all-stream coverage.
+Set `ETL_SOAK_SEQUENCE_HOLE_EVIDENCE` to an actual sample directory whose
+`journal-sequence.jsonl` and `system-journal-tail.jsonl` span unreturned
+sequence numbers, and `ETL_SOAK_SEQUENCE_ACCOUNTING_EVIDENCE` to a directory of
+actual `journal-sequence-accounting.json` records, at least one from a rotated
+journal. Set `ETL_SOAK_JOURNAL_HEADER_EVIDENCE` to a directory holding one
+actual archived journal file and `header-239.txt`, the `journalctl --header`
+listing systemd 239 printed for it.
 Set `ETL_SOAK_RETENTION_EVIDENCE` to a directory of actual retention snapshots
 (`snapshot-*.json`) and the `proof.json` whose `latest` snapshot follows them;
 the shared write-counter and short-interval regressions replay those inputs.
