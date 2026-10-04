@@ -97,14 +97,30 @@ bundle SHA256
 cc2024251224d89946a84f8936ab3b8dab8aadb20d5cc53e21fca3cd76378f4a, which
 passed the same 64 checks. A fifth VM for the default chain was stopped
 during measurement because its bundle was superseded.
-Next: on two new dedicated VMs, one per chain, repeat species, fixture,
-instrumentation, measured and fresh preparation, deployed-chain and health
-verification, wait until `passes.jsonl` holds a closed ETL pass (up to an
+Two new dedicated VMs with bundle `cc202425` then failed readiness on two
+independent Rocky 8.10 defects. The shortened chain passed measured
+preparation (777,867,682 bytes), preparation, health and chain checks, then
+failed `kernel_journal` after the first closed pass on the journald loss
+recorded in the results. The default chain left 95 of 903 PVs unconnected
+because two engine CA contexts share one search port; that defect is
+tracked in jeonghanlee/epicsarchiverap-maven#26.
+The journald "loss" is a systemd 239 `journalctl` defect that hides stored
+entries (results row "Rocky 8 journald cause"). Bundle SHA256
+9c38425c77468ee0a9283c206ba5580bab5c410f98f9d558705fe5952608a43f records
+unreturned sequence numbers instead of failing and accounts for them from the
+journal file headers at every collection; it passed 69 local checks.
+Next: a new two-chain preparation on fresh VMs with this bundle, which needs
+owner authorization; no upstream report is planned. The default chain can
+meet the search-port defect again, and whether to wait for its correction is
+not decided. Each preparation repeats species, fixture, instrumentation, measured and fresh preparation, deployed-chain and health
+verification, waits until `passes.jsonl` holds a closed ETL pass (up to an
 hour on the default chain), then empty/abort runtime verification and
 launch; each needs owner authorization. The driver is private
-`work/soak-etl-pass-3bdf378c/run-to-launch-template.bash`; each VM's
-inventory, known-hosts file and step records are named in its private
-`work/soak-etl-pass-3bdf378c/journal-test-<label>/environment.json`;
+`work/soak-etl-pass-3bdf378c/run-to-launch-template.bash`; it still names
+the tools archive and bundle `cc202425` and must first be pointed at an
+archive of the current `tests/archiver-soak/etl-pass` tools; each VM's
+inventory, known-hosts file and step logs are in its private
+`work/soak-etl-pass-3bdf378c/journal-test-<label>/` directory;
 the commands are in `tests/archiver-soak/README.md`: section Observation And
 Shutdown for `verify-health.py` (two health completions and full samples) and
 section Journal Retention Preparation for `verify-chain.py`,
@@ -2889,6 +2905,39 @@ visibility probes do not establish lossless archival.
   corrects a per-PV ETLDetails value that the evaluator does not read. The
   remaining per-request logging is studied in
   jeonghanlee/epicsarchiverap-maven#24.
+- Reported 2026-10-04 by the epicsarchiverap-env session, on its owner's
+  decision of that date: the two Rocky 8.10 defects seen in this soak are
+  split by owner. This repository owns the journald loss; the CAJ shared
+  search port belongs to epicsarchiverap-maven (#26). Each owner first
+  proves the exact cause and fixes it on its own side; any patch or
+  mitigation stays local, and no report goes to Rocky/RHEL or systemd until
+  that owner revisits it. Each session requests its own VMs from
+  cloud-provision. For the journald loss, the agreed first stage is a
+  reproduction without the appliance: concurrent `systemd-cat` writers on
+  fresh Rocky 8.10 and Debian 13 guests, comparing emitted and read-back
+  lines, sequence holes and `journalctl --verify`, varying writer count and
+  rate to find the loss threshold, and excluding rate limiting. Whether a
+  hole fails the soak or is recorded within a measured limit is decided
+  after that threshold is known. The epicsarchiverap-env side, measuring how
+  both defects reach its VM acceptance checks, is tracked in
+  jeonghanlee/epicsarchiverap-env#58; stage-1 results reference it.
+- Decision Date: 2026-10-04. Take the journald reproduction stage: request
+  one fresh Rocky 8.10 and one Debian 13 guest from cloud-provision and run
+  the concurrent-writer reproduction there. On both guests a journald
+  drop-in sets `RateLimitIntervalSec=0` before the runs, so suppression
+  cannot account for a loss; each run still reports any Suppressed record.
+- Decision Date: 2026-10-04. An unreturned sequence number no longer fails a
+  journal interval, after the reproduction showed that systemd 239's
+  `journalctl` hides stored entries and loses none. An interval still fails
+  without its system anchor or terminal marker, on suppression, or on a
+  changed boot or daemon; it records the unreturned numbers. At every
+  collection the journal file headers must show one stored entry per
+  sequence number across the range whose files are all retained, and an
+  unreturned number outside that range fails the interval, so T25's
+  required-record loss still cannot yield complete coverage. A first
+  version that accounted only once at the terminal boundary was replaced
+  the same day because retention could remove a lost file from the range
+  before the end. No report goes upstream.
 - The dedicated journal test environment is a required preparation input for
   live T22-T26/T28 checks. G4 supplies only the two retained soak deployments.
   The subsequent owner direction authorized a separate VM; its baseline,
@@ -3873,6 +3922,10 @@ Local journal-candidate verification supplements the pending live checks:
 | Sixth and seventh dedicated environments, both chains | 2026-10-04T07:27:40Z | Two fresh Rocky 8.10 VMs on the control host; bundle `ad70a93a`; shortened and default chains | Measured preparation Passed on both; readiness Failed on both | Measured preparation passed: shortened 942,963,836 bytes (65,831.435 bytes/s system bound), default 935,771,642 bytes (64,654.325 bytes/s). `prepare`, two health checks and the chain check passed on both. Five minutes later a health check's full sample failed on both VMs with two errors. `journal_retention_budget`: the 317.8-second interval from the proof's last snapshot held the readiness samples' extra latency-probe bursts, measured 106,063.5 bytes/s on the default VM and required 1,185,883,313 bytes against the 1-GiB cap. `kernel_journal`: the system sequence interval had a missing number. Private records: `journal-test-20261004h/` and `journal-test-20261004i/` |
 | Rocky 8 journald unlinked entries | 2026-10-04T08:26:26Z | The two VMs above; Debian 13 archiver-dev VM (systemd 257.9) on the same deploy; exploratory scripts only, no shipped tool changed | Confirmed on Rocky 8.10, not reproduced on Debian 13 | Across all journal files of the boot, 9 and 39 sequence numbers had no readable entry; `journalctl --header` showed exactly that many more entry objects in `system.journal` than `journalctl` enumerates, `journalctl --verify` passed, and neither the journal nor the kernel log reported a write failure or suppression. 903 concurrent mgmt requests from two client workers lost 65-137 lines per run on Rocky 8.10 and none with one worker; the instance's `systemd-cat` relay passed every byte by its `/proc/<pid>/io` counters. On Debian 13 the same test lost no line in four two-worker runs and the header and enumerated counts matched. Losses so far are per-request mgmt INFO lines and build output, but the loss follows bursts, not content |
 | T13 Maven pin move | 2026-10-04T09:07:08Z | Control host; Python 3.13.5; shipped tools with `SOURCE_PINS` and `rate-semantics.json` at Maven `254a6542`; every private evidence path | Local checks Passed; preparation on new VMs Pending | `common.yml` pins Maven `254a6542`; both `SOURCE_PINS` tables carry its full hash; `rate-semantics.json` names it as the source of the unchanged `EngineMetrics.java` definitions. `contract.py --freeze` rewrote `bundle.json` (SHA256 `cc2024251224d89946a84f8936ab3b8dab8aadb20d5cc53e21fca3cd76378f4a`), `contract.verify_bundle` accepts all 20 dependencies and all 51 `SHA256SUMS` entries verify. Unittest discovery runs 64 checks with no skips and rc=0 with every private path set, and 41 pass with 23 skipped without them. No VM has been built at the new pin |
+| Eighth dedicated environment, shortened chain | 2026-10-04T10:28:04Z | A fresh Rocky 8.10 VM created by cloud-provision on the control host; bundle `cc202425`; Maven `254a6542`; shortened chain | Passed through the chain check; readiness Failed while waiting for a closed ETL pass | Species, fixture and instrumentation passed. Measured preparation passed at 10:22:45 UTC: six 300.063-300.144-second intervals, 38,497.635 bytes/s system bound, 777,867,682 required bytes against the 1-GiB cap. `prepare`, two health completions with full samples and the chain check for all 903 PVs passed. The first full sample after the first closed pass, at 10:28:00 UTC, failed `kernel_journal`: the required interval is missing records. A read-only union scan of every journal file of the boot found 16 sequence numbers with no readable entry; 12 of them fall at 10:22:58-10:22:59 UTC among the mgmt instance's lines during the chain check. This is the Rocky 8 journald loss recorded above, not a tool defect |
+| Rocky 8 journald cause | 2026-10-04T22:33:37Z | Fresh plain Rocky 8.10 guest (systemd 239-82.el8, then 239-82.el8_10.19; kernel 4.18.0-553.el8_10) and Debian 13 guest (systemd 257.9), both from cloud-provision, rate limiting disabled; the eighth dedicated VM; private reproducer `journald-burst-repro.py`; refs jeonghanlee/epicsarchiverap-env#58 | Cause found: a reader defect, no stored entry lost | One writer emitting 5000 identical lines: Rocky returns 295, exactly one per distinct realtime timestamp, with 4704 unreturned sequence numbers and a passing `journalctl --verify`; systemd 257 reading a copy of that Rocky file returns all 5000, and Debian 13 returns all 5000. Eighteen Rocky runs with unique lines (1-16 writers, up to 2000 characters, concurrent readers, user and system files, service stdout, CPU load, repeated `journalctl --sync`, the soak journald settings) lost nothing, and no run recorded suppression. On the eighth VM, 903 concurrent mgmt requests left 22, 30 and 45 unreturned numbers with two client workers and none with one; over one fixed window systemd 239 returns 21,520 mgmt entries and systemd 257 returns 21,632 from a copy of the same file. systemd v239 `sd-journal.c` `compare_with_location()` treats an entry as the current one when boot, realtime and content hash match, without comparing the sequence number; upstream commit `b17f651a17cd` (first in v248) adds that comparison, and the latest Rocky 8.10 update still returns 295 of 5000. The earlier 9, 39 and 16 unreturned numbers and the 65-137 burst lines are this defect |
+| T13 unreturned-sequence correction | 2026-10-04T23:23:29Z | Control host; Python 3.13.5; shipped tools with `journal_coverage.sequence_holes()`, `account()` at every collection and the evaluator check; every private evidence path including the eighth VM's failed sample, two actual accounting records and one actual archived journal file with its systemd 239 header listing; the eighth VM and the reproduction guest for the shipped functions | Local checks Passed; collection on new VMs Pending | The eighth VM's failed interval is accepted with 12 recorded unreturned numbers, each preceded by a mgmt line of the same HTTP worker thread. The shipped `account()` found one stored entry per sequence number on the eighth VM with the appliance running (112,641 for sequence 1-112,641) and on the reproduction guest after rotation and removal of older files (944,713 for 398,896-1,343,608), although `journalctl` returns fewer. Twenty runs on the eighth VM during continuous 903-request two-worker bursts all passed, the slowest after 114 header reads in 3.14 seconds; the limit is 600 attempts. The direct header read equals `journalctl --header` on all 13 immutable files of the reproduction guest. No actual file begins before the retained range, so enumeration of such a file is covered by arithmetic checks only. `contract.py --freeze` rewrote `bundle.json` (SHA256 `9c38425c77468ee0a9283c206ba5580bab5c410f98f9d558705fe5952608a43f`), `contract.verify_bundle` accepts all 20 dependencies and all 51 `SHA256SUMS` entries verify. Unittest discovery runs 69 checks with no skips and rc=0 with every private path set, and 43 pass with 26 skipped without them. The shipped `collect()` with the accounting and the evaluator's recomputation of it have not run on real collection output |
+| Ninth dedicated environment, default chain | 2026-10-04T10:09:36Z | A fresh Rocky 8.10 VM created by cloud-provision on the control host; bundle `cc202425`; Maven `254a6542`; default chain | Failed at PV readiness | All 903 PVs registered, but after 90 readiness attempts 808 were connected and archiving and 95 never connected. The engine lists exactly those 95 as pending metadata gets, with CA state NEVER_CONNECTED and CAJ command thread id 2; a sample of 101 connected PVs spans thread ids 0, 1 and 3-9 and none is on 2. A loopback capture shows the IOC answering every search for the 95 at the engine's search port. In the engine JVM two sockets are bound to that one UDP port, while each other CA context holds its own port; kernel 4.18.0-553.el8_10. CAJ (jca 2.4.12, unchanged between the two Maven pins) binds every context's search socket to an ephemeral port with SO_REUSEADDR, so two contexts can share a port and only one receives the replies. The eighth VM on the same pin and eight earlier VMs connected all 903 PVs. The defect and its fix belong to epicsarchiverap-maven (jeonghanlee/epicsarchiverap-maven#26); which socket the kernel delivers to is not yet observed |
 | T13 standalone schema-5 bundle | 2026-10-02 20:54:06 UTC | Control host; Python 3.13.5; shipped schema-5 tools and retained real runtime/export/fixture inputs | Local checks Passed; dedicated installation and live scenarios Pending | Earlier-schema sources were removed from the shipped tools: `BUNDLE_FILES` no longer lists the schema-3 evaluator or the nineteen schema-4 files, and the evaluator returns Incomplete with `unsupported_observation_schema` for any other schema. Actual unittest discovery ran 55 checks in 36.505 seconds, rc=0 and no skips. `contract.verify_bundle` accepts all 20 dependencies and all 51 checksums verify. Candidate bundle SHA256 is 567d629b11704a2291302eb603830e313d85a9b7bab37629a0656ec7a31c0726; it supersedes the 40-dependency candidate recorded above and is not installed on any VM. Four retained-evidence cases now relabel the pre-schema-5 input and require a non-Passed verdict with the expected failed assertion. Four cases are removed because they exercised the removed schema-3 evaluator: Passed replay, missing scheduled pass, missing GC pair and aborted observation. The current evaluator has no retained-evidence coverage for those four until a schema-5 observation completes; add them then. The removed sources remain in the private evidence directory as `legacy-sources-removed-from-tree-20261002/` |
 
 ##### Closure Evidence
