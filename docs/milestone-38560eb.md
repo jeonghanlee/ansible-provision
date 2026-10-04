@@ -76,24 +76,48 @@ measured preparation passed at 07:33:25 UTC with 964,562,529 required bytes
 against the 1-GiB cap, and fresh preparation succeeded at 07:35:14 UTC. The
 first dedicated VM was last verified with the 40-dependency candidate
 (5cd0f390) on 2026-10-02 and has not been contacted from the control host.
-Next: deployed-chain, health, full-sample and empty/abort runtime
-verification on the second VM, then launch; each needs owner authorization.
-Reach the second VM through the inventory and known-hosts file named in
-private `work/soak-etl-pass-3bdf378c/journal-test-20261003/environment.json`;
+The second VM's first readiness health check failed on 2026-10-04 at 04:31
+UTC because `runtime()` still took a 9.4-second gap between two collections
+as a rate bound. The in-window correction, bundle SHA256
+7c551c4b75382acf0ab94f091fb1710b3755563dfe11368387ff4da3d35a7158, passed 60
+local checks with no skips; it needs a new measured preparation, which the
+second VM cannot take because its preparation already exists. A third
+dedicated VM with that bundle passed measured preparation (940,299,280
+bytes), preparation, both health checks with a 5.2-second gap, the chain
+check and the empty-data check on 2026-10-04, then failed the abort check
+because the terminal path stopped a finish timer that exists only after a
+launch. With that correction (bundle `bbbf5d90`) a fourth dedicated VM, for
+the shortened chain, passed everything through the empty-data check, then
+failed the abort check on a 0.293-second interval with no counted writes in
+which only a journal file's modification time changed. That correction,
+bundle SHA256
+ad70a93adcf916e28c3b6641f6e5f5ae9850f6ed79714c8d4acca84018f2d5c6, passed 64
+local checks with no skips. Moving the Maven pin to `254a6542` then gave
+bundle SHA256
+cc2024251224d89946a84f8936ab3b8dab8aadb20d5cc53e21fca3cd76378f4a, which
+passed the same 64 checks. A fifth VM for the default chain was stopped
+during measurement because its bundle was superseded.
+Next: on two new dedicated VMs, one per chain, repeat species, fixture,
+instrumentation, measured and fresh preparation, deployed-chain and health
+verification, wait until `passes.jsonl` holds a closed ETL pass (up to an
+hour on the default chain), then empty/abort runtime verification and
+launch; each needs owner authorization. The driver is private
+`work/soak-etl-pass-3bdf378c/run-to-launch-template.bash`; each VM's
+inventory, known-hosts file and step records are named in its private
+`work/soak-etl-pass-3bdf378c/journal-test-<label>/environment.json`;
 the commands are in `tests/archiver-soak/README.md`: section Observation And
 Shutdown for `verify-health.py` (two health completions and full samples) and
 section Journal Retention Preparation for `verify-chain.py`,
 `verify-runtime.py empty|abort` and `launch-retest.py`.
 Live scenario results remain pending before actual
-T22-T28 preparation/checks; verify both existing fixture
-adjustments before deployment to the retained VMs or another trial.
+T22-T28 preparation/checks.
 The two schema-4 trials that started on 2026-10-01 at 07:19:39 UTC have both
 aborted with Incomplete verdicts: shortened ended at 18:25:26.991110 UTC and
-default at 21:35:37.251269 UTC. Both appliances and observation timers are
-inactive. The collector kept a pre-trial kernel cursor during a quiet kernel
-interval; that cursor became unavailable while the earliest retained system
-journal record still preceded the trial start. Preserve the manifests, raw
-samples, abort.json records, failed assertions and original frozen tools.
+default at 21:35:37.251269 UTC. The collector kept a pre-trial kernel cursor
+during a quiet kernel interval; that cursor became unavailable while the
+earliest retained system journal record still preceded the trial start.
+Both trial VMs were later removed from the LAB host (reported 2026-10-04);
+their manifests, raw samples and abort records went with them.
 The scenario revision is accepted; candidate tools are installed on the
 dedicated VM. Required live scenarios and replacement trials remain pending.
 Before a new manifest, the revised checks must run through the shipped paths,
@@ -2826,6 +2850,45 @@ visibility probes do not establish lossless archival.
   seconds is no longer a rate bound; its identity and accounting continuity
   are still checked. Installation on the dedicated VM and a new measured
   preparation remain separately authorized steps.
+- Decision Date: 2026-10-03. Apply the same 300-second rule between two
+  in-window collections, in `runtime()` and in the evaluator, after
+  back-to-back readiness samples on the second dedicated VM failed the
+  budget. Repeat the measured and fresh preparation on a third dedicated VM;
+  keep the second VM and its evidence unchanged.
+- Decision Date: 2026-10-03. Make the terminal path stop only the observation
+  timers that are loaded, after the third dedicated VM's abort check failed
+  on the finish timer that exists only after a launch. Repeat the preparation
+  sequence on a fourth dedicated VM; keep the third VM and its evidence.
+- Reported 2026-10-04 UTC by the LAB session: at the owner's direction, for
+  disk space, the LAB host removed both retained schema-4 trial VMs and the
+  first dedicated VM, with their disks and address reservations. Their on-VM
+  manifests, terminal records, raw samples, stores and installed tools are
+  gone. Private copies under `work/soak-etl-pass-3bdf378c/` keep the trials'
+  launch and journal records but no `observation.json`, `abort.json` or raw
+  samples; the first dedicated VM's retention inputs remain in
+  `journal-retention-diagnosis-20261002/`. Plan text that targets the
+  retained deployments has no target until the owner re-plans the two
+  chains.
+- Decision Date: 2026-10-03. Rebuild both chains on fresh dedicated VMs on
+  the control host: the fourth dedicated VM becomes the shortened chain and
+  a fifth dedicated VM the default chain, each prepared through the same
+  fresh-VM sequence with bundle `bbbf5d90` before its 24-hour observation.
+- Decision Date: 2026-10-03. Treat a zero-write interval in which only a
+  journal file's modification time changed as no growth, after the fourth
+  dedicated VM's abort check failed on such a 0.293-second interval. A
+  changed size, allocation, identity or file set with no counted writes is
+  still refused. Prepare both chains again on two new dedicated VMs with
+  the corrected bundle; keep the fourth and fifth VMs and their evidence.
+- Decision Date: 2026-10-04. Move the epicsarchiverap-maven pin from
+  `3bdf378c` to the current `modernize` head `254a6542`, keeping
+  epicsarchiverap-env at `d09dca7`. The new head carries `d80eef3a`, which
+  moved five of the seven per-request retrieval INFO lines to DEBUG, so each
+  probe request writes three INFO lines instead of seven. Between the two
+  commits the ETL pass scheduler, its design document and the engine rate
+  metric definitions (`EngineMetrics.java`) are unchanged; `0fbd5592` only
+  corrects a per-PV ETLDetails value that the evaluator does not read. The
+  remaining per-request logging is studied in
+  jeonghanlee/epicsarchiverap-maven#24.
 - The dedicated journal test environment is a required preparation input for
   live T22-T26/T28 checks. G4 supplies only the two retained soak deployments.
   The subsequent owner direction authorized a separate VM; its baseline,
@@ -2858,17 +2921,19 @@ visibility probes do not establish lossless archival.
 ###### Retention Accounting Correction
 
 - Plan Status: accepted
-- Plan Acceptance: 2026-10-02; the owner accepted correcting the accounting instead of the cap, logging policy or VM size
-- Implementation Authorization: 2026-10-02; code correction, bundle regeneration and local verification. 2026-10-03; step 4 (candidate installation and measured preparation) on a second dedicated VM, together with its species deployment and fixture before it and the fresh preparation after it
-- Superseded Plan Artifacts: none
+- Plan Acceptance: 2026-10-02; the owner accepted correcting the accounting instead of the cap, logging policy or VM size. 2026-10-03 revision: the owner accepted applying the 300-second rule to in-window collections and the evaluator, and a third dedicated VM for the changed bundle
+- Implementation Authorization: 2026-10-02; code correction, bundle regeneration and local verification. 2026-10-03; step 4 (candidate installation and measured preparation) on a second dedicated VM, together with its species deployment and fixture before it and the fresh preparation after it, and its readiness checks. 2026-10-03 revision: the in-window correction, its local verification and the same preparation sequence on a third dedicated VM
+- Superseded Plan Artifacts: step 1's earlier statement that `runtime()` and the evaluator keep their interval handling; bundles `e11d3ebc`, `7c551c4b` and `bbbf5d90`
 
 1. `tests/archiver-soak/etl-pass/journal_retention.py`: `rates()` returns
    `max(write delta, system allocation growth) / duration` for the system
    stream and `user allocation growth / duration` for the user stream.
    `prepare()` and `validate()` still run `elapsed()` and `rates()` on the
    interval from the last measured snapshot to the current one, but take it
-   as a rate bound only when it lasts at least 300 seconds. `runtime()` and
-   the evaluator keep their per-stream shape and use the corrected `rates()`.
+   as a rate bound only when it lasts at least 300 seconds. The 2026-10-03
+   revision applies the same rule between two in-window collections:
+   `runtime()` computes its budget through `interval_budget()`, which keeps
+   the gap limit, and the evaluator's peak uses `bounded_interval()`.
 2. `tests/archiver-soak/etl-pass/test_journal.py`: a real-input regression
    replays the seven actual dedicated-VM snapshots and the failed proof's
    actual final snapshot through the shipped functions. It must fail on the
@@ -2880,7 +2945,15 @@ visibility probes do not establish lossless archival.
    preparation in a new evidence directory need separate authorization.
 
 Steps 1-3 are implemented and locally verified; step 4 ran on a second
-dedicated VM on 2026-10-03 (results below).
+dedicated VM on 2026-10-03 (results below). Its readiness health check then
+exposed the in-window interval defect; the revised steps 1-3 are locally
+verified, and step 4 repeats on a third dedicated VM because the shipped
+prepare action refuses to replace an existing preparation. The third VM's
+abort check exposed the unloaded-finish-timer defect in `observe.py`; that
+correction is locally verified and step 4 repeated on a fourth dedicated VM.
+That VM's abort check exposed the modification-time-only race in `rates()`;
+that correction is locally verified and step 4 repeats on two new dedicated
+VMs, one per chain.
 
 The preceding two-chain revision was accepted on 2026-09-30. Its steps 1-2
 were authorized for implementation and local verification on that date;
@@ -3789,6 +3862,17 @@ Local journal-candidate verification supplements the pending live checks:
 | Second dedicated environment and fixture | 2026-10-03T07:02:04Z | A fresh Rocky 8.10 VM created by cloud-provision on the control host (2 vCPU, 4096 MiB, 48 GiB), shipped `archiver_dev` species at `8bfa611` with `common.yml`, `shortened.yml` and the full source pins | Passed | The species apply returned rc=0 with 33 successful tasks and no failed or unreachable host. The installed tools verify the 20-dependency bundle `e11d3ebc`. The species wrote the journald drop-in 49 ms before the daemon started, so the daemon ran with it, but `journal_retention.py snapshot` derives the start from the whole-second boot time and refused the application as unverified; one `systemd-journald` restart made it verifiable, after which the snapshot refused only the absent measurement units. `install-fixture.py` and `apply-fixture.py` returned rc=0 (10 records, 20 fields); `register.py` received 903 replies; all 903 PVs were connected and archiving with no unexpected PV; `--verify-existing` passed. `initialize-fresh.py instruments` returned rc=0 with four JVMs, and `check` returned rc=0 after the population reconnected. The second environment's inventory, owner and execution authority are recorded in private `work/soak-etl-pass-3bdf378c/journal-test-20261003/environment.json`, beside its step records; `journal-test-environment.json` remains the first environment's record |
 | T27 measured retention budget on the second VM | 2026-10-03T07:33:25Z | Second dedicated VM; shipped `initialize-fresh.py measure` with the corrected candidate under the approved 903-PV load | Passed; first attempt failed | The first attempt at 07:02:22 UTC, 76 seconds after the instrumentation restart, stopped after one snapshot: one of 903 retrieval requests returned an HTTP error, and three later requests for the same PV returned HTTP 200. Its directory is preserved on the VM. The second attempt from 07:03:20 UTC took seven snapshots 300.074-300.128 seconds apart with every latency probe complete; write deltas per interval were 16,326,656, 17,776,640, 19,234,816, 19,619,840, 20,832,256 and 20,197,376 bytes. The system bound is 69,421.028 bytes/s and the user bound 0 bytes/s; 964,562,529 bytes and 11 files are required against 1,073,741,824 bytes and 100 files, so the budget passed with about 10 percent headroom. The capacity projection requires 11,838,250,087 bytes of growth for 86400 seconds. No observation was opened |
 | T15 fresh preparation on the second VM | 2026-10-03T07:35:14Z | Second dedicated VM; shipped `initialize-fresh.py prepare` with the measured retention proof and capacity input, 86400 seconds, shortened chain | Passed; runtime verification Pending | rc=0. `preparation.json`, the copied retention proof and its sources and the capacity inputs exist under `/var/lib/etl-soak/`; the sample and finish timers are inactive and no observation exists. Deployed-chain, health, full-sample and empty/abort runtime verification remain required before launch |
+| T15 readiness health check on the second VM | 2026-10-04T04:31:24Z | Second dedicated VM; shipped `verify-health.py` with bundle `e11d3ebc` | Failed; evidence retained | The first health invocation and full sample at 04:31:14 UTC had no errors, 903 archiving PVs and a passing in-window budget at the measured 69,421.028 bytes/s system bound. The second full sample, 9.419 seconds later, failed `journal_retention_budget`: `runtime()` took the interval, which held one latency-probe burst, as a 1,781,193.678 bytes/s bound and required 11,303,673,757 bytes and 89 files against 1,073,741,824 bytes and 100 files. `verify-health.py` returned rc=1 and wrote no `health-verification.json`; the timers stayed inactive and no observation exists. Both runtime snapshots and the first budget are retained privately under `journal-test-20261003/runtime-short-interval/` |
+| T13/T27 in-window interval correction | 2026-10-04T04:35:07Z | Control host; Python 3.13.5; shipped tools with `interval_budget()` and the evaluator change; every private evidence path including the two runtime snapshots | Local checks Passed; preparation on a third VM Pending | `contract.py --freeze` rewrote `bundle.json` (SHA256 `7c551c4b75382acf0ab94f091fb1710b3755563dfe11368387ff4da3d35a7158`), `contract.verify_bundle` accepts all 20 dependencies and all 51 `SHA256SUMS` entries verify. Unittest discovery runs 60 checks with no skips and rc=0 with every private path set, and 38 pass with 22 skipped without them. On the two actual runtime snapshots `interval_budget()` keeps the 69,421.028 bytes/s bound, records the 9.419-second gap and passes. The two new checks error on the tools at `31917b3` because `interval_budget()` does not exist there; the failing budget recorded on the second VM is the evidence of the earlier `runtime()` behavior |
+| Third dedicated environment, preparation and readiness | 2026-10-04T05:32:51Z | A fresh Rocky 8.10 VM created by cloud-provision on the control host (2 vCPU, 4096 MiB, 48 GiB); shipped `archiver_dev` species at `31917b3` with the same variables; bundle `7c551c4b` | Passed through the empty-data check | The species apply returned rc=0 with 33 successful tasks; the journald drop-in needed the same one restart to become verifiable; fixture, deadband adjustment (10 records, 20 fields), 903-PV registration and readiness, `instruments` and `check` returned rc=0. Measurement started 300 seconds after the instrumentation restart, at 05:01:49 UTC, and passed at 05:31:55 UTC: six intervals of 300.065-300.167 seconds, write deltas rising from 16,654,336 to 19,632,128 bytes per interval, a 65,403.934 bytes/s system bound and 0 bytes/s user bound, 940,299,280 bytes and 10 files required against 1,073,741,824 bytes and 100 files. `prepare` returned rc=0 at 05:32:16 UTC. `verify-health.py` passed two health invocations and full samples; the second sample, 5.206 seconds after the first, kept the 65,403.934 bytes/s bound and passed. `verify-chain.py` verified 903 PVs on the shortened chain and `verify-runtime.py empty` returned rc=0. Private record: `journal-test-20261004a/environment.json` |
+| T15 terminal-path check on the third VM | 2026-10-04T05:33:32Z | Third dedicated VM; shipped `verify-runtime.py abort` with bundle `7c551c4b` | Failed; evidence retained | Early finish and repeated finish were rejected, the abort verdict was Incomplete, the whole-unit stop returned rc=0 in 11.248 seconds and all four complete GC recordings were captured. The only terminal error was `cancel_timers`: `systemctl stop` on `etl-soak-sample.timer` and `etl-soak-finish.timer` returned 5 because the finish timer is created only when an observation opens and was not loaded. The check therefore returned rc=1 and, by design, did not restart the appliance, which remains inactive. The probe directory is preserved on the VM |
+| T13 unloaded-finish-timer correction | 2026-10-04T05:37:07Z | Control host; Python 3.13.5; shipped tools with `observe.stop_loaded()`; every private evidence path | Local checks Passed; preparation on a fourth VM Pending | `contract.py --freeze` rewrote `bundle.json` (SHA256 `bbbf5d90165eaa8679e0d64daf9d053e28b61f7dad27fd923e528cfd47dd81e3`), `contract.verify_bundle` accepts all 20 dependencies and all 51 `SHA256SUMS` entries verify. Unittest discovery runs 62 checks with no skips and rc=0 with every private path set, and 40 pass with 22 skipped without them. Through the real `observe.terminal()` with only the command boundary replaced, an abort before launch with an unloaded finish timer stops only the sample timer and records no `cancel_timers` error, while a failed stop of a loaded timer still records it. On the `observe.py` at `31917b3` the unloaded-timer case fails with `cancel_timers` in the errors, as on the third VM |
+| Fourth dedicated environment, shortened chain | 2026-10-04T06:26:28Z | A fresh Rocky 8.10 VM created by cloud-provision on the control host; species at `31917b3`; bundle `bbbf5d90` | Passed through the empty-data check; abort check Failed | Species, fixture, instrumentation and check passed. Measurement started at 05:55:28 UTC, 300 seconds after the instrumentation restart, and passed at 06:25:36 UTC: six intervals of 300.065-300.176 seconds, a 68,575.520 bytes/s system bound, 959,455,659 bytes and 11 files required. `prepare`, two health checks, the chain check (903 PVs) and the empty-data check passed. In the abort check the corrected timer cancellation stopped only the loaded sample timer and recorded the finish timer as `not-found`. The only terminal error was `final_sample`: the abort probe's proof validation took a snapshot at 06:26:07.368 UTC and the final full sample another 0.293 seconds later; no writes were counted between them, but `system.journal`'s modification time had changed, and `rates()` refused the interval as changed files without write accounting. The appliance remains inactive by design. Replaying the two actual snapshots through the shipped `rates()` reproduces the refusal; they are retained privately under `journal-test-20261004e/runtime-mtime-only/`. Private record: `journal-test-20261004e/environment.json` |
+| Fifth dedicated environment, default chain | 2026-10-04T06:05:26Z | A fresh Rocky 8.10 VM created by cloud-provision on the control host; species at `31917b3` with `default.yml`; bundle `bbbf5d90` | Superseded during measurement | Species, fixture, instrumentation and check passed and the measurement started. The local driver was stopped when the modification-time correction superseded bundle `bbbf5d90`; the measurement unit on the VM was left to finish and no observation exists. Private record: `journal-test-20261004g/environment.json` |
+| T13 modification-time correction | 2026-10-04T06:30:50Z | Control host; Python 3.13.5; shipped tools with `journal_retention.content()`; every private evidence path including the modification-time pair | Local checks Passed; preparation on two new VMs Pending | `contract.py --freeze` rewrote `bundle.json` (SHA256 `ad70a93adcf916e28c3b6641f6e5f5ae9850f6ed79714c8d4acca84018f2d5c6`), `contract.verify_bundle` accepts all 20 dependencies and all 51 `SHA256SUMS` entries verify. Unittest discovery runs 64 checks with no skips and rc=0 with every private path set, and 41 pass with 23 skipped without them. On the actual 0.293-second pair `rates()` returns zero for both streams and `interval_budget()` passes; a synthetic interval whose allocation grew with no counted writes is still refused. On the `journal_retention.py` at `31917b3` both new checks fail with the same refusal as on the fourth VM |
+| Sixth and seventh dedicated environments, both chains | 2026-10-04T07:27:40Z | Two fresh Rocky 8.10 VMs on the control host; bundle `ad70a93a`; shortened and default chains | Measured preparation Passed on both; readiness Failed on both | Measured preparation passed: shortened 942,963,836 bytes (65,831.435 bytes/s system bound), default 935,771,642 bytes (64,654.325 bytes/s). `prepare`, two health checks and the chain check passed on both. Five minutes later a health check's full sample failed on both VMs with two errors. `journal_retention_budget`: the 317.8-second interval from the proof's last snapshot held the readiness samples' extra latency-probe bursts, measured 106,063.5 bytes/s on the default VM and required 1,185,883,313 bytes against the 1-GiB cap. `kernel_journal`: the system sequence interval had a missing number. Private records: `journal-test-20261004h/` and `journal-test-20261004i/` |
+| Rocky 8 journald unlinked entries | 2026-10-04T08:26:26Z | The two VMs above; Debian 13 archiver-dev VM (systemd 257.9) on the same deploy; exploratory scripts only, no shipped tool changed | Confirmed on Rocky 8.10, not reproduced on Debian 13 | Across all journal files of the boot, 9 and 39 sequence numbers had no readable entry; `journalctl --header` showed exactly that many more entry objects in `system.journal` than `journalctl` enumerates, `journalctl --verify` passed, and neither the journal nor the kernel log reported a write failure or suppression. 903 concurrent mgmt requests from two client workers lost 65-137 lines per run on Rocky 8.10 and none with one worker; the instance's `systemd-cat` relay passed every byte by its `/proc/<pid>/io` counters. On Debian 13 the same test lost no line in four two-worker runs and the header and enumerated counts matched. Losses so far are per-request mgmt INFO lines and build output, but the loss follows bursts, not content |
+| T13 Maven pin move | 2026-10-04T09:07:08Z | Control host; Python 3.13.5; shipped tools with `SOURCE_PINS` and `rate-semantics.json` at Maven `254a6542`; every private evidence path | Local checks Passed; preparation on new VMs Pending | `common.yml` pins Maven `254a6542`; both `SOURCE_PINS` tables carry its full hash; `rate-semantics.json` names it as the source of the unchanged `EngineMetrics.java` definitions. `contract.py --freeze` rewrote `bundle.json` (SHA256 `cc2024251224d89946a84f8936ab3b8dab8aadb20d5cc53e21fca3cd76378f4a`), `contract.verify_bundle` accepts all 20 dependencies and all 51 `SHA256SUMS` entries verify. Unittest discovery runs 64 checks with no skips and rc=0 with every private path set, and 41 pass with 23 skipped without them. No VM has been built at the new pin |
 | T13 standalone schema-5 bundle | 2026-10-02 20:54:06 UTC | Control host; Python 3.13.5; shipped schema-5 tools and retained real runtime/export/fixture inputs | Local checks Passed; dedicated installation and live scenarios Pending | Earlier-schema sources were removed from the shipped tools: `BUNDLE_FILES` no longer lists the schema-3 evaluator or the nineteen schema-4 files, and the evaluator returns Incomplete with `unsupported_observation_schema` for any other schema. Actual unittest discovery ran 55 checks in 36.505 seconds, rc=0 and no skips. `contract.verify_bundle` accepts all 20 dependencies and all 51 checksums verify. Candidate bundle SHA256 is 567d629b11704a2291302eb603830e313d85a9b7bab37629a0656ec7a31c0726; it supersedes the 40-dependency candidate recorded above and is not installed on any VM. Four retained-evidence cases now relabel the pre-schema-5 input and require a non-Passed verdict with the expected failed assertion. Four cases are removed because they exercised the removed schema-3 evaluator: Passed replay, missing scheduled pass, missing GC pair and aborted observation. The current evaluator has no retained-evidence coverage for those four until a schema-5 observation completes; add them then. The removed sources remain in the private evidence directory as `legacy-sources-removed-from-tree-20261002/` |
 
 ##### Closure Evidence
