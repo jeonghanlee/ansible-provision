@@ -22,7 +22,7 @@ CAPTURE_RESERVE = contract.CAPTURE_RESERVE
 HEALTH_USE_LIMIT = 85
 ENV_SOURCE = Path('/opt/epicsarchiverap-env-src/epicsarchiverap-env')
 SOURCE_PINS = {'env_head': 'd09dca7a604840bc3f8dcd9edd7a7434fdf6992e',
-               'maven_head': '254a6542f92411304b91f2e00c234f20030ae459'}
+               'maven_head': 'aa953a44bd2e6fb2a299224b97d365e7753a2fd8'}
 STAMP_PATH = Path('/var/tmp/archiver-build.config')
 CONFIG_PATH = Path('/opt/epicsarchiverap-maven/archappl.conf')
 

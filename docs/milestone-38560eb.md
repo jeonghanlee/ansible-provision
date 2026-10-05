@@ -109,16 +109,21 @@ entries (results row "Rocky 8 journald cause"). Bundle SHA256
 9c38425c77468ee0a9283c206ba5580bab5c410f98f9d558705fe5952608a43f records
 unreturned sequence numbers instead of failing and accounts for them from the
 journal file headers at every collection; it passed 69 local checks.
-Next: a new two-chain preparation on fresh VMs with this bundle, which needs
-owner authorization; no upstream report is planned. The default chain can
-meet the search-port defect again, and whether to wait for its correction is
-not decided. Each preparation repeats species, fixture, instrumentation, measured and fresh preparation, deployed-chain and health
+The Maven pin then moved to `aa953a44`, which carries the engine's CA
+search-port correction; bundle SHA256
+68d527a0a6e4173a1d7c02e7e9abef1659fb698466ba90cc7595ae53e729567b passed the
+same 69 checks.
+Next: a new two-chain preparation on fresh VMs with bundle `68d527a0`, which needs
+owner authorization; no upstream report is planned. Each preparation repeats
+species, fixture, instrumentation, measured and fresh preparation, deployed-chain and health
 verification, waits until `passes.jsonl` holds a closed ETL pass (up to an
 hour on the default chain), then empty/abort runtime verification and
 launch; each needs owner authorization. The driver is private
 `work/soak-etl-pass-3bdf378c/run-to-launch-template.bash`; it still names
-the tools archive and bundle `cc202425` and must first be pointed at an
-archive of the current `tests/archiver-soak/etl-pass` tools; each VM's
+the tools archive and bundle `cc202425` and the Maven `254a6542` pin file,
+and must first be pointed at an archive of the current
+`tests/archiver-soak/etl-pass` tools and at the private pin file
+`work/soak-etl-pass-3bdf378c/journal-test-source-pins-aa953a44.json`; each VM's
 inventory, known-hosts file and step logs are in its private
 `work/soak-etl-pass-3bdf378c/journal-test-<label>/` directory;
 the commands are in `tests/archiver-soak/README.md`: section Observation And
@@ -2905,6 +2910,13 @@ visibility probes do not establish lossless archival.
   corrects a per-PV ETLDetails value that the evaluator does not read. The
   remaining per-request logging is studied in
   jeonghanlee/epicsarchiverap-maven#24.
+- Decision Date: 2026-10-05. Move the epicsarchiverap-maven pin from
+  `254a6542` to `aa953a44`, which carries the CA search-port correction
+  `7adc7d5a` (jeonghanlee/epicsarchiverap-maven#26) that the maven owner
+  declared final; its Maven workflow passed on `aa953a44`. Between the two
+  commits the packaged sources differ only in the engine's `EngineContext`
+  and `JCACommandThread`; the ETL scheduler, `EngineMetrics.java` and the
+  logging configuration are unchanged. Both chains are prepared at this pin.
 - Reported 2026-10-04 by the epicsarchiverap-env session, on its owner's
   decision of that date: the two Rocky 8.10 defects seen in this soak are
   split by owner. This repository owns the journald loss; the CAJ shared
@@ -3926,6 +3938,7 @@ Local journal-candidate verification supplements the pending live checks:
 | Rocky 8 journald cause | 2026-10-04T22:33:37Z | Fresh plain Rocky 8.10 guest (systemd 239-82.el8, then 239-82.el8_10.19; kernel 4.18.0-553.el8_10) and Debian 13 guest (systemd 257.9), both from cloud-provision, rate limiting disabled; the eighth dedicated VM; private reproducer `journald-burst-repro.py`; refs jeonghanlee/epicsarchiverap-env#58 | Cause found: a reader defect, no stored entry lost | One writer emitting 5000 identical lines: Rocky returns 295, exactly one per distinct realtime timestamp, with 4704 unreturned sequence numbers and a passing `journalctl --verify`; systemd 257 reading a copy of that Rocky file returns all 5000, and Debian 13 returns all 5000. Eighteen Rocky runs with unique lines (1-16 writers, up to 2000 characters, concurrent readers, user and system files, service stdout, CPU load, repeated `journalctl --sync`, the soak journald settings) lost nothing, and no run recorded suppression. On the eighth VM, 903 concurrent mgmt requests left 22, 30 and 45 unreturned numbers with two client workers and none with one; over one fixed window systemd 239 returns 21,520 mgmt entries and systemd 257 returns 21,632 from a copy of the same file. systemd v239 `sd-journal.c` `compare_with_location()` treats an entry as the current one when boot, realtime and content hash match, without comparing the sequence number; upstream commit `b17f651a17cd` (first in v248) adds that comparison, and the latest Rocky 8.10 update still returns 295 of 5000. The earlier 9, 39 and 16 unreturned numbers and the 65-137 burst lines are this defect |
 | T13 unreturned-sequence correction | 2026-10-04T23:23:29Z | Control host; Python 3.13.5; shipped tools with `journal_coverage.sequence_holes()`, `account()` at every collection and the evaluator check; every private evidence path including the eighth VM's failed sample, two actual accounting records and one actual archived journal file with its systemd 239 header listing; the eighth VM and the reproduction guest for the shipped functions | Local checks Passed; collection on new VMs Pending | The eighth VM's failed interval is accepted with 12 recorded unreturned numbers, each preceded by a mgmt line of the same HTTP worker thread. The shipped `account()` found one stored entry per sequence number on the eighth VM with the appliance running (112,641 for sequence 1-112,641) and on the reproduction guest after rotation and removal of older files (944,713 for 398,896-1,343,608), although `journalctl` returns fewer. Twenty runs on the eighth VM during continuous 903-request two-worker bursts all passed, the slowest after 114 header reads in 3.14 seconds; the limit is 600 attempts. The direct header read equals `journalctl --header` on all 13 immutable files of the reproduction guest. No actual file begins before the retained range, so enumeration of such a file is covered by arithmetic checks only. `contract.py --freeze` rewrote `bundle.json` (SHA256 `9c38425c77468ee0a9283c206ba5580bab5c410f98f9d558705fe5952608a43f`), `contract.verify_bundle` accepts all 20 dependencies and all 51 `SHA256SUMS` entries verify. Unittest discovery runs 69 checks with no skips and rc=0 with every private path set, and 43 pass with 26 skipped without them. The shipped `collect()` with the accounting and the evaluator's recomputation of it have not run on real collection output |
 | Ninth dedicated environment, default chain | 2026-10-04T10:09:36Z | A fresh Rocky 8.10 VM created by cloud-provision on the control host; bundle `cc202425`; Maven `254a6542`; default chain | Failed at PV readiness | All 903 PVs registered, but after 90 readiness attempts 808 were connected and archiving and 95 never connected. The engine lists exactly those 95 as pending metadata gets, with CA state NEVER_CONNECTED and CAJ command thread id 2; a sample of 101 connected PVs spans thread ids 0, 1 and 3-9 and none is on 2. A loopback capture shows the IOC answering every search for the 95 at the engine's search port. In the engine JVM two sockets are bound to that one UDP port, while each other CA context holds its own port; kernel 4.18.0-553.el8_10. CAJ (jca 2.4.12, unchanged between the two Maven pins) binds every context's search socket to an ephemeral port with SO_REUSEADDR, so two contexts can share a port and only one receives the replies. The eighth VM on the same pin and eight earlier VMs connected all 903 PVs. The defect and its fix belong to epicsarchiverap-maven (jeonghanlee/epicsarchiverap-maven#26); which socket the kernel delivers to is not yet observed |
+| T13 Maven pin move to the search-port correction | 2026-10-05T01:45:23Z | Control host; Python 3.13.5; shipped tools with `SOURCE_PINS`, `rate-semantics.json` and `common.yml` at Maven `aa953a44`; every private evidence path | Local checks Passed; preparation on new VMs Pending | `git diff 254a6542 aa953a44` over the packaged sources lists only `engine/pv/EngineContext.java` and `engine/pv/JCACommandThread.java`; the ETL sources and `EngineMetrics.java` are unchanged. Maven workflow run 37249019863 on `aa953a44` concluded success at 2026-10-05T01:22:57Z. `contract.py --freeze` rewrote `bundle.json` (SHA256 `68d527a0a6e4173a1d7c02e7e9abef1659fb698466ba90cc7595ae53e729567b`), `contract.verify_bundle` accepts all 20 dependencies and all 51 `SHA256SUMS` entries verify. Unittest discovery runs 69 checks with no skips and rc=0 with every private path set, and 43 pass with 26 skipped without them. No VM has been built at this pin |
 | T13 standalone schema-5 bundle | 2026-10-02 20:54:06 UTC | Control host; Python 3.13.5; shipped schema-5 tools and retained real runtime/export/fixture inputs | Local checks Passed; dedicated installation and live scenarios Pending | Earlier-schema sources were removed from the shipped tools: `BUNDLE_FILES` no longer lists the schema-3 evaluator or the nineteen schema-4 files, and the evaluator returns Incomplete with `unsupported_observation_schema` for any other schema. Actual unittest discovery ran 55 checks in 36.505 seconds, rc=0 and no skips. `contract.verify_bundle` accepts all 20 dependencies and all 51 checksums verify. Candidate bundle SHA256 is 567d629b11704a2291302eb603830e313d85a9b7bab37629a0656ec7a31c0726; it supersedes the 40-dependency candidate recorded above and is not installed on any VM. Four retained-evidence cases now relabel the pre-schema-5 input and require a non-Passed verdict with the expected failed assertion. Four cases are removed because they exercised the removed schema-3 evaluator: Passed replay, missing scheduled pass, missing GC pair and aborted observation. The current evaluator has no retained-evidence coverage for those four until a schema-5 observation completes; add them then. The removed sources remain in the private evidence directory as `legacy-sources-removed-from-tree-20261002/` |
 
 ##### Closure Evidence
