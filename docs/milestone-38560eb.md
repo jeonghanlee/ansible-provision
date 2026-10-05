@@ -113,23 +113,39 @@ The Maven pin then moved to `aa953a44`, which carries the engine's CA
 search-port correction; bundle SHA256
 68d527a0a6e4173a1d7c02e7e9abef1659fb698466ba90cc7595ae53e729567b passed the
 same 69 checks.
-Two fresh VMs, one per chain, then passed every readiness check with bundle
-`68d527a0` (results row "Tenth and eleventh dedicated environments") and both
-24-hour observations started on 2026-10-05 at 05:20:41Z (shortened) and
-05:20:40Z (default) (results row "Launch of both 24-hour observations"). Both
-run until 2026-10-06 05:20Z and cross UTC midnight once.
-Next: watch the periodic samples; the first removal of old journal files (about
-eight hours in) is the first live use of the retained-range accounting after
-rotation. At 05:20Z each VM's finish timer runs `observe.py finish` by itself
-(README section Observation And Shutdown); then read the verdict from
-`shutdown.json`, collect the private evidence and record the results;
-T6/T20 comparison, T21 and the live
-T22-T28 scenarios remain pending. A launch after a fresh preparation needs a
-new capacity growth window first (README section Journal Retention
-Preparation); the private steps used are `refresh-runtime-proofs.bash`,
-`fresh-capacity-refresh.py` and `launch-after-capacity.bash` in
-`work/soak-etl-pass-3bdf378c/`; no upstream report is planned. Each VM's
-inventory, known-hosts file and step logs are in its private
+Two fresh VMs, one per chain, passed every readiness check with bundle
+`68d527a0` and both 24-hour observations started on 2026-10-05 at 05:20Z
+(results rows "Tenth and eleventh dedicated environments" and "Launch of both
+24-hour observations"). Both aborted by the abort policy, shortened at 14:00Z
+and default at 07:20Z, at the first rotation of the system journal, because
+`rates()` took the renamed journal file as new growth (results row "First
+24-hour observations, aborted at the first journal rotation"). The correction,
+bundle `cb9b8106` (results row "T13 rotation accounting correction"), matches
+files by device and inode and passed 71 local checks.
+The default observation of the new pair started on 2026-10-05 at 17:18:34Z
+with bundle `cb9b8106` (results row "Twelfth and thirteenth dedicated
+environments"); its shortened observation was aborted after 14 minutes by a
+store size check, which the bundle `3e9815b0` corrects (results row "T13 store
+size measurement correction").
+The journal checks formerly T22-T28 are the separate work unit `M25` since
+2026-10-05; its first step is a compressed rehearsal (`M25` / T8) of the full
+collection path, which this row's observations do not wait for. The two
+observations running on 2026-10-05 were left as they are.
+The replacement shortened observation started on 2026-10-05 at 18:24:54Z with
+bundle `3e9815b0` (results row "Replacement shortened observation"), so both
+chains are being observed: shortened since 18:24:54Z and default since
+17:18:34Z, each for 24 hours across UTC midnight.
+Next: let both finish. Each finish timer runs `observe.py finish` (README
+section Observation And Shutdown); then read the verdict from `shutdown.json`,
+collect the private evidence and record the results; T6/T20 comparison, T21
+remain pending. The aborted VMs may be removed once the owner agrees. Launching
+a further observation after a fresh preparation needs a new capacity growth
+window first (README section Journal Retention Preparation), done with the
+private steps `refresh-runtime-proofs.bash`, `fresh-capacity-refresh.py` and
+`launch-after-capacity.bash`, or `run-and-launch.bash` for the whole
+sequence, in `work/soak-etl-pass-3bdf378c/`. For `M25`, run its T8
+rehearsal first; no upstream report is planned. Each VM's inventory,
+known-hosts file and step logs are in its private
 `work/soak-etl-pass-3bdf378c/journal-test-<label>/` directory;
 the commands are in `tests/archiver-soak/README.md`: section Observation And
 Shutdown for `verify-health.py` (two health completions and full samples) and
@@ -319,6 +335,8 @@ Status tally: 20 Complete, 1 In progress, 0 Not started, 1 Deferred, 1 Blocked. 
 | Core | M20 | Align the test-user handoff document with the operator model | Milestone | Complete | No | | `docs/test_users_handoff.md` names `roles/testusers`, `playbooks/operators/testusers.yml`, the `iocrunner` species order and the bake's species step instead of the retired `app_ioc_runner`, `roles/test_users`, `playbooks/07_test_users.yml`, `CONFIG_SITE` list and `site.yml`; delivered in `268a060`; [detail](#m20---align-the-test-user-handoff-document-with-the-operator-model) |
 | Core | M22 | Verify the ETL pass scheduler on two parallel store chains | Milestone | In progress | No | M17, M21, G4 | Both fixed-ref deployments run for at least 24 hours across UTC midnight with the same 903-PV fixture; pass timing and metrics match the scheduler design, normal-load passes do not overrun, each unit stops within its configured timeout, and the earlier soak comparison is recorded; [detail](#m22---verify-the-etl-pass-scheduler-on-two-parallel-store-chains) |
 | Core | M23 | Add the Perl modules for the EPICS-env installed-tree utility to the EPICS OS package set | Milestone | Complete | No | D20 | `epics_os_packages` carries `perl-Digest-SHA`, `perl-JSON-PP`, `perl-Pod-Checker` and `perl-Test-Simple` on rocky8 and rocky10 and `perl` on debian12, debian13, ubuntu24 and ubuntu26; after the `epics` operator applies on each vacuum, the four modules load and `podchecker` runs; delivered in `4dfb290`, verified on all six vacua (`300ccc7`); [detail](#m23---add-the-perl-modules-for-the-epics-env-installed-tree-utility-to-the-epics-os-package-set) |
+| Core | M24 | Split the archiver MariaDB operator into socket and TCP operators and rename the archiver-dev species | Milestone | Not started | No | M22, D21 | Operators `mariadb_uds` and `mariadb_tcp` and species `archiver-dev-uds`, `archiver-dev-tcp` and `archiver-dev-sqlite` exist with the group variables `archiver_dev_uds.yml`, `archiver_dev_tcp.yml` and `archiver_dev_sqlite.yml`; each species deploys on a fresh guest with its database reachable exactly as the cloud-provision definition states; the old `archiver-dev` name still resolves for a limited period; [detail](#m24---split-the-archiver-mariadb-operator-into-socket-and-tcp-operators-and-rename-the-archiver-dev-species) |
+| Core | M25 | Verify journal collection integrity and retention for the ETL soak | Milestone | In progress | No | D22 | The journal checks formerly T22-T28 of the ETL soak (kernel-journal coverage after cursor loss and in quiet intervals, rotation and event delivery, detection of required-record loss, boundaries and boot identity, the retention budget in preparation and in a 24-hour window, and abort and terminal integration) each pass in their stated environment, including a compressed rehearsal of the full collection path under a reduced journal cap; [detail](#m25---verify-journal-collection-integrity-and-retention-for-the-etl-soak) |
 | Gate | G1 | the production IOC server reaches the internal git host | External gate | Complete | No | | Reachability achieved through the site HTTP proxy's CONNECT tunnel (an ssh `ProxyCommand` over the proxy), not a firewall whitelist: the owner's key authenticates and `git ls-remote` returns the refs; confirmed 2026-09-03 by the successful iocserver clone (M4/T2) |
 | Gate | G2 | cloud-provision ships the middleware package baseline and the middleware VM | External gate | Open | No | | The middleware operator/species structure and OS package baseline (system OpenJDK 21, Tomcat 9.0.121, MariaDB; no Maven package) originate in cloud-provision (`docs/milestone-e260630.md` M11) as the normative source and a middleware VM is provisionable there, before ansible-provision mirrors the set and layers its roles; owned by the cloud-provision session |
 | Gate | G3 | epicsarchiverap-env ships a `sql.fill` that loads the configuration schema when the database and application account are provisioned externally | External gate | Complete | No | | Complete when the jeonghanlee/epicsarchiverap-env#47 fix commit is on `modernize` and epicsarchiverap-env records #47's acceptance as met: with only the application account, `make sql.fill` loads the schema, `make sql.show` lists `PVTypeInfo`, `PVAliases`, `ArchivePVRequests` and `ExternalDataServers`, and an absent database exits non-zero. Observing it on an archiver-dev host is M14/T17, not this gate; owned by the epicsarchiverap-env session; met 2026-09-23: the fix is `1fc20a8` on `modernize`, and #47 closed with epicsarchiverap-env's acceptance recorded |
@@ -348,6 +366,8 @@ Status tally: 20 Complete, 1 In progress, 0 Not started, 1 Deferred, 1 Blocked. 
 | D18 | The MariaDB application password is generated on the target host by the `mariadb` operator and kept in a root-only file there, read by `archiver_build` for epicsarchiverap-env, replacing the control-host `mariadb_password_hash` carried to the target through the `raw_stdin` action. Carrying the credential was the source of the plugin, its SSH-only constraint and its dedicated tests; a site that wants its own password places the file before the first apply. | Owner decision, 2026-09-25 |
 | D19 | An archiver host gets exactly one configuration-database operator, `mariadb` (as today) or a new `sqlite`, chosen by species (`archiver-dev` or `archiver-dev-sqlite`, later `archiver` or `archiver-sqlite`) with the underscore group carrying `archiver_db_backend`; no new VM selector. Agreed with cloud-provision on 2026-09-25 (its `OPERATOR_MODEL.md` and generator follow this repository's role). The work runs in the order M16, M17, M18, because M16 and M18 both change the database handling in `archiver_build` and M18 needs an epicsarchiverap-env ref at or past `bbe0968`, which M17 brings. Owner decisions 2026-09-28 (M21 and M18 details): M21, the MariaDB socket, ran between M17 and M18, and for M18 cloud-provision landed its generator and definition first (`8c9b6ba`). | Owner decision, 2026-09-26 |
 | D20 | The Perl modules EPICS-env's installed-tree utility uses (`JSON::PP`, `Digest::SHA`, `Test::More`, `Pod::Checker`) are added to `epics_os_packages`: `perl-Digest-SHA`, `perl-JSON-PP`, `perl-Pod-Checker` and `perl-Test-Simple` on rocky8 and rocky10, and `perl` on debian12, debian13, ubuntu24 and ubuntu26, whose `perl-base` alone does not carry them. Each Rocky module package is named even where another package already pulls it in, because the utility uses the modules directly. | Owner decision, 2026-10-02 |
+| D21 | The archiver configuration database follows the cloud-provision definition (`docs/OPERATOR_MODEL.md` at `796682c`, its D8): three separate operators, `mariadb-uds` (the socket-only contract `mariadb` has today), `mariadb-tcp` (IPv4 loopback `127.0.0.1:3306` only, `skip-name-resolve`, the application account at `127.0.0.1`) and `sqlite`, and every archiver species carries exactly one: `archiver-dev-uds`, `archiver-dev-tcp` and `archiver-dev-sqlite`. `archiver-dev` and the group `archiver_dev` are renamed to the `-uds` names and stay as a deprecated alias for a limited period, removed after epicsarchiverap-env confirms it moved. Implementation starts after the two observations of M22 finish, because the soak tools and the next preparation resolve their deploy path through the current names. | Owner decision, 2026-10-05 |
+| D22 | The journal checks of the ETL soak, T22-T28 of `M22`, are a separate work unit `M25` with its own completion criteria, tests and results, so that a journal check cannot decide the ETL scheduler verdict of `M22` and the reverse. `M22` keeps T1-T21 and opens an observation after T27's preparation portion passes; T22-T28 become `M25` T1-T7 and a compressed rehearsal of the full collection path is added as T8. The observations that were running on 2026-10-05 are left as they are. | Owner decision, 2026-10-05 |
 
 ### Assignment History
 
@@ -2757,14 +2777,12 @@ visibility probes do not establish lossless archival.
   causes and pauses, complete jstat counters, RSS, retrieval freshness and
   representative visibility bounds. Report collection gaps, restart and OOM
   evidence, and distinguish observed heap maxima from continuous maxima.
-- Before a replacement window, T22-T26, T28 and T27's preparation portion
-  distinguish removal of an obsolete
-  pre-trial kernel anchor from loss of required, uncollected system records.
-  Quiet kernel intervals, rotation, real kernel-event delivery and final
-  collection must retain demonstrable coverage; unresolved gaps prevent
-  Passed. System and user journal retention are checked separately.
-  T27's in-window portion runs during T16 and closes at T19; its completion
-  is required for final acceptance, not for opening the observation.
+- Journal collection integrity and retention, formerly T22-T28, belong to
+  `M25` from 2026-10-05 and are verified there. An observation opens only
+  after T27's preparation portion (`M25` / T6) passes in the shipped tools;
+  the shipped evaluator still reports a failed in-window journal budget or
+  coverage as a failed assertion and the two-failure abort policy still
+  applies. Changing either is tool work that this row does not contain.
 - After the startup pass, each pass retains the design's planned grid time.
   Under normal soak load, a pass with no preceding-transition wait starts
   within one 5-second tick of that time. A pass held by the ordering rule
@@ -2925,6 +2943,18 @@ visibility probes do not establish lossless archival.
 - Decision Date: 2026-10-05. Open the 24-hour observation on both prepared
   chains, and let the assistant run `launch-retest.py` and the preceding
   refresh steps on the two VMs.
+- Decision Date: 2026-10-05. After both observations aborted at the first
+  rotation of the system journal, correct the retention accounting so a
+  renamed journal file is not counted as growth, prepare two fresh VMs with
+  the new bundle under new names, and open both 24-hour observations again,
+  including the launch steps. The aborted VMs stay until the new observations
+  have started; their evidence is preserved privately.
+- Decision Date: 2026-10-05. Let the store size measurement accept the total
+  that `du` prints when it exits 1 only because files vanished during its
+  walk, after the shortened-chain observation of the new pair aborted on that
+  exit status. Prepare one more VM for the shortened chain with the resulting
+  bundle; the default-chain observation that had just started on the earlier
+  bundle continues.
 - Reported 2026-10-04 by the epicsarchiverap-env session, on its owner's
   decision of that date: the two Rocky 8.10 defects seen in this soak are
   split by owner. This repository owns the journald loss; the CAJ shared
@@ -2992,7 +3022,7 @@ visibility probes do not establish lossless archival.
 - Plan Status: accepted
 - Plan Acceptance: 2026-10-02; the owner accepted correcting the accounting instead of the cap, logging policy or VM size. 2026-10-03 revision: the owner accepted applying the 300-second rule to in-window collections and the evaluator, and a third dedicated VM for the changed bundle
 - Implementation Authorization: 2026-10-02; code correction, bundle regeneration and local verification. 2026-10-03; step 4 (candidate installation and measured preparation) on a second dedicated VM, together with its species deployment and fixture before it and the fresh preparation after it, and its readiness checks. 2026-10-03 revision: the in-window correction, its local verification and the same preparation sequence on a third dedicated VM
-- Superseded Plan Artifacts: step 1's earlier statement that `runtime()` and the evaluator keep their interval handling; bundles `e11d3ebc`, `7c551c4b` and `bbbf5d90`
+- Superseded Plan Artifacts: step 1's earlier statement that `runtime()` and the evaluator keep their interval handling; bundles `e11d3ebc`, `7c551c4b` and `bbbf5d90`; every statement of this Implementation Plan that requires completed T22-T26/T28 before an observation opens (moved to `M25` on 2026-10-05, `D22`)
 
 1. `tests/archiver-soak/etl-pass/journal_retention.py`: `rates()` returns
    `max(write delta, system allocation growth) / duration` for the system
@@ -3532,20 +3562,18 @@ both original terminal verdicts remain Incomplete.
 | T12 | Retest finish | Preserve the final full sample and complete JFR checkpoint, measure the whole-unit stop and collect both final journals; use the distinct abort path if a stop condition occurs early | Shortened VM after T11 or an early-abort trigger | Normal finish requires successful final collection and an active appliance stopping inside its timeout without forced termination; early abort preserves its cause, capture failures and stop result, records Incomplete, and cancels the scheduled finish |
 | T13 | Observation control | Run shipped preparation/launcher/observer/evaluator paths with external clock/filesystem/command boundaries; check both grids against the pinned design and retained real pass records; reject shortened/default mismatch, early UTC/monotonic finish, absent midnight, stale hash proofs and repeated stop; change the actual helper/JFR configuration separately and require old-proof rejection | Control host; retained real observations and original tools | Explicit 86400-second duration is consistent throughout; shortened and default schedules are independently correct; complete bundle hashes include executable dependencies and JFR configuration, with missing/unexpected entries rejected; invalid duration/grid/coverage or a changed dependency cannot yield Passed; legacy two-hour verdicts remain separately reproducible |
 | T14 | Preparation and load | First complete local shipped-tool/fixture repeated-preparation and conflicting-input checks, then freeze and install the bundle; preserve completed observations; verify existing adjustments on both VMs through --verify-existing; verify source pins, equal fixture/override, CA isolation, 256M heaps, MariaDB, real resources/store ages and measured 24-hour capacity projection | Both stopped/restarted VMs; local checks before bundle freeze and deployment | Implementation and local checks precede hash freeze; installed tools match the frozen bundle; both existing adjustments and original databases remain intact; absent/mismatched/partial adjustments are rejected without initial-application fallback; all 903 names/settings and twenty actual deadband fields match; actual disks are 40 GiB on shortened and 48 GiB on default; data and measurement growth leave at least 2 GiB and usage below the installed health limit; original data and evidence preserved |
-| T15 | Current-tool runtime readiness | Require completed T22-T26/T28 and T27 preparation evidence for the replacement bundle; install identical complete bundle hashes, including preparation, executable helpers and JFR configuration; execute real health, empty-data rejection, early-finish rejection and abort probe; exercise collector during a real activating health invocation; restart and obtain two successful health completions and two full samples | Both real appliances, IOC fixtures, MariaDB and systemd | Current proofs bind to the complete installed bundle and frozen digests; no failed/missing/stale health completion hidden; four real GC components, synchronized clock, all 903 PVs connected/archiving/recent, six visible probes and zero full-sample errors; no manifest before readiness or while pre-launch journal checks remain unverified; T27 in-window completion is deferred to T16/T19 |
+| T15 | Current-tool runtime readiness | Require T27 preparation evidence (`M25` / T6) for the replacement bundle; install identical complete bundle hashes, including preparation, executable helpers and JFR configuration; execute real health, empty-data rejection, early-finish rejection and abort probe; exercise collector during a real activating health invocation; restart and obtain two successful health completions and two full samples | Both real appliances, IOC fixtures, MariaDB and systemd | Current proofs bind to the complete installed bundle and frozen digests; no failed/missing/stale health completion hidden; four real GC components, synchronized clock, all 903 PVs connected/archiving/recent, six visible probes and zero full-sample errors; no manifest before readiness or while pre-launch journal checks remain unverified; T27 in-window completion is deferred to T16/T19 |
 | T16 | Full-window soak | Run both actual store chains in parallel for at least 86400 seconds in both clocks across UTC midnight; collect every five minutes plus initial/final samples and complete journals | Both VMs after T15 | Each VM independently meets duration/midnight, freshness, identity and coverage criteria; zero genuine health/sample failures, OOM or JVM restart; abort is Incomplete with failures retained |
 | T17 | Scheduler and load metrics | Evaluate every expected pass and raw metric snapshot against the verified chain grid and pinned metric definitions; aggregate actual event rates and retrieval workload | Both completed observations | Exactly one completion per expected identity, no normal overrun/job errors; start within five seconds of planned/ordering-ready time; counters, busy time and weekly usage reconcile; numerical results, rate semantics, intervals and units available |
 | T18 | Memory and GC | Parse real JFR recordings, heap/collection/pause CSVs, GC logs, jstat and RSS; use the specified event identity, matching payload and bounded two-microsecond timestamp clusters; exercise aggregation on retained real overlapping exports, preserve distinct pauses and reject conflicts/ambiguity; check recording/rotation coverage and counter agreement | All eight actual JVMs; retained real shortened/default exports for aggregation regression | Overlap does not inflate counts or pause totals, and exact-timestamp-only deduplication fails the regression; original timestamps and duplicate counts remain available; complete window evidence without DataLoss, missing pairs or unresolved conflicts; per-component observed heap/post-GC heap, GC counts/times, pause totals/maxima and RSS reported with counts/units; no continuous-max or heap-sizing claim |
 | T19 | Normal terminal path | After both duration checks and in-window completion, capture final full sample/four complete JFRs; record ETL work state, time one unit stop, capture remaining journals and replay evaluator | Each VM after T16, or separate abort path | Successful final collection and orderly stop inside actual timeout; idle/in-progress state and elapsed time retained; no repeated stop; stop success cannot hide failed assertions or missing coverage |
 | T20 | Earlier-result comparison | Complete T6 using M14/T21, original 24-hour, focused two-hour and new full-window inputs; reconcile last/average busy time and weekly usage meanings and intervals | Control host; preserved real evidence | Reproducible numerical comparison with fixture/event-rate, store-age, resource and retrieval-load differences stated; old unmeasured event rates identified; retired running sum excluded; no unsupported improvement claim |
 | T21 | Recipient evidence | Build the specified sanitized package with tools, per-chain replay inputs, reference aggregates, canonical snapshot and checksums; replay the shipped evaluator and both documented aggregate.py commands solely from that package; compare regenerated JSON values and check every cited row | Control host; recipient-equivalent package paths | Both commands return zero and regenerated counts, timestamps, digests, numerical values at declared precision and failure/coverage fields match their reference aggregates exactly; per-chain verdicts and numerical evidence are reproducible without private host access; checksums resolve exact plan/results/tool versions; uncommitted content identified; no secrets or private endpoint identifiers; sending remains separately authorized |
-| T22 | Obsolete kernel anchor | Establish a pre-trial kernel cursor through the shipped collector, collect quiet intervals, then remove only the archived journal file containing that anchor while retaining the entire required collection interval; repeat collection twice and compare the preserved defective bundle with the candidate | Dedicated Rocky 8.10 test VM; real systemd 239 journal files; real shipped collector and fixture | Actual old cursor becomes unavailable; original collector reproduces the error; candidate retains proven interval coverage and has no kernel_journal error or false abort. An unproved interval cannot be accepted by clearing the cursor |
-| T23 | Empty kernel interval | Collect at least three successive intervals containing real system records but no kernel records; also query retained files with no kernel row at or before the initial boundary | Dedicated test VM; actual journal files, collector and state persistence | Empty kernel output remains distinct from missing system-journal coverage; verified quiet intervals succeed, zero observed memory events are reported with coverage, and state survives repeated collection without depending on a pre-trial kernel row |
-| T24 | Rotation and event delivery | Generate uniquely tagged benign records through the real kernel logging path before/after collection and across an actual rotation; run full and journal-only collection repeatedly, including final capture; rotate during collection in a separate case | Dedicated test VM; actual journald, journalctl, collector and terminal paths | Every independently recorded kernel marker in the required interval is archived exactly once after cursor deduplication; no omission across rotation or final capture. A collection/rotation race must establish coverage or return an explicit incomplete result |
-| T25 | Required-record loss | Remove an archived system journal file containing known, not-yet-collected in-window markers; retain an older user journal and later system records; repeat with a missing application or health interval and replay the evaluator | Dedicated test VM plus preserved file copies; real collector and evaluator | Known loss or unresolved continuity cannot yield coverage_complete=true or Passed; an older user record cannot prove system coverage. Failed assertions remain visible after later successful collection; no silent reset to now |
-| T26 | Boundaries and boot identity | Place actual retained records before, at and after collection cutoffs, across UTC midnight and before/after a real test-VM reboot; replay shipped paths against those real files with only the external clock/filesystem boundary substituted locally | Control host and dedicated test VM; real journal timestamps/cursors and boot IDs | Adjacent interval boundaries neither omit nor double-count records; midnight does not reset coverage. A changed boot or unavailable required boundary is rejected, including initial preparation and post-stop capture |
-| T27 | Retention and capacity | Preparation: measure effective caps, system/user write rates and file sizes, then apply the calculation below and bind a fresh result to each actual VM/bundle. In-window: repeat budget and continuity checks at every full collection and final capture; close this portion at T19 | Both actual deployments; real journald measurements, preparation/launcher, collector and evaluator | Passing preparation permits T15/start; in-window completion is required only for final acceptance. Maximum gaps, factor-two safety allowance and byte/time inequalities are recorded. Missing inputs or a failed inequality refuse start; during a trial they create a retained sample error, using the existing two-consecutive-failure abort policy. Disk reserve, retention and suppression remain separate assertions |
-| T28 | Failure and terminal integration | Run T22's quiet/obsolete-anchor case through two real full samples; separately cause T25's required-record loss, observe two failed full samples, actual abort dispatch and journal-only final collection, then replay the frozen evaluator and attempt normal finish | Dedicated complete test deployment with the shipped 903-PV fixture, appliance, IOC, MariaDB and systemd; retained real abort inputs for local replay | Proven quiet coverage does not request abort. Real loss retains both sample failures, requests abort once, records final capture/stop outcomes, stops timers and yields Incomplete. Later success or normal finish cannot hide errors, repeat stop or turn the aborted run into Passed |
+
+The journal checks T22-T28 moved to `M25` on 2026-10-05 (`D22`) as its T1-T7
+and are no longer checks of this row; M22 keeps T1-T21. The procedure
+sections below are the accepted history of those checks and are owned by
+`M25`.
 
 ###### Journal Scenario Procedure And Start Gate
 
@@ -3628,8 +3656,9 @@ probe evidence; VM deletion and data removal are not part of this amendment.
    do not infer this from the 24-hour disk-growth calculation or the nominal
    MaxRetentionSec alone. Actual in-window continuity remains required even
    after the preparation estimate passes.
-7. Require T22-T26/T28, T27 preparation and existing T13-T15 before opening
-   another manifest. T27 in-window checks run during T16 and must complete
+7. Require T27 preparation (`M25` / T6) and existing T13-T15 before opening
+   another manifest; the live scenarios formerly named T22-T26/T28 belong to
+   `M25` and no longer gate an observation. T27 in-window checks run during T16 and must complete
    through T19 before final acceptance. Keep
    negative scenario failures in separate probe evidence; an expected rejection
    passes its negative check, but never makes a failed probe an accepted soak.
@@ -3709,6 +3738,11 @@ the in-window portion only when every required check and terminal coverage
 has been evaluated; do not relabel either aborted historical run as Passed.
 
 ##### Verification Results
+
+Rows labelled T22-T28, and rows named for T27, T13 or T15 that concern the
+journal, were recorded in this row before the split of 2026-10-05; they remain
+here as the record of that period. In `M25` the labels read T22 = T1,
+T23 = T2, T24 = T3, T25 = T4, T26 = T5, T27 = T6 and T28 = T7.
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
@@ -3949,7 +3983,10 @@ Local journal-candidate verification supplements the pending live checks:
 | T13 Maven pin move to the search-port correction | 2026-10-05T01:45:23Z | Control host; Python 3.13.5; shipped tools with `SOURCE_PINS`, `rate-semantics.json` and `common.yml` at Maven `aa953a44`; every private evidence path | Local checks Passed; preparation on two new VMs Passed (row "Tenth and eleventh dedicated environments") | `git diff 254a6542 aa953a44` over the packaged sources lists only `engine/pv/EngineContext.java` and `engine/pv/JCACommandThread.java`; the ETL sources and `EngineMetrics.java` are unchanged. Maven workflow run 37249019863 on `aa953a44` concluded success at 2026-10-05T01:22:57Z. `contract.py --freeze` rewrote `bundle.json` (SHA256 `68d527a0a6e4173a1d7c02e7e9abef1659fb698466ba90cc7595ae53e729567b`), `contract.verify_bundle` accepts all 20 dependencies and all 51 `SHA256SUMS` entries verify. Unittest discovery runs 69 checks with no skips and rc=0 with every private path set, and 43 pass with 26 skipped without them. Two VMs built at this pin are recorded in the next row |
 | Tenth and eleventh dedicated environments, both chains | 2026-10-05T03:13:01Z | Two fresh Rocky 8.10 VMs created by cloud-provision on the control host (2 vCPU, 4096 MiB, 48 GiB); species at `19adbfd` with `shortened.yml` and `default.yml`; bundle `68d527a0`; Maven `aa953a44`; private driver `run-to-launch-template.bash` | Passed through every readiness check; observation not started | Species rc=0 with 33 successful tasks on both. Measured preparation passed: shortened 761,106,651 required bytes (35,722.633 bytes/s system bound), default 770,412,806 (37,277.034); six intervals of 300.068-300.152 seconds on each. `prepare`, two health completions and the chain check for all 903 PVs passed, then 903 of 903 PVs archiving and connected on both chains, including the default chain after its first start. The first full sample after the first closed ETL pass had zero errors on both (shortened 02:46:01Z, default 03:07:14Z), and the empty-data and abort checks passed (stops of 11.7 and 11.2 seconds, no errors, all four complete GC recordings). Health and full samples after the abort passed on both (shortened 02:51:56Z, default 03:13:01Z). Across all full samples, systemd 239 `journalctl` did not return 5 sequence numbers on the shortened VM and 1 on the default VM, each in one full sample (02:46:01Z and 02:46:33Z) and none in any other; each was recorded and the header accounting found one stored entry per sequence number (60,632 and 83,511 entries at the last sample, no unreturned number outside the retained range). The bundle's `journal_coverage.collect()` and the evaluator's recomputation of it ran on real collection output for the first time. The retained evidence is on each VM and in its private `journal-test-<label>/` directory |
 | Launch of both 24-hour observations | 2026-10-05T05:20:41Z | The two VMs of the row above; shipped `launch-retest.py` with bundle `68d527a0`; private steps `refresh-runtime-proofs.bash`, `fresh-capacity-refresh.py` and `launch-after-capacity.bash` | Both observations started; running | The first launch attempt at 05:12Z failed on both VMs with `Current capacity growth measurement is stale` and opened nothing: the current window of the preparation's capacity measurement had ended at 02:40Z and the launcher only checks that it ended within 600 seconds, it does not measure. The runtime proofs had also passed their one-hour limit twice while the decisions were pending, and were repeated (empty-data and abort checks, stops of 11.3 and 11.2 seconds, no errors, 903 of 903 PVs afterwards). A private step then took two real full samples 300 seconds apart, built a new current window from the shipped `contract` functions, kept the historical window and the previous capacity files, and `launch-retest.py` opened both observations with a 75-second target: shortened at 05:20:41Z, default at 05:20:40Z, each with an initial sample of rc 0 and earliest finish 24 hours later. At 07:05Z (1.75 hours) both had 22 error-free in-window samples, no consecutive failures or abort request, 61 (shortened) and 10 (default) closed ETL passes, journal accounting passing at 172,082 and 193,905 stored entries with no unreturned number outside the retained range, and about 39 GiB free; the journal held 129 and 137 MiB, below the 1-GiB cap. The retained evidence is on each VM and in its private `journal-test-<label>/` directory |
-| T13 standalone schema-5 bundle | 2026-10-02 20:54:06 UTC | Control host; Python 3.13.5; shipped schema-5 tools and retained real runtime/export/fixture inputs | Local checks Passed; dedicated installation and live scenarios Pending | Earlier-schema sources were removed from the shipped tools: `BUNDLE_FILES` no longer lists the schema-3 evaluator or the nineteen schema-4 files, and the evaluator returns Incomplete with `unsupported_observation_schema` for any other schema. Actual unittest discovery ran 55 checks in 36.505 seconds, rc=0 and no skips. `contract.verify_bundle` accepts all 20 dependencies and all 51 checksums verify. Candidate bundle SHA256 is 567d629b11704a2291302eb603830e313d85a9b7bab37629a0656ec7a31c0726; it supersedes the 40-dependency candidate recorded above and is not installed on any VM. Four retained-evidence cases now relabel the pre-schema-5 input and require a non-Passed verdict with the expected failed assertion. Four cases are removed because they exercised the removed schema-3 evaluator: Passed replay, missing scheduled pass, missing GC pair and aborted observation. The current evaluator has no retained-evidence coverage for those four until a schema-5 observation completes; add them then. The removed sources remain in the private evidence directory as `legacy-sources-removed-from-tree-20261002/` |
+| First 24-hour observations, aborted at the first journal rotation | 2026-10-05T14:00:25Z | The two VMs of the row above; bundle `68d527a0`; private evidence under each VM's `aborted-evidence/` directory (evidence and real journal files, hash-listed) | Failed; both observations Incomplete | Both aborted by the abort policy after consecutive full samples failed `journal_retention_budget`: shortened at 14:00:05Z (107 in-window samples), default at 07:20:06Z (27). Until then every in-window sample had no error and the journal accounting passed (last samples 419,988 and 208,259 stored entries for the same number of sequence numbers). The first failing sample was the one after the system journal reached its 128-MiB file size and rotated (shortened 13:55:00Z, default 07:15:00Z): the 134,225,920-byte file reappeared under an archived name and `rates()` took it as new growth, so the 300-second interval measured 447,374.855 bytes/s against 25,000-60,000 bytes/s before, which fails the 1-GiB budget (3,424,768,893 required bytes) and stays in the peak bound for every later sample. The real writes in the interval were 11,563,008 bytes. The inventory already recorded the inode and device of each file. The abort itself ran as designed (stop rc 0, verdict Incomplete). Cause and fix are in the next row |
+| T13 rotation accounting correction | 2026-10-05T15:19:30Z | Control host; Python 3.13.5; shipped tools with the `rates()` change and every private evidence path including the actual snapshot pair across the first rotation | Local checks Passed; preparation on new VMs Pending | `rates()` now matches files by device and inode. On the actual pair the committed code returns 447,374.855 bytes/s and the corrected code 38,539.494 bytes/s, equal to the interval's writes; `interval_budget()` passes with the first collection's bound, and both new checks (the actual pair and a synthetic rename) fail on the committed `journal_retention.py`. A file whose inode did not exist before still counts in full. `contract.py --freeze` rewrote `bundle.json` (SHA256 `cb9b8106693cd2006c6873008d9ee1712eac8357ed1e801e5b90620ad6661c3d`), `contract.verify_bundle` accepts all 20 dependencies and all 51 `SHA256SUMS` entries verify. Unittest discovery runs 71 checks with no skips and rc=0 with every private path set, and 44 pass with 27 skipped without them. No VM has been built at this bundle |
+| Twelfth and thirteenth dedicated environments, both chains | 2026-10-05T17:18:34Z | Two fresh Rocky 8.10 VMs created by cloud-provision on the control host (2 vCPU, 4096 MiB, 48 GiB); species at `19adbfd`; bundle `cb9b8106`; Maven `aa953a44`; private step `run-and-launch.bash` | Both prepared; shortened observation aborted, default observation started | Both passed every readiness check (903 of 903 PVs, first full sample after the first closed pass without errors, empty-data and abort checks, health after the abort) and were launched through the capacity refresh. The shortened observation opened at 16:56:07Z and was aborted by the abort policy at 17:10:05Z: the full samples at 17:05:00Z and 17:10:00Z each failed `sts_bytes` with `du` exit status 1, a store size measurement that races the ETL pass of that chain, which moves and removes 5-minute partitions on the same 5-minute grid as the sampler. The verdict was Incomplete with `observation_duration` and `sts_bytes` failed. The default observation opened at 17:18:34Z with an initial sample of rc 0 and an earliest finish at 2026-10-06T17:18:34Z |\n| T13 store size measurement correction | 2026-10-05T17:16:59Z | Control host; Python 3.13.5; shipped tools with `collect.tolerated_du()` and `directory_bytes()`; every private evidence path including an actual `du -sb` result captured while a directory was being rewritten | Local checks Passed; shortened preparation on a new VM Pending | `du` printed a total and `No such file or directory` messages and exited 1 on a real directory walk raced against removals on the control host; the corrected measurement accepts exactly that result and still fails on any other exit status, on an error other than a vanished file, and on an empty total, while the committed collector fails all three new checks. `contract.py --freeze` rewrote `bundle.json` (SHA256 `3e9815b03a5d33a21652da422c5274374cec1326d8b110c1be91f3e9a42588f2`), `contract.verify_bundle` accepts all 20 dependencies and all 51 `SHA256SUMS` entries verify. Unittest discovery runs 74 checks with no skips and rc=0 with every private path set, and 46 pass with 28 skipped without them. The appliance's own partition removal was not reproduced; its exit status 1 is read from the failed samples |\n| T13 standalone schema-5 bundle | 2026-10-02 20:54:06 UTC | Control host; Python 3.13.5; shipped schema-5 tools and retained real runtime/export/fixture inputs | Local checks Passed; dedicated installation and live scenarios Pending | Earlier-schema sources were removed from the shipped tools: `BUNDLE_FILES` no longer lists the schema-3 evaluator or the nineteen schema-4 files, and the evaluator returns Incomplete with `unsupported_observation_schema` for any other schema. Actual unittest discovery ran 55 checks in 36.505 seconds, rc=0 and no skips. `contract.verify_bundle` accepts all 20 dependencies and all 51 checksums verify. Candidate bundle SHA256 is 567d629b11704a2291302eb603830e313d85a9b7bab37629a0656ec7a31c0726; it supersedes the 40-dependency candidate recorded above and is not installed on any VM. Four retained-evidence cases now relabel the pre-schema-5 input and require a non-Passed verdict with the expected failed assertion. Four cases are removed because they exercised the removed schema-3 evaluator: Passed replay, missing scheduled pass, missing GC pair and aborted observation. The current evaluator has no retained-evidence coverage for those four until a schema-5 observation completes; add them then. The removed sources remain in the private evidence directory as `legacy-sources-removed-from-tree-20261002/` |
+| Replacement shortened observation | 2026-10-05T18:24:54Z | A fresh Rocky 8.10 VM created by cloud-provision on the control host (2 vCPU, 4096 MiB, 48 GiB); species at `19adbfd`; bundle `3e9815b0`; Maven `aa953a44`; private step `run-and-launch.bash` | Prepared and launched; running | Species rc=0 with every readiness check passed (903 of 903 PVs, first full sample after the first closed pass without errors, empty-data and abort checks, health after the abort, ready at 18:18:23Z); after the capacity refresh the observation opened at 18:24:54Z. At 20:05Z it had 21 error-free in-window samples, no consecutive failure and no abort request; the store size measurement that aborted the earlier shortened observation had not failed. On the default observation of the pair the first system journal rotation occurred at 20:00:00Z with bundle `cb9b8106`: the budget passed with the system bound unchanged at 51,853 bytes/s and 1,035,708,866 required bytes against 1,073,741,824, and the sequence accounting passed |
 
 ##### Closure Evidence
 
@@ -4113,6 +4150,200 @@ package names.
 - The result was reported to EPICS-env on 2026-10-02 with the commit and the
   Debian-family addition. The matching `configure/epics-packages` change in
   cloud-provision, the normative source, is cloud-provision's.
+
+#### M24 - Split the archiver MariaDB operator into socket and TCP operators and rename the archiver-dev species
+
+- Origin: 38560eb / M24
+- GitHub Issue: none; peer request from the cloud-provision session on 2026-10-05
+- Status: Not started
+
+##### Summary
+
+cloud-provision decided that the archiver configuration database is three
+operators and that every archiver species carries exactly one (`D21`). This
+repository has one `mariadb` role whose `mariadb_skip_networking` switch picks
+the socket-only or the loopback TCP mode, the species `archiver-dev` and
+`archiver-dev-sqlite`, and the group variables `archiver_dev.yml` and
+`archiver_dev_sqlite.yml`. The cloud-provision inventory generator already
+rejects the name `archiver-dev`.
+
+##### Scope
+
+Split `roles/mariadb` and `playbooks/operators/mariadb.yml` into
+`mariadb_uds` (no TCP listener, the account at `localhost` over the Unix
+socket, `DB_SOCKET`) and `mariadb_tcp` (listener on `127.0.0.1:3306` only,
+`skip-name-resolve`, the application account at `127.0.0.1`, the archiver
+build writing that host and port, the socket still available and root still
+socket-authenticated). Add the species `archiver-dev-uds` and
+`archiver-dev-tcp`, keep `archiver-dev-sqlite`, and rename
+`inventory/group_vars/archiver_dev.yml` to `archiver_dev_uds.yml` with a new
+`archiver_dev_tcp.yml`. Keep `archiver-dev` and `archiver_dev` as a deprecated
+alias of the `-uds` names. Update the names where `roles/archiver_build`, the
+README, `docs/ARCHITECTURE.md`, `docs/CLOSED_DOORS.md` and the soak tools'
+README use them.
+
+Out of scope: the `archiver` distribution species and the middleware species
+(cloud-provision marks them not yet implemented); the SQLite operator;
+removing the alias, which follows epicsarchiverap-env's move; the soak tools'
+bundle, which pins no species name.
+
+##### Completion Criteria
+
+- Each of the three species applies on a fresh guest and the appliance answers
+  the management API.
+- On `archiver-dev-uds` MariaDB has no TCP listener and the application
+  connects through the socket; on `archiver-dev-tcp` it listens on
+  `127.0.0.1:3306` only and the application connects to that host and port
+  with the account at `127.0.0.1`.
+- `archiver-dev` still resolves to `archiver-dev-uds` and says it is
+  deprecated.
+- A re-apply of each species succeeds.
+
+##### Dependencies And Decisions
+
+- `M22`: the two running observations deploy through `archiver_dev` and the
+  next preparation uses the same names; implementation starts after they
+  finish (about 2026-10-06 05:20 UTC).
+- `D21` (2026-10-05): the three-operator definition, the rename, the alias
+  and the timing.
+- Requested by cloud-provision on 2026-10-05 (its M19 closes only after this
+  change lands); the landing commit goes to that session for a read-only
+  check and to epicsarchiverap-env for its driver's move.
+
+##### Implementation Plan
+
+- Plan Status: draft
+- Plan Acceptance: none
+- Implementation Authorization: none
+- Superseded Plan Artifacts: none
+
+1. Create `roles/mariadb_uds` and `roles/mariadb_tcp` from `roles/mariadb`
+   and their operator playbooks; keep the application-password step in both.
+2. Add the two species and the group variables, and the alias.
+3. Update the name references and the README.
+4. Run T1 on the control host, then T2 on fresh guests.
+
+##### Test Plan
+
+| Label | Layer | Method | Environment | Expected Result |
+| --- | --- | --- | --- | --- |
+| T1 | Mechanism | Parse the changed group variables as YAML; `--syntax-check` on every changed operator and species playbook; resolve the alias | Control host | Every file parses and checks; `archiver-dev` resolves to the `-uds` species |
+| T2 | Integration | Apply each species to a fresh guest through the generated inventory and `make <species>.<vacuum>`; read the listeners and the application's database connection; apply again | Fresh Rocky 8.10 guests from cloud-provision, one per species | The completion criteria hold on all three and the re-apply succeeds |
+
+##### Verification Results
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T1 | Not run | | Pending | |
+| T2 | Not run | | Pending | |
+
+##### Closure Evidence
+
+- Not started.
+
+#### M25 - Verify journal collection integrity and retention for the ETL soak
+
+- Origin: 38560eb / M25
+- Identity History: transferred on 2026-10-05 from `M22` / T22-T28 (`D22`)
+- GitHub Issue: none
+- Status: In progress
+
+##### Summary
+
+The ETL soak (`M22`) reads the appliance's journal every five minutes and
+keeps it as evidence. This row verifies that this collection is complete and
+affordable over a 24-hour window: that it keeps coverage when the kernel
+cursor is lost or the interval is quiet, survives rotation and file removal,
+detects loss of required records, and fits the journal cap that the archiver
+host sets. The checks were T22-T28 of `M22`; they moved here so that a journal
+check and the ETL scheduler verdict do not decide each other.
+
+##### Scope
+
+The shipped collector, journal coverage and retention-budget code and the
+evaluator, exercised on the dedicated Rocky 8.10 test environment and on the
+soak VMs through their preparation path. The accepted procedure sections of
+`M22` (Journal Scenario Procedure And Start Gate, Dedicated Journal Test
+Environment, Journal Scenario Procedure and Retention Accounting Correction)
+are this row's procedure until they are moved. Added to the former checks is
+T8, a compressed rehearsal of the full collection path under conditions that
+make rotation and file removal frequent.
+
+Out of scope: the ETL scheduler verdict of `M22`; changes to the journal cap,
+the logging policy or the VM size, each an owner decision; systemd and
+journalctl behavior, which is recorded in `M22`'s results (a systemd 239
+`journalctl` hides stored entries that repeat the previous one).
+
+##### Completion Criteria
+
+- Each of T1-T8 passes in its stated environment through the shipped paths
+  with only the external clock, filesystem and command boundaries substituted.
+- The collector distinguishes removal of an obsolete pre-trial kernel anchor
+  from loss of required, uncollected system records; quiet intervals,
+  rotation, kernel-event delivery and final collection retain demonstrable
+  coverage; unresolved gaps prevent Passed; system and user journal retention
+  are checked separately.
+- Over a 24-hour window on the 1-GiB journal cap, the retention budget either
+  holds at every full collection or fails for a stated reason that the owner
+  accepts; a failure produced by a file rename or by a measurement artifact is
+  a defect of the checks, not a result.
+
+##### Dependencies And Decisions
+
+- `D22` (2026-10-05): this row, its separation from `M22` and the added T8.
+- `M22` opens an observation after T27's preparation portion (T6 here) passes;
+  it does not wait for the rest of this row.
+- Owner decisions still open and not made here: whether the retention budget
+  keeps counting the first allocation of a new journal file as a rate (the
+  calculation then leaves a 3.5-percent margin after the first rotation), and
+  whether a failed in-window budget keeps aborting an observation.
+
+##### Implementation Plan
+
+- Plan Status: draft
+- Plan Acceptance: none
+- Implementation Authorization: 2026-10-01 for the accepted journal-scenario plan transferred from `M22` (collector and budget code, local verification, the dedicated VM plan); none for this revision, which adds T8
+- Superseded Plan Artifacts: none
+
+1. Run T8 first on one fresh VM: the shortened chain, so the 5-minute ETL grid
+   and the sampler coincide, with a reduced journal file size that makes
+   rotation and file removal frequent while the cap and load keep the budget
+   formula satisfiable; the parameters are fixed in the accepted plan.
+2. Run T1-T5 and T7 on the dedicated test environment as specified in the
+   transferred procedure.
+3. Record T6 from the soak preparations and observations of `M22` and from T8.
+4. Report each defect found as a corrected, newly frozen bundle with a real
+   regression that fails on the defective behavior.
+
+##### Test Plan
+
+| Label | Layer | Method | Environment | Expected Result |
+| --- | --- | --- | --- | --- |
+| T1 | Obsolete kernel anchor | Establish a pre-trial kernel cursor through the shipped collector, collect quiet intervals, then remove only the archived journal file containing that anchor while retaining the entire required collection interval; repeat collection twice and compare the preserved defective bundle with the candidate | Dedicated Rocky 8.10 test VM; real systemd 239 journal files; real shipped collector and fixture | Actual old cursor becomes unavailable; original collector reproduces the error; candidate retains proven interval coverage and has no kernel_journal error or false abort. An unproved interval cannot be accepted by clearing the cursor |
+| T2 | Empty kernel interval | Collect at least three successive intervals containing real system records but no kernel records; also query retained files with no kernel row at or before the initial boundary | Dedicated test VM; actual journal files, collector and state persistence | Empty kernel output remains distinct from missing system-journal coverage; verified quiet intervals succeed, zero observed memory events are reported with coverage, and state survives repeated collection without depending on a pre-trial kernel row |
+| T3 | Rotation and event delivery | Generate uniquely tagged benign records through the real kernel logging path before/after collection and across an actual rotation; run full and journal-only collection repeatedly, including final capture; rotate during collection in a separate case | Dedicated test VM; actual journald, journalctl, collector and terminal paths | Every independently recorded kernel marker in the required interval is archived exactly once after cursor deduplication; no omission across rotation or final capture. A collection/rotation race must establish coverage or return an explicit incomplete result |
+| T4 | Required-record loss | Remove an archived system journal file containing known, not-yet-collected in-window markers; retain an older user journal and later system records; repeat with a missing application or health interval and replay the evaluator | Dedicated test VM plus preserved file copies; real collector and evaluator | Known loss or unresolved continuity cannot yield coverage_complete=true or Passed; an older user record cannot prove system coverage. Failed assertions remain visible after later successful collection; no silent reset to now |
+| T5 | Boundaries and boot identity | Place actual retained records before, at and after collection cutoffs, across UTC midnight and before/after a real test-VM reboot; replay shipped paths against those real files with only the external clock/filesystem boundary substituted locally | Control host and dedicated test VM; real journal timestamps/cursors and boot IDs | Adjacent interval boundaries neither omit nor double-count records; midnight does not reset coverage. A changed boot or unavailable required boundary is rejected, including initial preparation and post-stop capture |
+| T6 | Retention and capacity | Preparation: measure effective caps, system/user write rates and file sizes, then apply the calculation and bind a fresh result to each actual VM/bundle. In-window: repeat budget and continuity checks at every full collection and final capture | Soak VMs of `M22`; real journald measurements, preparation/launcher, collector and evaluator | Passing preparation permits the start of an `M22` observation. In-window, maximum gaps, the factor-two safety allowance and the byte/time inequalities are recorded and hold at every full collection through the first rotation and the first file removal, or fail for a reason the owner accepts. Disk reserve, retention and suppression remain separate assertions |
+| T7 | Failure and terminal integration | Run T1's quiet/obsolete-anchor case through two real full samples; separately cause T4's required-record loss, observe two failed full samples, actual abort dispatch and journal-only final collection, then replay the frozen evaluator and attempt normal finish | Dedicated complete test deployment with the shipped 903-PV fixture, appliance, IOC, MariaDB and systemd; retained real abort inputs for local replay | Proven quiet coverage does not request abort. Real loss retains both sample failures, requests abort once, records final capture/stop outcomes, stops timers and yields Incomplete. Later success or normal finish cannot hide errors, repeat stop or turn the aborted run into Passed |
+| T8 | Compressed rehearsal | Prepare one fresh VM through the shipped species and launcher with a journal file size reduced so that rotation and file removal occur many times within hours, on the shortened chain, and run the real collector, retention budget, accounting and evaluator for several hours; compare each sample, the budget and the accounting with the values the shipped functions give for the same snapshots | One fresh Rocky 8.10 VM (2 vCPU, 4096 MiB, 48 GiB) with the 903-PV fixture | Every rotation and removal passes the budget, the accounting and the store-size measurement without a failed assertion, or each failure is explained by a real fault; a defect found is corrected under plan item 4 before a 24-hour observation relies on the path |
+
+##### Verification Results
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T1 | Not run | | Pending | Both schema-4 trials of 2026-10-01 aborted after the pre-trial kernel cursor became unavailable (`M22` results); the candidate has not been run on a removal of its anchor file |
+| T2 | Not run | | Pending | |
+| T3 | 2026-10-05T20:00:00Z | Default soak VM; bundle `cb9b8106`; and a reproduction guest with a 200-MiB cap on 2026-10-05 | Partial | The first rotation of the system journal inside an observation passed the collector, the budget and the sequence accounting, after two earlier observations aborted at that point (`M22` results). On the reproduction guest the accounting matched the stored entries across real rotations and removals. Tagged kernel markers and the rotation-during-collection case were not run |
+| T4 | 2026-10-05T03:43Z | Reproduction guest | Partial | Removing one retained archived system file made `account()` refuse the retained range. The collector's required-marker loss, the missing application or health interval and the evaluator replay were not run |
+| T5 | Not run | | Pending | |
+| T6 | 2026-10-05T14:00:25Z | Soak VMs of `M22` | Failed in-window twice; preparation Passed | Measured preparations passed on every VM (the preparation rows of `M22`). Two 24-hour observations aborted at the first system journal rotation (14:00:05Z and 07:20:06Z) because `rates()` counted the renamed file as growth; corrected by matching files by device and inode. A later default-chain observation passed its first rotation on 2026-10-05T20:00:00Z. Calculated, not observed: with the shipped formula on that VM's snapshot the required bytes are 1,035,708,866 against 1,073,741,824 with two retained user files and exceed the cap from seven |
+| T7 | 2026-10-05T17:10:05Z | Soak VMs of `M22` | Partial | Three automatic aborts dispatched once, stopped the appliance with rc 0 and ended Incomplete (shortened 14:00:05Z, default 07:20:06Z, a later shortened 17:10:05Z). The quiet-coverage case without abort and required-record loss were not run |
+| T8 | Not run | | Pending | |
+
+##### Closure Evidence
+
+- Not complete.
 
 #### G4 - Prepare two independent ETL soak environments
 
