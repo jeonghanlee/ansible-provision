@@ -19,7 +19,35 @@ import observe
 import evaluate
 
 HERE = Path(__file__).resolve().parent
+DU_RACE = os.environ.get('ETL_SOAK_DU_RACE_EVIDENCE')
 FIXTURE = HERE.parent / 'fixtures' / 'pvs-all.csv'
+
+
+class StoreSizeTests(unittest.TestCase):
+    def test_other_du_failures_still_fail_the_measurement(self):
+        total = '4096\t/arch/sts\n'
+        self.assertEqual(collect.tolerated_du(0, total, ''), 4096)
+        for code, out, err in ((1, total, "du: cannot read directory '/arch/sts': Permission denied\n"),
+                               (1, total, ''), (2, total, ''), (1, '', "du: cannot access 'x': No such file or directory\n"),
+                               (0, '', '')):
+            with self.subTest(code=code, err=err), self.assertRaisesRegex(RuntimeError, 'du'):
+                collect.tolerated_du(code, out, err)
+
+    def test_real_directory_walk_that_races_a_removal_is_counted(self):
+        with tempfile.TemporaryDirectory() as directory:
+            Path(directory, 'kept').write_text('x' * 100)
+            self.assertGreaterEqual(collect.directory_bytes(directory), 100)
+
+    @unittest.skipUnless(DU_RACE, 'A retained actual du result from a racing removal is required')
+    def test_actual_du_result_from_a_racing_removal_is_accepted(self):
+        result = json.loads(Path(DU_RACE).read_text())
+        self.assertEqual(result['returncode'], 1)
+        self.assertIn('No such file or directory', result['stderr'])
+        self.assertEqual(collect.tolerated_du(result['returncode'], result['stdout'], result['stderr']),
+                         int(result['stdout'].split()[0]))
+        # The generic runner, which the measurement used before, rejects the same actual result.
+        with self.assertRaisesRegex(RuntimeError, 'command failed'):
+            collect.run(['sh', '-c', 'exit ' + str(result['returncode'])])
 
 
 class RetestTests(unittest.TestCase):

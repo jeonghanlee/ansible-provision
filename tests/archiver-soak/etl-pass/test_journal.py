@@ -17,6 +17,7 @@ MTIME_INPUT = os.environ.get('ETL_SOAK_MTIME_RETENTION_EVIDENCE')
 HOLES_INPUT = os.environ.get('ETL_SOAK_SEQUENCE_HOLE_EVIDENCE')
 ACCOUNTING_INPUT = os.environ.get('ETL_SOAK_SEQUENCE_ACCOUNTING_EVIDENCE')
 HEADER_INPUT = os.environ.get('ETL_SOAK_JOURNAL_HEADER_EVIDENCE')
+ROTATION_INPUT = os.environ.get('ETL_SOAK_ROTATION_RETENTION_EVIDENCE')
 
 
 class BudgetArithmeticTests(unittest.TestCase):
@@ -93,9 +94,9 @@ class BudgetArithmeticTests(unittest.TestCase):
                 'observed_at': (start + datetime.timedelta(seconds=seconds)).isoformat(),
                 'write_bytes': written, 'cancelled_write_bytes': 0,
                 'inventory': {'system.journal': {'stream': 'system', 'bytes': 8 * 1024 ** 2,
-                                                 'allocated_bytes': 8 * 1024 ** 2},
+                                                 'allocated_bytes': 8 * 1024 ** 2, 'device': 1, 'inode': 10},
                               'user-1000.journal': {'stream': 'user', 'bytes': user_bytes,
-                                                    'allocated_bytes': user_bytes}}}
+                                                    'allocated_bytes': user_bytes, 'device': 1, 'inode': 20}}}
 
     def test_shared_counter_is_counted_once_and_short_intervals_are_not_bounds(self):
         first = self.snapshot(0, 0, 8 * 1024 ** 2)
@@ -107,6 +108,22 @@ class BudgetArithmeticTests(unittest.TestCase):
         self.assertEqual(retention.bounded_interval(bounds, later, burst), bounds)
         with self.assertRaises(RuntimeError):
             retention.bounded_interval(bounds, later, self.snapshot(304, 7000000, 0, boot='other'))
+
+    def test_a_rotated_file_keeps_its_allocation_under_its_new_name(self):
+        big = 128 * 1024 ** 2
+        first = self.snapshot(0, 0, 8 * 1024 ** 2)
+        first['inventory']['system.journal'].update(bytes=big, allocated_bytes=big)
+        later = self.snapshot(300, 20000000, 8 * 1024 ** 2)
+        later['inventory'] = {
+            'system@archived.journal': dict(first['inventory']['system.journal']),
+            'system.journal': {'stream': 'system', 'bytes': 8 * 1024 ** 2, 'allocated_bytes': 8 * 1024 ** 2,
+                               'device': 1, 'inode': 30},
+            'user-1000.journal': first['inventory']['user-1000.journal']}
+        self.assertEqual(retention.rates(first, later), {'system': 20000000 / 300.0, 'user': 0})
+        later['inventory']['system.journal']['inode'] = 10
+        later['inventory']['system@archived.journal']['inode'] = 31
+        # A file whose inode is new did not exist before and counts in full.
+        self.assertEqual(retention.rates(first, later)['system'], big / 300.0)
 
     def test_modification_time_alone_is_not_unaccounted_growth(self):
         first = self.snapshot(0, 1000, 8 * 1024 ** 2)
@@ -292,6 +309,27 @@ class RealRuntimeRetentionInputTests(unittest.TestCase):
         self.assertEqual(result['rates_bytes_per_second'], bounds)
         self.assertEqual(result['actual_gap_seconds'], retention.elapsed(first, second))
         self.assertTrue(result['passed'])
+
+
+@unittest.skipUnless(ROTATION_INPUT, 'Retained actual snapshots across the first journal rotation are required')
+class RealRotationInputTests(unittest.TestCase):
+    def test_the_first_rotation_is_not_counted_as_a_rate_bound(self):
+        root = Path(ROTATION_INPUT)
+        first = json.loads((root / 'first.json').read_text())
+        second = json.loads((root / 'second.json').read_text())
+        bounds = json.loads((root / 'first-budget.json').read_text())['rates_bytes_per_second']
+        self.assertEqual(len(first['inventory']), 2)
+        self.assertEqual(len(second['inventory']), 4)
+        # The renamed 128-MiB system file is the same inode under a new path.
+        renamed = {row['inode'] for row in second['inventory'].values() if row['allocated_bytes'] > 100 * 1024 ** 2}
+        self.assertEqual(renamed, {row['inode'] for row in first['inventory'].values() if row['allocated_bytes'] > 100 * 1024 ** 2})
+        writes = second['write_bytes'] - first['write_bytes']
+        measured = retention.rates(first, second)
+        self.assertEqual(measured['system'], writes / retention.elapsed(first, second))
+        self.assertLess(measured['system'], 2 * bounds['system'] + 1)
+        result = retention.interval_budget(second, bounds, first)
+        self.assertTrue(result['passed'])
+        self.assertEqual(result['rates_bytes_per_second']['system'], max(bounds['system'], measured['system']))
 
 
 @unittest.skipUnless(MTIME_INPUT, 'Retained actual snapshots with a modification-time-only change are required')

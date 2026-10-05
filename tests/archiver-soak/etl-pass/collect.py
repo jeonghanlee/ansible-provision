@@ -185,6 +185,21 @@ def run(command, accepted=(0,), timeout=60):
     return result.stdout.strip()
 
 
+def tolerated_du(returncode, stdout, stderr):
+    # The ETL moves and removes partitions while a store is measured. du then exits 1 after listing the files
+    # that vanished, and the total it printed still stands; any other error is a failed measurement.
+    problems = [line for line in stderr.splitlines() if line.strip()]
+    if (returncode not in (0, 1) or not stdout.strip() or
+            (returncode == 1 and (not problems or any(not line.endswith('No such file or directory') for line in problems)))):
+        raise RuntimeError('command failed: du: ' + str(returncode))
+    return int(stdout.split()[0])
+
+
+def directory_bytes(root):
+    result = subprocess.run(['du', '-sb', str(root)], capture_output=True, text=True, timeout=60)
+    return tolerated_du(result.returncode, result.stdout, result.stderr)
+
+
 def write_json(path, value):
     temporary = path.with_suffix(path.suffix + ".tmp")
     temporary.write_text(json.dumps(value, indent=2) + "\n")
@@ -449,7 +464,7 @@ def _sample(out, fixture, journal_only=False):
             files = list(root.rglob("*.pb"))
             present = {keys[key] for path in files
                        for key in [str(path.relative_to(root)).rsplit(":", 1)[0]] if key in keys}
-            size = capture(tier + "_bytes", lambda root=root: int(run(["du", "-sb", str(root)]).split()[0]))
+            size = capture(tier + "_bytes", lambda root=root: directory_bytes(root))
             summary["stores"][tier] = {"bytes": size, "files": len(files), "pvs": len(present)}
         for label, unit in (("unit", UNIT), ("health", HEALTH_UNIT)):
             capture(label, lambda unit=unit: run(["systemctl", "show", unit, "-p", "ActiveState", "-p", "Result",

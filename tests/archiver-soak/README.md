@@ -539,6 +539,13 @@ consecutive collection snapshots (`first.json`, `second.json`) taken less than
 Set `ETL_SOAK_MTIME_RETENTION_EVIDENCE` to a directory holding two actual
 snapshots (`first.json`, `second.json`) between which no writes were counted
 and only a journal file's modification time changed.
+Set `ETL_SOAK_ROTATION_RETENTION_EVIDENCE` to a directory holding two actual
+consecutive snapshots (`first.json`, `second.json`) taken before and after the
+first rotation of the system journal, and the first collection's budget
+(`first-budget.json`).
+Set `ETL_SOAK_DU_RACE_EVIDENCE` to an actual JSON result (`returncode`, `stdout`,
+`stderr`) of `du -sb` that exited 1 because files vanished while it walked a
+directory; the store size measurement accepts exactly that case.
 Only external HTTP, command, filesystem and clock boundaries are replaced.
 Budget arithmetic is unit coverage. Historical collector transport checks and
 schema-5 negative cases do not establish new journal integration or successful

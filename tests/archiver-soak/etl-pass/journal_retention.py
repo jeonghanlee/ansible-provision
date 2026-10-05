@@ -227,8 +227,11 @@ def rates(first, last):
         raise RuntimeError('Journal write accounting reset')
     if writes == 0 and content(first['inventory']) != content(last['inventory']):
         raise RuntimeError('Changed journal files lack write accounting')
-    allocation = {stream: sum(max(0, row['allocated_bytes'] - first['inventory'].get(path, {}).get('allocated_bytes', 0))
-                              for path, row in last['inventory'].items() if row['stream'] == stream)
+    # A rotation renames a journal file, so the file is matched by device and inode, not by path; a renamed file
+    # keeps its earlier allocation and only a file that did not exist before counts in full.
+    before = {(row['device'], row['inode']): row['allocated_bytes'] for row in first['inventory'].values()}
+    allocation = {stream: sum(max(0, row['allocated_bytes'] - before.get((row['device'], row['inode']), 0))
+                              for row in last['inventory'].values() if row['stream'] == stream)
                   for stream in ('system', 'user')}
     # The daemon counter covers both streams, so it bounds the system stream once.
     return {'system': max(writes, allocation['system']) / duration,
