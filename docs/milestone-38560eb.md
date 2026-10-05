@@ -114,18 +114,22 @@ search-port correction; bundle SHA256
 68d527a0a6e4173a1d7c02e7e9abef1659fb698466ba90cc7595ae53e729567b passed the
 same 69 checks.
 Two fresh VMs, one per chain, then passed every readiness check with bundle
-`68d527a0` and are ready to launch (results row "Tenth and eleventh dedicated
-environments"); no observation has started.
-Next: the owner authorizes the launch of each 24-hour observation with
-`launch-retest.py` (README section Journal Retention Preparation). A launch
-needs a start time that lets the window cross UTC midnight; no upstream report
-is planned. A further preparation, on other VMs, repeats species, fixture,
-instrumentation, measured and fresh preparation, deployed-chain and health
-verification, waits until `passes.jsonl` holds a closed ETL pass, then
-empty/abort runtime verification; the private driver is
-`work/soak-etl-pass-3bdf378c/run-to-launch-template.bash`, already pointed at
-the current tools archive and pin file; each VM's inventory, known-hosts file
-and step logs are in its private
+`68d527a0` (results row "Tenth and eleventh dedicated environments") and both
+24-hour observations started on 2026-10-05 at 05:20:41Z (shortened) and
+05:20:40Z (default) (results row "Launch of both 24-hour observations"). Both
+run until 2026-10-06 05:20Z and cross UTC midnight once.
+Next: watch the periodic samples; the first removal of old journal files (about
+eight hours in) is the first live use of the retained-range accounting after
+rotation. At 05:20Z each VM's finish timer runs `observe.py finish` by itself
+(README section Observation And Shutdown); then read the verdict from
+`shutdown.json`, collect the private evidence and record the results;
+T6/T20 comparison, T21 and the live
+T22-T28 scenarios remain pending. A launch after a fresh preparation needs a
+new capacity growth window first (README section Journal Retention
+Preparation); the private steps used are `refresh-runtime-proofs.bash`,
+`fresh-capacity-refresh.py` and `launch-after-capacity.bash` in
+`work/soak-etl-pass-3bdf378c/`; no upstream report is planned. Each VM's
+inventory, known-hosts file and step logs are in its private
 `work/soak-etl-pass-3bdf378c/journal-test-<label>/` directory;
 the commands are in `tests/archiver-soak/README.md`: section Observation And
 Shutdown for `verify-health.py` (two health completions and full samples) and
@@ -2918,6 +2922,9 @@ visibility probes do not establish lossless archival.
   commits the packaged sources differ only in the engine's `EngineContext`
   and `JCACommandThread`; the ETL scheduler, `EngineMetrics.java` and the
   logging configuration are unchanged. Both chains are prepared at this pin.
+- Decision Date: 2026-10-05. Open the 24-hour observation on both prepared
+  chains, and let the assistant run `launch-retest.py` and the preceding
+  refresh steps on the two VMs.
 - Reported 2026-10-04 by the epicsarchiverap-env session, on its owner's
   decision of that date: the two Rocky 8.10 defects seen in this soak are
   split by owner. This repository owns the journald loss; the CAJ shared
@@ -3941,6 +3948,7 @@ Local journal-candidate verification supplements the pending live checks:
 | Ninth dedicated environment, default chain | 2026-10-04T10:09:36Z | A fresh Rocky 8.10 VM created by cloud-provision on the control host; bundle `cc202425`; Maven `254a6542`; default chain | Failed at PV readiness | All 903 PVs registered, but after 90 readiness attempts 808 were connected and archiving and 95 never connected. The engine lists exactly those 95 as pending metadata gets, with CA state NEVER_CONNECTED and CAJ command thread id 2; a sample of 101 connected PVs spans thread ids 0, 1 and 3-9 and none is on 2. A loopback capture shows the IOC answering every search for the 95 at the engine's search port. In the engine JVM two sockets are bound to that one UDP port, while each other CA context holds its own port; kernel 4.18.0-553.el8_10. CAJ (jca 2.4.12, unchanged between the two Maven pins) binds every context's search socket to an ephemeral port with SO_REUSEADDR, so two contexts can share a port and only one receives the replies. The eighth VM on the same pin and eight earlier VMs connected all 903 PVs. The defect and its fix belong to epicsarchiverap-maven (jeonghanlee/epicsarchiverap-maven#26); which socket the kernel delivers to is not yet observed |
 | T13 Maven pin move to the search-port correction | 2026-10-05T01:45:23Z | Control host; Python 3.13.5; shipped tools with `SOURCE_PINS`, `rate-semantics.json` and `common.yml` at Maven `aa953a44`; every private evidence path | Local checks Passed; preparation on two new VMs Passed (row "Tenth and eleventh dedicated environments") | `git diff 254a6542 aa953a44` over the packaged sources lists only `engine/pv/EngineContext.java` and `engine/pv/JCACommandThread.java`; the ETL sources and `EngineMetrics.java` are unchanged. Maven workflow run 37249019863 on `aa953a44` concluded success at 2026-10-05T01:22:57Z. `contract.py --freeze` rewrote `bundle.json` (SHA256 `68d527a0a6e4173a1d7c02e7e9abef1659fb698466ba90cc7595ae53e729567b`), `contract.verify_bundle` accepts all 20 dependencies and all 51 `SHA256SUMS` entries verify. Unittest discovery runs 69 checks with no skips and rc=0 with every private path set, and 43 pass with 26 skipped without them. Two VMs built at this pin are recorded in the next row |
 | Tenth and eleventh dedicated environments, both chains | 2026-10-05T03:13:01Z | Two fresh Rocky 8.10 VMs created by cloud-provision on the control host (2 vCPU, 4096 MiB, 48 GiB); species at `19adbfd` with `shortened.yml` and `default.yml`; bundle `68d527a0`; Maven `aa953a44`; private driver `run-to-launch-template.bash` | Passed through every readiness check; observation not started | Species rc=0 with 33 successful tasks on both. Measured preparation passed: shortened 761,106,651 required bytes (35,722.633 bytes/s system bound), default 770,412,806 (37,277.034); six intervals of 300.068-300.152 seconds on each. `prepare`, two health completions and the chain check for all 903 PVs passed, then 903 of 903 PVs archiving and connected on both chains, including the default chain after its first start. The first full sample after the first closed ETL pass had zero errors on both (shortened 02:46:01Z, default 03:07:14Z), and the empty-data and abort checks passed (stops of 11.7 and 11.2 seconds, no errors, all four complete GC recordings). Health and full samples after the abort passed on both (shortened 02:51:56Z, default 03:13:01Z). Across all full samples, systemd 239 `journalctl` did not return 5 sequence numbers on the shortened VM and 1 on the default VM, each in one full sample (02:46:01Z and 02:46:33Z) and none in any other; each was recorded and the header accounting found one stored entry per sequence number (60,632 and 83,511 entries at the last sample, no unreturned number outside the retained range). The bundle's `journal_coverage.collect()` and the evaluator's recomputation of it ran on real collection output for the first time. The retained evidence is on each VM and in its private `journal-test-<label>/` directory |
+| Launch of both 24-hour observations | 2026-10-05T05:20:41Z | The two VMs of the row above; shipped `launch-retest.py` with bundle `68d527a0`; private steps `refresh-runtime-proofs.bash`, `fresh-capacity-refresh.py` and `launch-after-capacity.bash` | Both observations started; running | The first launch attempt at 05:12Z failed on both VMs with `Current capacity growth measurement is stale` and opened nothing: the current window of the preparation's capacity measurement had ended at 02:40Z and the launcher only checks that it ended within 600 seconds, it does not measure. The runtime proofs had also passed their one-hour limit twice while the decisions were pending, and were repeated (empty-data and abort checks, stops of 11.3 and 11.2 seconds, no errors, 903 of 903 PVs afterwards). A private step then took two real full samples 300 seconds apart, built a new current window from the shipped `contract` functions, kept the historical window and the previous capacity files, and `launch-retest.py` opened both observations with a 75-second target: shortened at 05:20:41Z, default at 05:20:40Z, each with an initial sample of rc 0 and earliest finish 24 hours later. At 07:05Z (1.75 hours) both had 22 error-free in-window samples, no consecutive failures or abort request, 61 (shortened) and 10 (default) closed ETL passes, journal accounting passing at 172,082 and 193,905 stored entries with no unreturned number outside the retained range, and about 39 GiB free; the journal held 129 and 137 MiB, below the 1-GiB cap. The retained evidence is on each VM and in its private `journal-test-<label>/` directory |
 | T13 standalone schema-5 bundle | 2026-10-02 20:54:06 UTC | Control host; Python 3.13.5; shipped schema-5 tools and retained real runtime/export/fixture inputs | Local checks Passed; dedicated installation and live scenarios Pending | Earlier-schema sources were removed from the shipped tools: `BUNDLE_FILES` no longer lists the schema-3 evaluator or the nineteen schema-4 files, and the evaluator returns Incomplete with `unsupported_observation_schema` for any other schema. Actual unittest discovery ran 55 checks in 36.505 seconds, rc=0 and no skips. `contract.verify_bundle` accepts all 20 dependencies and all 51 checksums verify. Candidate bundle SHA256 is 567d629b11704a2291302eb603830e313d85a9b7bab37629a0656ec7a31c0726; it supersedes the 40-dependency candidate recorded above and is not installed on any VM. Four retained-evidence cases now relabel the pre-schema-5 input and require a non-Passed verdict with the expected failed assertion. Four cases are removed because they exercised the removed schema-3 evaluator: Passed replay, missing scheduled pass, missing GC pair and aborted observation. The current evaluator has no retained-evidence coverage for those four until a schema-5 observation completes; add them then. The removed sources remain in the private evidence directory as `legacy-sources-removed-from-tree-20261002/` |
 
 ##### Closure Evidence

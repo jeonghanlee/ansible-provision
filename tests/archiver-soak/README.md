@@ -228,11 +228,13 @@ Preparation, chain/runtime verification and launch require explicit
 `--duration-seconds` (7200 or 86400) and `--chain` (shortened or default).
 `verify-chain.py` queries every shipped PV's actual `dataStores`, verifies
 granularities/hold-two sources and binds its proof to fixture, boot, duration,
-configuration and complete tool hashes. `launch-retest.py` refreshes chain,
-health and measured capacity checks. An omitted `--start-at` starts immediately
-after readiness; an explicit timezone-aware target must be within 120 seconds.
-Runtime proofs expire after one hour; the full sample must be under 120 seconds
-old, and store/capacity verification under 600 seconds old.
+configuration and complete tool hashes. `launch-retest.py` repeats the chain
+and health checks and stamps the capacity record, but it does not measure
+growth: it refuses a current capacity window that ended more than 600 seconds
+earlier. An omitted `--start-at` starts immediately after readiness; an
+explicit timezone-aware target must be within 120 seconds. Runtime proofs
+expire after one hour; the full sample must be under 120 seconds old, and
+store/capacity verification under 600 seconds old.
 
 `observe.py finish` runs after the manifest's full interval. It stops the sample
 timer, waits at most 180 seconds for in-window passes, collects a final full
@@ -465,6 +467,15 @@ plus 512 MiB. Preparation takes `--capacity-evidence` and
 From the installed tool directory, take snapshots across an actual collection
 interval; `after.json` must follow `before.json`. Build both role sources before
 preparation. Repeat readiness after the abort probe before launch.
+
+Launch more than ten minutes after the last capacity measurement needs a new
+current window first: take two snapshots about 300 seconds apart with real full
+samples between them, build the current source with `--capacity-window`, store
+it with its digest under `capacity-sources/`, rewrite `capacity-input.json`
+with the unchanged historical window, recompute the projection and rewrite
+`capacity.json` (keep the previous files), then launch within 600 seconds and
+within one hour of the runtime proofs. No shipped command writes those two
+files, so a launch after a fresh preparation uses a private step for it.
 
 ```bash
 python3 contract.py --capacity-snapshot=before.json
