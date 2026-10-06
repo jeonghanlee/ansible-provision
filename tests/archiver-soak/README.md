@@ -347,6 +347,14 @@ suppression leave incomplete coverage. An empty memory-error search cannot
 establish coverage. Actual rotation, loss, reboot and terminal integration
 require the dedicated journal scenarios in the canonical plan.
 
+A failed in-window journal budget is a finding about the journal settings, not
+about the observed ETL. The sample records it as `journal_budget_failed` and
+keeps the budget record, but it is not a sample error: it does not count toward
+the two-failure abort and the evaluator does not list it among the failed
+assertions; it reports the number of such samples as
+`journal_budget_failed_samples`. Record loss, coverage gaps, suppression and
+the stored-entry count still decide the ETL verdict.
+
 Visibility probes read six representative scalar, fast, slow and waveform CA
 timestamps with one-microsecond precision, then query matching archived samples
 with one-second polling and a 30-second probe deadline. Preserve every attempt,
@@ -543,6 +551,9 @@ Set `ETL_SOAK_ROTATION_RETENTION_EVIDENCE` to a directory holding two actual
 consecutive snapshots (`first.json`, `second.json`) taken before and after the
 first rotation of the system journal, and the first collection's budget
 (`first-budget.json`).
+Set `ETL_SOAK_BUDGET_ABORT_EVIDENCE` to a retained actual observation directory
+that the abort policy ended after in-window budget failures (`abort.json` with
+its raw samples).
 Set `ETL_SOAK_DU_RACE_EVIDENCE` to an actual JSON result (`returncode`, `stdout`,
 `stderr`) of `du -sb` that exited 1 because files vanished while it walked a
 directory; the store size measurement accepts exactly that case.

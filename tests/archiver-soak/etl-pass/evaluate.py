@@ -42,7 +42,7 @@ def pass_records(path):
     return records
 
 
-def journal_checks(out, manifest, samples, missing, failures):
+def journal_checks(out, manifest, samples, missing, budget_failed):
     prepared = manifest.get('journal_retention')
     if not prepared or prepared.get('tool_hashes') != manifest.get('tool_hashes'):
         missing.append('journal_retention_preparation')
@@ -155,7 +155,7 @@ def journal_checks(out, manifest, samples, missing, failures):
             if budget['passed'] != (recalculated['passed'] and gap <= gap_limit):
                 raise RuntimeError('Journal retention verdict differs from its limits')
             if not budget['passed']:
-                failures.append('journal_retention_budget')
+                budget_failed.add(sample['observed_at'])
         except (OSError, StopIteration, KeyError, ValueError, TypeError, RuntimeError):
             missing.append('journal_interval_or_budget_coverage')
 
@@ -164,6 +164,7 @@ def _evaluate(out, terminal, failures):
     manifest = terminal['observation']
     start, end = epoch(manifest['started_at']), epoch(manifest['earliest_finish_at'])
     missing = []
+    budget_failed = set()
     duration = manifest.get('duration_seconds')
     configuration = manifest.get('configuration', {})
     try:
@@ -204,7 +205,11 @@ def _evaluate(out, terminal, failures):
                     key=lambda row: row['observed_at'])
     full = [row for row in window if row.get('sample_kind') == 'full']
     for row in window:
-        failures.extend(error['check'] for error in row['errors'])
+        for error in row['errors']:
+            if error['check'] == contract.JOURNAL_BUDGET_CHECK:
+                budget_failed.add(row['observed_at'])
+            else:
+                failures.append(error['check'])
         if row.get('sample_kind') == 'full':
             if row.get('latency', {}).get('pvs_with_recent_samples') != 903:
                 failures.append('all_pv_freshness')
@@ -354,7 +359,7 @@ def _evaluate(out, terminal, failures):
             missing.append('kernel_journal_coverage')
         if sample.get('sample_kind') == 'full' and not sample.get('event_rates'):
             missing.append('event_rate_coverage')
-    journal_checks(out, manifest, window, missing, failures)
+    journal_checks(out, manifest, window, missing, budget_failed)
     for component in evidence.COMPONENTS:
         if not terminal.get('complete_gc_recordings', {}).get(component, {}).get('gc_logs'):
             missing.append('gc_log_coverage')
@@ -363,7 +368,7 @@ def _evaluate(out, terminal, failures):
     if not terminal.get('etl_state_before_stop'):
         missing.append('shutdown_work_state')
     verdict = 'Incomplete' if missing else 'Failed' if failures else 'Passed'
-    return {'verdict': verdict, 'failed_assertions': sorted(set(failures)),
+    return {'verdict': verdict, 'failed_assertions': sorted(set(failures)), 'journal_budget_failed_samples': len(budget_failed),
             'missing_coverage': sorted(set(missing)), 'full_samples': len(full),
             'health_invocations': len(health), 'expected_passes': len(expected),
             'missing_passes': len(absent), 'duplicate_passes': len(duplicates),

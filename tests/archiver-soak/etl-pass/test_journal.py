@@ -7,6 +7,8 @@ import os
 from pathlib import Path
 import unittest
 
+import collect
+import evaluate
 import journal_coverage
 import journal_retention as retention
 
@@ -18,6 +20,7 @@ HOLES_INPUT = os.environ.get('ETL_SOAK_SEQUENCE_HOLE_EVIDENCE')
 ACCOUNTING_INPUT = os.environ.get('ETL_SOAK_SEQUENCE_ACCOUNTING_EVIDENCE')
 HEADER_INPUT = os.environ.get('ETL_SOAK_JOURNAL_HEADER_EVIDENCE')
 ROTATION_INPUT = os.environ.get('ETL_SOAK_ROTATION_RETENTION_EVIDENCE')
+BUDGET_ABORT_INPUT = os.environ.get('ETL_SOAK_BUDGET_ABORT_EVIDENCE')
 
 
 class BudgetArithmeticTests(unittest.TestCase):
@@ -330,6 +333,40 @@ class RealRotationInputTests(unittest.TestCase):
         result = retention.interval_budget(second, bounds, first)
         self.assertTrue(result['passed'])
         self.assertEqual(result['rates_bytes_per_second']['system'], max(bounds['system'], measured['system']))
+
+
+class BudgetSeparationTests(unittest.TestCase):
+    def test_a_failed_budget_is_recorded_but_is_not_a_sample_error(self):
+        summary = {}
+
+        def failed():
+            raise retention.BudgetFailed('In-window journal retention budget or collection gap failed')
+
+        self.assertIsNone(collect.budget_capture(summary, failed))
+        self.assertEqual(summary, {'journal_budget_failed': 'In-window journal retention budget or collection gap failed'})
+        self.assertEqual(collect.budget_capture(summary, lambda: {'passed': True}), {'passed': True})
+
+    def test_any_other_journal_failure_is_still_raised(self):
+        def broken():
+            raise RuntimeError('Journal configuration application to the running daemon is unverified')
+
+        with self.assertRaisesRegex(RuntimeError, 'unverified'):
+            collect.budget_capture({}, broken)
+        self.assertTrue(issubclass(retention.BudgetFailed, RuntimeError))
+
+
+@unittest.skipUnless(BUDGET_ABORT_INPUT, 'A retained actual observation aborted by a failed journal budget is required')
+class RealBudgetAbortInputTests(unittest.TestCase):
+    def test_the_failed_budget_no_longer_decides_the_etl_verdict(self):
+        root = Path(BUDGET_ABORT_INPUT)
+        terminal = json.loads((root / 'abort.json').read_text())
+        result = evaluate.evaluate(root, terminal, aggregate_checks=False)
+        self.assertNotIn('journal_retention_budget', result['failed_assertions'])
+        self.assertGreaterEqual(result['journal_budget_failed_samples'], 2)
+        # The abort itself and its terminal errors stay failed assertions.
+        self.assertIn('observation_duration', result['failed_assertions'])
+        self.assertIn('final_sample', result['failed_assertions'])
+        self.assertNotEqual(result['verdict'], 'Passed')
 
 
 @unittest.skipUnless(MTIME_INPUT, 'Retained actual snapshots with a modification-time-only change are required')

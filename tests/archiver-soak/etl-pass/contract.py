@@ -19,6 +19,8 @@ CHAINS = {
 PARTITION_SECONDS = {'PARTITION_5MIN': 300, 'PARTITION_HOUR': 3600,
                      'PARTITION_DAY': 86400, 'PARTITION_YEAR': 31536000}
 MAX_CADENCE = 28800
+# A failed in-window journal budget is a finding about the journal settings, not about the observed ETL.
+JOURNAL_BUDGET_CHECK = 'journal_retention_budget'
 OFFSETS = (300, 600)
 GROWTH_FIELDS = ('data', 'application_logs', 'journal', 'jfr', 'measurement')
 CAPTURE_RESERVE = 512 * 1024 ** 2

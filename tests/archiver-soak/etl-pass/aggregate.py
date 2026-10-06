@@ -245,7 +245,8 @@ def aggregate(out, result=None, evaluate_run=True):
         sample = capture('raw_sample', lambda: load(sample_path))
         if not sample or not inside(sample, 'observed_at'):
             continue
-        failures.extend(error['check'] for error in sample.get('errors', []))
+        failures.extend(error['check'] for error in sample.get('errors', [])
+                        if error['check'] != contract.JOURNAL_BUDGET_CHECK)
         kind = sample.get('sample_kind') or ('full' if 'expected_pvs' in sample else 'journal')
         if kind != 'full':
             if manifest.get('measurement_schema') == contract.SCHEMA:

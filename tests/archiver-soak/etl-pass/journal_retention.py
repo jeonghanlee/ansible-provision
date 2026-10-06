@@ -419,6 +419,10 @@ def interval_budget(current, bounds, old, terminal=False):
     return result
 
 
+class BudgetFailed(RuntimeError):
+    """The in-window budget or collection gap failed; the budget record is saved beside the snapshot."""
+
+
 def runtime(out, raw, tools, previous, terminal=False):
     current = snapshot()
     save(raw / 'journal-retention-snapshot.json', current)
@@ -430,7 +434,7 @@ def runtime(out, raw, tools, previous, terminal=False):
         previous.get('journal_retention_snapshot'), terminal)
     save(raw / 'journal-retention-budget.json', result)
     if not result['passed']:
-        raise RuntimeError('In-window journal retention budget or collection gap failed')
+        raise BudgetFailed('In-window journal retention budget or collection gap failed')
     return {'snapshot': current, 'budget': result, 'proof_sha256': digest(proof_path)}
 
 

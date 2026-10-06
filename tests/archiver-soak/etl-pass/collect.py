@@ -200,6 +200,16 @@ def directory_bytes(root):
     return tolerated_du(result.returncode, result.stdout, result.stderr)
 
 
+def budget_capture(summary, action):
+    # A failed journal budget is a finding about the journal settings, not about the observed ETL: it is recorded
+    # in the sample but is not a sample error, so it neither counts toward an abort nor changes the ETL verdict.
+    try:
+        return action()
+    except journal_retention.BudgetFailed as error:
+        summary['journal_budget_failed'] = str(error)
+        return None
+
+
 def write_json(path, value):
     temporary = path.with_suffix(path.suffix + ".tmp")
     temporary.write_text(json.dumps(value, indent=2) + "\n")
@@ -384,9 +394,9 @@ def _sample(out, fixture, journal_only=False):
     if manifest_path.exists():
         current_schema = json.loads(manifest_path.read_text()).get('measurement_schema')
     if current_schema == contract.SCHEMA:
-        capture('journal_retention_budget', lambda: journal_retention.runtime(
+        capture('journal_retention_budget', lambda: budget_capture(summary, lambda: journal_retention.runtime(
             out, raw, Path(__file__).parent, previous,
-            terminal=any((out / name).exists() for name in ('shutdown-started.json', 'abort-started.json'))))
+            terminal=any((out / name).exists() for name in ('shutdown-started.json', 'abort-started.json')))))
         snapshot_path = raw / 'journal-retention-snapshot.json'
         budget_path = raw / 'journal-retention-budget.json'
         if snapshot_path.exists():
