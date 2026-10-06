@@ -1,0 +1,18 @@
+---
+# inventory/group_vars/archiver_dev_tcp.yml
+# The archiver-dev-tcp species uses the mariadb_tcp operator: MariaDB listens on
+# 127.0.0.1:3306 only with skip-name-resolve and the application account is made
+# at 127.0.0.1. archiver_build reads the same switch, so it writes that host and
+# port for epicsarchiverap-env instead of the socket; the socket stays available
+# and root stays socket-authenticated.
+#
+# The group name is the underscore form of the archiver-dev-tcp species, matching
+# the cloud-provision generator (species iocrunner-nfs -> group iocrunner_nfs).
+
+mariadb_skip_networking: false
+# An empty socket makes archiver_build write archiver_db_host and archiver_db_port
+# (127.0.0.1 and 3306) for epicsarchiverap-env instead of DB_SOCKET.
+archiver_db_socket: ""
+
+# The application account password is made on the host by the mariadb_tcp
+# operator and read from the same file by archiver_build; nothing is set here.

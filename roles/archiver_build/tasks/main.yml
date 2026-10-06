@@ -8,9 +8,9 @@
 # root like the other build operators; epicsarchiverap-env's internal sudo
 # no-ops when already root, so no build-user split is needed.
 #
-# Prerequisites come earlier in the archiver_dev species: the java operator
+# Prerequisites come earlier in the archiver_dev_uds and archiver_dev_tcp species: the java operator
 # (JDK 21 + JAVA_HOME), the tomcat operator (/opt/tomcat9 shared CATALINA_HOME),
-# and the mariadb operator (archappl DB and account on its socket), or in the
+# and the mariadb_uds or mariadb_tcp operator (archappl DB and account), or in the
 # archiver_dev_sqlite species the sqlite operator (sqlite3 only). This
 # operator installs its own build tools (git, make, unzip, sed, tree, curl),
 # mirroring epics_build; epicsarchiverap-env's install_os_packages.bash is

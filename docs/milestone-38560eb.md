@@ -314,7 +314,7 @@ Status tally: 20 Complete, 1 In progress, 0 Not started, 1 Deferred, 1 Blocked. 
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | Core | M1 | EPICS-env 4-OS source-build environment | Carry-forward | Complete | No | | Rocky 8, Debian 13, Rocky 10, and Ubuntu 24 pass both source-build layers and checks; [detail](#m1---epics-env-4-os-source-build-environment) |
 | Core | M2 | Ubuntu 26 source-build | Carry-forward | Complete | No | D4 | Ubuntu 26 passes the complete source-build path (both layers, `gz` flavor, repeated-run checks) with the C17 bridge active; [detail](#m2---ubuntu-26-source-build) |
-| Core | M3 | base_os/app role hardening from production deployment | Carry-forward | Deferred | No | D3 | Deferred per D3 (old model retired); the base/app surface is re-verified under the operator model (M4); [detail](#m3---base_osapp-role-hardening-from-production-deployment) |
+| Core | M3 | base_os/app role hardening from production deployment | Carry-forward | Complete | No | D3, D24 | Retired on 2026-10-06 (D24): the old roles it hardened are superseded by the operator model (D3) and its one open check is waived; [detail](#m3---base_osapp-role-hardening-from-production-deployment) |
 | Core | M4 | Operator/species provisioning model | Milestone | Complete | No | G1 | Vacua, single-role operators, and species assemblies replace the staged model, iocserver registered; P_proxy verified (apply and full-species re-apply idempotency); `species/iocserver.yml` applies cleanly on the production IOC server (2026-09-03); [detail](#m4---operatorspecies-provisioning-model) |
 | Core | M5 | Restore the EPICS OS package set into the operator model | Milestone | Complete | No | D5 | `epics_os_packages` installed by `roles/epics` and `roles/epics_build`, `pkg_automation.bash` retired; verified on the golden pair (rocky8, debian13) across both acquisition paths; four non-golden vacua moved to `M6`; [detail](#m5---restore-the-epics-os-package-set-into-the-operator-model) |
 | Core | M6 | Convergence-verify EPICS OS build dependencies on the four non-golden vacua | Milestone | Complete | No | D6 | rocky10, debian12, ubuntu24, ubuntu26 convergence-verified by Live-mode apply on both paths — distribution (`iocrunner`, where the tree exists) and source build (`epics_dev`); the role-assurance step before golden promotion; [detail](#m6---convergence-verify-epics-os-build-dependencies-on-the-four-non-golden-vacua) |
@@ -335,7 +335,7 @@ Status tally: 20 Complete, 1 In progress, 0 Not started, 1 Deferred, 1 Blocked. 
 | Core | M20 | Align the test-user handoff document with the operator model | Milestone | Complete | No | | `docs/test_users_handoff.md` names `roles/testusers`, `playbooks/operators/testusers.yml`, the `iocrunner` species order and the bake's species step instead of the retired `app_ioc_runner`, `roles/test_users`, `playbooks/07_test_users.yml`, `CONFIG_SITE` list and `site.yml`; delivered in `268a060`; [detail](#m20---align-the-test-user-handoff-document-with-the-operator-model) |
 | Core | M22 | Verify the ETL pass scheduler on two parallel store chains | Milestone | In progress | No | M17, M21, G4 | Both fixed-ref deployments run for at least 24 hours across UTC midnight with the same 903-PV fixture; pass timing and metrics match the scheduler design, normal-load passes do not overrun, each unit stops within its configured timeout, and the earlier soak comparison is recorded; [detail](#m22---verify-the-etl-pass-scheduler-on-two-parallel-store-chains) |
 | Core | M23 | Add the Perl modules for the EPICS-env installed-tree utility to the EPICS OS package set | Milestone | Complete | No | D20 | `epics_os_packages` carries `perl-Digest-SHA`, `perl-JSON-PP`, `perl-Pod-Checker` and `perl-Test-Simple` on rocky8 and rocky10 and `perl` on debian12, debian13, ubuntu24 and ubuntu26; after the `epics` operator applies on each vacuum, the four modules load and `podchecker` runs; delivered in `4dfb290`, verified on all six vacua (`300ccc7`); [detail](#m23---add-the-perl-modules-for-the-epics-env-installed-tree-utility-to-the-epics-os-package-set) |
-| Core | M24 | Split the archiver MariaDB operator into socket and TCP operators and rename the archiver-dev species | Milestone | Not started | No | M22, D21 | Operators `mariadb_uds` and `mariadb_tcp` and species `archiver-dev-uds`, `archiver-dev-tcp` and `archiver-dev-sqlite` exist with the group variables `archiver_dev_uds.yml`, `archiver_dev_tcp.yml` and `archiver_dev_sqlite.yml`; each species deploys on a fresh guest with its database reachable exactly as the cloud-provision definition states; the old `archiver-dev` name still resolves for a limited period; [detail](#m24---split-the-archiver-mariadb-operator-into-socket-and-tcp-operators-and-rename-the-archiver-dev-species) |
+| Core | M24 | Split the archiver MariaDB operator into socket and TCP operators and rename the archiver-dev species | Milestone | In progress | No | D21 | Operators `mariadb_uds` and `mariadb_tcp` and species `archiver-dev-uds`, `archiver-dev-tcp` and `archiver-dev-sqlite` exist with the group variables `archiver_dev_uds.yml`, `archiver_dev_tcp.yml` and `archiver_dev_sqlite.yml`; each species deploys on a fresh guest with its database reachable exactly as the cloud-provision definition states; the old `archiver-dev` name still resolves for a limited period; [detail](#m24---split-the-archiver-mariadb-operator-into-socket-and-tcp-operators-and-rename-the-archiver-dev-species) |
 | Core | M25 | Verify journal collection integrity and retention for the ETL soak | Milestone | In progress | No | D22 | The journal checks formerly T22-T28 of the ETL soak (kernel-journal coverage after cursor loss and in quiet intervals, rotation and event delivery, detection of required-record loss, boundaries and boot identity, the retention budget in preparation and in a 24-hour window, and abort and terminal integration) each pass in their stated environment, including a compressed rehearsal of the full collection path under a reduced journal cap; [detail](#m25---verify-journal-collection-integrity-and-retention-for-the-etl-soak) |
 | Gate | G1 | the production IOC server reaches the internal git host | External gate | Complete | No | | Reachability achieved through the site HTTP proxy's CONNECT tunnel (an ssh `ProxyCommand` over the proxy), not a firewall whitelist: the owner's key authenticates and `git ls-remote` returns the refs; confirmed 2026-09-03 by the successful iocserver clone (M4/T2) |
 | Gate | G2 | cloud-provision ships the middleware package baseline and the middleware VM | External gate | Open | No | | The middleware operator/species structure and OS package baseline (system OpenJDK 21, Tomcat 9.0.121, MariaDB; no Maven package) originate in cloud-provision (`docs/milestone-e260630.md` M11) as the normative source and a middleware VM is provisionable there, before ansible-provision mirrors the set and layers its roles; owned by the cloud-provision session |
@@ -369,6 +369,7 @@ Status tally: 20 Complete, 1 In progress, 0 Not started, 1 Deferred, 1 Blocked. 
 | D21 | The archiver configuration database follows the cloud-provision definition (`docs/OPERATOR_MODEL.md` at `796682c`, its D8): three separate operators, `mariadb-uds` (the socket-only contract `mariadb` has today), `mariadb-tcp` (IPv4 loopback `127.0.0.1:3306` only, `skip-name-resolve`, the application account at `127.0.0.1`) and `sqlite`, and every archiver species carries exactly one: `archiver-dev-uds`, `archiver-dev-tcp` and `archiver-dev-sqlite`. `archiver-dev` and the group `archiver_dev` are renamed to the `-uds` names and stay as a deprecated alias for a limited period, removed after epicsarchiverap-env confirms it moved. Implementation starts after the two observations of M22 finish, because the soak tools and the next preparation resolve their deploy path through the current names. | Owner decision, 2026-10-05 |
 | D22 | The journal checks of the ETL soak, T22-T28 of `M22`, are a separate work unit `M25` with its own completion criteria, tests and results, so that a journal check cannot decide the ETL scheduler verdict of `M22` and the reverse. `M22` keeps T1-T21 and opens an observation after T27's preparation portion passes; T22-T28 become `M25` T1-T7 and a compressed rehearsal of the full collection path is added as T8. The observations that were running on 2026-10-05 are left as they are. | Owner decision, 2026-10-05 |
 | D23 | A check belongs to the work unit whose purpose it serves: a check whose failure makes the ETL conclusion of `M22` unreliable (record loss, coverage gaps, suppression, the stored-entry count, the kernel journal) stays in `M22`; a check of the journal settings or of the collection method (the retention budget) belongs to `M25`. A failed in-window journal budget is therefore recorded in the sample and reported by the evaluator as `journal_budget_failed_samples`, and it no longer counts toward the abort or the ETL verdict. | Owner decision, 2026-10-06 |
+| D24 | `M3` is retired. The old roles `base_os` and `app_epics` it hardened were superseded by the operator/species model (`D3`), the surface it covered was re-verified through the operator roles, and its Debian 13 re-verification is waived because it targets roles that are no longer used. | Owner decision, 2026-10-06 |
 
 ### Assignment History
 
@@ -561,6 +562,20 @@ overrides live in the `server-configuration` repository, not here.
 | --- | --- | --- | --- |
 | T1 | Verified | Rocky 8 | the production IOC server: `01_base`/`02_apps` completed, chrony synced (`^*`, Reach 377), `python --version` 3.9.25 from a clean 3.6.8 state, con/procServ/console/conserver installed. |
 | T2 | Not run | Debian 13 | os-detect, chrony render, version pinning, and epics owner-clone touch the shared/Debian path but were exercised only through `--syntax-check`; a Debian 13 run is pending. |
+
+##### Closure Evidence
+
+- Retired by `D24` on 2026-10-06. Complete here means retirement, not delivery
+  of the pending check: T2 (Debian 13 re-verification of the old roles) is
+  waived. T1 (Rocky 8 on the production IOC server) remains the verified
+  record, and the base and app surface is covered by the operator roles
+  re-verified under `M4` and later.
+- The two old role directories `roles/app_epics` and `roles/base_os` were
+  removed from the repository by the operator rewrite; on 2026-10-06 neither
+  `origin/master` nor the working branch carried a tracked file under them
+  and the hosting service returned no content for either path. Only an empty
+  `templates` directory under each remained in one working copy, and it was
+  removed with this retirement.
 
 #### M4 - Operator/species provisioning model
 
@@ -4158,7 +4173,7 @@ package names.
 
 - Origin: 38560eb / M24
 - GitHub Issue: none; peer request from the cloud-provision session on 2026-10-05
-- Status: Not started
+- Status: In progress
 
 ##### Summary
 
@@ -4204,9 +4219,11 @@ bundle, which pins no species name.
 
 ##### Dependencies And Decisions
 
-- `M22`: the two running observations deploy through `archiver_dev` and the
-  next preparation uses the same names; implementation starts after they
-  finish (about 2026-10-06 05:20 UTC).
+- Timing: `D21` set the start after the `M22` observations finish because
+  their deploys read the current names. On 2026-10-06 the owner started it
+  at once: every deployment in progress had finished its species stage, and
+  deployed VMs are unaffected by a later change, so this row no longer
+  depends on `M22`.
 - `D21` (2026-10-05): the three-operator definition, the rename, the alias
   and the timing.
 - Requested by cloud-provision on 2026-10-05 (its M19 closes only after this
@@ -4215,16 +4232,26 @@ bundle, which pins no species name.
 
 ##### Implementation Plan
 
-- Plan Status: draft
-- Plan Acceptance: none
-- Implementation Authorization: none
-- Superseded Plan Artifacts: none
+- Plan Status: accepted
+- Plan Acceptance: 2026-10-06; the owner accepted the plan below
+- Implementation Authorization: 2026-10-06; the role, playbook, species, group variable and reference changes, T1, and T2 on three fresh VMs from cloud-provision
+- Superseded Plan Artifacts: the `D21` statement that implementation waits for the `M22` observations
 
-1. Create `roles/mariadb_uds` and `roles/mariadb_tcp` from `roles/mariadb`
-   and their operator playbooks; keep the application-password step in both.
-2. Add the two species and the group variables, and the alias.
-3. Update the name references and the README.
-4. Run T1 on the control host, then T2 on fresh guests.
+1. Move `roles/mariadb` to `roles/mariadb_uds` (socket-only). Make
+   `roles/mariadb_tcp` a thin role that runs the same task code in the
+   loopback mode (`127.0.0.1:3306` only, `skip-name-resolve`, the application
+   account at `127.0.0.1`, socket and root socket authentication kept), so
+   the code is kept in one place. Keep the application-password step in both.
+2. Add the operator playbooks `mariadb_uds.yml` and `mariadb_tcp.yml`, the
+   species `archiver_dev_uds.yml` and `archiver_dev_tcp.yml` (the SQLite
+   species stays), and the group variables `archiver_dev_uds.yml` (moved
+   from `archiver_dev.yml`) and `archiver_dev_tcp.yml`
+   (`mariadb_skip_networking: false`).
+3. Keep `archiver_dev`, its group variables and the `mariadb` operator as
+   deprecated aliases of the `-uds` names, each saying so when it runs.
+4. Update the names in `configure/RELEASE`, `roles/archiver_build`, the
+   README, `docs/ARCHITECTURE.md`, `docs/CLOSED_DOORS.md` and the soak README.
+5. Run T1 on the control host, then T2 on three fresh guests, one per species.
 
 ##### Test Plan
 
@@ -4237,8 +4264,8 @@ bundle, which pins no species name.
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
-| T1 | Not run | | Pending | |
-| T2 | Not run | | Pending | |
+| T1 | 2026-10-06T01:38:30Z | Control host; ansible-core of the control host; working tree with the new roles, playbooks and group variables | Passed | `ansible-inventory --host` on a host of each group returns `mariadb_skip_networking: false` for `archiver_dev_tcp`, the socket-only default for `archiver_dev_uds` and for a host in the old `archiver_dev` group through the alias, and `archiver_db_backend: sqlite` for `archiver_dev_sqlite`. `ansible-playbook --syntax-check` passes on `mariadb`, `mariadb_uds`, `mariadb_tcp`, `archiver_dev`, `archiver_dev_uds`, `archiver_dev_tcp` and `archiver_dev_sqlite`; `--list-tasks` of `archiver_dev` shows the deprecation play and then the `mariadb_uds` tasks; `make -n` resolves `archiver_dev_tcp.rocky8`, `op.mariadb_tcp.rocky8` and the alias `archiver_dev.rocky8`. The include of the shared tasks in `mariadb_tcp` is exercised only by T2 |
+| T2 | 2026-10-06T03:08Z | Three fresh Rocky 8.10 guests from cloud-provision, one per species; each species playbook run directly with the generated inventory (not through `make`) | Passed | First apply: failed=0 on all three. `archiver-dev-uds`: no listener on 3306, `skip-networking` on, account only at `localhost`, `DB_SOCKET` set, no TCP connections, management API 200. `archiver-dev-tcp`: listener on `127.0.0.1:3306` only, `skip-networking` off with `skip-name-resolve`, accounts at `127.0.0.1` and `localhost`, no `DB_SOCKET`, 16 TCP connections, management API 200. `archiver-dev-sqlite`: MariaDB inactive, `DB_BACKEND` sqlite, management API 200. First apply of `-tcp` exposed that its group variables lacked `archiver_db_socket: ""`; added before the run recorded here. Re-apply: failed=0 and changed=0 on all three. The alias on a guest was not run; T1 covers it |
 
 ##### Closure Evidence
 

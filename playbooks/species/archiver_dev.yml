@@ -1,11 +1,13 @@
 ---
 # playbooks/species/archiver_dev.yml
-# archiver-dev = P_archiver-build P_mariadb P_tomcat P_java (P_epics or P_epics-build) P_python P_provenance |bare>
-- import_playbook: ../operators/common.yml
-- import_playbook: ../operators/provenance.yml
-- import_playbook: ../operators/python.yml
-- import_playbook: ../operators/epics.yml
-- import_playbook: ../operators/java.yml
-- import_playbook: ../operators/tomcat.yml
-- import_playbook: ../operators/mariadb.yml
-- import_playbook: ../operators/archiver_build.yml
+# Deprecated alias of archiver_dev_uds, kept until epicsarchiverap-env moves to
+# the new species names (cloud-provision renamed archiver-dev to archiver-dev-uds).
+- name: Report the deprecated species name
+  hosts: vacua
+  gather_facts: false
+  tasks:
+    - name: Say that the archiver_dev species is now archiver_dev_uds
+      ansible.builtin.debug:
+        msg: "The archiver_dev species is deprecated; use archiver_dev_uds, archiver_dev_tcp or archiver_dev_sqlite."
+      run_once: true
+- import_playbook: archiver_dev_uds.yml

@@ -1,5 +1,5 @@
 ---
-# roles/mariadb/tasks/main.yml
+# roles/mariadb_uds/tasks/main.yml
 - name: Reject invalid MariaDB account settings before provisioning
   ansible.builtin.raw: |
     printf '%s\n' 'Error: mariadb_database and mariadb_user require 1-32 lowercase letters or digits, starting with a letter; system names are reserved. mariadb_password_file must be an absolute path of letters, digits, dot, dash, underscore and slash, and mariadb_skip_networking a boolean.' >&2

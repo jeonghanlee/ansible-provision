@@ -1,10 +1,13 @@
 ---
 # playbooks/operators/mariadb.yml
-# Apply after common; runs are scoped with --limit.
-- name: Apply the mariadb operator
+# Deprecated alias of mariadb_uds, kept until epicsarchiverap-env moves to the
+# new operator names.
+- name: Report the deprecated operator name
   hosts: vacua
   gather_facts: false
-  become: yes
-  roles:
-    - role: mariadb
-      tags: [mariadb]
+  tasks:
+    - name: Say that the mariadb operator is now mariadb_uds
+      ansible.builtin.debug:
+        msg: "The mariadb operator is deprecated; use mariadb_uds (socket) or mariadb_tcp (loopback TCP)."
+      run_once: true
+- import_playbook: mariadb_uds.yml

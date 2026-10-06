@@ -34,9 +34,11 @@ operation above that baseline. The first-pass validation environment uses
      | nfs_sim    -> common, nfs_sim
      | rtbase     -> common, rt
      | ethercat   -> ethercat (on the rtbase golden)
-     | archiver_dev -> common, provenance, python, epics, java, tomcat,
-     |                 mariadb, archiver_build
-     | archiver_dev_sqlite -> archiver_dev with sqlite in place of mariadb
+     | archiver_dev_uds -> common, provenance, python, epics, java, tomcat,
+     |                     mariadb_uds, archiver_build
+     | archiver_dev_tcp -> archiver_dev_uds with mariadb_tcp in place of mariadb_uds
+     | archiver_dev_sqlite -> archiver_dev_uds with sqlite in place of mariadb_uds
+     | archiver_dev     -> deprecated alias of archiver_dev_uds
      |
      V
 [ Linux nodes ready for EPICS IOC validation ]
@@ -66,7 +68,9 @@ ansible-provision/
 |   |-- lab.ini                      (host-free lab group relationships)
 |   `-- group_vars/
 |       |-- all.yml                  (values shared by more than one operator)
-|       |-- archiver_dev.yml         (archiver species group; socket-only MariaDB)
+|       |-- archiver_dev_uds.yml     (archiver species group; socket-only MariaDB)
+|       |-- archiver_dev_tcp.yml     (loopback-TCP MariaDB)
+|       |-- archiver_dev.yml         (deprecated alias of archiver_dev_uds.yml)
 |       |-- archiver_dev_sqlite.yml  (archiver_db_backend: sqlite)
 |       |-- debian12.yml             (epics_os_dir: debian-12)
 |       |-- debian13.yml             (epics_os_dir: debian-13)

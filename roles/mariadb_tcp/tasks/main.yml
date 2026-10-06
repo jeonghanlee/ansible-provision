@@ -1,0 +1,12 @@
+---
+# roles/mariadb_tcp/tasks/main.yml
+# The loopback-TCP form of the MariaDB operator: the server listens on
+# 127.0.0.1:3306 only with skip-name-resolve, the application account is made
+# at 127.0.0.1, the socket stays available and root stays socket-authenticated.
+# The tasks are those of mariadb_uds, run with networking on, so the two
+# operators share one implementation.
+- name: Run the shared MariaDB tasks with the loopback TCP listener
+  ansible.builtin.include_role:
+    name: mariadb_uds
+  vars:
+    mariadb_skip_networking: false

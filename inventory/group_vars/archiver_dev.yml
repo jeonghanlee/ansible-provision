@@ -1,11 +1,1 @@
----
-# inventory/group_vars/archiver_dev.yml
-# The archiver-dev species keeps the mariadb operator's socket-only default
-# (mariadb_skip_networking: true): archiver_build points epicsarchiverap-env at
-# that socket through DB_SOCKET, so no TCP listener is opened.
-#
-# The group name is the underscore form of the archiver-dev species, matching
-# the cloud-provision generator (species iocrunner-nfs -> group iocrunner_nfs).
-
-# The application account password is made on the host by the mariadb operator
-# and read from the same file by archiver_build; nothing is set here.
+archiver_dev_uds.yml

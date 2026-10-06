@@ -58,7 +58,8 @@ and retrieval has a 256M minimum and maximum heap.
 
 `common.yml` pins epicsarchiverap-env `d09dca7` and epicsarchiverap-maven
 `aa953a44`. Apply it with exactly one store configuration through the shipped
-`archiver_dev` species, using a separately supplied private inventory.
+`archiver_dev_uds` species (`archiver_dev` is a deprecated alias), using a separately supplied
+private inventory.
 
 | Configuration | STS | MTS | LTS |
 | --- | --- | --- | --- |

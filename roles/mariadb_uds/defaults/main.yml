@@ -1,5 +1,5 @@
 ---
-# roles/mariadb/defaults/main.yml
+# roles/mariadb_uds/defaults/main.yml
 # Server package subsets from cloud-provision configure/middleware-packages.
 pkg_mariadb_redhat:
   - mariadb-server

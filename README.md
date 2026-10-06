@@ -122,7 +122,8 @@ is the normative statement of content and order.
 | P_common | `common` | OS package manager |
 | P_java | `java` | Distribution OpenJDK 21 JDK packages |
 | P_tomcat | `tomcat` | Apache Tomcat 9.0.121 binary tarball |
-| P_mariadb | `mariadb` | Distribution MariaDB server packages |
+| P_mariadb-uds | `mariadb_uds` | Distribution MariaDB server packages, socket only (`mariadb` is a deprecated alias) |
+| P_mariadb-tcp | `mariadb_tcp` | The same packages, listening on 127.0.0.1:3306 only |
 | P_sqlite | `sqlite` | Distribution SQLite command-line package |
 | P_archiver-build | `archiver_build` | [jeonghanlee/epicsarchiverap-env](https://github.com/jeonghanlee/epicsarchiverap-env) |
 | P_rt | `rt` | Debian PREEMPT_RT packages |
@@ -194,11 +195,16 @@ the Archiver Appliance instances. Services must set `JAVA_HOME` and
 
 ### MariaDB
 
-Run `mariadb` after `common`; it needs no private variables:
+Run `mariadb_uds` (socket only) or `mariadb_tcp` (listener on `127.0.0.1:3306`
+only, `skip-name-resolve`, the application account at `127.0.0.1`; the socket
+stays available and root stays socket-authenticated) after `common`; each needs
+no private variables, and a host carries exactly one of them. `mariadb` remains
+a deprecated alias of `mariadb_uds`:
 
 ```bash
 export RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini
-make op.mariadb.rocky8
+make op.mariadb_uds.rocky8
+make op.mariadb_tcp.rocky8
 ```
 
 The application account password is made and kept on the target. The operator
@@ -272,19 +278,20 @@ the running service. Package lists are available as `pkg_mariadb_redhat` and
 epicsarchiverap-env owns the schema, its separate `admin` account workflow, application
 commands, and Tomcat JDBC configuration. From `90e4a04` its `DB_SOCKET` moves
 every one of those connections onto one socket, which `archiver_build` sets, so
-the `archiver_dev` species runs on the socket-only default.
+the `archiver_dev_uds` species runs on the socket-only default.
 
 ### Archiver
 
-Run `archiver_build` after `java`, `tomcat`, and `mariadb` (or `sqlite` for the
-SQLite species), or apply the whole species in one run:
+Run `archiver_build` after `java`, `tomcat`, and `mariadb_uds` or `mariadb_tcp` (or `sqlite`
+for the SQLite species), or apply the whole species in one run:
 
 ```bash
 export RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini
 # one operator
 make op.archiver_build.rocky8
 # or the whole species
-make archiver_dev.rocky8
+make archiver_dev_uds.rocky8
+make archiver_dev_tcp.rocky8
 # or the SQLite species
 make archiver_dev_sqlite.rocky8
 ```
@@ -310,14 +317,14 @@ The instances serve on 17665 (mgmt), 17666 (engine), 17667 (etl) and 17668
 immediately reads as a failure that is not one.
 
 The appliance authenticates to MariaDB as the application account over the
-socket the `mariadb` operator manages: `archiver_db_socket` defaults to `auto`,
+socket the `mariadb_uds` operator manages: `archiver_db_socket` defaults to `auto`,
 which is `/run/mariadb/mariadb.sock` on Rocky and `/run/mysqld/mysqld.sock` on
 Debian, written to epicsarchiverap-env as `DB_SOCKET`; an absolute path names
 another socket. `DB_SOCKET` needs `archiver_env_ref` at `90e4a04` or later: an
 older ref ignores it and its appliance still connects over TCP, which the
 default then leaves closed, so PV configuration would not persist. An empty `archiver_db_socket` falls back to TCP at
 `archiver_db_host`:`archiver_db_port` and needs `mariadb_skip_networking: false`
-beside it, since the default closes TCP and drops the `127.0.0.1` account. The build reads the password from the file the `mariadb` operator made
+beside it, since the default closes TCP and drops the `127.0.0.1` account. The build reads the password from the file the `mariadb_uds` or `mariadb_tcp` operator made
 on the same host (`archiver_db_password_file`, which follows
 `mariadb_password_file`) and passes it to epicsarchiverap-env as `DB_USER_PASS`; the
 generated `../CONFIG_SITE.local` that carries it is readable by root only. A
@@ -325,7 +332,7 @@ build refuses to start when that file is missing.
 
 A host installed over loopback TCP by an earlier operator moves to the socket in
 one run: apply the species with `-e archiver_force_reinstall=true`. The
-`mariadb` step runs first and closes TCP, so the running appliance loses its
+`mariadb_uds` step runs first and closes TCP, so the running appliance loses its
 database until the rebuild later in the same run installs and starts it on the
 socket; a run without the flag stops at the changed knob set and leaves the
 appliance in that state until the species is applied again with the flag.
@@ -381,7 +388,7 @@ through `/opt/epicsarchiverap-maven/archappl.bash loglevel <component> [<logger>
 
 The `archiver_dev_sqlite` species keeps the appliance configuration in SQLite
 instead of MariaDB: the `sqlite` operator installs only the `sqlite3` tool
-(`sqlite` on Rocky, `sqlite3` on Debian) in place of `mariadb`, and its group
+(`sqlite` on Rocky, `sqlite3` on Debian) in place of `mariadb_uds` or `mariadb_tcp`, and its group
 sets `archiver_db_backend: sqlite`, which `archiver_build` writes to
 epicsarchiverap-env as `DB_BACKEND` (from `bbe0968`). The database is
 `<archiver_storage_top>/config/archappl.sqlite`, owned by the service account;
@@ -412,5 +419,6 @@ build log names how to start it again.
 | `species/nfs_sim.yml` | P_nfs-sim on bare |
 | `species/rtbase.yml` | P_rt on bare |
 | `species/ethercat.yml` | P_ethercat on the rtbase golden |
-| `species/archiver_dev.yml` | P_archiver-build P_mariadb P_tomcat P_java (P_epics or P_epics-build) P_python P_provenance on bare |
+| `species/archiver_dev_uds.yml` | P_archiver-build P_mariadb-uds P_tomcat P_java (P_epics or P_epics-build) P_python P_provenance on bare (`archiver_dev` is a deprecated alias) |
+| `species/archiver_dev_tcp.yml` | P_archiver-build P_mariadb-tcp P_tomcat P_java (P_epics or P_epics-build) P_python P_provenance on bare |
 | `species/archiver_dev_sqlite.yml` | P_archiver-build P_sqlite P_tomcat P_java (P_epics or P_epics-build) P_python P_provenance on bare |

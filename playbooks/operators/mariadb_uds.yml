@@ -1,0 +1,10 @@
+---
+# playbooks/operators/mariadb_uds.yml
+# Apply after common; runs are scoped with --limit.
+- name: Apply the mariadb-uds operator
+  hosts: vacua
+  gather_facts: false
+  become: yes
+  roles:
+    - role: mariadb_uds
+      tags: [mariadb_uds]
