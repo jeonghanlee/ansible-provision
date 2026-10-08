@@ -1,0 +1,11 @@
+---
+# tests/proxy-role/refusal-snapshot.yml
+- name: Record artifact state at the refusal boundary
+  ansible.builtin.raw: |
+    set -eu
+    for path in {{ ((proxy_role_test_artifacts | map(attribute='path') | list) + (['/run/cloud-provision/proxy_contract.bash', '/run/cloud-provision/proxy-contract.input', '/run/cloud-provision/proxy-contract.lock'] if proxy_role_test_snapshot_controls | default(false) else [])) | map('quote') | join(' ') }}; do
+      stat -c '%u:%g %a %i %h %s %y %z %C' -- "${path}"
+      sha256sum -- "${path}"
+    done
+  register: proxy_role_test_refusal_state
+  changed_when: false

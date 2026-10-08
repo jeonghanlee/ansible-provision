@@ -1,0 +1,46 @@
+---
+# tests/proxy-role/invalid-url.yml
+- name: Snapshot final artifacts before passing the invalid URL
+  ansible.builtin.include_tasks: refusal-snapshot.yml
+
+- name: Retain the state before the invalid URL
+  ansible.builtin.set_fact:
+    proxy_role_test_refusal_before: "{{ proxy_role_test_refusal_state.stdout }}"
+
+- name: Verify the real role rejects the invalid URL
+  block:
+    - name: Pass the invalid URL to the shipped role
+      ansible.builtin.include_role:
+        name: proxy
+        allow_duplicates: true
+      vars:
+        proxy_url: "{{ proxy_role_test_invalid_url }}"
+
+    - name: Fail if the invalid URL was accepted
+      ansible.builtin.fail:
+        msg: The role accepted a multiline proxy URL
+  rescue:
+    - name: Require a nonzero result from the actual role
+      ansible.builtin.assert:
+        that:
+          - proxy_apply.failed | default(false)
+          - proxy_apply.rc != 0
+        quiet: true
+
+    - name: Snapshot final artifacts after URL rejection
+      ansible.builtin.include_tasks: refusal-snapshot.yml
+
+    - name: Require the same artifact state after URL rejection
+      ansible.builtin.assert:
+        that:
+          - proxy_role_test_refusal_before == proxy_role_test_refusal_state.stdout
+        quiet: true
+  always:
+    - name: Verify URL data never executed shell commands
+      ansible.builtin.raw: test ! -e /run/cloud-provision/proxy-role-injection-test
+      changed_when: false
+
+    - name: Keep the valid proxy state unchanged
+      ansible.builtin.include_tasks: apply.yml
+      vars:
+        proxy_role_test_expect_changed: false

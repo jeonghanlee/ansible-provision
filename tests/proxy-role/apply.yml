@@ -1,0 +1,82 @@
+---
+# tests/proxy-role/apply.yml
+- name: Record managed state before an unchanged application
+  ansible.builtin.raw: |
+    set -eu
+    for path in {{ proxy_role_test_artifacts | map(attribute='path') | map('quote') | join(' ') }}; do
+      stat -Lc '%u:%g %a %i %h %s %y %z %C' -- "${path}"
+      sha256sum -- "${path}"
+    done
+  when: not proxy_role_test_expect_changed
+  register: proxy_role_test_before
+  changed_when: false
+
+- name: Execute the shipped proxy role
+  block:
+    - name: Reconcile through the shipped role
+      ansible.builtin.include_role:
+        name: proxy
+        allow_duplicates: true
+      vars:
+        proxy_url: "{{ proxy_role_test_url }}"
+  rescue:
+    - name: Report only value-free caller diagnostics
+      ansible.builtin.fail:
+        msg: "Actual role failed (rc={{ proxy_apply.rc | default('unknown') }}); caller diagnostics={{ proxy_apply.stdout | default('') | regex_findall('Error: root and a nonempty single-line proxy_url are required|Error: unsafe proxy staging parent|Error: writable proxy staging parent|Error: unsafe proxy control file|Error: invalid proxy reconciliation result|Error: proxy reconciliation failed \\(exit [0-9]+\\)') }}"
+
+- name: Verify the role's observed change state
+  ansible.builtin.assert:
+    that:
+      - proxy_apply.changed == proxy_role_test_expect_changed
+    quiet: true
+
+- name: Verify the staged contract and schema input match the recorded source
+  ansible.builtin.raw: |
+    set -eu
+    test "$(sha256sum /run/cloud-provision/proxy_contract.bash | cut -d' ' -f1)" = {{ proxy_role_test_contract_sha | quote }}
+    grep -Fxq {{ ('script_sha256=' ~ proxy_role_test_contract_sha) | quote }} /run/cloud-provision/proxy-contract.input
+  changed_when: false
+
+- name: Verify each artifact against fixture metadata and preserved shared modes
+  ansible.builtin.raw: |
+    set -eu
+    test "$(stat -Lc '%U:%G %a' -- {{ proxy_role_test_check.path | quote }})" = {{ (proxy_role_test_check.owner ~ ':' ~ proxy_role_test_check.group ~ ' ' ~ proxy_role_test_modes.get(proxy_role_test_check.path, proxy_role_test_check.stat_mode)) | quote }}
+    {% if proxy_role_test_check.identity == 'sshd' %}
+    /usr/sbin/sshd -T -C user=vmadmin,host=localhost,addr=127.0.0.1 | grep -Eq '^permituserenvironment[[:space:]]+yes$'
+    {% else %}
+    grep -Fq 'proxy.example.test' -- {{ proxy_role_test_check.path | quote }}
+    ! grep -Fq 'proxy-drift.example.test' -- {{ proxy_role_test_check.path | quote }}
+    {% endif %}
+  loop: "{{ proxy_role_test_artifacts }}"
+  loop_control:
+    loop_var: proxy_role_test_check
+    label: "{{ proxy_role_test_check.identity }}"
+  changed_when: false
+
+- name: Record managed state after an unchanged application
+  ansible.builtin.raw: |
+    set -eu
+    for path in {{ proxy_role_test_artifacts | map(attribute='path') | map('quote') | join(' ') }}; do
+      stat -Lc '%u:%g %a %i %h %s %y %z %C' -- "${path}"
+      sha256sum -- "${path}"
+    done
+  when: not proxy_role_test_expect_changed
+  register: proxy_role_test_after
+  changed_when: false
+
+- name: Verify an unchanged application preserves content and timestamps
+  ansible.builtin.assert:
+    that:
+      - proxy_role_test_before.stdout == proxy_role_test_after.stdout
+    quiet: true
+  when: not proxy_role_test_expect_changed
+
+- name: Verify unrelated configuration survives reconciliation
+  ansible.builtin.raw: |
+    set -eu
+    grep -q '^PROXY_ROLE_TEST_KEEP=value$' /etc/environment
+    grep -q '^\[proxyRoleTest\]$' /etc/gitconfig
+    grep -q '^    keep = value$' /etc/gitconfig
+    grep -q '^# PROXY_ROLE_TEST_KEEP$' /etc/dnf/dnf.conf
+    grep -q '^# PROXY_ROLE_TEST_KEEP$' /etc/ssh/sshd_config
+  changed_when: false

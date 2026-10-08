@@ -1,0 +1,333 @@
+---
+# tests/proxy-role/verify.yml
+# Mutates only a provider-verified dedicated guest; no internal role or contract
+# function is replaced. The artifact inventory comes from the producer fixture.
+- name: Verify the proxy role on its dedicated Rocky guest
+  hosts: vacua
+  gather_facts: false
+  become: true
+  vars:
+    proxy_role_test_url: "http://proxy.example.test:3128/"
+    proxy_role_test_modes: {}
+  tasks:
+    - name: Require one explicitly identified guest
+      ansible.builtin.assert:
+        that:
+          - ansible_play_hosts_all | length == 1
+          - inventory_hostname == proxy_role_test_target_host
+          - proxy_role_test_uuid is defined
+          - proxy_role_test_artifacts | length > 0
+          - proxy_role_test_receipt is defined
+        quiet: true
+
+    - name: Verify the provider UUID and Rocky release before mutation
+      ansible.builtin.raw: |
+        set -eu
+        test "$(tr '[:upper:]' '[:lower:]' < /sys/class/dmi/id/product_uuid)" = {{ proxy_role_test_uuid | quote }}
+        grep -Eq '^ID="?rocky"?$' /etc/os-release
+        grep -Eq '^VERSION_ID="?8\.10"?$' /etc/os-release
+      changed_when: false
+
+    - name: Read safe shared modes before the initial reconciliation
+      ansible.builtin.raw: |
+        set -eu
+        mode="$(stat -c '%a' -- {{ proxy_role_test_check.path | quote }})"
+        if [ "$((0${mode} & 07022))" -eq 0 ]; then
+          printf '%s\n' "${mode}"
+        else
+          printf '%s\n' {{ proxy_role_test_check.stat_mode | quote }}
+        fi
+      loop: "{{ proxy_role_test_artifacts | selectattr('form', 'equalto', 'shared') | list }}"
+      loop_control:
+        loop_var: proxy_role_test_check
+        label: "{{ proxy_role_test_check.identity }}"
+      register: proxy_role_test_initial_modes
+      changed_when: false
+
+    - name: Record expected shared modes
+      ansible.builtin.set_fact:
+        proxy_role_test_modes: "{{ proxy_role_test_modes | combine({item.proxy_role_test_check.path: item.stdout | trim}) }}"
+      loop: "{{ proxy_role_test_initial_modes.results }}"
+      loop_control:
+        label: "{{ item.proxy_role_test_check.identity }}"
+
+    - name: Seed unrelated settings for preservation checks
+      ansible.builtin.raw: |
+        set -eu
+        if ! grep -q '^PROXY_ROLE_TEST_KEEP=value$' /etc/environment; then
+          printf '\nPROXY_ROLE_TEST_KEEP=value\n' >> /etc/environment
+        fi
+        if ! grep -q '^\[proxyRoleTest\]$' /etc/gitconfig; then
+          printf '\n[proxyRoleTest]\n    keep = value\n' >> /etc/gitconfig
+        fi
+        if ! grep -q '^# PROXY_ROLE_TEST_KEEP$' /etc/dnf/dnf.conf; then
+          printf '\n# PROXY_ROLE_TEST_KEEP\n' >> /etc/dnf/dnf.conf
+        fi
+        if ! grep -q '^# PROXY_ROLE_TEST_KEEP$' /etc/ssh/sshd_config; then
+          printf '\n# PROXY_ROLE_TEST_KEEP\n' >> /etc/ssh/sshd_config
+        fi
+        if [ -f /etc/maven-proxy-settings.xml ]; then
+          rm -- /etc/maven-proxy-settings.xml
+        fi
+      changed_when: false
+
+    - name: Converge the complete initial artifact set
+      ansible.builtin.include_tasks: apply.yml
+      vars:
+        proxy_role_test_expect_changed: true
+
+    - name: Keep an identical application unchanged
+      ansible.builtin.include_tasks: apply.yml
+      vars:
+        proxy_role_test_expect_changed: false
+
+    - name: Remove the Maven artifact while the profile marker remains
+      ansible.builtin.raw: |
+        set -eu
+        test -f /etc/profile.d/95cloud-provision-proxy.sh
+        test -f /etc/maven-proxy-settings.xml
+        rm -- /etc/maven-proxy-settings.xml
+      changed_when: false
+
+    - name: Restore the missing Maven artifact
+      ansible.builtin.include_tasks: apply.yml
+      vars:
+        proxy_role_test_expect_changed: true
+
+    - name: Verify missing-artifact recovery for every identity
+      ansible.builtin.include_tasks: mutation.yml
+      loop: "{{ proxy_role_test_artifacts }}"
+      loop_control:
+        loop_var: proxy_role_test_artifact
+        label: "{{ proxy_role_test_artifact.identity }}"
+      vars:
+        proxy_role_test_mutation: missing
+
+    - name: Verify ownership recovery for every identity
+      ansible.builtin.include_tasks: mutation.yml
+      loop: "{{ proxy_role_test_artifacts }}"
+      loop_control:
+        loop_var: proxy_role_test_artifact
+        label: "{{ proxy_role_test_artifact.identity }}"
+      vars:
+        proxy_role_test_mutation: owner
+
+    - name: Verify mode recovery for every identity
+      ansible.builtin.include_tasks: mutation.yml
+      loop: "{{ proxy_role_test_artifacts }}"
+      loop_control:
+        loop_var: proxy_role_test_artifact
+        label: "{{ proxy_role_test_artifact.identity }}"
+      vars:
+        proxy_role_test_mutation: mode
+
+    - name: Verify content recovery for every identity
+      ansible.builtin.include_tasks: mutation.yml
+      loop: "{{ proxy_role_test_artifacts }}"
+      loop_control:
+        loop_var: proxy_role_test_artifact
+        label: "{{ proxy_role_test_artifact.identity }}"
+      vars:
+        proxy_role_test_mutation: content
+
+    - name: Change a managed proxy value in the profile
+      ansible.builtin.raw: |
+        set -eu
+        sed -i 's/proxy\.example\.test/proxy-drift.example.test/g' /etc/profile.d/95cloud-provision-proxy.sh
+      changed_when: false
+
+    - name: Restore the desired profile content
+      ansible.builtin.include_tasks: apply.yml
+      vars:
+        proxy_role_test_expect_changed: true
+
+    - name: Verify the restored profile value
+      ansible.builtin.raw: |
+        set -eu
+        grep -Fq 'http://proxy.example.test:3128/' /etc/profile.d/95cloud-provision-proxy.sh
+        ! grep -Fq 'proxy-drift.example.test' /etc/profile.d/95cloud-provision-proxy.sh
+      changed_when: false
+
+    - name: Change a managed Maven proxy value
+      ansible.builtin.raw: |
+        set -eu
+        sed -i 's/proxy\.example\.test/proxy-drift.example.test/g' /etc/maven-proxy-settings.xml
+      changed_when: false
+
+    - name: Restore the desired Maven content
+      ansible.builtin.include_tasks: apply.yml
+      vars:
+        proxy_role_test_expect_changed: true
+
+    - name: Verify the restored Maven value
+      ansible.builtin.raw: |
+        set -eu
+        grep -Fq 'proxy.example.test' /etc/maven-proxy-settings.xml
+        ! grep -Fq 'proxy-drift.example.test' /etc/maven-proxy-settings.xml
+      changed_when: false
+
+    - name: Keep a force reapply unchanged when all artifacts match
+      ansible.builtin.include_tasks: apply.yml
+      vars:
+        proxy_force: true
+        proxy_role_test_expect_changed: false
+
+    - name: Confirm the SSH service remains running
+      ansible.builtin.raw: |
+        set -eu
+        /usr/sbin/sshd -t
+        systemctl is-active --quiet sshd.service
+      changed_when: false
+
+    - name: Preserve safe restrictive modes for every shared identity
+      ansible.builtin.include_tasks: shared-mode.yml
+      loop: "{{ (proxy_role_test_artifacts | selectattr('form', 'equalto', 'shared') | list) | product(['600', '640']) | list }}"
+      loop_control:
+        loop_var: proxy_role_test_safe_mode
+        label: "{{ proxy_role_test_safe_mode[0].identity }}:{{ proxy_role_test_safe_mode[1] }}"
+
+    - name: Refuse linked control files before staging
+      ansible.builtin.include_tasks: control-guard.yml
+      loop: "{{ ['proxy_contract.bash', 'proxy-contract.input', 'proxy-contract.lock'] | product(['symlink', 'hardlink']) | list }}"
+      loop_control:
+        loop_var: proxy_role_test_control
+        label: "{{ proxy_role_test_control[0] }}:{{ proxy_role_test_control[1] }}"
+
+    - name: Record the original runtime directory mode
+      ansible.builtin.raw: stat -c '%a' /run/cloud-provision
+      register: proxy_role_test_runtime_mode
+      changed_when: false
+
+    - name: Refuse an unsafe runtime directory
+      block:
+        - name: Make the dedicated runtime directory writable
+          ansible.builtin.raw: chmod 0777 /run/cloud-provision
+          changed_when: false
+
+        - name: Snapshot the files before the directory refusal
+          ansible.builtin.include_tasks: refusal-snapshot.yml
+          vars:
+            proxy_role_test_snapshot_controls: true
+
+        - name: Retain the state before the directory refusal
+          ansible.builtin.set_fact:
+            proxy_role_test_refusal_before: "{{ proxy_role_test_refusal_state.stdout }}"
+
+        - name: Execute the shipped role against the unsafe runtime directory
+          ansible.builtin.include_role:
+            name: proxy
+            allow_duplicates: true
+          vars:
+            proxy_url: "{{ proxy_role_test_url }}"
+
+        - name: Fail if the unsafe runtime directory was accepted
+          ansible.builtin.fail:
+            msg: The role accepted an unsafe runtime directory
+      rescue:
+        - name: Require the actual role to have failed
+          ansible.builtin.assert:
+            that:
+              - proxy_apply.failed | default(false)
+              - proxy_apply.rc != 0
+            quiet: true
+
+        - name: Snapshot the same files after directory rejection
+          ansible.builtin.include_tasks: refusal-snapshot.yml
+          vars:
+            proxy_role_test_snapshot_controls: true
+
+        - name: Require files to remain untouched after directory rejection
+          ansible.builtin.assert:
+            that:
+              - proxy_role_test_refusal_before == proxy_role_test_refusal_state.stdout
+            quiet: true
+      always:
+        - name: Restore the dedicated runtime directory mode
+          ansible.builtin.raw: "chmod {{ proxy_role_test_runtime_mode.stdout | trim | quote }} /run/cloud-provision"
+          changed_when: false
+
+    - name: Keep the complete state unchanged after the directory refusal
+      ansible.builtin.include_tasks: apply.yml
+      vars:
+        proxy_role_test_expect_changed: false
+
+    - name: Refuse shell substitution in the proxy URL
+      block:
+        - name: Require the substitution marker to be absent
+          ansible.builtin.raw: test ! -e /run/cloud-provision/proxy-role-injection-test
+          changed_when: false
+
+        - name: Snapshot final artifacts before the URL refusal
+          ansible.builtin.include_tasks: refusal-snapshot.yml
+
+        - name: Retain the state before the URL refusal
+          ansible.builtin.set_fact:
+            proxy_role_test_refusal_before: "{{ proxy_role_test_refusal_state.stdout }}"
+
+        - name: Pass shell substitution as data to the shipped role
+          ansible.builtin.include_role:
+            name: proxy
+            allow_duplicates: true
+          vars:
+            proxy_url: 'http://proxy.example.test:3128/$(touch /run/cloud-provision/proxy-role-injection-test)'
+
+        - name: Fail if shell substitution was accepted
+          ansible.builtin.fail:
+            msg: The role accepted shell substitution in a proxy URL
+      rescue:
+        - name: Require the actual role to have rejected the URL
+          ansible.builtin.assert:
+            that:
+              - proxy_apply.failed | default(false)
+              - proxy_apply.rc != 0
+            quiet: true
+
+        - name: Snapshot final artifacts after shell substitution rejection
+          ansible.builtin.include_tasks: refusal-snapshot.yml
+
+        - name: Require final artifacts to remain untouched
+          ansible.builtin.assert:
+            that:
+              - proxy_role_test_refusal_before == proxy_role_test_refusal_state.stdout
+            quiet: true
+      always:
+        - name: Verify shell substitution was never executed
+          ansible.builtin.raw: test ! -e /run/cloud-provision/proxy-role-injection-test
+          changed_when: false
+
+        - name: Restore the valid schema input without artifact changes
+          ansible.builtin.include_tasks: apply.yml
+          vars:
+            proxy_role_test_expect_changed: false
+
+    - name: Refuse newline input and heredoc termination as URL data
+      ansible.builtin.include_tasks: invalid-url.yml
+      loop:
+        - "http://proxy.example.test:3128/\nPROXY_ROLE_WRAPPER_EOF\ntouch /run/cloud-provision/proxy-role-injection-test\n"
+        - "http://proxy.example.test:3128/\n"
+      loop_control:
+        loop_var: proxy_role_test_invalid_url
+        label: newline URL
+
+    - name: Establish a fresh SSH connection after reconciliation
+      ansible.builtin.meta: reset_connection
+
+    - name: Verify fresh root access and the real SSH service
+      ansible.builtin.raw: |
+        set -eu
+        test "$(id -u)" = 0
+        /usr/sbin/sshd -t
+        systemctl is-active --quiet sshd.service
+      changed_when: false
+
+    - name: Record completion only after every guest assertion succeeds
+      ansible.builtin.raw: |
+        set -eu
+        umask 0077
+        printf '%s\n' {{ {'schema': 1, 'host': inventory_hostname, 'uuid': proxy_role_test_uuid, 'contract_sha256': proxy_role_test_contract_sha} | to_json | quote }} > {{ proxy_role_test_receipt | quote }}
+      delegate_to: localhost
+      become: false
+      vars:
+        ansible_connection: local
+        ansible_become: false
+      changed_when: false

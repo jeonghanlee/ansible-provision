@@ -1,0 +1,112 @@
+---
+# tests/proxy-role/control-guard.yml
+- name: Verify linked control rejection with the original control restored
+  block:
+    - name: Replace the selected control file with a link on the dedicated guest
+      ansible.builtin.raw: |
+        /bin/bash -p -s << 'PROXY_ROLE_GUARD_EOF'
+        set -euo pipefail
+        export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+        unset BASH_ENV ENV CDPATH
+        umask 0077
+        path={{ ('/run/cloud-provision/' ~ proxy_role_test_control[0]) | quote }}
+        backup=''
+        handed_off=0
+        function restore_partial_preparation {
+          local rc=$?
+          trap - EXIT
+          if [[ "${handed_off}" == 0 && -n "${backup}" ]]; then
+            if [[ -f "${backup}/control" ]]; then
+              if [[ -e "${path}" || -L "${path}" ]]; then
+                rm -- "${path}" || rc=1
+              fi
+              mv -T -- "${backup}/control" "${path}" || rc=1
+            fi
+            rmdir -- "${backup}" || rc=1
+          fi
+          exit "${rc}"
+        }
+        trap restore_partial_preparation EXIT
+        trap 'exit 1' HUP INT TERM
+        test -f "${path}"
+        test ! -L "${path}"
+        test "$(stat -c '%h' -- "${path}")" = 1
+        backup="$(mktemp -d /run/.proxy-role-guard.XXXXXX)"
+        mv -- "${path}" "${backup}/control"
+        {% if proxy_role_test_control[1] == 'symlink' %}
+        ln -s -- "${backup}/control" "${path}"
+        {% else %}
+        ln -- "${backup}/control" "${path}"
+        {% endif %}
+        printf '%s\n' "${backup}"
+        handed_off=1
+        PROXY_ROLE_GUARD_EOF
+      register: proxy_role_test_control_backup
+      changed_when: false
+
+    - name: Snapshot final artifacts and the linked controls before the actual role
+      ansible.builtin.include_tasks: refusal-snapshot.yml
+      vars:
+        proxy_role_test_snapshot_controls: true
+
+    - name: Retain the original refusal state
+      ansible.builtin.set_fact:
+        proxy_role_test_refusal_before: "{{ proxy_role_test_refusal_state.stdout }}"
+
+    - name: Verify the shipped role refuses the linked control file
+      block:
+        - name: Execute the shipped role with the linked control file
+          ansible.builtin.include_role:
+            name: proxy
+            allow_duplicates: true
+          vars:
+            proxy_url: "{{ proxy_role_test_url }}"
+
+        - name: Fail if the linked control file was accepted
+          ansible.builtin.fail:
+            msg: The role accepted a linked control file
+      rescue:
+        - name: Require a nonzero result from the actual role
+          ansible.builtin.assert:
+            that:
+              - proxy_apply.failed | default(false)
+              - proxy_apply.rc != 0
+            quiet: true
+
+        - name: Snapshot the same files after the actual refusal
+          ansible.builtin.include_tasks: refusal-snapshot.yml
+          vars:
+            proxy_role_test_snapshot_controls: true
+
+        - name: Require final artifacts and control files to remain untouched
+          ansible.builtin.assert:
+            that:
+              - proxy_role_test_refusal_before == proxy_role_test_refusal_state.stdout
+            quiet: true
+  always:
+    - name: Restore the original dedicated-guest control file
+      ansible.builtin.raw: |
+        /bin/bash -p -s << 'PROXY_ROLE_GUARD_RESTORE_EOF'
+        set -euo pipefail
+        export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+        unset BASH_ENV ENV CDPATH
+        path={{ ('/run/cloud-provision/' ~ proxy_role_test_control[0]) | quote }}
+        backup={{ proxy_role_test_control_backup.stdout | trim | quote }}
+        case "${backup}" in /run/.proxy-role-guard.*) ;; *) exit 1 ;; esac
+        test -f "${backup}/control"
+        if [[ -e "${path}" || -L "${path}" ]]; then
+          rm -- "${path}"
+        fi
+        mv -T -- "${backup}/control" "${path}"
+        rmdir -- "${backup}"
+        PROXY_ROLE_GUARD_RESTORE_EOF
+      when:
+        - proxy_role_test_control_backup is defined
+        - proxy_role_test_control_backup.rc | default(1) == 0
+        - proxy_role_test_control_backup.stdout | default('') | trim | length > 0
+      changed_when: false
+
+- name: Verify the restored complete state remains unchanged
+  ansible.builtin.include_tasks: apply.yml
+  vars:
+    proxy_role_test_expect_changed: false

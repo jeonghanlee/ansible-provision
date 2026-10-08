@@ -127,7 +127,7 @@ The `proxy` role is the optional `P_proxy` precondition, applied before
 `P_common` and every fetch on a site that reaches the network only through a
 proxy. It does not reimplement the proxy artifact set: it streams the
 single-authority `bin/proxy_contract.bash` from the control-host
-cloud-provision checkout to the target and runs it in apply mode.
+cloud-provision checkout to the target and runs it in reconcile mode.
 
 ```
 raw shell (root):
@@ -136,16 +136,28 @@ raw shell (root):
     ├── /run/cloud-provision/proxy-contract.input (0600)
     │     schema=1 / proxy_url=<injected> / script_sha256=<staged hash>
     │
-    └── bash proxy_contract.bash apply   (self-hash guard; os auto-detected)
+    └── /bin/bash -p proxy_contract.bash reconcile
+          (self-hash guard; OS detected by the contract)
 ```
 
 The proxy URL is never committed; it is injected per host (`-e proxy_url=` or a
-site override) and the role fails when it is unset. Apply installs the
+site override) and the role fails when it is unset. Reconcile checks the
 ADR-20260820 artifact set (`profile.d`, `/etc/environment`, apt or dnf, sudo,
-sshd, ssh-environment, pip, gitconfig). Golden-mode seal stays on the
-cloud-provision bake side; this role is the Live/Instant apply path. The role
-skips when the `profile.d` marker is already present unless `proxy_force` is
-set.
+sshd, ssh-environment, pip, gitconfig, Maven). Golden-mode seal stays on the
+cloud-provision bake side; this role is the Live/Instant reconciliation path.
+Every application checks the complete artifact set, including when the profile
+marker already exists. Missing artifacts and managed content or metadata drift
+are repaired; safe shared modes and unrelated bytes are preserved.
+
+The caller quotes the URL as shell data, validates root-owned staging parents
+and control files before writing, and stages the script and schema input with
+atomic renames. Existing unsafe staging state fails instead of being repaired.
+CLI stdout and stderr are captured separately in a private target workspace;
+only a zero exit status and one valid schema-1 reconcile result produce the
+`changed` or `unchanged` sentinel. The sensitive raw task uses `no_log`.
+`proxy_force` remains accepted for existing callers; an identical application
+reports unchanged with either value. Other configuration writers must be
+excluded while reconciliation runs, as required by the producer contract.
 
 ### Build Pattern
 

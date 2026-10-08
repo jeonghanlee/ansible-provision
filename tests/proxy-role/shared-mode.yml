@@ -1,0 +1,16 @@
+---
+# tests/proxy-role/shared-mode.yml
+- name: Set a safe restrictive mode on the selected shared artifact
+  ansible.builtin.raw: |
+    set -eu
+    chmod {{ proxy_role_test_safe_mode[1] | quote }} -- {{ proxy_role_test_safe_mode[0].path | quote }}
+  changed_when: false
+
+- name: Record the shared mode that reconciliation must preserve
+  ansible.builtin.set_fact:
+    proxy_role_test_modes: "{{ proxy_role_test_modes | combine({proxy_role_test_safe_mode[0].path: proxy_role_test_safe_mode[1]}) }}"
+
+- name: Keep the complete managed set unchanged
+  ansible.builtin.include_tasks: apply.yml
+  vars:
+    proxy_role_test_expect_changed: false

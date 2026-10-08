@@ -1,0 +1,42 @@
+---
+# tests/proxy-role/mutation.yml
+- name: Mutate the selected dedicated-guest artifact
+  ansible.builtin.raw: |
+    set -eu
+    path={{ proxy_role_test_artifact.path | quote }}
+    test -f "${path}"
+    case {{ proxy_role_test_mutation | quote }} in
+      missing)
+        {% if proxy_role_test_artifact.form == 'shared' %}
+        sed -i '/^# BEGIN CLOUD-PROVISION PROXY CONTRACT$/,/^# END CLOUD-PROVISION PROXY CONTRACT$/d' "${path}"
+        {% else %}
+        rm -- "${path}"
+        {% endif %}
+        ;;
+      owner) chown 65534:65534 "${path}" ;;
+      mode) chmod {{ '0666' if proxy_role_test_artifact.form == 'shared' else ('0644' if proxy_role_test_artifact.stat_mode == '600' else '0600') }} "${path}" ;;
+      content)
+        {% if proxy_role_test_artifact.identity == 'sshd' %}
+        sed -i '/^# BEGIN CLOUD-PROVISION PROXY CONTRACT$/,/^# END CLOUD-PROVISION PROXY CONTRACT$/s/PermitUserEnvironment yes/PermitUserEnvironment no/' "${path}"
+        {% else %}
+        sed -i 's/proxy\.example\.test/proxy-drift.example.test/g' "${path}"
+        {% endif %}
+        ;;
+      *) exit 2 ;;
+    esac
+  changed_when: false
+
+- name: Expect the fixture baseline after an unsafe shared mode
+  ansible.builtin.set_fact:
+    proxy_role_test_modes: "{{ proxy_role_test_modes | combine({proxy_role_test_artifact.path: proxy_role_test_artifact.stat_mode}) }}"
+  when: proxy_role_test_mutation == 'mode' and proxy_role_test_artifact.form == 'shared'
+
+- name: Reconcile the observed artifact mutation
+  ansible.builtin.include_tasks: apply.yml
+  vars:
+    proxy_role_test_expect_changed: true
+
+- name: Keep the repaired state unchanged
+  ansible.builtin.include_tasks: apply.yml
+  vars:
+    proxy_role_test_expect_changed: false
