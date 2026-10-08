@@ -34,6 +34,16 @@
   ansible.builtin.raw: |
     set -eu
     test "$(sha256sum /run/cloud-provision/proxy_contract.bash | cut -d' ' -f1)" = {{ proxy_role_test_contract_sha | quote }}
+    grep -Fxq {{ ('schema=' ~ (proxy_role_test_schema | string)) | quote }} /run/cloud-provision/proxy-contract.input
+    {% if proxy_scope == 'general-server' %}
+    test "$(stat -c '%u:%g:%a' /run/cloud-provision)" = 0:0:700
+    test "$(wc -l < /run/cloud-provision/proxy-contract.input)" -eq 4
+    grep -Fxq 'scope=general-server' /run/cloud-provision/proxy-contract.input
+    grep -Fxq 'schema=2' /run/cloud-provision/proxy-contract.lock
+    grep -Fxq 'scope=general-server' /run/cloud-provision/proxy-contract.lock
+    {% else %}
+    test "$(wc -l < /run/cloud-provision/proxy-contract.input)" -eq 3
+    {% endif %}
     grep -Fxq {{ ('script_sha256=' ~ proxy_role_test_contract_sha) | quote }} /run/cloud-provision/proxy-contract.input
   changed_when: false
 
@@ -80,3 +90,14 @@
     grep -q '^# PROXY_ROLE_TEST_KEEP$' /etc/dnf/dnf.conf
     grep -q '^# PROXY_ROLE_TEST_KEEP$' /etc/ssh/sshd_config
   changed_when: false
+
+- name: Verify general-server reconciliation preserves excluded state
+  ansible.builtin.include_tasks: excluded-state.yml
+  when: proxy_scope == 'general-server'
+
+- name: Compare excluded state with the general-server baseline
+  ansible.builtin.assert:
+    that:
+      - proxy_role_test_excluded_state.stdout == proxy_role_test_excluded_before
+    quiet: true
+  when: proxy_scope == 'general-server'

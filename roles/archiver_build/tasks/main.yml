@@ -509,7 +509,7 @@
     printf '%s\n' "Nothing was changed. Re-run with -e archiver_force_reinstall=true to rebuild and reinstall." >&2
     printf '%s\n' "{{ archiver_build_launch.stdout | regex_search('ARCHIVER_BUILD_DRIFT.*') }}" >&2
     exit 1
-  when: "'ARCHIVER_BUILD_DRIFT' in archiver_build_launch.stdout"
+  when: "'ARCHIVER_BUILD_DRIFT' in (archiver_build_launch.stdout | default(''))"
   changed_when: false
 
 - name: Wait for the detached archiver build to finish
@@ -537,8 +537,8 @@
     journalctl -u "${unit}" --no-pager 2>/dev/null | tail -n 80 >&2
     exit 2
   when: >-
-    'ARCHIVER_BUILD_STARTED' in archiver_build_launch.stdout or
-    'ARCHIVER_BUILD_RUNNING' in archiver_build_launch.stdout
+    'ARCHIVER_BUILD_STARTED' in (archiver_build_launch.stdout | default('')) or
+    'ARCHIVER_BUILD_RUNNING' in (archiver_build_launch.stdout | default(''))
   register: archiver_build_wait
   until: archiver_build_wait.rc != 1
   retries: 80

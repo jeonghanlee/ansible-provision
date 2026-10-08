@@ -134,16 +134,19 @@ raw shell (root):
   stage /run/cloud-provision/proxy_contract.bash (0700)
     │
     ├── /run/cloud-provision/proxy-contract.input (0600)
-    │     schema=1 / proxy_url=<injected> / script_sha256=<staged hash>
+    │     selected schema / proxy_url=<injected> / script_sha256=<staged hash>
     │
     └── /bin/bash -p proxy_contract.bash reconcile
           (self-hash guard; OS detected by the contract)
 ```
 
 The proxy URL is never committed; it is injected per host (`-e proxy_url=` or a
-site override) and the role fails when it is unset. Reconcile checks the
-ADR-20260820 artifact set (`profile.d`, `/etc/environment`, apt or dnf, sudo,
-sshd, ssh-environment, pip, gitconfig, Maven). Golden-mode seal stays on the
+site override) and the role fails when it is unset. `proxy_scope` defaults to
+`cloud`: schema 1 retains the producer's cloud artifact set. `general-server`
+selects schema 2 with the explicit `scope=general-server` input field and the
+producer's six system artifacts on Rocky Linux 8.10. It requires no VM account
+and excludes account and SSH changes. The producer's ADR-20260820 defines both
+artifact sets. Golden-mode seal stays on the
 cloud-provision bake side; this role is the Live/Instant reconciliation path.
 Every application checks the complete artifact set, including when the profile
 marker already exists. Missing artifacts and managed content or metadata drift
@@ -153,11 +156,17 @@ The caller quotes the URL as shell data, validates root-owned staging parents
 and control files before writing, and stages the script and schema input with
 atomic renames. Existing unsafe staging state fails instead of being repaired.
 CLI stdout and stderr are captured separately in a private target workspace;
-only a zero exit status and one valid schema-1 reconcile result produce the
+only a zero exit status and one valid result for the selected schema and scope produce the
 `changed` or `unchanged` sentinel. The sensitive raw task uses `no_log`.
 `proxy_force` remains accepted for existing callers; an identical application
 reports unchanged with either value. Other configuration writers must be
 excluded while reconciliation runs, as required by the producer contract.
+
+The `archiver_server_sqlite` assembly imports `archiver_dev_sqlite.yml` after
+a read-only prerequisite play. Its group variables select the system-only
+proxy scope, SQLite backend, full source pins, and an explicit site checkout
+owner. The proxy remains a separate first precondition. Runtime membership in
+`rocky8` and `archiver_server_sqlite` supplies both OS and group variables.
 
 ### Build Pattern
 

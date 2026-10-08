@@ -15,15 +15,30 @@
     umask 0077
     proxy_url="$(printf '%s' {{ ((proxy_url ~ '.') | b64encode) | quote }} | base64 --decode)"
     proxy_url="${proxy_url%.}"
+    proxy_scope={{ proxy_scope | quote }}
     readonly runtime=/run/cloud-provision
     readonly staged="${runtime}/proxy_contract.bash"
     readonly input="${runtime}/proxy-contract.input"
-    readonly result_pattern='^proxy_contract schema=1 mode=reconcile os=(debian|ubuntu|rocky) identities=[1-9][0-9]* changed=(true|false)$'
     if [[ "$(id -u)" != 0 || -z "${proxy_url}" ||
           "${proxy_url}" == *$'\n'* || "${proxy_url}" == *$'\r'* ]]; then
       printf '%s\n' 'Error: root and a nonempty single-line proxy_url are required' >&2
       exit 1
     fi
+    case "${proxy_scope}" in
+      cloud)
+        schema=1
+        result_pattern='^proxy_contract schema=1 mode=reconcile os=(debian|ubuntu|rocky) identities=[1-9][0-9]* changed=(true|false)$'
+        ;;
+      general-server)
+        schema=2
+        result_pattern='^proxy_contract schema=2 mode=reconcile scope=general-server os=(rocky) identities=6 changed=(true|false)$'
+        ;;
+      *)
+        printf '%s\n' 'Error: proxy_scope must be cloud or general-server' >&2
+        exit 1
+        ;;
+    esac
+    readonly schema result_pattern
 
     function require_directory {
       local path="$1" mode
@@ -60,6 +75,9 @@
     require_control_file "${staged}" 700
     require_control_file "${input}" 600
     require_control_file "${runtime}/proxy-contract.lock" 600
+    if [[ "${proxy_scope}" == general-server ]]; then
+      chmod 0700 -- "${runtime}"
+    fi
 
     workspace="$(mktemp -d "${runtime}/.proxy-role.XXXXXX")"
     trap 'rm -rf -- "${workspace}"' EXIT
@@ -73,7 +91,10 @@
     mv -f -- "${workspace}/script" "${staged}"
     sha="$(sha256sum "${staged}" | cut -d' ' -f1)"
     {
-      printf 'schema=1\n'
+      printf 'schema=%s\n' "${schema}"
+      if [[ "${proxy_scope}" == general-server ]]; then
+        printf 'scope=general-server\n'
+      fi
       printf 'proxy_url=%s\n' "${proxy_url}"
       printf 'script_sha256=%s\n' "${sha}"
     } > "${workspace}/input"

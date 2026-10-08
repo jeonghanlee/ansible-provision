@@ -27,16 +27,18 @@ Install ansible-core on the control host:
 make setup
 ```
 
-Provisioning targets must be running via `cloud-provision`. The maintained
-`inventory/lab.ini` contains group relationships and no host rows;
-`cloud-provision/bin/generate_ansible_inventory.bash` supplies the actual VM
-name, resolved address, and groups as a second inventory source.
+Provisioning targets may be cloud VMs or existing general servers. The
+maintained `inventory/lab.ini` contains group relationships and no host rows.
+For cloud VMs, `cloud-provision/bin/generate_ansible_inventory.bash` supplies
+the actual VM name, resolved address, and groups as a second inventory source.
+Existing general servers use a site-owned host inventory; see the
+[general-server SQLite interface](#general-server-sqlite-interface).
 
 ## Makefile Workflow
 
-Set `RUNTIME_INVENTORY` to a generated host inventory before running a target.
-Set `ANSIBLE_LIMIT` to the generated VM name when a target must select an
-arbitrary run-specific name.
+Set `RUNTIME_INVENTORY` to the generated cloud inventory or the site-owned
+server inventory before running a target. Set `ANSIBLE_LIMIT` to the inventory
+host name when selecting one host.
 
 ### Connectivity
 
@@ -66,8 +68,9 @@ make op.nfs_sim.debian13 RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini
 make bare.rocky8.check RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini
 ```
 
-Raw tasks are skipped in check mode: `check` validates inventory,
-reachability, and template rendering only - it does not preview changes.
+Provisioning raw tasks are skipped in check mode. Read-only OS probes and the
+general-server prerequisite guard still run. `check` validates inventory,
+reachability, prerequisites, and template rendering; it does not preview changes.
 
 ### Configuration
 
@@ -340,10 +343,8 @@ appliance in that state until the species is applied again with the flag.
 Maven reads a proxy only from a settings file. This operator consumes the file
 the cloud-provision proxy contract owns at `/etc/maven-proxy-settings.xml` and
 writes none of its own. On a proxied host that does not carry it, the operator
-refuses before starting a build rather than failing inside Maven. That file
-arrives at provisioning, so a host provisioned before the contract covered Maven
-is recreated through cloud-provision's `bin/create_vm.bash` rather than rebuilt
-in place.
+refuses before starting a build. Apply `op.proxy` before the assembly to
+reconcile the file, including when a profile marker already exists.
 
 `archiver_java_heapsize` (default `256M`) sets the heap of every instance
 explicitly; four instances at a 1G heap oversubscribe a 4 GB host. A changed
@@ -400,6 +401,69 @@ involved, and `archiver_db_socket`, `archiver_db_host`, `archiver_db_port` and
 part of the recorded knob set. The cloud-provision generator emits the
 `archiver_dev_sqlite` group for `--species archiver-dev-sqlite`.
 
+### General-server SQLite interface
+
+The `archiver_server_sqlite` group provisions an existing Rocky Linux 8.10
+server. Its playbook imports `archiver_dev_sqlite.yml`, reusing common,
+provenance, python, epics, java, tomcat, sqlite, and archiver_build in that order.
+It excludes MariaDB operators. Apply the separate proxy precondition before
+the assembly, using the same inventory, site variables, and host limit.
+
+| Target | Playbook | Purpose |
+| --- | --- | --- |
+| `op.proxy.rocky8` | `playbooks/operators/proxy.yml` | Reconcile the selected proxy scope first |
+| `archiver_server_sqlite.rocky8` | `playbooks/species/archiver_server_sqlite.yml` | Check prerequisites and apply the SQLite assembly |
+| `check-general-server-contract` | `tests/check-general-server-contract.bash` | Check local Make, inventory, syntax, assembly, and read-only guard behavior |
+
+In the site runtime inventory, put the same existing host in `rocky8` and
+`archiver_server_sqlite`. `inventory/lab.ini` makes `rocky8` a child of `vacua`;
+membership in `archiver_dev_sqlite` is unnecessary. For local execution, use
+this host-only inventory alongside `inventory/lab.ini`:
+
+```ini
+[rocky8]
+localhost ansible_connection=local
+
+[archiver_server_sqlite]
+localhost
+```
+
+Set `RUNTIME_INVENTORY` to that site file and pass a private site variables file
+through `ANSIBLE_OPTS='-e @<site_vars_file>'`. Restrict multi-host inventories
+with `ANSIBLE_LIMIT`. Both operator and assembly require root become access.
+Use the existing local sudo procedure in [Ansible Command Reference](docs/ANSIBLE_CLI.md)
+when the site lacks passwordless sudo.
+
+| Variable | General-server value |
+| --- | --- |
+| `proxy_scope` | `general-server`, supplied by the group |
+| `proxy_url` | Required site URL; keep it in private site inputs |
+| `proxy_contract_path` | Shipped cloud-provision `bin/proxy_contract.bash`; default is the sibling checkout |
+| `epics_ioc_engineers` | Required nonempty list whose first entry is an existing EPICS checkout owner; group default is empty |
+| `archiver_db_backend` | `sqlite`, supplied by the group |
+| `archiver_env_ref` | `e2ade5a184098379424ed87972ff308490eeedec` |
+| `archiver_maven_src_tag` | `af2e734857dab01105576086adeca0d4f318d6ee` |
+
+Use cloud-provision commit `bbd689211e537b2f42cc3cf09e674049f5150fbc`
+for this interface. The proxy role streams the producer; it owns neither the
+artifact list nor Maven XML. `general-server` uses schema 2 on Rocky 8.10 and
+does not require `vmadmin` or write VM-account SSH settings. The default
+`cloud` scope retains schema 1. The assembly guard checks group membership,
+scope, backend, existing checkout owner, and an applied schema-2 proxy lock
+before any provisioning operator runs. Run the proxy precondition before each
+assembly application; a lock alone does not establish current artifact health.
+
+Other site inputs use the existing operator defaults, including EPICS refs,
+install paths, service account, heap, storage, and journal limits. See
+[EPICS defaults](roles/epics/defaults/main.yml) and
+[Archiver defaults](roles/archiver_build/defaults/main.yml). Keep the two source
+pins above when adopting this interface. SQLite provisioning does not stop or
+remove an independently installed MariaDB service.
+
+Local contract checks do not establish target provisioning or proxy recovery.
+The [proxy role suite](tests/proxy-role/README.md) defines actual-target tests
+with `PROXY_TEST_SCOPE=general-server` on a dedicated guest without `vmadmin`.
+
 After `sql.fill` the operator counts the tables in the configuration database and
 stops the build before install when there are none or they cannot be counted: an
 appliance on an empty database archives and serves, but never persists PV
@@ -422,3 +486,4 @@ build log names how to start it again.
 | `species/archiver_dev_uds.yml` | P_archiver-build P_mariadb-uds P_tomcat P_java (P_epics or P_epics-build) P_python P_provenance on bare (`archiver_dev` is a deprecated alias) |
 | `species/archiver_dev_tcp.yml` | P_archiver-build P_mariadb-tcp P_tomcat P_java (P_epics or P_epics-build) P_python P_provenance on bare |
 | `species/archiver_dev_sqlite.yml` | P_archiver-build P_sqlite P_tomcat P_java (P_epics or P_epics-build) P_python P_provenance on bare |
+| `species/archiver_server_sqlite.yml` | General-server prerequisite check followed by `archiver_dev_sqlite.yml`; proxy applied separately first |

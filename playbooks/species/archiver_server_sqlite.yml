@@ -1,0 +1,43 @@
+---
+# playbooks/species/archiver_server_sqlite.yml
+# General-server SQLite provisioning reuses the development operator assembly.
+# Apply op.proxy first with the same site inventory. Read-only preconditions
+# reject an incompatible selection before any operator installs packages.
+- name: Verify general-server SQLite prerequisites
+  hosts: vacua
+  gather_facts: false
+  become: true
+  tasks:
+    - name: Require the general-server group and its site inputs
+      ansible.builtin.raw: |
+        /bin/bash -p -s << 'ARCHIVER_SERVER_CHECK_EOF'
+        set -euo pipefail
+        export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+        unset BASH_ENV ENV CDPATH
+        if [[ {{ ('archiver_server_sqlite' in group_names and 'rocky8' in group_names) | ternary('true', 'false') }} != true ]]; then
+          printf '%s\n' 'Error: archiver_server_sqlite and rocky8 memberships are required' >&2
+          exit 1
+        fi
+        if [[ {{ proxy_scope | default('cloud') | quote }} != general-server ||
+              {{ archiver_db_backend | default('mariadb') | quote }} != sqlite ]]; then
+          printf '%s\n' 'Error: general-server proxy scope and SQLite backend are required' >&2
+          exit 1
+        fi
+        owner={{ epics_ioc_engineers | first | default('') | quote }}
+        if [[ -z "${owner}" ]] || ! id -u -- "${owner}" > /dev/null 2>&1; then
+          printf '%s\n' 'Error: epics_ioc_engineers must select an existing checkout owner' >&2
+          exit 1
+        fi
+        for control in proxy-contract.input proxy-contract.lock; do
+          path="/run/cloud-provision/${control}"
+          test -s "${path}"
+          grep -Fxq 'schema=2' "${path}"
+          grep -Fxq 'scope=general-server' "${path}"
+        done
+        grep -Fxq 'state=applied' /run/cloud-provision/proxy-contract.lock
+        ARCHIVER_SERVER_CHECK_EOF
+      changed_when: false
+      check_mode: false
+      tags: [always]
+
+- import_playbook: archiver_dev_sqlite.yml

@@ -1,0 +1,23 @@
+---
+# tests/proxy-role/excluded-state.yml
+# Observe account databases and SSH/sudo state outside the system-only scope.
+- name: Snapshot state excluded from general-server reconciliation
+  ansible.builtin.raw: |
+    set -eu
+    if getent passwd vmadmin > /dev/null; then
+      printf '%s\n' 'Error: the general-server test requires no vmadmin account' >&2
+      exit 1
+    fi
+    test ! -e /home/vmadmin
+    test ! -L /home/vmadmin
+    for path in /etc/passwd /etc/group /etc/shadow /etc/gshadow /etc/ssh/sshd_config /etc/sudoers.d/95cloud-provision-proxy; do
+      if [ -e "${path}" ] || [ -L "${path}" ]; then
+        stat -c '%u:%g %a %i %h %s %y %z %C' -- "${path}"
+        sha256sum -- "${path}"
+      else
+        printf 'absent=%s\n' "${path}"
+      fi
+    done
+  register: proxy_role_test_excluded_state
+  changed_when: false
+  no_log: true

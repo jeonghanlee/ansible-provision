@@ -11,6 +11,10 @@ proxy_contract_path: "{{ role_path }}/../../../cloud-provision/bin/proxy_contrac
 # override or -e proxy_url=<url>. The role fails when it is unset.
 proxy_url: ""
 
+# Cloud uses schema 1. General-server uses schema 2 on Rocky Linux 8.10 and
+# reconciles system proxy settings without a VM account or SSH configuration.
+proxy_scope: "cloud"
+
 # Compatibility input for existing callers. Reconciliation always checks the
 # complete artifact set; an identical application remains unchanged.
 proxy_force: false

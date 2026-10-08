@@ -28,6 +28,10 @@
         grep -Eq '^VERSION_ID="?8\.10"?$' /etc/os-release
       changed_when: false
 
+    - name: Require no VM account before general-server test mutations
+      ansible.builtin.include_tasks: excluded-state.yml
+      when: proxy_scope == 'general-server'
+
     - name: Read safe shared modes before the initial reconciliation
       ansible.builtin.raw: |
         set -eu
@@ -70,6 +74,16 @@
           rm -- /etc/maven-proxy-settings.xml
         fi
       changed_when: false
+
+    - name: Observe excluded state before general-server reconciliation
+      ansible.builtin.include_tasks: excluded-state.yml
+      when: proxy_scope == 'general-server'
+
+    - name: Retain the general-server excluded-state baseline
+      ansible.builtin.set_fact:
+        proxy_role_test_excluded_before: "{{ proxy_role_test_excluded_state.stdout }}"
+      when: proxy_scope == 'general-server'
+      no_log: true
 
     - name: Converge the complete initial artifact set
       ansible.builtin.include_tasks: apply.yml
@@ -324,7 +338,7 @@
       ansible.builtin.raw: |
         set -eu
         umask 0077
-        printf '%s\n' {{ {'schema': 1, 'host': inventory_hostname, 'uuid': proxy_role_test_uuid, 'contract_sha256': proxy_role_test_contract_sha} | to_json | quote }} > {{ proxy_role_test_receipt | quote }}
+        printf '%s\n' {{ ({'schema': proxy_role_test_schema, 'host': inventory_hostname, 'uuid': proxy_role_test_uuid, 'contract_sha256': proxy_role_test_contract_sha} | combine({'scope': 'general-server'} if proxy_scope == 'general-server' else {})) | to_json | quote }} > {{ proxy_role_test_receipt | quote }}
       delegate_to: localhost
       become: false
       vars:

@@ -1,9 +1,18 @@
 # Ansible Command Reference
 
-`inventory/lab.ini` contains group relationships only. Set
+`inventory/lab.ini` contains group relationships only. For cloud VMs, set
 `RUNTIME_INVENTORY` to a host inventory produced by
 `cloud-provision/bin/generate_ansible_inventory.bash`; set `TARGET_HOST` to
 the generated VM name when selecting one host.
+
+An existing general Rocky Linux 8.10 server uses a site-owned runtime inventory
+with the same host in `rocky8` and `archiver_server_sqlite`. Apply
+`op.proxy.rocky8` first, then `archiver_server_sqlite.rocky8`, with the same
+`RUNTIME_INVENTORY`, private `ANSIBLE_OPTS` site file, and `ANSIBLE_LIMIT`.
+Required variables and producer revision are defined by the
+[general-server SQLite interface](../README.md#general-server-sqlite-interface).
+The `.check` form runs the assembly's read-only prerequisite guard; it skips
+the provisioning raw tasks.
 
 ```bash
 export RUNTIME_INVENTORY=/tmp/cloud-provision-host.ini

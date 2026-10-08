@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := help
 
 .PHONY: help help.detail ping check-inventory-source \
-	check-runtime-inventory-contract
+	check-runtime-inventory-contract check-general-server-contract
 
 ##@ Help
 
@@ -74,6 +74,9 @@ ping: check-inventory-source ## Verify connectivity to all nodes (honors ANSIBLE
 
 check-runtime-inventory-contract: ## Verify generated inventory Make preflight
 	$(QUIET) bash $(TOP)/tests/check-runtime-inventory-contract.bash
+
+check-general-server-contract: ## Verify general-server selection and read-only preconditions
+	$(QUIET) bash $(TOP)/tests/check-general-server-contract.bash
 
 $(foreach sp,$(SPECIES_PLAYBOOKS),$(eval $(call playbook_targets,$(sp),$(PLAYBOOK_DIR)/species/$(sp).yml)))
 $(foreach op,$(OPERATOR_PLAYBOOKS),$(eval $(call playbook_targets,op.$(op),$(PLAYBOOK_DIR)/operators/$(op).yml)))
