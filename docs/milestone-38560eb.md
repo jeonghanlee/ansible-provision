@@ -39,9 +39,11 @@ chunk-key comparison. The owner selected the bounded correction and retained-rec
 recheck. Both separate recheck proofs Passed; original result and evidence hashes
 remain unchanged. Source and retained-evidence review 2 accepted the correction and
 both separate recheck proofs after independent archive/hash inspection. Separate recheck results cannot satisfy the original complete
-focused-proof gate. Resolve the accepted proof-consumer path before continuity,
-instrumentation, measured preparation and either 24-hour observation; do not reseed
-or restart the existing services to bypass that gate.
+focused-proof gate. The Retained-Record Recheck Proof Consumer Amendment (2026-10-09)
+defines the consumer acceptance conditions and stays a draft until reviewed, accepted and
+authorized. Resolve it before continuity, instrumentation, measured preparation and
+either 24-hour observation; do not reseed or restart the existing services to bypass
+that gate.
 Earlier amendment and preparation evidence follows.
 Local code implementation and verification were authorized on 2026-10-01.
 Dedicated VM acquisition and deployment were subsequently authorized on
@@ -2773,6 +2775,119 @@ accepted 2026-07-05 state own; the cloud-provision bake script.
 - Identity History: none
 - GitHub Issue: none; external request `jeonghanlee/epicsarchiverap-maven#12`
 - Status: In progress
+
+##### Retained-Record Recheck Proof Consumer Amendment (2026-10-09)
+
+Plan Status: draft
+Plan Acceptance: none
+Implementation Authorization: none
+
+Decision Date: 2026-10-09. The owner authorized amending the plan so the focused-proof
+consumer can accept the retained-record recheck proof while the original focused result
+stays Incomplete. This authorizes the plan text only. Review, acceptance and
+implementation authorization are recorded separately above after they occur.
+
+Decision Date: 2026-10-09. After review of the draft, the owner selected binding the proof
+identity to the original focused execution instead of the current identity, and naming the
+tool files that the delivered bundle changes in the approved list instead of requiring
+every tool hash to equal the recheck-time inventory.
+
+Premise: the original `result.json` receives `artifacts`, `pvs`, `flags`, `tools`,
+`source_manifest_sha256`, `baseline_sha256`, `evidence_sha256` and `helper_sha256` only
+after the final comparison passes, so an Incomplete original carries none of them.
+`verified_focused_result`, `continuity` and `require_continuity` each bind to that file.
+The recheck proof is a separate, hash-bound record of the same execution. The consumer
+therefore needs its own acceptance path, not a relaxed Passed check.
+
+Consumer acceptance conditions:
+
+1. The original `result.json` stays Incomplete with the exact error
+   `Effective configuration changed during focused execution`, and its SHA256 equals the
+   proof's `original_result_sha256`. It is never edited or replaced.
+2. Each chain's recheck proof is named by an explicit path and SHA256 literal in a reviewed
+   approved list inside the shipped consumer (`focused.py`), never by glob, newest entry or
+   a path read from the evidence tree it vets. The proof result is Passed and its chain
+   matches. The approved entries are:
+   `/var/lib/etl-focused/shortened/recheck-20261009T233038265889/result.json`
+   `eb5e0f73b134e34e4ad35603b0894ed24b597fd6916bdd765e485a8ee5041977` and
+   `/var/lib/etl-focused/default/recheck-20261009T233038375804/result.json`
+   `491bca76b849d53061b4d486ede58c6f877c776154f2dd079eca9e07673c8897`.
+3. At consume time every `source_evidence_sha256` and `recheck_evidence_sha256` entry is
+   re-verified. Live `passes-*` files stay excluded as in the recheck. Files that
+   continuity creates later lie outside the recorded sets.
+4. `checker_sha256` and `helper_source_sha256` equal approved literals of the producing
+   version, not the hash of the running file: `focused.py`
+   `4265dfac7f62cb99e0a03a5db981a3449a37dc51365f05c156a5a20d3e264fd3` and `PBFixture.java`
+   `df29f030028d9c920c30a2faf360045b4595b40258666ef5dff7ab4939e4fb7d`. The consumer change
+   alters `focused.py` and `bundle.json`; the approved list must still name the producer.
+5. `expected_keys_sha256` matches, the key-input PV names equal the 903 manifest PVs, the
+   original deployed properties hash equals the original inventory value, and the
+   converter helper is bound by `helper_source_sha256`. No key is regenerated at consume
+   time.
+6. Configuration and identity at consume time:
+   - `artifacts`, `pvs` and `flags` of a fresh inventory equal strictly those of the
+     recheck directory's `inventory.json`, which is hash-bound in
+     `recheck_evidence_sha256` and already holds the generated keys. The
+     null-to-generated allowance is not carried into the consumer.
+   - `tools`: every tool file equals its recheck-time entry, except the files the
+     delivered frozen bundle changes. The approved list names each such file with its new
+     hash, and the delivered bundle is the frozen bundle whose SHA256 the review accepts.
+     Against the retained recheck inventories, the differing files are `focused.py` and
+     `PBFixture.java` on both chains; the consumer change alters `focused.py` again.
+   - The proof `identity` equals the identity recorded by the original focused execution
+     (final-inspection `inventory.json`, bound in `source_evidence_sha256`). The pre-run
+     `inventory.json` identity differs by design: it was taken before the run's own
+     normal stop, seed and start. The proof identity is not compared with the current
+     `identity()`, which changes at planned restarts; the existing check that identity
+     stays unchanged during a continuity readback is kept.
+7. `continuity` and `require_continuity` bind both the original result hash and the
+   recheck proof hash.
+8. Any missing or mismatched item fails as today. Instrumentation, measured preparation,
+   negative/abort checks, final-restart continuity, readiness/capacity gates and the
+   86400-second observation requirements are unchanged.
+
+###### Ordered Work
+
+1. **Review and accept this plan.** Independent review, owner acceptance and a separate
+   implementation authorization precede every later item. Closed by the recorded Plan
+   Status, Plan Acceptance and Implementation Authorization above.
+2. **Implement the consumer path.** Planned paths are
+   `tests/archiver-soak/etl-pass/{focused.py,test_focused.py,bundle.json}` and
+   `tests/archiver-soak/{README.md,SHA256SUMS}`, plus the bundle replacement step of
+   item 5: it is not a member of the frozen bundle, its path is fixed at implementation
+   and recorded with its SHA256 in the review record. The acceptance path is a separate
+   function; the Passed requirement of `verified_focused_result` for a new focused run
+   stays unchanged. Closed by T29 and T30 for the consumer and by T31 for the
+   replacement step.
+3. **Verify locally and on target Python 3.9.** Run the real shipped consumer against the
+   retained final and recheck evidence. Negative cases mutate copies of that real
+   evidence; no internal span is replaced by a stub or a hand-built fixture. Closed by
+   T29 and T30 results recorded with the target interpreter version.
+4. **Freeze the new bundle and request independent review of the consumer** as a new
+   charter. Closed by the frozen bundle SHA256 and the review result.
+5. **Deliver without touching retained state.** No existing procedure replaces an
+   installed bundle: the first installation extracted an archive into an absent
+   directory and refused an existing one. This item adds a reviewed replacement step,
+   kept outside the frozen bundle: extract the frozen bundle into a new sibling
+   directory of `/usr/local/share/etl-soak`, require `verify_bundle` to pass there,
+   then rename the installed directory to a preserved sibling and the staged directory
+   into place. Delete nothing. Write nothing under `/var/lib/etl-focused/<chain>/`,
+   recompile no helper (`helper-classes` stays the original compiled helper), and touch
+   no retained evidence archive. Do not rerun `run`, `prepare-resume`, `resume`, the
+   orchestration scripts, registration, seed or installation against the existing
+   fixture. Closed by T31.
+6. **Run continuity through the accepted consumer** on both chains, then proceed through
+   the existing observation gates under separately established execution authority.
+   Closed by T32.
+
+###### Consumer Test Plan
+
+| Check | Planned Real Path And Required Outcome | Execution State |
+| --- | --- | --- |
+| T29 consumer acceptance on retained evidence | Shipped consumer on actual Python 3.9, run on each guest in place against its retained original, final and recheck evidence under `/var/lib/etl-focused/<chain>/`. Accept both chains and return the configuration from the recheck inventory. Read-only; no restart, reseed or manual tick. | Pending |
+| T30 consumer rejection of altered evidence | Copies of the real evidence placed under a unique private directory outside the retained tree. The consumer receives the copy root explicitly and rebases the recorded absolute paths onto it; an unrebased path must fail. One change per copy: wrong checker or helper hash, changed identity, altered source file, altered recheck file, wrong proof hash, original result changed to Passed. Each must fail with its own error. | Pending |
+| T31 delivery preserves retained state | Before and after delivery, every `source_evidence_sha256` and `recheck_evidence_sha256` entry of both proofs re-verifies, the file list under `/var/lib/etl-focused/<chain>/` is unchanged, the installed bundle passes `verify_bundle`, the previous installed directory is preserved byte-for-byte as a sibling, and the tool files that differ from the recheck-time inventory are exactly the approved list. | Pending |
+| T32 continuity binding | Real `continuity` and `require_continuity` on the guests: both the original result hash and the recheck proof hash are bound; a proof from the other chain or a stale proof is rejected; identity is stable during the readback. No reseed or manual tick. | Pending |
 
 ##### Separate-Environment Preparation Amendment (2026-10-08)
 
