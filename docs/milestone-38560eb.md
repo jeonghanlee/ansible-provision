@@ -31,8 +31,18 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: M22's journal-scenario amendment was accepted on
-2026-10-01 after all five third-person findings were incorporated.
+Next session entry point: Preserve all M22 services, fixtures and original failed-run evidence.
+Both additional environments now run the latest approved artifacts with 903 connected PVs.
+The 2026-10-09 automatic cold executions completed their recorded physical/HTTP
+startup and regular-repeat checks but ended Incomplete at an overly strict initial
+chunk-key comparison. The owner selected the bounded correction and retained-record
+recheck. Both separate recheck proofs Passed; original result and evidence hashes
+remain unchanged. Source and retained-evidence review 2 accepted the correction and
+both separate recheck proofs after independent archive/hash inspection. Separate recheck results cannot satisfy the original complete
+focused-proof gate. Resolve the accepted proof-consumer path before continuity,
+instrumentation, measured preparation and either 24-hour observation; do not reseed
+or restart the existing services to bypass that gate.
+Earlier amendment and preparation evidence follows.
 Local code implementation and verification were authorized on 2026-10-01.
 Dedicated VM acquisition and deployment were subsequently authorized on
 2026-10-01, with the owner selecting a 48-GiB disk. The actual Rocky 8.10
@@ -2763,6 +2773,207 @@ accepted 2026-07-05 state own; the cloud-provision bake script.
 - Identity History: none
 - GitHub Issue: none; external request `jeonghanlee/epicsarchiverap-maven#12`
 - Status: In progress
+
+##### Separate-Environment Preparation Amendment (2026-10-08)
+
+Plan Status: accepted
+Plan Acceptance: 2026-10-08, owner instructed proceeding with the reviewed revision; Maven review2 accepted SHA256 15c61e1b3d7451abc58b0f980c21c33fd3a994550312ac26fbef704ac9d6253b with no must-fix/minor findings
+Implementation Authorization: 2026-10-08, owner instruction to proceed with preparation-tool implementation and verification under this revision; deployments remain ordered after tooling verification and implementation review
+
+Decision Date: 2026-10-08. Prepare this revised plan and request Maven review.
+The initial instruction authorized the plan document only. The subsequent owner
+instruction authorizes implementation and verification under the reviewed plan.
+The proposed execution scope preserves every existing guest, service, store and
+failed-run record and uses two additional independent environments. Prior execution
+authority does not authorize this revised preparation sequence.
+
+The prerequisite is chronological append input. An empty historical source filename
+does not establish an empty destination: the failed continuations had newer MTS data
+before seed. Preserve the accepted old-eight-sample boundary fixture, middle/recent
+markers, four policies, both chains and physical/HTTP acceptance criteria. Do not
+replace them with natural aging of a new cohort or change production holds.
+
+Proposed environments: one shortened and one default Rocky 8.10 deployment through
+`archiver_dev_uds`, each with 2 vCPU, 4096 MiB RAM, a 48-GiB disk, MariaDB over its
+Unix socket and four 256-MiB appliance JVM heaps. Request resources only after
+implementation authorization; retain them through focused verification and any
+separately gated 24-hour observation, approximately two days, and preserve their
+evidence until the owner decides their disposition. Verify actual capacity and
+resource availability before acquisition. Record the latest owner-selected aa-env
+and Maven branches and full remote commits before freezing deployment inputs; the
+2026-10-07 pins remain the evidence baseline, not proof of the latest remote state.
+A change to effective stores, reduction or the input contract requires plan review.
+
+###### Ordered Preparation And Verification
+
+1. **Implement and verify explicit preparation stages.** Planned paths are
+   `tests/archiver-soak/etl-pass/{install-fixture.py,focused.py,PBFixture.java,test_focused.py}`
+   and `tests/archiver-soak/{README.md,SHA256SUMS}` plus
+   `tests/archiver-soak/etl-pass/{common.yml,contract.py,initialize-fresh.py,test_contract.py,bundle.json}`.
+   Before deployment, record the two owner-approved full commits and apply that
+   same pair to `common.yml` deployment variables, `focused.py` ENV_HEAD/MAVEN_HEAD
+   and `initialize-fresh.py` SOURCE_PINS. Keep exact installed-source comparisons;
+   do not update only the recorded inventory or bypass either source guard.
+   Verify both inspectors reject either installed commit differing from the
+   approved pair and reject disagreement between deployment variables and either
+   inspector's expected pair. Regenerate the complete bundle and SHA256SUMS for
+   these synchronized sources. Deployment, focused proof and initializer proof
+   must all name that pair and the same frozen tools before observation can start.
+   Separate fixture installation,
+   registration/live readiness, normal shutdown preservation, offline store
+   preparation, seed and verified normal startup. Preserve the current collision
+   and same-invocation resume guards. A preparation stage cannot implicitly restart
+   the appliance or start IOC input. Verify shipped checker paths on actual target
+   Python 3.9 before freezing the complete bundle; host Python results alone do not
+   establish compatibility. Real PB writer/decoder checks use deployed Maven classes.
+2. **Register through the real path in each additional environment.** Install the
+   reviewed artifacts, original three IOC databases, 903-name registration fixture
+   and accepted ten-record deadband override. Start the IOC and appliance normally;
+   call the normal `archivePV` endpoint and verify all 903 names connected and
+   archiving. Record installed WAR/class/JAR hashes, effective typeinfo, chunk keys,
+   store URLs, policies, flags, unit settings and real process identities. Select
+   one registered scalar-double PV for each unreduced/VeryFast/Fast/Medium policy.
+   Do not fabricate metadata, insert database rows or use experimental typeinfo
+   creation as a substitute for normal registration.
+3. **Preserve preparation input and normal shutdown separately.** Capture the
+   required real pre-stop PB intervals, then stop the appliance normally and verify
+   every JVM is absent. Check the existing exact known-sample shutdown-preservation
+   contract across STS/MTS, including pre-existing occurrences, before stopping the
+   IOC. Preserve this result as preparation evidence. No historical seed exists
+   yet, so this shutdown cannot count as automatic seed transfer.
+4. **Prepare empty active storage offline in the additional environment only.**
+   With appliance and IOC inactive, preserve all preparation STS/MTS/LTS trees in
+   a separate private archive outside every active storage root. Record original
+   and preserved paths, relative file lists, sizes and SHA256 hashes; verify the
+   preserved bytes first. In the new unique evidence directory, reserve an absent
+   `preparation-stores` directory outside all active roots, on the same filesystem
+   as the store trees. Reject overlap, existing destinations or cross-filesystem
+   placement. Move each complete active tree to its recorded
+   `preparation-stores/{sts,mts,lts}` destination by rename; record each completed
+   move and verify its file list and hashes against the archived original.
+   After all moves verify, create empty directories at the original active paths
+   and restore their recorded ownership, permissions and required security labels.
+   This plan authorizes no deletion of originals or archives. On a partial move,
+   mismatched bytes, collision or failed directory creation, preserve every tree
+   at its recorded location, leave both services stopped and record Incomplete;
+   do not retry automatically, overwrite a destination or restore by deletion.
+   Keep database contents, registration, typeinfo, store URLs, policies and holds
+   unchanged. Verify resolved absolute roots, non-overlap, ownership, permissions
+   and absence of active writers. Enumerate actual PB paths for every selected PV
+   in all three configured tiers, with the shipped path rules, extensions and
+   compression modes: every selected tier must have zero PB files before seed.
+   A bounded snapshot's `events=[]` is insufficient; reject any surviving path,
+   changed metadata/configuration or unresolved root instead of deleting it.
+5. **Seed and bind the physical baseline while offline.** Use the real shipped
+   PlainPB writer and the existing independent ten-sample specification per selected
+   PV: eight old boundary/nanosecond samples, the middle marker and recent marker,
+   all initially in STS. Preserve staging files and exact raw/timestamp/value/alarm
+   multiplicities. Verify MTS/LTS remain physically empty after seed and all source
+   partitions contain the exact expected records once. Bind preparation archive
+   hashes, empty-path proof, unchanged metadata/configuration, source/helper/tool
+   hashes, manifest and baseline to a new unique evidence directory. A collision
+   or partial stage prevents continuation; do not reuse a seeded directory.
+6. **Start live input and the normal appliance without moving seed during stop.**
+   Start the original IOC with its accepted override while the appliance remains
+   stopped. Read actual CA timestamps for every selected PV and require each to
+   be strictly later, including nanoseconds, than that PV's last seeded timestamp.
+   Wall-clock waiting alone is not proof; retain the real CA timestamp/value/alarm
+   readback. On timeout or backward timestamps retain Incomplete and do not start
+   the appliance. Recheck seed/configuration proofs, then start the normal service.
+   Bind its boot, InvocationID and four JVM PID/start identities to the offline
+   proofs; verify normal component readiness and all 903 names connected/archiving
+   again. No stop, restart, consolidation request, manual tick/job or store mutation
+   is allowed between seed and completion of focused checks.
+7. **Verify actual automatic movement and repetitions.** Run the existing real
+   service/ticker path on shortened 5MIN-to-HOUR-to-DAY and default
+   HOUR-to-DAY-to-YEAR, retaining hold=2/gather=1 and effective reductions. Require
+   completed ordered automatic pass records and exact physical seed transfer,
+   corresponding source deletion, recent-source retention, independently expected
+   reduced timestamp/value/status/severity/multiplicities and matching HTTP output.
+   Capture the actual recent closed-bin source before reduction; continued IOC
+   input can legitimately replace the original marker. Require a later completed
+   regular grid pass for each hop with 903 jobs and no failures, skips, space
+   deletion or overrun, and fixed-interval PB/HTTP comparisons showing no extras.
+   Use actual processingTime to select the recent bin's expected tier. Final
+   artifact/configuration/tool and boot/invocation/JVM identities must match this
+   run's baseline. Counters alone, checker replays and preparation shutdown cannot
+   establish automatic physical transfer.
+8. **Keep the existing observation gates.** Only after focused checks pass may
+   the prior amendment's JFR, measured preparation, negative/abort, final-restart
+   continuity, fresh capacity/readiness and 86400-second observation sequence
+   proceed under separately established execution authority. Do not start an
+   observation from an Incomplete focused result. Neither normal movement nor
+   preparation shutdown proves injected commit/deletion/space/restart fault safety.
+
+###### Test Plan And Evidence Binding
+
+| Check | Planned Real Path And Required Outcome | Execution State |
+| --- | --- | --- |
+| T13 preparation guards and target compatibility | Shipped staged tools on target Python 3.9; actual PB path enumeration and writer/decoder. Require common.yml, focused source guards and initializer SOURCE_PINS to contain the same approved full commits; reject either installed commit mismatch or inspector/deployment disagreement. Reject a newer existing destination even when bounded event windows are empty; incomplete archives, root overlap, changed metadata, partial stages, seed collisions and live timestamps not strictly newer must prevent startup. Preserve real failed-run inputs for checker regressions; no internal ETL substitutes. | Pending |
+| T14 separate environment and preparation provenance | Full species deployment and real IOC/archivePV registration; exactly 903 connected/archiving before normal shutdown and after startup. Verify original preparation file hashes, exact shutdown sample preservation, empty active selected-tier paths, unchanged DB/typeinfo/store URLs and installed artifacts. Existing guests remain untouched. | Pending |
+| T3 automatic transfer and repeated passes | Real PlainPB seed, normal startup/ticker, physical source/destination records, independent four-policy expectations and live HTTP; exact original boundary fixture passes both chains and later scheduled repeats without duplicates or loss. Bind all records to the new invocation and complete bundle. | Pending |
+| T15 launch continuity | Existing post-final-restart continuity and freshness/capacity gates using the new accepted focused proof; no old or partial proof can qualify. | Pending |
+| T16-T21 observations and comparison | Existing two full 86400-second observations and final comparison; focused preparation is not soak acceptance. | Pending |
+
+The stored preparation PB archive and shutdown proof remain immutable. Empty-path
+and seed proofs describe the active roots after preparation; they must not be
+presented as continuity of the archived preparation stores. Existing `run()` live
+pre-seed and shutdown assumptions must be replaced by these explicit stages, not
+silently bypassed. The tool README will describe the system procedure after
+implementation is authorized; this revision changes only the canonical plan.
+The complete execution outcomes above remain Pending; partial prerequisite results
+are recorded below. Maven review2 accepted this revision;
+owner acceptance and implementation authorization are recorded separately above.
+
+###### Preparation Prerequisite Verification Results
+
+| Check | Observed At | Actual Method And Result | Evidence And Limits |
+| --- | --- | --- | --- |
+| T14 environment acquisition | 2026-10-09 | Cloud created two additional Rocky 8.10 guests, each 2 vCPU, 4096 MiB and 48 GiB. Requester SSH confirmed OS, sudo and approximately 48.26 GB available root storage on both. Existing guests and evidence remain unchanged. | Private Cloud handoff and requester inventory in `work/m22-cold-preparation-20261008/`. Appliance installation and registration Pending. |
+| T13 target compatibility | 2026-10-09, before 07:21 UTC | Shipped Python operator completed on both guests, exit 0. Each actual Python 3.9.25 execution passed all 24 focused checker tests and the source-pin agreement test, skip 0. Real retained shutdown, physical/HTTP and resume inputs were replayed. | `python-install-r1.log`, `python39-c-r1.log`, `python39-d-r1.log`. Checker execution is not new ETL, CA or HTTP acceptance. |
+| T13 deployment-variable interpretation | 2026-10-09 | Actual control-host Ansible DataLoader selected the differing last value for six duplicate pin cases and interpreted a no-separator document as a string. Corrected shipped guard rejected all cases; both source-pin tests passed on host Python 3.13.5. | `contractdf89d6c7` and `test_contractaac5c3a3`. Real installed-commit mismatch checks and full cold continuity remain Pending. |
+| T13 synchronized freeze | 2026-10-09, before 07:21 UTC | Remote branches reconfirmed aa-env `release-2.0.1` at `482cf2939ea997064e4a2df64e3cb420681f4566` and Maven `modernize` at `162269e7db97f527626ba0b387933a8c47e8bb57`. Complete 24-file bundle verification and all SHA256SUMS entries passed. Both store-specific species syntax checks passed. | Bundle SHA256 `4197b891071f5e605f6e77da5fc125fc637ad128e46e796e486cc71d1afe4c75`. Source review and real deployed classes remain required before focused execution. |
+| T14 installed cold deployments and fixture | 2026-10-09 | Both new store-chain installations completed with 33 tasks successful, zero failures/unreachable hosts; actual installed revisions matched the latest approved pins and 3234 WAR/class/JAR files matched per deployment. Normal registration reached exactly 903 archived and connected fixture PVs per deployment. Actual installed PB writer/operator and CA checks completed before focused startup. | `deploy-shortened-r1.log`, `deploy-default-r1.log` and installed-validation records under the private cold evidence directory. This supersedes the acquisition row's installation/registration Pending note. |
+| T3 retained cold execution and bounded recheck | 2026-10-09, rechecked after 23:30 UTC | Both automatic executions reached startup/repeat physical and HTTP comparisons and both regular transitions. Final comparison stopped because all 903 initially absent chunk keys became generated keys. The owner selected a bounded checker correction and retained-record recheck. Installed converter classes with unchanged deployed properties independently generated all 903 exact expected keys per chain. Two regression tests passed on each actual Python 3.9 interpreter, with no skips. Both record rechecks returned Passed: startup/repeat historical samples, recent-bin source and independent reduction, matching HTTP, source deletion/retention, regular passes, preparation binding, current configuration and original running identity were checked. | `final-evidence-{c,d}-r1.tar.gz`, `chunk-key-{c,d}-r2.log`, `recheck-{c,d}-r1.log`, `recheck-evidence-{c,d}-r1.tar.gz` in `work/m22-cold-preparation-20261008/`. Independent local archive comparison verified 1870 shortened and 967 default original file hashes with zero differences, including unchanged original Incomplete results. Separate recheck proofs do not satisfy the complete focused-proof consumer gate; continuity, instrumentation, measured preparation and 24-hour observations remain Pending. No restart, reseed or soak occurred during recheck. |
+| T13 chunk-key correction source and independent review | 2026-10-09 | Completion allows only null-to-exact-independently-generated key for each PV, retains nonnull key equality and all other exact comparisons, and checks selected PB paths. Recheck writes separate hash-bound evidence and preserves original records. All 54 SHA256SUMS entries and diff whitespace checks passed. Independent review 2 accepted source and both completed record rechecks with no must-fix/minor findings. The reviewer directly checked all 1870/967 original source hashes, each 903-key expectation, all six new evidence hashes per chain, unchanged final/current settings and identity, and both regular transition records. | `focused.py` SHA256 `4265dfac7f62cb99e0a03a5db981a3449a37dc51365f05c156a5a20d3e264fd3`; bundle SHA256 `190c9d8fcc87e33c3e0d0f832092a2665d31731765a32fa9e36d525ac9e56809`. Reviewer read both two-test OK logs and inspected archives; no test rerun or VM action. Acceptance is limited to the correction and retained-record recheck. Continuity and soak remain Pending. |
+
+##### Focused Deployment Amendment (2026-10-07)
+
+Plan Status: accepted
+Plan Acceptance: 2026-10-07, owner accepted the bounded deployment proposal with the four peer-review conditions, selected the latest aa-env branch/version, and selected actual closed-bin source expectations for all four policies
+Implementation Authorization: 2026-10-07, owner instruction to proceed with tooling, separate new deployments, focused checks and the gated two-chain observations; latest aa-env selection explicitly authorized after the compatibility failure
+
+This amendment governs new work and supersedes earlier source pins and launch ordering without changing earlier evidence. Pin Maven at `120d53fe43133c7699e4c9624dc948cc96b0ece2` and aa-env at `6599fbb1dd9a939db89a3fef6eebb08df5eb123d`, the remote head of `release-2.0.1` verified on 2026-10-07. This aa-env pin removes the obsolete site build.xml rejected by the selected Maven. Leave existing observations and their guests unchanged. Use two new Rocky 8.10 deployments through `archiver_dev_uds`, with the unchanged 903-PV fixture and accepted deadband variant.
+
+1. Implement and test deployed effective-configuration inspection, PB fixture preparation/readback, automatic two-hop checks, independent reduction expectations and regular-pass repeats. Record tests under T13; freeze the complete tool bundle only after these checks pass.
+2. Deploy both chains, record installed artifacts and all registered PV settings independently of soak preparation, and establish persistent pass DEBUG before fixture startup. Record deployment/configuration under T2/T14. Reject prior observations and conflicting fixture paths before changing files or services.
+3. Select one scalar-double PV per unreduced/VeryFast/Fast/Medium policy from the existing 903 names. With the service stopped, use the shipped writer in an empty staging store and copy only absent historical partitions. Verify the complete physical baseline before normal startup. Record automatic movement, source deletion/retention, raw multiplicities, independently specified lastSample_10/30/60 output and HTTP results under T3. Do not alter policies or manually invoke ticks/jobs.
+4. Capture actual source events and matching HTTP data after each recent marker's bin closes, before its reduction. Preserve this independent source proof. In the focused invocation, require a subsequent completed regular grid pass for each transition with pvCount/jobsRun=903, zero failures/aborts/skips/space deletion and no overrun, then compare the fixed historical interval and recent bin physically and over HTTP. Allow the default 28800-second cadence plus tick/order margin. Derive the recent bin's location from actual processingTime. Expect all captured raw events before reduction; reduced LTS policies expect the latest captured timestamp/value/status/severity. Continued IOC input can legitimately replace the original recent marker.
+5. Start the 26-hour JFR instrumentation only after focused repeats finish. Run existing measured preparation and negative/abort checks. After the last restart, recheck running artifacts, all 903 effective settings/flags, and selected PV physical/HTTP data against the original focused proof. Bind this continuity readback to the current unit InvocationID and JVM PID/start identities; it is not restart-fault coverage and does not require another eight-hour repeat.
+6. Refresh actual growth with the private fresh-capacity-refresh operation after the final restart when needed, preserving every previous source/projection. At launch require growth age <=600 seconds, runtime proofs <=3600 seconds and a successful full sample <=120 seconds. Existing full chain/readiness checks remain required. Reject missing, mismatched or incomplete focused/continuity proofs. Record this launch gate under T15.
+7. Only after all gates pass, launch each new 903-PV observation for 86400 seconds across UTC midnight. Record soak, metrics, final capture, whole-unit stop and comparison under T16-T21. Preserve historical Failed/Incomplete results and explicitly retain unverified commit/deletion/space/restart fault limits. Git/GitHub publication remains separately authorized.
+
+Required implementation paths: tests/archiver-soak/etl-pass/{common.yml,initialize-fresh.py,contract.py,verify-chain.py,focused.py,PBFixture.java,test_focused.py,test_contract.py,observe.py,launch-retest.py,bundle.json}, tests/archiver-soak/{README.md,SHA256SUMS}, and the private capacity-renewal operation. All new deployed checks and observations are Pending until their real paths execute.
+
+Amendment Verification Results, observed 2026-10-07:
+
+| Check | Result | Observed Method And Evidence |
+| --- | --- | --- |
+| T13 local tooling | Partial | Host Python 3.13.5: 79 tests, 68 passed and 11 skipped with retained actual observation inputs; `work/etl-focused-20261007/retained-tests.log`. New Rocky 8.10 Python 3.9.25: 79 tests, 50 passed and 29 skipped without those inputs; `python39-tests.log`. Real PlainPB writer/decoder readback verified 80 exact fixture inputs over both chains and rejected existing partition reuse; `validate-pb-r3.log`. This does not establish ETL movement or HTTP correctness. Bundle and checksum checks passed; independent implementation review remains pending. |
+| T14 new deployments | Passed | Both initial installations failed at the site overlay with aa-env `d09dca7`; `deploy-shortened.log` and `deploy-default.log` preserve those failures. After the owner selected the latest aa-env and Maven, both actual `archiver_dev_uds` retries exited 0 with failed=0; `deploy-shortened-latest.log` and `deploy-default-latest.log`. Installed source reads confirm aa-env `6599fbb1dd9a939db89a3fef6eebb08df5eb123d` and Maven `120d53fe43133c7699e4c9624dc948cc96b0ece2` in both guests; `installed-source-{b,d}.log`. Both run Python 3.9.25 and return STARTUP_COMPLETE from all four real component endpoints; `installed-{b,d}.log`. No manual site-file deletion was used. Fixture readiness is recorded separately below. |
+| T14 fixture readiness | Passed | Both original IOC fixtures installed and all 20 approved deadband fields verified. Each actual archivePV request returned 903 replies with none missing; subsequent real getPVStatus checks confirmed exactly 903 archiving and 903 connected PVs with no missing or unexpected names. Both resumed preparation processes exited 0; `fixture-{b,d}-resume.log`. A private preparation import-path failure occurred before registration and remains in `fixture-{b,d}.log`; no fixture reinstall or input replacement was used. |
+| T2 effective configuration | Passed for inspected version | Actual installed inspection passed in both guests, covering all 903 effective stores/reductions, named flags, source pins, configuration hashes and process identities. Installed exploded class/JAR bytes matched their retained build WARs; `inventory-{b,d}-r2.json/log`. The preceding inspection correctly failed at an assumed installed WAR-file path; `inventory-{b,d}.log`. The corrected inspector version is preserved with the installed bundle. Repeat inspection is required after further tool or runtime changes. |
+| T13 implementation review corrections | Passed for tooling; deployment execution Pending | First implementation review requested changes F1-F5: encoded root replacement, recent-file ownership, valid reduced recent-bin expectations, missing negative checker coverage, and inventory/run directory collision. Corrected real writer/decoder checks passed 160 inputs over both chains with encoded/plain roots under umask 077, including all new source paths in the ownership list; `validate-pb-r4.log`. Host Python 3.13.5 ran 86 tests: 57 passed, 29 skipped without the older observation inputs; `local-tests-r3.log`. Target Python 3.9.25 ran 85 tests: 56 passed, 29 skipped, then all nine focused checker tests passed after the final source-file-presence check; `python39-r3.log`, `python39-focused-r5.log`. Target writer/decoder checks also passed both chains with encoded/plain roots using the latest installed Maven classes, and the shipped lastSample_10/30/60 operators selected the later source event in all 12 neighbour cases; `python39-r3.log`. The three errors in `python39-focused-r4.log` came from an older module earlier in the temporary import path, not from the selected tool version. These checker inputs are retained actual M28 physical/HTTP data and actual new deployment inventory. They reject loss/duplicates/nanos/alarm/raw changes, HTTP failure, changed source/helper hashes, artifacts/settings/flags/tools, and missing/incomplete/stale proofs. These checker replays do not rerun ETL. New recent-bin capture and automatic deployment execution remain Pending. Second implementation review confirmed F1-F5 corrections but requested a fix for negative waiting time when bins were already closed. The original timer failure is retained in `closed-bin-before.log`. Closed bins now bypass waiting; open bins wait until their settlement time. All 11 focused checker tests passed on actual target Python 3.9.25; `python39-closed-bin-r2.log`. Third independent implementation review and reader pass accepted the frozen focused5e0a8783/PBaf5893db/bundlec92c5f6b implementation with no must-fix or minor findings. Peer references etl-r3-result and etl-r3-limits confirm 11 focused checker passes, actual PB decode and rejection of an incorrect HTTP interval response. The reviewer read target Python 3.9 results; its HTTP replay is not live ETL or retrieval. Automatic transfer, repeated passes, continuity, capacity renewal and both 24-hour observations remain Pending. |
+| T3 automatic transfer | Incomplete | Both real focused runs started on 2026-10-08 with the accepted final tool bundle. Normal service stop consolidated STS events into MTS under effective consolidateOnShutdown=true. The post-stop nonempty-STS guard rejected both runs before seed; runner exit 1. Original physical snapshots, manifests, inventory and logs are preserved in work/etl-focused-20261007/failed-focused-{b,d}-r1.tar.gz. Both appliance services were normally started again. This is a checker/procedure mismatch, not evidence of product data loss or successful transfer. Sample integrity across shutdown has not yet been checked. |
+| T13 shutdown guard correction | Passed for checker and independent review | Owner authorized correction and rerun on 2026-10-08. Keep effective STS consolidateOnShutdown=true and unreduced MTS with consolidation disabled. Require readable live pre-stop STS, no remaining JVM, and real historical-path collision checks. Preserve both physical snapshots. Compare exact known pre-stop STS timestamp/raw/value/alarm multiplicities across STS/MTS, including pre-existing MTS occurrences; allow genuinely new timestamps and reject known records in LTS. Host and actual target Python 3.9.25 each passed all 14 focused checker tests; target evidence python39-shutdown-r2.log replays both retained stopped deployments plus existing real PB/HTTP records. These are checker tests, not a new ETL execution. Fifth independent implementation and reader review accepted focused8dcf6a65 and bundle9cc94630 with no must-fix/minor findings; references shutdown-r2-accept and shutdown-r2-limits. Reviewer executed all 14 host checkers and additional cross-tier duplicate/changed-alarm mutations using actual source records. Both authorized automatic reruns started with prior Incomplete run directories retained separately. Fresh seed/startup/repeat acceptance remains Pending. |
+| T3 automatic rerun | Incomplete | Both accepted guard-correction reruns started on 2026-10-08 and stopped before seed. Shortened rejected its existing focused logging drop-in; Default real PB snapshot failed with java.lang.OutOfMemoryError in PBFixture.describe under the helper 256 MiB heap. Default appliance service remained active. Neither result proves a product ETL failure. Prior first-attempt archives and directories remain intact. Logging retry handling and helper snapshot memory correction require verification before another rerun. |
+| T13 bounded PB capture and logging reuse | Passed for checker, actual decoder, writer and independent review | Owner selected bounded required sample intervals on 2026-10-08. Snapshots decode real PB files but retain only old fixture, intermediate marker, recent-bin and completed 60-second source intervals; each interval <=300 seconds and at most eight intervals. Preserve the pre-stop windows when choosing seed time. This establishes integrity only for captured intervals, not every live sample. Exact existing focused drop-in content can be reused; different content is rejected. Actual target Python 3.9.25 passed all 15 focused checkers. On the actual Default PB files, the changed helper under its unchanged 256 MiB heap decoded 680258 events and retained 726, exactly matching prior actual raw/timestamp/value/alarm multiplicities in the selected interval. Overlapping windows did not duplicate records. Empty, nonpositive, oversized and excessive windows were rejected by actual helper executions; python39-bounded-r1.log. Actual target writer/decoder checks passed both chains with encoded/plain roots and all 12 real lastSample neighbour cases; python39-bounded-writer-r1.log. Complete actual decoder/writer manifests, readbacks, helper classes and logs are retained in actual-bounded-validation-r1.tar.gz. The four invalid-window logs show the expected IllegalArgumentException messages from snapshotWindows. Sixth independent implementation/reader review accepted unchanged source focused6fa3d849/PBf683130f/bundle75a852e6 with no must-fix/minor findings; reference bounded-review6-accept. Reviewer executed all 15 host checkers, inspected full run binding and reader procedure, and verified 22 bundle hashes and diff check. Its acceptance applies to captured intervals and tooling, not fresh automatic ETL. No new automatic ETL acceptance or soak start. |
+| T3 bounded-tool automatic rerun | Incomplete; same-invocation continuation authorized | Both finite background runs started on 2026-10-08 with accepted focused6fa3d849/PBf683130f/bundle75a852e6. Source hashes matched the reviewed freeze before installation. First and second Incomplete directories and their original archives remain intact. Both real shutdown-preservation checks and seeded physical baselines completed before normal startup. The early empty-pass poll wrote a blank line and the checker rejected it as JSON, preserving result=Incomplete; actual archives failed-focused-{b,d}-r3.tar.gz retain the original source bundle and proofs. Owner selected the same service/fixture continuation on 2026-10-08. No new seed or restart is authorized by this continuation. Corrected real journal reads confirm both startup transitions completed 903 jobs with zero failures/skips/space deletion in both original invocations; startup-pass-probe-{b,d}-r1.json. These counters alone do not establish physical or HTTP integrity. |
+| T13 original-fixture continuation | Passed for original guard/checker; actual continuation Incomplete | Empty completed-pass polls produce an empty file and wait; malformed JSON still fails. The common finish_run executes real startup, physical/HTTP and scheduled-repeat checks for both fresh and resumed runs. Actual prepare-resume passed in both original guests, requiring the same boot/invocation and four JVMs created within the original run window. All source file hashes match original R3 archives; prepared-resume-{b,d}-r1.tar.gz. Actual target Python 3.9.25 passed 18 checker tests, including original/preserved file mutations and boot/invocation/PID/start changes; python39-resume-r1.log. Resume must independently recheck all 903 configurations, flags, artifacts and unchanged helper tools before physical/HTTP work. Actual resume outcomes are recorded in the continuation execution row. |
+| T13 continuation completion checks | Passed for target checker and implementation review; reader correction recorded | Seventh independent review requested changes F1/F2: the final runtime and original-source/helper/tool hashes were not compared with the accepted original invocation and freeze before Passed. Corrected focused0d7d57f6/bundle988bdfd5 stores final inspection separately, verifies final and current boot/invocation/four JVM identities, compares approved resume tools, all preserved originals and immutable live inputs including compiled helper and logging, and rejects a changed guard. Only live result and pass files may change. The code restores Incomplete after a post-finish evidence error; that exception path has not been executed. Actual target Python 3.9.25 passed all 20 checker tests with no skips; python39-resume-r2.log. The checker permitted changes to the live result and pass outputs, and rejected mutations of every preserved/immutable input and final configuration/tools/runtime. This did not execute a post-finish evidence exception. These checker executions do not establish resumed ETL or HTTP acceptance. Eighth independent implementation review accepted F1/F2 for focused0d7d57f6/bundle988bdfd5; references etl-focused-resume-r2 and resume-review8-error-evidence. The reviewer independently passed all 20 shipped checkers without skips, verified all 22 bundle hashes and both sets of 11 original files against R3. Its reader finding required the explicit unexecuted exception limit recorded here. Actual continuation was subsequently executed and remained Incomplete, as recorded below. Actual guard refresh at 2026-10-08 19:07 UTC confirmed both original boot/invocation/four JVM identities and every original/preserved file unchanged; guard-refresh-{b,d}-r2.log. The delivered review request initially awaited peer processing; the eighth review subsequently completed. The approved same-fixture resume was subsequently launched; its actual outcome is recorded below. |
+| T3 same-fixture continuation execution | Incomplete; fixture ordering precondition violated | Both approved focused0d7d57f6/bundle988bdfd5 resumes started at 2026-10-08 20:42:30-31 UTC after verifying the original runtime, unchanged original inputs and installed freeze. Both completed their configuration inspection and real PB snapshot, then exited 1 at 20:42:45 UTC with Physical LTS events differ. All four policies in both chains had eight original old STS samples and zero observed old samples in every tier afterward. Original startup hop0 reported eight streams/partitions moved, 936 bytes and zero jobs failed. The actual original startup journals contain eight bulk append rejection records per chain, one for each old and middle source partition; startup-append-rejections-{b,d}-r2.jsonl. Before seed, every selected MTS already held captured timestamps later than both seeded old/middle intervals. The deployed append timestamp guard rejects input not newer than the destination's last timestamp; this historical backfill fixture violates that precondition. These runs do not establish valid chronological transfer or a product regression. Full original/resume inputs, physical snapshots and results remain in failed-resume-{b,d}-r2.tar.gz. HTTP, recent-bin capture, final identity/provenance checks and complete regular-repeat verification were not reached. No appliance restart, reseed, policy or original IOC fixture changes occurred during resume/diagnosis. Actual post-failure guard checks at 2026-10-08 22:21 UTC verified both original appliance invocations and all immutable original/preserved files; post-failure-guard-{b,d}-r2.log. The independent archive/source review confirmed all eight chain/PV old8-to-zero cases, the deployed/current source equivalence for the relevant append and job classes, and each of the eight actual rejection records per chain. It did not classify this as a normal chronological-input product regression. The next decision is a plan for natural movement of a newly captured source cohort under unchanged holds, or a separate clean-destination fixture; neither is authorized for execution by the current same-fixture continuation. |
+| T15 launch continuity | Pending | No launch-continuity execution or new observation start. |
+| T16-T21 new observations and final comparison | Pending | Neither new observation was launched; prior observations and their results remain unchanged. |
 
 ##### Summary
 
