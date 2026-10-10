@@ -2799,6 +2799,13 @@ the replacement step instead of the consumer, the key-input comparison uses the 
 inventory, the negative cases map every condition, and the replacement step fixes its
 sibling names and rollback.
 
+Decision Date: 2026-10-09. After the third independent review, the owner selected running
+T29 and T30 on the guests with a private copy of the frozen bundle as the explicit bundle
+root, after the freeze and its review and before the delivery, instead of letting the
+tools comparison of T29 accept two `PBFixture.java` values. The candidate consumer runs
+from a private staging directory; the claim that the retained-record recheck ran the
+same way is withdrawn because its invocation was not retained.
+
 Premise: the original `result.json` receives `artifacts`, `pvs`, `flags`, `tools`,
 `source_manifest_sha256`, `baseline_sha256`, `evidence_sha256` and `helper_sha256` only
 after the final comparison passes, so an Incomplete original carries none of them.
@@ -2845,7 +2852,7 @@ Consumer acceptance conditions:
      is excluded by name, as the resume path already does, because a file cannot carry
      its own hash. The installed bundle as a whole, `focused.py` included, is bound by
      `verify_bundle` against the frozen `bundle.json`. The accepted `bundle.json` SHA256
-     is a literal in the bundle replacement step of Ordered Work 5, which lies outside the
+     is a literal in the bundle replacement step of Ordered Work 6, which lies outside the
      frozen bundle, and is enforced at delivery (T31); the consumer cannot pin it,
      because `bundle.json` contains the `focused.py` hash. Against the retained recheck
      inventories exactly `focused.py` and `PBFixture.java` differ on both chains.
@@ -2867,37 +2874,47 @@ Consumer acceptance conditions:
 
 1. **Review and accept this plan.** Independent review, owner acceptance and a separate
    implementation authorization precede every later item. That authorization covers
-   local implementation and verification only; every guest operation (T29 on a guest,
-   the delivery, T31 and T32) requires its own separately recorded execution
-   authority. Closed by the recorded Plan Status, Plan Acceptance and Implementation
-   Authorization above.
+   local implementation and verification on the control host only; every guest
+   operation (T29 and T30 on a guest, the delivery, T31 and T32) requires its own
+   separately recorded execution authority. Closed by the recorded Plan Status, Plan
+   Acceptance and Implementation Authorization above.
 2. **Implement the consumer path.** Planned paths are
    `tests/archiver-soak/etl-pass/{focused.py,test_focused.py,bundle.json}` and
    `tests/archiver-soak/{README.md,SHA256SUMS}`, plus the bundle replacement step of
-   item 5: it is not a member of the frozen bundle, its path is fixed at implementation,
+   item 6: it is not a member of the frozen bundle, its path is fixed at implementation,
    and its SHA256 is recorded in the review record after the accepted `bundle.json`
    SHA256 literal is filled in at the freeze of item 4. The acceptance path is a separate
    function; the Passed requirement of `verified_focused_result` for a new focused run
    stays unchanged. The callers `launch-retest.py` (`continuity`) and `observe.py`
    (`require_continuity`) are bundle members and are not changed: the tools comparison
    of condition 6 would reject either change, so a needed change to them requires a
-   plan revision. Closed by T29 and T30 for the consumer and by T31 for the
-   replacement step.
-3. **Verify locally and on target Python 3.9.** Run the real shipped consumer against the
-   retained final and recheck evidence. Negative cases mutate copies of that real
-   evidence; no internal span is replaced by a stub or a hand-built fixture. The
-   candidate consumer is not installed on a guest before item 5, so T29 on a guest runs
-   it from a private staging directory outside `/usr/local/share/etl-soak`, importing
-   the installed modules through `PYTHONPATH` as the retained-record recheck did, and
-   writes nothing under the retained tree. Closed by T29 and T30 results recorded with
-   the target interpreter version and the `focused.py` SHA256 each run used.
+   plan revision. Closed by the local rehearsal of item 3 for the consumer and by T31
+   for the replacement step.
+3. **Rehearse locally on the control host.** Run the real shipped consumer against local
+   extracted copies of the retained final and recheck evidence, with the copy root and
+   a private copy of the candidate bundle directory of the working tree as explicit
+   arguments, because the control host has no installed bundle. Negative cases mutate
+   copies of that real evidence; no internal span is replaced by a stub or a
+   hand-built fixture. Host Python is 3.13 and is not target compatibility evidence.
+   Closed by the recorded local results with the interpreter version and the
+   `focused.py` SHA256 each run used.
 4. **Freeze the new bundle and request independent review of the consumer and of the
    bundle replacement step** as a new charter. Record the frozen bundle SHA256, fill it
-   into the replacement step as its literal, then record the step's SHA256. Name the
-   frozen bundle SHA256 and the `focused.py` SHA256 in the T29 and T30 results; rerun
-   both checks if either hash changes after review. Closed by the frozen bundle
-   SHA256, the step's SHA256 and the review result.
-5. **Deliver without touching retained state.** No existing procedure replaces an
+   into the replacement step as its literal, then record the step's SHA256. Closed by
+   the frozen bundle SHA256, the step's SHA256 and the review result.
+5. **Verify on the guests on target Python 3.9** under recorded execution authority:
+   T29 and T30 with a private copy of the frozen bundle directory as the explicit
+   bundle root, so that they exercise the bundle that item 6 delivers. The candidate
+   consumer is not installed on a guest at this point; it runs from a private staging
+   directory outside `/usr/local/share/etl-soak` that holds only the candidate
+   `focused.py` and `PBFixture.java`, is first on `sys.path`, and finds the installed
+   modules through `PYTHONPATH` behind it. A script's own directory precedes
+   `PYTHONPATH`, so the run records the file path of every module it imported. It
+   writes nothing under the retained tree; the retained evidence is only read in
+   place. Name the frozen bundle SHA256 and the `focused.py` SHA256 in the results;
+   rerun both checks if either hash changes after review. Closed by the T29 and T30
+   results recorded with the target interpreter version.
+6. **Deliver without touching retained state.** No existing procedure replaces an
    installed bundle: the first installation extracted an archive into an absent
    directory and refused an existing one. This item adds a reviewed replacement step,
    kept outside the frozen bundle. It takes the frozen bundle, a directory or an
@@ -2925,11 +2942,11 @@ Consumer acceptance conditions:
    `/usr/local/share/etl-soak` to `/usr/local/share/etl-soak.rejected-<UTC timestamp>`,
    then rename the preserved sibling to `/usr/local/share/etl-soak`. The step prints
    both exact commands before its first rename. Delete nothing. Write nothing under
-   `/var/lib/etl-focused/<chain>/`, recompile no helper (`helper-classes` stays the original compiled helper), and touch
-   no retained evidence archive. Do not rerun `run`, `prepare-resume`, `resume`, the
+   `/var/lib/etl-focused/<chain>/`, recompile no helper (`helper-classes` stays the
+   original compiled helper), and touch no retained evidence archive. Do not rerun `run`, `prepare-resume`, `resume`, the
    orchestration scripts, registration, seed or installation against the existing
-   fixture. Closed by T31.
-6. **Run continuity through the accepted consumer** on both chains, then proceed through
+   fixture. This is a guest operation under its own recorded execution authority. Closed by T31.
+7. **Run continuity through the accepted consumer** on both chains, then proceed through
    the existing observation gates under separately established execution authority.
    Closed by T32.
 
@@ -2937,8 +2954,8 @@ Consumer acceptance conditions:
 
 | Check | Planned Real Path And Required Outcome | Execution State |
 | --- | --- | --- |
-| T29 consumer acceptance on retained evidence | Shipped consumer on actual Python 3.9, run on each guest in place against its retained original, final and recheck evidence under `/var/lib/etl-focused/<chain>/`. Accept both chains and return the configuration from the recheck inventory. Read-only; no restart, reseed or manual tick. | Pending |
-| T30 consumer rejection of altered evidence | Copies of the real evidence placed under a unique private directory outside the retained tree. The consumer receives the copy root explicitly and rebases the recorded absolute paths onto it; an unrebased path must fail. The installed bundle is likewise a private copy of the installed bundle directory passed as an explicit bundle root. The approved list is an explicit consumer argument whose default is the shipped literals. A case that changes the proof itself supplies the changed proof's own SHA256, so that only the intended condition fails; the default literals are exercised by T29 and by the condition 2 cases. One change per copy, each failing with its own error: condition 1, altered error string and original result changed to Passed; condition 2, wrong proof hash, a proof path not in the approved list and the other chain's proof; condition 3, altered source file and altered recheck file; condition 4, wrong checker hash and wrong helper hash in the proof; condition 5, a changed key-input PV name, a properties hash mismatch and a wrong expected-keys hash; condition 6, `artifacts`, `pvs` and `flags` each differing from the recheck inventory, a changed identity in the proof, a changed `PBFixture.java` in a re-frozen bundle copy, and an unapproved changed tool file in a re-frozen bundle copy; an unfrozen change to a bundle file fails earlier at `verify_bundle` with its own error; condition 8, a missing recorded file. | Pending |
+| T29 consumer acceptance on retained evidence | On each guest on actual Python 3.9, the shipped consumer code runs from the private staging directory of Ordered Work 5 with a private copy of the frozen bundle directory as the explicit bundle root; only the evidence is read in place, under `/var/lib/etl-focused/<chain>/`: its retained original, final and recheck records. Accept both chains and return the configuration from the recheck inventory. Read-only on the retained tree; no restart, reseed or manual tick. | Pending |
+| T30 consumer rejection of altered evidence | On each guest on actual Python 3.9, with the same staging directory and frozen bundle copy as T29: copies of the real evidence placed under a unique private directory outside the retained tree. The consumer receives the copy root explicitly and rebases the recorded absolute paths onto it; an unrebased path must fail. The bundle is likewise a private copy of the frozen bundle directory passed as an explicit bundle root. The approved list is an explicit consumer argument whose default is the shipped literals. A case that changes the proof itself supplies the changed proof's own SHA256, so that only the intended condition fails; the default literals are exercised by T29 and by the condition 2 cases. One change per copy, each failing with its own error: condition 1, altered error string and original result changed to Passed; condition 2, wrong proof hash, a proof path not in the approved list and the other chain's proof; condition 3, altered source file and altered recheck file; condition 4, wrong checker hash and wrong helper hash in the proof; condition 5, a changed key-input PV name, a properties hash mismatch and a wrong expected-keys hash; condition 6, `artifacts`, `pvs` and `flags` each differing from the recheck inventory, a changed identity in the proof, a changed `PBFixture.java` in a re-frozen bundle copy, and an unapproved changed tool file in a re-frozen bundle copy; an unfrozen change to a bundle file fails earlier at `verify_bundle` with its own error; condition 8, a missing recorded file. | Pending |
 | T31 delivery preserves retained state | The replacement step first runs its real copy, rename and rollback path against a private parent directory holding a copy of the installed directory, then on each guest. Every non-bundle file of the installed directory is byte-for-byte unchanged after the swap, `inventory()` still reads `pvs-all.csv`, and the `ls -Z` security context of every file and of the directory itself is the same before and after. Before and after delivery, every `source_evidence_sha256` and `recheck_evidence_sha256` entry of both proofs re-verifies, the file list under `/var/lib/etl-focused/<chain>/` is unchanged, the installed bundle passes `verify_bundle`, its `bundle.json` SHA256 equals the literal in the replacement step, the previous installed directory is preserved byte-for-byte as a sibling, and the tool files that differ from the recheck-time inventory are exactly `focused.py` and `PBFixture.java`. | Pending |
 | T32 continuity binding | Real `continuity` and `require_continuity` on the guests: both the original result hash and the recheck proof hash are bound; a proof from the other chain or a stale proof is rejected; identity is stable during the readback. No reseed or manual tick. | Pending |
 
