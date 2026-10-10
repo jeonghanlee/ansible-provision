@@ -2888,16 +2888,26 @@ Consumer acceptance conditions:
    stays unchanged. The callers `launch-retest.py` (`continuity`) and `observe.py`
    (`require_continuity`) are bundle members and are not changed: the tools comparison
    of condition 6 would reject either change, so a needed change to them requires a
-   plan revision. Closed by the local rehearsal of item 3 for the consumer and by T31
-   for the replacement step.
+   plan revision. Closed by the local rehearsal of item 3 for the conditions it covers,
+   by T29 and T30 of item 5 for the guest-only conditions, and by T31 for the
+   replacement step.
 3. **Rehearse locally on the control host.** Run the real shipped consumer against local
    extracted copies of the retained final and recheck evidence, with the copy root and
    a private copy of the candidate bundle directory of the working tree as explicit
    arguments, because the control host has no installed bundle. Negative cases mutate
    copies of that real evidence; no internal span is replaced by a stub or a
    hand-built fixture. Host Python is 3.13 and is not target compatibility evidence.
-   Closed by the recorded local results with the interpreter version and the
-   `focused.py` SHA256 each run used.
+   The acceptance path reads live appliance state that the control host does not
+   have: `inventory()` calls the management API, `identity()` reads systemd and JVM
+   state and `artifacts()` reads the installed source and class tree. The rehearsal
+   therefore covers conditions 1 to 5, the proof-identity binding of condition 6 and
+   its tools comparison from the retained files. The fresh-inventory comparison of
+   condition 6 (`artifacts`, `pvs`, `flags`), the identity stability during a
+   continuity readback and condition 7 are guest-only: T29 and T30 of item 5 close
+   the fresh-inventory comparison, and T32 of item 7 closes the identity stability and
+   condition 7, both of which live in `continuity` and `require_continuity`. No fresh
+   inventory is built by hand for them. Closed by the recorded local results with the
+   interpreter version and the `focused.py` SHA256 each run used.
 4. **Freeze the new bundle and request independent review of the consumer and of the
    bundle replacement step** as a new charter. Record the frozen bundle SHA256, fill it
    into the replacement step as its literal, then record the step's SHA256. Closed by
