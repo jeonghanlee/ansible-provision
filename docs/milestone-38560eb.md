@@ -31,22 +31,21 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: Preserve all M22 services, fixtures and original failed-run evidence.
-Both additional environments now run the latest approved artifacts with 903 connected PVs.
-The 2026-10-09 automatic cold executions completed their recorded physical/HTTP
-startup and regular-repeat checks but ended Incomplete at an overly strict initial
-chunk-key comparison. The owner selected the bounded correction and retained-record
-recheck. Both separate recheck proofs Passed; original result and evidence hashes
-remain unchanged. Source and retained-evidence review 2 accepted the correction and
-both separate recheck proofs after independent archive/hash inspection. Separate recheck results cannot satisfy the original complete
-focused-proof gate. The Retained-Record Recheck Proof Consumer Amendment (2026-10-09)
-defines the consumer acceptance conditions; it was accepted on 2026-10-10 and its
-implementation, frozen bundle and replacement step were accepted after independent
-review. Its guest checks (Ordered Work 5 to 7: T29, T30, the delivery, T31 and T32) passed
-on both guests on 2026-10-10, so the focused proof gate is met through the recheck proof.
-Instrumentation, measured preparation, negative and abort checks, final-restart
-continuity, capacity and readiness gates and both 24-hour observations remain pending;
-do not reseed or restart the existing services to bypass any of them.
+Next session entry point: Preserve the retained pair of cold guests, which was shut down
+normally with its disks and files kept and nothing deleted, together with their original
+failed-run evidence and all earlier M22 evidence. On 2026-10-10 the owner restarted the
+preparation on two fresh guests, one per store chain; a retained guest is restarted only on
+the owner's separate authorization.
+On the retained pair the 2026-10-09 automatic executions ended Incomplete at an overly
+strict initial chunk-key comparison. The correction, the separate recheck proofs, the
+consumer acceptance path, the frozen bundle and the replacement step were accepted, and their
+guest checks (T29 to T32) passed on that pair on 2026-10-10. On the fresh guests the species
+deployment finished with 33 successful tasks each; the tool bundle and fixture
+installation, the registration and the ETL focused execution run through detached units, and
+their results are recorded when they end. Instrumentation, measured preparation, negative
+and abort checks, final-restart continuity, capacity and readiness gates and both 24-hour
+observations stay pending and need their own recorded authority; do not restart or reseed a
+running guest to bypass them.
 Earlier amendment and preparation evidence follows.
 Local code implementation and verification were authorized on 2026-10-01.
 Dedicated VM acquisition and deployment were subsequently authorized on
@@ -2821,6 +2820,13 @@ accepted above. It does not cover a restart, reseed, registration, a manual tick
 focused run, instrumentation, measured preparation, capacity renewal or any observation;
 a failure of a check stops the sequence for the owner.
 
+Decision Date: 2026-10-10. The owner accepted the guest results of T29 to T32 recorded in
+the Verification Results, after the independent review closed them without a finding above
+the floor. The acceptance covers the focused proof gate through the recheck proof and the
+installed frozen bundle on both guests; instrumentation, measured preparation, negative
+and abort checks, final-restart continuity, capacity and readiness gates and both
+observations stay pending and need their own plan steps and recorded authority.
+
 Premise: the original `result.json` receives `artifacts`, `pvs`, `flags`, `tools`,
 `source_manifest_sha256`, `baseline_sha256`, `evidence_sha256` and `helper_sha256` only
 after the final comparison passes, so an Incomplete original carries none of them.
@@ -2996,6 +3002,45 @@ instruction authorizes implementation and verification under the reviewed plan.
 The proposed execution scope preserves every existing guest, service, store and
 failed-run record and uses two additional independent environments. Prior execution
 authority does not authorize this revised preparation sequence.
+
+Decision Date: 2026-10-10. The focused proof gate is met for both retained guests through
+the recheck proof (Retained-Record Recheck Proof Consumer Amendment, accepted results of
+T29 to T32). The owner authorized the guest execution of the fresh preparation on both
+guests, each with its own `--chain`: `initialize-fresh.py instruments` and `check`,
+`measure`, and `prepare`, as the shipped README describes them. The authority includes the
+appliance restart that `instruments` performs and the roughly 45-minute measurement
+under the 903-PV load, and excludes the runtime verification of item 8, the abort checks,
+`launch-retest.py` and any observation; those need their own recorded authority. A failed
+check stops the sequence for the owner, and preserved evidence is never replaced.
+
+Prerequisite check against this record, 2026-10-10: since `D22` (2026-10-05) the journal
+checks formerly T22 to T26 and T28 are `M25` T1 to T5 and T7, and `D22` and the superseded
+artifacts of the Retention Accounting Correction state that `M22` opens an observation after
+T27's preparation portion passes, not after those checks. `M25` stays In progress (T1, T2
+and T5 not run; T3, T4, T7 and T8 partial; T6 preparation passed and its in-window path
+corrected afterwards). The sequence authorized above produces T27's preparation portion
+for these guests and claims none of `M25`'s checks. The local tool checks (T13) passed on
+the frozen bundle. Read on both guests on 2026-10-10 (T14 inputs): the management API
+lists all 903 PVs, each being archived and connected; the four appliance JVMs run with
+`-Xmx256M` and no JFR or GC option; `/var/lib/etl-soak` holds fixture and continuity
+records only, with no observation or preparation record, and the sampler and finish
+units are inactive. Each guest also holds one idle `java` process (about 56 MB resident,
+no listening socket) started on 2026-10-09 by the chunk-key check from its
+`m22-chunk-key-check-r1` classes; it was not touched and counts against the 3.6 GiB of
+memory.
+
+Decision Date: 2026-10-10. The owner decided to restart the preparation on two fresh
+guests instead of continuing on the retained pair, which was shut down normally with
+its disks and files kept and nothing deleted; a retained guest is restarted only on
+the owner's separate authorization, for example to recheck a failure on the new pair.
+The authority recorded above applies to the retained pair and does not carry over. For
+the two fresh guests, one per chain, the owner authorized: the species deployment at
+the approved source pins with its installed validation, the installation of the frozen
+tool bundle and the soak fixture, the registration of the 903 PVs through the real
+path with the read of their connected state, and the ETL focused execution on each
+guest through its own detached unit. Instrumentation, measured preparation,
+`prepare`, the runtime checks, `launch-retest.py` and any observation need their own
+recorded authority. A failed check stops the sequence for the owner.
 
 The prerequisite is chronological append input. An empty historical source filename
 does not establish an empty destination: the failed continuations had newer MTS data
