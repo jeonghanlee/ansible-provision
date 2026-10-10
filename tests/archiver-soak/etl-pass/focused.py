@@ -17,6 +17,7 @@ import shlex
 import shutil
 import stat
 import subprocess
+import sys
 import tarfile
 import time
 import urllib.parse
@@ -189,7 +190,7 @@ def artifacts():
             'stamp_sha256': contract.digest(Path('/var/tmp/archiver-build.config'))}
 
 
-def inventory(root, chain, name='inventory.json'):
+def inventory(root, chain, name='inventory.json', bundle_root=None):
     protect()
     before = identity()
     fixture = observe.TOOLS / 'pvs-all.csv'
@@ -210,8 +211,9 @@ def inventory(root, chain, name='inventory.json'):
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
         observed = list(executor.map(query, rows))
     flags = request('getAllNamedFlags')
+    tools = contract.verify_bundle(Path(bundle_root)) if bundle_root else observe.tool_hashes()
     result = {'observed_at': now(), 'identity': before, 'chain': chain, 'pvs': observed,
-              'flags': flags, 'artifacts': artifacts(), 'tools': observe.tool_hashes()}
+              'flags': flags, 'artifacts': artifacts(), 'tools': tools}
     if identity() != before:
         raise RuntimeError('Appliance restarted during configuration inspection')
     save(root, name, result)
@@ -1186,12 +1188,171 @@ def recheck(root, chain):
         print(str(destination / 'result.json'), flush=True)
 
 
+RECHECK_ORIGINAL_ERROR = 'Effective configuration changed during focused execution'
+RECHECK_ORIGINAL_FILES = ('result.json', 'inventory.json', 'manifest.json', 'baseline.json',
+                          'final-inspection/inventory.json')
+RECHECK_APPROVED = {
+    'proofs': {
+        'shortened': {
+            'path': '/var/lib/etl-focused/shortened/recheck-20261009T233038265889/result.json',
+            'sha256': 'eb5e0f73b134e34e4ad35603b0894ed24b597fd6916bdd765e485a8ee5041977'},
+        'default': {
+            'path': '/var/lib/etl-focused/default/recheck-20261009T233038375804/result.json',
+            'sha256': '491bca76b849d53061b4d486ede58c6f877c776154f2dd079eca9e07673c8897'},
+    },
+    # Producing version of the retained-record recheck; the running focused.py differs by design.
+    'checker': '4265dfac7f62cb99e0a03a5db981a3449a37dc51365f05c156a5a20d3e264fd3',
+    'helper': 'df29f030028d9c920c30a2faf360045b4595b40258666ef5dff7ab4939e4fb7d',
+}
+
+
+def rebased(path, root, chain):
+    try:
+        relative = Path(path).relative_to(ROOT / chain)
+    except ValueError:
+        raise RuntimeError('Recorded evidence path lies outside the chain root: ' + str(path))
+    return Path(root) / relative
+
+
+def retained_digest(path):
+    try:
+        return file_digest(path)
+    except OSError:
+        raise RuntimeError('Retained recheck evidence is missing: ' + str(path))
+
+
+def recheck_acceptance(root, chain, approved=None):
+    """Accept a retained-record recheck proof for an Incomplete original result.
+
+    Reads retained files only; the original result and the proof are never changed.
+    """
+    approved = RECHECK_APPROVED if approved is None else approved
+    root = Path(root)
+    entry = approved['proofs'].get(chain)
+    if entry is None:
+        raise RuntimeError('No approved recheck proof for this chain')
+    proof_file = rebased(entry['path'], root, chain)
+    if retained_digest(proof_file) != entry['sha256']:
+        raise RuntimeError('Recheck proof differs from the approved proof')
+    proof = json.loads(proof_file.read_text())
+    if proof.get('result') != 'Passed' or proof.get('chain') != chain:
+        raise RuntimeError('A Passed recheck proof for this chain is required')
+    original = root / 'result.json'
+    failure = json.loads(original.read_text())
+    if (failure.get('result') != 'Incomplete' or failure.get('chain') != chain
+            or failure.get('error') != RECHECK_ORIGINAL_ERROR):
+        raise RuntimeError('Only the retained final configuration comparison failure can be accepted')
+    if retained_digest(original) != proof.get('original_result_sha256'):
+        raise RuntimeError('Original result differs from the recheck proof')
+    for group in ('source_evidence_sha256', 'recheck_evidence_sha256'):
+        entries = proof.get(group)
+        if not isinstance(entries, dict) or not entries:
+            raise RuntimeError('Recheck proof lacks ' + group)
+        for path, digest in entries.items():
+            if retained_digest(rebased(path, root, chain)) != digest:
+                raise RuntimeError('Retained recheck evidence changed: ' + str(path))
+    source = proof['source_evidence_sha256']
+    for name in RECHECK_ORIGINAL_FILES:
+        if str(ROOT / chain / name) not in source:
+            raise RuntimeError('Recheck proof does not bind the original record: ' + name)
+    if proof.get('checker_sha256') != approved['checker'] or proof.get('helper_source_sha256') != approved['helper']:
+        raise RuntimeError('Recheck checker or helper differs from the approved producing version')
+    directory = proof_file.parent
+    for name in ('inventory.json', 'expected-keys.json', 'key-input.json', 'archappl.properties'):
+        if str(Path(entry['path']).parent / name) not in proof['recheck_evidence_sha256']:
+            raise RuntimeError('Recheck proof does not bind its own record: ' + name)
+    recorded = json.loads((root / 'inventory.json').read_text())
+    final = json.loads((root / 'final-inspection/inventory.json').read_text())
+    current = json.loads((directory / 'inventory.json').read_text())
+    names = {row['pv'] for row in recorded['pvs']}
+    if len(recorded['pvs']) != 903 or len(names) != 903:
+        raise RuntimeError('The original inventory must list exactly 903 distinct PVs')
+    key_input = json.loads((directory / 'key-input.json').read_text())
+    if len(key_input['pvs']) != 903 or {row['pv'] for row in key_input['pvs']} != names:
+        raise RuntimeError('Chunk key input differs from the original inventory PVs')
+    if retained_digest(directory / 'expected-keys.json') != proof.get('expected_keys_sha256'):
+        raise RuntimeError('Expected chunk keys differ from the recheck proof')
+    if retained_digest(directory / 'archappl.properties') != recorded['artifacts']['properties_sha256']:
+        raise RuntimeError('Recheck properties differ from the original deployed properties')
+    check_chunk_keys(recorded, current, json.loads((directory / 'expected-keys.json').read_text()))
+    if proof.get('identity') != final['identity'] or current['identity'] != final['identity']:
+        raise RuntimeError('Recheck proof identity differs from the original focused execution')
+    return {'chain': chain, 'proof_path': str(proof_file), 'proof_sha256': entry['sha256'],
+            'original_result_sha256': proof['original_result_sha256'], 'identity': proof['identity'],
+            'inventory': current, 'inventory_sha256': retained_digest(directory / 'inventory.json')}
+
+
+def check_recheck_configuration(acceptance, fresh):
+    for key in ('artifacts', 'pvs', 'flags'):
+        if fresh.get(key) != acceptance['inventory'][key]:
+            raise RuntimeError('Current configuration differs from the recheck inventory: ' + key)
+
+
+def check_recheck_tools(recorded_tools, bundle_root, approved=None):
+    """Compare a verified bundle with the recheck-time tools, allowing the approved changes."""
+    approved = RECHECK_APPROVED if approved is None else approved
+    current = contract.verify_bundle(Path(bundle_root))
+    if set(current) != set(recorded_tools):
+        raise RuntimeError('Tool set differs from the recheck inventory')
+    for name, digest in recorded_tools.items():
+        if name == 'focused.py':
+            continue
+        expected = approved['helper'] if name == 'PBFixture.java' else digest
+        if current[name] != expected:
+            raise RuntimeError('A tool other than the approved replacements changed: ' + name)
+    return current
+
+
+def accepted_focused_result(root, chain, approved=None):
+    failure = json.loads((Path(root) / 'result.json').read_text())
+    if failure.get('result') == 'Passed':
+        return {'result': verified_focused_result(Path(root), chain), 'recheck': None}
+    return {'result': None, 'recheck': recheck_acceptance(root, chain, approved)}
+
+
+def imported_modules():
+    allowed = {str(Path(__file__).resolve().parent)}
+    for entry in os.environ.get('PYTHONPATH', '').split(os.pathsep):
+        if entry:
+            allowed.add(str(Path(entry).resolve()))
+    found = {}
+    for name, module in sorted(sys.modules.items()):
+        path = getattr(module, '__file__', None)
+        if path and str(Path(path).resolve().parent) in allowed:
+            found[name] = str(Path(path).resolve())
+    return found
+
+
+def check_recheck(chain, evidence_root, bundle_root, scratch, approved=None):
+    """Accept the retained recheck proof against live appliance state and a frozen bundle copy."""
+    root = Path(evidence_root) if evidence_root else ROOT / chain
+    scratch = Path(scratch).resolve()
+    if scratch == ROOT.resolve() or ROOT.resolve() in scratch.parents:
+        raise RuntimeError('The scratch directory must lie outside the retained tree')
+    scratch.mkdir(mode=0o700)
+    acceptance = recheck_acceptance(root, chain, approved)
+    fresh = inventory(scratch, chain, bundle_root=bundle_root)
+    check_recheck_configuration(acceptance, fresh)
+    check_recheck_tools(acceptance['inventory']['tools'], bundle_root, approved)
+    result = {'result': 'Passed', 'observed_at': now(), 'chain': chain,
+              'proof_sha256': acceptance['proof_sha256'],
+              'original_result_sha256': acceptance['original_result_sha256'],
+              'focused_sha256': file_digest(Path(__file__)), 'python': sys.version,
+              'bundle_root': str(Path(bundle_root).resolve()), 'modules': imported_modules()}
+    save(scratch, 'recheck-acceptance.json', result)
+    return result
+
+
 def continuity(root, chain):
-    result = verified_focused_result(root, chain)
+    accepted = accepted_focused_result(root, chain)
     name = 'continuity-' + dt.datetime.now(dt.timezone.utc).strftime('%Y%m%dT%H%M%S%f')
     inventory_name = name + '-inventory.json'
     recorded = inventory(root, chain, inventory_name)
-    compare_configuration(recorded, result)
+    if accepted['recheck'] is None:
+        compare_configuration(recorded, accepted['result'])
+    else:
+        check_recheck_configuration(accepted['recheck'], recorded)
+        check_recheck_tools(accepted['recheck']['inventory']['tools'], observe.TOOLS)
     specs = json.loads((root / 'manifest.json').read_text())['pvs']
     classpath = str(root / 'helper-classes') + ':' + str(INSTALL / 'etl/webapps/etl/WEB-INF/classes') + ':' + str(INSTALL / 'etl/webapps/etl/WEB-INF/lib/*')
     snapshot = pb(root, classpath, 'snapshot', name + '.json')
@@ -1216,6 +1377,9 @@ def continuity(root, chain):
              'pass_sha256': contract.digest(root / ('passes-' + recorded['identity']['invocation_id'] + '.jsonl')),
              'pass_path': str(root / ('passes-' + recorded['identity']['invocation_id'] + '.jsonl')),
              'tools': recorded['tools'], 'result': 'Passed'}
+    if accepted['recheck'] is not None:
+        proof['recheck_proof_sha256'] = accepted['recheck']['proof_sha256']
+        proof['recheck_proof_path'] = accepted['recheck']['proof_path']
     save(observe.OUT, 'readiness-continuity.json', proof)
     return proof
 
@@ -1236,16 +1400,32 @@ def require_continuity(chain):
             or not proof.get('http_sha256')
             or any(contract.digest(Path(path)) != digest for path, digest in proof['http_sha256'].items())):
         raise RuntimeError('Current focused continuity evidence is required')
-    verified_focused_result(root, chain)
+    accepted = accepted_focused_result(root, chain)
+    if accepted['recheck'] is None:
+        if 'recheck_proof_sha256' in proof:
+            raise RuntimeError('Continuity names a recheck proof for a Passed original result')
+    elif (proof.get('recheck_proof_sha256') != accepted['recheck']['proof_sha256']
+            or proof['focused_result_sha256'] != accepted['recheck']['original_result_sha256']):
+        raise RuntimeError('Continuity does not bind both the original result and the recheck proof')
     return proof
 
 
 def main():
     os.umask(0o077)
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=('inventory', 'run', 'prepare-resume', 'resume', 'continuity', 'recheck'))
+    parser.add_argument('action', choices=('inventory', 'run', 'prepare-resume', 'resume', 'continuity', 'recheck',
+                                           'check-recheck'))
     parser.add_argument('--chain', required=True, choices=contract.CHAINS)
+    parser.add_argument('--evidence-root', help='check-recheck: chain evidence root, default the retained tree')
+    parser.add_argument('--bundle-root', help='check-recheck: directory of the frozen bundle to compare')
+    parser.add_argument('--scratch', help='check-recheck: new private directory outside the retained tree')
     args = parser.parse_args()
+    if args.action == 'check-recheck':
+        if not args.bundle_root or not args.scratch:
+            parser.error('check-recheck requires --bundle-root and --scratch')
+        print(json.dumps(check_recheck(args.chain, args.evidence_root, args.bundle_root, args.scratch),
+                         indent=2, sort_keys=True))
+        return
     protect()
     ROOT.mkdir(mode=0o755, exist_ok=True)
     ROOT.chmod(0o755)

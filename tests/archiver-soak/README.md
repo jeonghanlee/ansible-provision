@@ -34,6 +34,7 @@ verification results are in [the work register](../../docs/milestone-38560eb.md)
 | `etl-pass/journal_coverage.py`, `journal_retention.py`, `test_journal.py` | System-only checkpoints, bounded sequence coverage, measured retention budgets and local arithmetic/parser checks |
 | `etl-pass/test_contract.py` | Contract, bundle, fixture-preservation and retained-export replay checks |
 | `etl-pass/focused.py`, `PBFixture.java`, `test_focused.py` | Installed configuration inventory, real writer/decoder, automatic two-hop physical/HTTP checks and subsequent regular-pass evidence |
+| `etl-pass/replace-bundle.py` | Replace an installed bundle by a frozen bundle while carrying every other file and keeping a preserved sibling and rollback; not a bundle member |
 | `etl-pass/restart-observation.py` | Preserve a previous observation and restart its appliance with bounded GC/JFR settings and persistent ETL pass logging |
 | `etl-pass/common.yml`, `shortened.yml`, `default.yml` | Fixed source pins, heap/database settings and the two store-chain configurations |
 | `fixtures/` | Three IOC databases and four PV lists for the 100/500/903-PV populations |
@@ -249,6 +250,48 @@ the original `inventory.json` remains immutable. Each inspection writes a separa
 it does not establish restart-fault, commit-failure or deletion-failure safety.
 `launch-retest.py` performs this readback followed by a real full sample. Observation
 start rejects absent, changed or stale continuity evidence and insufficient JFR time.
+
+### Recheck Proof Acceptance And Bundle Replacement
+
+A focused execution that ended Incomplete at the final configuration comparison can be
+accepted for continuity only through its separate retained-record recheck proof. The
+approved proof of each chain is named by path and SHA256 in an approved list inside
+`focused.py`; the original `result.json` stays Incomplete and is never changed. The
+acceptance path (`recheck_acceptance`, used by `continuity` and `require_continuity`)
+requires, from retained files:
+
+- the original result to be the exact Incomplete configuration-comparison failure whose
+  SHA256 the proof records, and the proof to be Passed for the same chain;
+- every `source_evidence_sha256` and `recheck_evidence_sha256` entry to match its file;
+- the proof's checker and helper hashes to equal the approved producing-version literals;
+- the key-input PV names to equal the 903 PV names of the original `inventory.json`, the
+  properties copy to equal the original deployed properties hash, the expected-keys hash
+  to match, and only null-to-expected chunk key changes between original and recheck
+  inventory;
+- the proof identity to equal the final-inspection identity of the original execution.
+
+Against a live appliance, `artifacts`, `pvs` and `flags` of a fresh inventory must equal
+the recheck inventory strictly. The tools of a verified bundle must equal the recheck-time
+tools except `focused.py` (excluded by name) and `PBFixture.java` (the approved helper
+literal). `continuity` records the recheck proof hash beside the original result hash and
+`require_continuity` rejects a proof that does not bind both.
+
+`focused.py check-recheck --chain=<chain> --bundle-root=<frozen bundle directory>
+--scratch=<new directory outside /var/lib/etl-focused>` performs the live comparison without
+writing under the retained tree and records the path of every imported project module in
+`recheck-acceptance.json`. Run it from a private staging directory that holds only the
+candidate `focused.py` and `PBFixture.java`; the installed modules are found through
+`PYTHONPATH`, behind the script directory.
+
+`etl-pass/replace-bundle.py` replaces an installed bundle and is not a member of the frozen
+bundle. `replace --bundle=<directory or tar>` requires `bundle.json` to match the
+`ACCEPTED_BUNDLE_SHA256` literal and every member to match it, refuses an existing staged
+or preserved sibling and any active sampler or finish unit, copies the whole installed
+directory with `cp -a` (ownership, mode, timestamps, security context), overwrites only the
+members and `bundle.json`, verifies the staged copy, then renames the installed directory to
+`<installed>.prev-<UTC>` and the staged copy into place. It prints both rollback commands
+first and deletes nothing. `rollback --preserved=<directory>` renames the current
+installation to `<installed>.rejected-<UTC>` and the preserved sibling back into place.
 
 ### GC And Latency Extension
 

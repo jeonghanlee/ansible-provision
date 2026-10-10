@@ -3,6 +3,8 @@
 
 import copy
 import datetime
+import hashlib
+import importlib.util
 import io
 import json
 import os
@@ -569,6 +571,327 @@ class InitialChunkKeyTests(unittest.TestCase):
             with self.subTest(key=key), self.assertRaises(RuntimeError):
                 focused.check_completion(self.recorded, changed, self.final['identity'], self.final['identity'],
                                          expected_keys=self.keys)
+
+
+@unittest.skipUnless(os.environ.get('FOCUSED_RECHECK_ARCHIVES'),
+                     'Retained final and recheck evidence archives required')
+class RecheckProofConsumerTests(unittest.TestCase):
+    """Local rehearsal of the recheck proof consumer on the retained records.
+
+    Only conditions decided from retained files run here. The fresh-inventory comparison against
+    a live appliance, identity stability during a readback and the continuity binding need a guest.
+    """
+
+    CHAINS = {'shortened': 'c', 'default': 'd'}
+    HERE = Path(__file__).resolve().parent
+
+    @classmethod
+    def setUpClass(cls):
+        cls.scratch = tempfile.TemporaryDirectory()
+        cls.base = Path(cls.scratch.name)
+        archives = Path(os.environ['FOCUSED_RECHECK_ARCHIVES'])
+        for chain, suffix in cls.CHAINS.items():
+            for prefix in ('final', 'recheck'):
+                with tarfile.open(archives / (prefix + '-evidence-' + suffix + '-r1.tar.gz')) as archive:
+                    members = archive.getmembers()
+                    for member in members:
+                        parts = Path(member.name).parts
+                        if (member.name.startswith('/') or '..' in parts or parts[0] != chain
+                                or member.issym() or member.islnk() or member.isdev()):
+                            raise RuntimeError('Unsafe archive member: ' + member.name)
+                    options = {'filter': 'data'} if hasattr(tarfile, 'data_filter') else {}
+                    archive.extractall(cls.base, members=members, **options)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.scratch.cleanup()
+
+    def root(self, chain):
+        return self.base / chain
+
+    def relative(self, chain):
+        return Path(focused.RECHECK_APPROVED['proofs'][chain]['path']).relative_to(focused.ROOT / chain)
+
+    def variant(self, chain, changes=None, deleted=()):
+        """Hard-linked copy of one chain tree in which changed files are replaced, never edited."""
+        destination = Path(tempfile.mkdtemp(dir=self.base)) / chain
+        source = self.root(chain)
+        for path in source.rglob('*'):
+            target = destination / path.relative_to(source)
+            if path.is_dir():
+                target.mkdir(parents=True, exist_ok=True)
+            else:
+                target.parent.mkdir(parents=True, exist_ok=True)
+                os.link(path, target)
+        for name, content in (changes or {}).items():
+            target = destination / name
+            target.unlink()
+            target.write_bytes(content)
+        for name in deleted:
+            (destination / name).unlink()
+        return destination
+
+    def reproof(self, chain, files=None, fields=None):
+        """A variant whose changed recheck files and proof fields carry a consistent proof hash."""
+        entry = focused.RECHECK_APPROVED['proofs'][chain]
+        relative = self.relative(chain)
+        proof = json.loads((self.root(chain) / relative).read_text())
+        changes = {}
+        for name, content in (files or {}).items():
+            changes[str(relative.parent / name)] = content
+            proof['recheck_evidence_sha256'][str(Path(entry['path']).parent / name)] = hashlib.sha256(content).hexdigest()
+        proof.update(fields or {})
+        data = json.dumps(proof, sort_keys=True).encode()
+        changes[str(relative)] = data
+        approved = copy.deepcopy(focused.RECHECK_APPROVED)
+        approved['proofs'][chain]['sha256'] = hashlib.sha256(data).hexdigest()
+        return self.variant(chain, changes), approved
+
+    def bundle_copy(self, name, changes=None, freeze=True):
+        destination = Path(tempfile.mkdtemp(dir=self.base)) / name
+        destination.mkdir()
+        for member in (*contract.BUNDLE_FILES, 'bundle.json'):
+            shutil.copyfile(self.HERE / member, destination / member)
+        for member, content in (changes or {}).items():
+            (destination / member).write_bytes(content)
+        if freeze:
+            contract.freeze(destination)
+        return destination
+
+    def test_both_chains_are_accepted_from_the_retained_records(self):
+        for chain in self.CHAINS:
+            with self.subTest(chain=chain):
+                original = focused.file_digest(self.root(chain) / 'result.json')
+                acceptance = focused.recheck_acceptance(self.root(chain), chain)
+                self.assertEqual(acceptance['proof_sha256'], focused.RECHECK_APPROVED['proofs'][chain]['sha256'])
+                self.assertEqual(acceptance['original_result_sha256'], original)
+                self.assertEqual(len(acceptance['inventory']['pvs']), 903)
+                self.assertEqual(acceptance['identity'], acceptance['inventory']['identity'])
+                accepted = focused.accepted_focused_result(self.root(chain), chain)
+                self.assertIsNone(accepted['result'])
+                self.assertEqual(accepted['recheck']['proof_sha256'], acceptance['proof_sha256'])
+                self.assertEqual(focused.file_digest(self.root(chain) / 'result.json'), original)
+
+    def test_tools_comparison_allows_only_the_approved_replacements(self):
+        acceptance = focused.recheck_acceptance(self.root('shortened'), 'shortened')
+        tools = acceptance['inventory']['tools']
+        delivered = self.bundle_copy('delivered')
+        self.assertEqual(set(focused.check_recheck_tools(tools, delivered)), set(contract.BUNDLE_FILES))
+        cases = {'PBFixture.java': b'// changed helper source\n', 'contract.py': b'# changed tool\n'}
+        for name, content in cases.items():
+            original = (self.HERE / name).read_bytes()
+            with self.subTest(changed=name):
+                refrozen = self.bundle_copy('refrozen-' + name, {name: original + content})
+                with self.assertRaisesRegex(RuntimeError, 'approved replacements changed: ' + name):
+                    focused.check_recheck_tools(tools, refrozen)
+        unfrozen = self.bundle_copy('unfrozen', {'measure.py': (self.HERE / 'measure.py').read_bytes() + b'\n'},
+                                    freeze=False)
+        with self.assertRaisesRegex(RuntimeError, 'Installed bundle differs from the frozen complete bundle'):
+            focused.check_recheck_tools(tools, unfrozen)
+        approved = copy.deepcopy(focused.RECHECK_APPROVED)
+        approved['helper'] = '0' * 64
+        with self.assertRaisesRegex(RuntimeError, 'approved replacements changed: PBFixture.java'):
+            focused.check_recheck_tools(tools, delivered, approved)
+
+    def test_original_result_condition_rejects_changed_result(self):
+        chain = 'shortened'
+        original = json.loads((self.root(chain) / 'result.json').read_text())
+        for field, value in (('error', original['error'] + ' again'), ('result', 'Passed'), ('chain', 'default')):
+            changed = dict(original, **{field: value})
+            data = json.dumps(changed, sort_keys=True).encode()
+            with self.subTest(field=field):
+                variant = self.variant(chain, {'result.json': data})
+                with self.assertRaisesRegex(RuntimeError, 'retained final configuration comparison failure'):
+                    focused.recheck_acceptance(variant, chain)
+
+    def test_proof_pin_condition_rejects_wrong_hash_missing_entry_and_other_chain(self):
+        chain = 'shortened'
+        wrong = copy.deepcopy(focused.RECHECK_APPROVED)
+        wrong['proofs'][chain]['sha256'] = '0' * 64
+        with self.assertRaisesRegex(RuntimeError, 'differs from the approved proof'):
+            focused.recheck_acceptance(self.root(chain), chain, wrong)
+        absent = copy.deepcopy(focused.RECHECK_APPROVED)
+        del absent['proofs'][chain]
+        with self.assertRaisesRegex(RuntimeError, 'No approved recheck proof'):
+            focused.recheck_acceptance(self.root(chain), chain, absent)
+        other = copy.deepcopy(focused.RECHECK_APPROVED)
+        other['proofs']['default'] = other['proofs']['shortened']
+        with self.assertRaisesRegex(RuntimeError, 'outside the chain root'):
+            focused.recheck_acceptance(self.root('default'), 'default', other)
+
+    def test_evidence_set_condition_rejects_altered_and_missing_files(self):
+        chain = 'shortened'
+        relative = self.relative(chain)
+        source_file = (self.root(chain) / 'baseline.json').read_bytes() + b' '
+        recheck_file = (self.root(chain) / relative.parent / 'inventory.json').read_bytes() + b' '
+        cases = (('altered source file', {'baseline.json': source_file}, (), 'Retained recheck evidence changed'),
+                 ('altered recheck file', {str(relative.parent / 'inventory.json'): recheck_file}, (),
+                  'Retained recheck evidence changed'),
+                 ('missing source file', {}, ('repeat.json',), 'is missing'))
+        for label, changes, deleted, message in cases:
+            with self.subTest(case=label):
+                variant = self.variant(chain, changes, deleted)
+                with self.assertRaisesRegex(RuntimeError, message):
+                    focused.recheck_acceptance(variant, chain)
+
+    def test_producing_version_and_key_conditions_reject_each_change(self):
+        chain = 'shortened'
+        directory = self.root(chain) / self.relative(chain).parent
+        key_input = json.loads((directory / 'key-input.json').read_text())
+        key_input['pvs'][0]['pv'] += 'X'
+        keys = json.loads((directory / 'expected-keys.json').read_text())
+        first = sorted(keys)[0]
+        keys[first] += 'x'
+        keys_data = json.dumps(keys, sort_keys=True).encode()
+        cases = (
+            ('checker hash', {}, {'checker_sha256': '0' * 64}, 'approved producing version'),
+            ('helper hash', {}, {'helper_source_sha256': '0' * 64}, 'approved producing version'),
+            ('key input name', {'key-input.json': json.dumps(key_input).encode()}, {}, 'Chunk key input differs'),
+            ('properties hash', {'archappl.properties': b'changed=1\n'}, {}, 'properties differ'),
+            ('expected keys hash', {}, {'expected_keys_sha256': '0' * 64}, 'Expected chunk keys differ'),
+            ('expected key value', {'expected-keys.json': keys_data},
+             {'expected_keys_sha256': hashlib.sha256(keys_data).hexdigest()}, 'Unexpected chunk key change'),
+            ('proof identity', {}, {'identity': {'boot_id': 'other', 'invocation_id': 'other', 'jvms': {}}},
+             'identity differs'))
+        for label, files, fields, message in cases:
+            with self.subTest(case=label):
+                variant, approved = self.reproof(chain, files, fields)
+                with self.assertRaisesRegex(RuntimeError, message):
+                    focused.recheck_acceptance(variant, chain, approved)
+
+    def test_configuration_comparison_is_strict_on_the_real_final_inventory(self):
+        """The real final inspection stands in for a fresh inventory; the guest runs compare a live one."""
+        chain = 'default'
+        acceptance = focused.recheck_acceptance(self.root(chain), chain)
+        final = json.loads((self.root(chain) / 'final-inspection/inventory.json').read_text())
+        focused.check_recheck_configuration(acceptance, final)
+        for key in ('artifacts', 'pvs', 'flags'):
+            changed = copy.deepcopy(final)
+            if key == 'pvs':
+                changed['pvs'][0]['typeinfo']['chunkKey'] = None
+            elif key == 'flags':
+                changed['flags']['__extra'] = True
+            else:
+                changed['artifacts']['heads']['maven'] = '0' * 40
+            with self.subTest(key=key), self.assertRaisesRegex(RuntimeError, 'differs from the recheck inventory: ' + key):
+                focused.check_recheck_configuration(acceptance, changed)
+
+
+class BundleReplacementTests(unittest.TestCase):
+    """Run the real replacement step on real directories; only systemctl is replaced.
+
+    The security context of copied files is not exercised here; the guest delivery check compares it.
+    """
+
+    HERE = Path(__file__).resolve().parent
+
+    def setUp(self):
+        spec = importlib.util.spec_from_file_location('replace_bundle', self.HERE / 'replace-bundle.py')
+        self.step = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(self.step)
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.base = Path(self.temp.name)
+        self.installed = self.base / 'etl-soak'
+        self.installed.mkdir()
+        for member in contract.BUNDLE_FILES:
+            shutil.copyfile(self.HERE / member, self.installed / member)
+        contract.freeze(self.installed)
+        extras = {'pvs-all.csv': (self.HERE.parent / 'fixtures/pvs-all.csv').read_bytes(),
+                  'aasoak.db': b'record(ai, "X") {}\n', 'register.py': b'print(1)\n',
+                  '_inputs/retest-deadband.db': b'record(ai, "Y") {}\n'}
+        for name, content in extras.items():
+            path = self.installed / name
+            path.parent.mkdir(exist_ok=True)
+            path.write_bytes(content)
+        (self.installed / 'register.py').chmod(0o750)
+        os.utime(self.installed / 'aasoak.db', ns=(1_700_000_000_000_000_000, 1_700_000_000_000_000_000))
+        self.candidate = self.base / 'candidate'
+        self.candidate.mkdir()
+        for member in contract.BUNDLE_FILES:
+            shutil.copyfile(self.HERE / member, self.candidate / member)
+        (self.candidate / 'focused.py').write_bytes((self.HERE / 'focused.py').read_bytes() + b'\n# candidate\n')
+        contract.freeze(self.candidate)
+        self.accepted = focused.file_digest(self.candidate / 'bundle.json')
+        self.before = self.step.tree(self.installed)
+
+    def systemctl(self, states=None):
+        real = subprocess.run
+
+        def transport(args, **kwargs):
+            if args[0] == 'systemctl':
+                return subprocess.CompletedProcess(args, 0, (states or {}).get(args[2], 'inactive') + '\n', '')
+            return real(args, **kwargs)
+        return patch('subprocess.run', side_effect=transport)
+
+    def siblings(self):
+        return sorted(path.name for path in self.base.iterdir())
+
+    def test_swap_replaces_only_the_members_and_carries_every_other_file(self):
+        with self.systemctl():
+            result = self.step.replace(self.installed, self.candidate, self.accepted, now='20261010T000000Z')
+        self.assertEqual(self.step.frozen_members(self.installed, self.accepted), sorted(contract.BUNDLE_FILES))
+        after = self.step.tree(self.installed)
+        members = set(contract.BUNDLE_FILES) | {'bundle.json'}
+        self.assertEqual({name: value for name, value in after.items() if name not in members},
+                         {name: value for name, value in self.before.items() if name not in members})
+        self.assertNotEqual(after['focused.py'][0], self.before['focused.py'][0])
+        preserved = Path(result['preserved'])
+        self.assertEqual(self.step.tree(preserved), self.before)
+        self.assertEqual(self.siblings(), ['candidate', 'etl-soak', 'etl-soak.prev-20261010T000000Z'])
+
+    def test_rollback_needs_two_renames_and_restores_the_preserved_tree(self):
+        with self.systemctl():
+            result = self.step.replace(self.installed, self.candidate, self.accepted, now='20261010T000000Z')
+        outcome = self.step.rollback(self.installed, result['preserved'], now='20261010T000100Z')
+        self.assertEqual(self.step.tree(self.installed), self.before)
+        self.assertEqual(self.step.frozen_members(Path(outcome['rejected']), self.accepted),
+                         sorted(contract.BUNDLE_FILES))
+        self.assertEqual(self.siblings(), ['candidate', 'etl-soak', 'etl-soak.rejected-20261010T000100Z'])
+        with self.assertRaisesRegex(RuntimeError, 'installed and preserved directories'):
+            self.step.rollback(self.installed, self.base / 'etl-soak.prev-missing', now='20261010T000200Z')
+
+    def test_refusals_leave_the_installed_directory_and_siblings_untouched(self):
+        broken = self.base / 'broken'
+        shutil.copytree(self.candidate, broken)
+        (broken / 'measure.py').write_bytes((broken / 'measure.py').read_bytes() + b'\n')
+        cases = (('wrong accepted hash', self.candidate, '0' * 64, {}, 'differs from the accepted SHA256'),
+                 ('hash not filled in', self.candidate, None, {}, 'not filled in'),
+                 ('member changed after the freeze', broken, self.accepted_of(broken), {},
+                  'Bundle member differs from the frozen bundle: measure.py'),
+                 ('unit active', self.candidate, self.accepted, {'etl-soak-sample.timer': 'active'},
+                  'must be inactive is active'),
+                 ('finish unit activating', self.candidate, self.accepted, {'etl-soak-finish.service': 'activating'},
+                  'must be inactive is active'))
+        for label, bundle, accepted, states, message in cases:
+            with self.subTest(case=label), self.systemctl(states):
+                with self.assertRaisesRegex(RuntimeError, message):
+                    self.step.replace(self.installed, bundle, accepted, now='20261010T000000Z')
+                self.assertEqual(self.step.tree(self.installed), self.before)
+                self.assertEqual(self.siblings(), ['broken', 'candidate', 'etl-soak'])
+        (self.base / ('etl-soak.new-' + self.accepted[:8])).mkdir()
+        with self.systemctl(), self.assertRaisesRegex(RuntimeError, 'Refusing an existing sibling'):
+            self.step.replace(self.installed, self.candidate, self.accepted, now='20261010T000000Z')
+        self.assertEqual(self.step.tree(self.installed), self.before)
+
+    def accepted_of(self, directory):
+        return focused.file_digest(directory / 'bundle.json')
+
+    def test_archive_bundle_is_unpacked_and_unsafe_members_are_rejected(self):
+        archive = self.base / 'bundle.tar'
+        with tarfile.open(archive, 'w') as handle:
+            for member in (*contract.BUNDLE_FILES, 'bundle.json'):
+                handle.add(self.candidate / member, arcname=member)
+        with self.systemctl():
+            self.step.replace(self.installed, archive, self.accepted, now='20261010T000000Z')
+        self.assertEqual(self.step.frozen_members(self.installed, self.accepted), sorted(contract.BUNDLE_FILES))
+        unsafe = self.base / 'unsafe.tar'
+        with tarfile.open(unsafe, 'w') as handle:
+            info = tarfile.TarInfo('../outside')
+            info.size = 0
+            handle.addfile(info, io.BytesIO(b''))
+        with self.systemctl(), self.assertRaisesRegex(RuntimeError, 'Unsafe bundle archive member'):
+            self.step.replace(self.base / 'etl-soak', unsafe, self.accepted, now='20261010T000300Z')
 
 
 if __name__ == '__main__':
