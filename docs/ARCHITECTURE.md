@@ -167,6 +167,8 @@ a read-only prerequisite play. Its group variables select the system-only
 proxy scope, SQLite backend, full source pins, and an explicit site checkout
 owner. The proxy remains a separate first precondition. Runtime membership in
 `rocky8` and `archiver_server_sqlite` supplies both OS and group variables.
+The group sets `common_manage_sudo=false` to preserve the existing sudo policy
+and `chrony_ptp_kvm=false` to omit VM clock setup and synchronization waits.
 
 ### Build Pattern
 

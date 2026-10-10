@@ -57,7 +57,8 @@
       exit 1
     fi
   register: sudoers_includedir
-  changed_when: "sudoers_includedir.stdout | trim == 'changed'"
+  changed_when: "sudoers_includedir.stdout | default('') | trim == 'changed'"
+  when: common_manage_sudo | bool
 
 - name: Expose the KVM PTP clock for chrony
   ansible.builtin.raw: |

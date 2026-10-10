@@ -36,4 +36,5 @@
       exit 1
     fi
   register: secure_path_dropin
-  changed_when: "secure_path_dropin.stdout | trim == 'changed'"
+  changed_when: "secure_path_dropin.stdout | default('') | trim == 'changed'"
+  when: common_manage_sudo | bool

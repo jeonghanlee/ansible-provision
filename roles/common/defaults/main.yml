@@ -54,6 +54,10 @@ common_pkg_core:
 # Debian family only: locale support.
 common_locale: "en_US.UTF-8"
 
+# Existing servers retain their administrator-owned sudo policy. Other
+# assemblies manage the secure_path drop-in and includedir ordering.
+common_manage_sudo: true
+
 # Chrony configuration content; consumed only by this role.
 ntp_servers:
   - "pool.ntp.org"

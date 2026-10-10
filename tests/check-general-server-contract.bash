@@ -50,6 +50,8 @@ expected = {
     "archiver_env_ref": "e2ade5a184098379424ed87972ff308490eeedec",
     "archiver_maven_src_tag": "af2e734857dab01105576086adeca0d4f318d6ee",
     "epics_ioc_engineers": [],
+    "common_manage_sudo": False,
+    "chrony_ptp_kvm": False,
     "epics_os_dir": "rocky-8.10",
 }
 for key, value in expected.items():
