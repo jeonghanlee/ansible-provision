@@ -13,6 +13,7 @@ import collect
 import observe
 import contract
 import journal_retention
+import focused
 
 
 def launch(target, duration, chain):
@@ -46,6 +47,9 @@ def launch(target, duration, chain):
         capacity.update({'observed_at': datetime.datetime.now(datetime.timezone.utc).isoformat(),
                          'available_bytes': filesystem.f_bavail * filesystem.f_frsize})
         collect.write_json(capacity_path, capacity)
+        focused.continuity(focused.ROOT / chain, chain)
+        if collect.sample(observe.OUT, observe.TOOLS / 'pvs-all.csv'):
+            raise RuntimeError('Final launch readiness collection failed')
         remaining = (target - datetime.datetime.now(datetime.timezone.utc)).total_seconds()
         if remaining > 0:
             time.sleep(remaining)

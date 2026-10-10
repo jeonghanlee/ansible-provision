@@ -33,6 +33,7 @@ verification results are in [the work register](../../docs/milestone-38560eb.md)
 | `etl-pass/aggregate.py`, `evidence.py`, `rate-semantics.json` | Portable numerical aggregation, bounded GC overlap handling and pinned metric meanings |
 | `etl-pass/journal_coverage.py`, `journal_retention.py`, `test_journal.py` | System-only checkpoints, bounded sequence coverage, measured retention budgets and local arithmetic/parser checks |
 | `etl-pass/test_contract.py` | Contract, bundle, fixture-preservation and retained-export replay checks |
+| `etl-pass/focused.py`, `PBFixture.java`, `test_focused.py` | Installed configuration inventory, real writer/decoder, automatic two-hop physical/HTTP checks and subsequent regular-pass evidence |
 | `etl-pass/restart-observation.py` | Preserve a previous observation and restart its appliance with bounded GC/JFR settings and persistent ETL pass logging |
 | `etl-pass/common.yml`, `shortened.yml`, `default.yml` | Fixed source pins, heap/database settings and the two store-chain configurations |
 | `fixtures/` | Three IOC databases and four PV lists for the 100/500/903-PV populations |
@@ -56,8 +57,11 @@ and the EPICS 1.3.0 distribution with Base 7.0.10. The executed VM baseline is
 The current collector uses the MariaDB Unix socket. Each of mgmt, engine, etl
 and retrieval has a 256M minimum and maximum heap.
 
-`common.yml` pins epicsarchiverap-env `d09dca7` and epicsarchiverap-maven
-`aa953a44`. Apply it with exactly one store configuration through the shipped
+`common.yml` pins epicsarchiverap-env `482cf2939ea997064e4a2df64e3cb420681f4566`,
+the verified current head of `release-2.0.1`, and epicsarchiverap-maven
+`162269e7db97f527626ba0b387933a8c47e8bb57`. Deployment variables require
+unique keys and plain double-quoted scalar values; other YAML forms are rejected
+by the source-pin guard. Apply it with exactly one store configuration through the shipped
 `archiver_dev_uds` species (`archiver_dev` is a deprecated alias), using a separately supplied
 private inventory.
 
@@ -108,16 +112,143 @@ change appliance state; use them only in the intended isolated test environment.
 
 `install-fixture.py` requires an empty configuration database, the exact fixture
 hash and no existing observation manifest. It preserves a private configuration
-backup, configures loopback CA discovery, installs the IOC and measurement
-units, then restarts the appliance. It does not install JFR settings or register
-PVs. Supply the three databases and `pvs-all.csv` under the installed tools
-directory before calling it.
+backup, configures loopback CA discovery and installs the IOC and measurement
+units. Both appliance and IOC must be inactive. It starts neither service and
+does not register PVs or install JFR settings. Supply the three databases and
+`pvs-all.csv` under the installed tools directory before calling it. Start the
+IOC and appliance explicitly afterward, apply the accepted override, then register.
 
 `register.py` accepts a fixture CSV, an evidence directory, an optional output
 filename and an optional mgmt URL. It sends one `archivePV` JSON request.
 Registration replies alone do not establish readiness: the collector must
 observe all 903 expected PVs connected and archiving, no unexpected PVs,
 synchronized time and healthy services.
+
+### Focused Automatic Transfer Before Soak
+
+The focused workflow requires Python 3.9 or later and the installed JDK 21.
+Verify the deployed interpreter version before running tools; a newer control-host
+interpreter or a grammar-only check does not establish target runtime compatibility.
+Use a fresh isolated appliance with all 903 fixture PVs connected and the accepted
+deadband variant, before instrumentation or any observation manifest exists.
+
+`focused.py run --chain=shortened` or `--chain=default` records all effective store
+URLs, reductions, conditional flags, artifacts and process identities independently
+of soak preparation. It installs persistent pass DEBUG, compiles `PBFixture.java`
+against installed classes and normally stops the appliance. The helper seeds four
+existing scalar-double policy PVs using the shipped PlainPB writer in an empty
+staging store. Normal service startup and the real ticker perform ETL; the tools
+never call ETL ticks or jobs themselves.
+Completion permits an initially absent `chunkKey` only when it equals the exact
+key independently generated for that PV by the installed converter class and
+the unchanged deployed properties. All 903 PVs are checked. Existing keys must
+remain identical; all other effective settings, flags, artifacts, tools and
+process identities remain subject to exact comparison. The four selected PVs'
+physical PB paths must also agree with the independently generated keys.
+
+`focused.py recheck --chain=<chain>` accepts only a retained failure at the final
+configuration comparison. It checks the original startup and repeat PB/HTTP
+records, real source sample reduction expectations, regular pass records,
+preparation hashes and unchanged running identity. It writes a separate
+`recheck-<timestamp>/result.json`; the original records and `Incomplete` result
+remain unchanged. This record-only proof does not satisfy the complete focused
+proof required by continuity or authorize a soak. Run the checker from a separate
+directory with its imports pointing to the original installed tools, preserving
+the original tool inventory and compiled helper.
+Before stopping, live STS events must be readable. With STS consolidation enabled,
+normal shutdown can empty STS into unreduced MTS. The workflow compares each known
+source timestamp's exact raw-event, value and alarm multiplicities across STS/MTS,
+including matching events already in MTS. New timestamps received before shutdown
+are allowed. Known source events in LTS and unsupported shutdown settings are rejected.
+Both physical snapshots and the comparison proof are retained before any seed write.
+The workflow then stops the IOC, requires both units inactive and every JVM absent,
+and preserves the registration database and all three preparation storage trees.
+A verified private archive contains every original file. Each complete active tree
+is renamed to an absent `preparation-stores` destination outside all scanned roots
+on the same filesystem; hashes and ownership are rechecked. Empty roots are created
+at the original paths with their original ownership, modes and security attributes.
+Original data and archives are retained. A collision, symlink, overlapping root,
+cross-filesystem destination or partial move stops preparation without automatic
+retry or deletion; the location of every completed move is recorded.
+
+The real PB path inventory for every selected PV must be empty in STS/MTS/LTS
+before seed, and MTS/LTS must remain empty afterward. Empty bounded event windows
+do not satisfy this condition when files remain. Seed and exact writer readback run
+while the appliance and IOC are stopped. The database, source pins and tools must
+remain unchanged. The IOC then starts while the appliance remains stopped.
+`PBFixture` reads real DBR_TIME_DOUBLE samples through the installed JCA library
+using loopback discovery, preserving full seconds/nanoseconds, value and alarm.
+Each selected PV must have a timestamp strictly later than its last seeded sample.
+Every attempted CA read is retained; failure or timeout prevents appliance startup.
+After rechecking the seeded files and preservation proof, the appliance starts
+normally and all 903 names must again be connected and archiving. No stop, restart
+or consolidation may occur between seed and completion of automatic transfer and
+regular-repeat checks.
+
+`common.yml`, the focused source guards and initializer SOURCE_PINS contain the
+same approved full aa-env/Maven commits. Both inspectors reject different installed
+commits or deployment-variable disagreement. The frozen bundle includes deployment
+variables and the offline fixture installer. Final success verifies the immutable
+preparation binding and preserved trees, separately from the new seed/run evidence.
+PB snapshots decode the real files and retain only manifest intervals: the old fixture,
+intermediate marker, recent bin and a completed 60-second pre-stop source interval.
+All file paths and decoded-event counts are recorded. Each interval is at most 300
+seconds, with at most eight intervals including the pre-stop intervals preserved
+across seed-time selection. Overlapping intervals retain each event only once.
+The shutdown comparison covers these captured source intervals, not every live sample.
+The helper retains its 256 MiB heap. Logging setup reuses an existing focused drop-in
+only when its entire content matches the required configuration path; other content
+is rejected. The generated logging configuration and drop-in hashes are retained.
+The optional `inventory` action writes to `/var/lib/etl-focused/inventory-<chain>/`,
+separately from the execution directory, so inspection can precede `run`.
+The latest installer deploys an exploded WAR. Inspection compares all installed
+class/JAR bytes with the corresponding retained build WAR and records both hashes.
+
+An empty completed-pass poll is valid and waits for real ticker results. Malformed
+journal JSON is rejected. For an interrupted empty-pass poll after a verified seed,
+`prepare-resume` preserves original files and compiled-helper hashes, the original
+failure and logging configuration. It requires the same boot and service invocation,
+with all four JVMs starting inside the original execution window. `resume` requires
+these identities and all source hashes to remain unchanged, then independently
+inspects all 903 effective settings, flags, artifacts and unchanged helper tools.
+It performs the same physical/HTTP and regular-pass checks as `run`, without
+stopping the appliance, adding seeds or manually invoking ETL. The preserved source,
+resume guard and current inspection are included in the final proof hashes.
+Before `Passed`, it compares the final inspection and current boot/invocation/JVM
+identities with the original runtime, and checks the approved resume tools again.
+All preserved original files, immutable live inputs, compiled helper and logging
+hashes must still match the guard. Only live result and pass outputs may change;
+final inspection uses a separate directory to preserve the original inventory.
+
+The physical baseline contains eight old samples at reduction-bin boundaries and
+two intermediate/recent markers for each selected PV. Raw policies require identical
+timestamp/raw-event multiplicities; lastSample_10/30/60 policies require the independently
+specified last timestamps, values, status and severity in each bin. Both old sources
+must disappear. The intermediate marker remains exactly once in the tier selected by
+actual processingTime. After the recent marker's bin closes, the workflow retains the
+actual STS/MTS bin samples and requires matching HTTP input. Before LTS reduction it
+expects those exact source events; in LTS a reduced policy expects the latest captured
+timestamp, value, status and severity. Ongoing IOC samples can replace the recent marker
+legitimately. Raw policies retain every captured event. Physical and HTTP comparisons
+use the same fixed bin, and the original source proof remains bound by hashes.
+HTTP retrieval also returns the expected fixed historical interval.
+
+Every completed pass in the focused invocation must report 903 PVs/jobs, no failed,
+aborted or skipped jobs, no space deletion and no overrun. Each transition must complete
+a subsequent regular grid pass before physical/HTTP equality is checked again. The
+default chain can require 28800 seconds plus 600 seconds for ticker/order completion.
+Evidence remains under `/var/lib/etl-focused/<chain>/` and incomplete runs retain errors.
+
+Only after focused success, start the 26-hour JFR recording and prepare the observation.
+After the last readiness restart, `focused.py continuity --chain=<chain>` rechecks
+artifacts, all PV settings/flags, current InvocationID and JVM PID/start identities, and
+physical/HTTP data against the original proof. This is launch continuity evidence;
+the original `inventory.json` remains immutable. Each inspection writes a separate
+`continuity-<timestamp>-inventory.json`, whose path and hash are bound in
+`readiness-continuity.json` and checked again before launch.
+it does not establish restart-fault, commit-failure or deletion-failure safety.
+`launch-retest.py` performs this readback followed by a real full sample. Observation
+start rejects absent, changed or stale continuity evidence and insufficient JFR time.
 
 ### GC And Latency Extension
 

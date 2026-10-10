@@ -5,6 +5,7 @@ import datetime
 import argparse
 import hashlib
 import json
+import re
 from pathlib import Path
 import urllib.parse
 import subprocess
@@ -29,7 +30,38 @@ BUNDLE_FILES = ('contract.py', 'aggregate.py', 'evidence.py', 'observe.py', 'col
                 'measure.py', 'health-event.py', 'prepare-retest.py', 'verify-health.py',
                 'verify-runtime.py', 'verify-chain.py', 'launch-retest.py',
                 'apply-fixture.py', 'evaluate.py', 'heap.jfc', 'resource_helpers.py',
-                'rate-semantics.json', 'journal_coverage.py', 'journal_retention.py', 'initialize-fresh.py')
+                'rate-semantics.json', 'journal_coverage.py', 'journal_retention.py', 'initialize-fresh.py',
+                'focused.py', 'PBFixture.java', 'common.yml', 'install-fixture.py')
+
+
+def deployment_pins(directory, expected):
+    configuration = (Path(directory) / 'common.yml').read_text()
+    fields = {'env': 'archiver_env_ref', 'maven': 'archiver_maven_src_tag'}
+    variables = {}
+    document_started = False
+    for line in configuration.splitlines():
+        if not line.strip() or line.lstrip().startswith('#'):
+            continue
+        if line == '---' and not document_started:
+            document_started = True
+            continue
+        document_started = True
+        match = re.fullmatch(r'([a-z][a-z0-9_]*):[ \t]+"([^"\\\r\n]*)"[ \t]*', line)
+        if not match:
+            raise RuntimeError('Deployment variables require plain double-quoted scalar entries')
+        field, value = match.groups()
+        if field in variables:
+            raise RuntimeError('Exactly one full deployment commit is required; duplicate key: ' + field)
+        variables[field] = value
+    actual = {}
+    for name, field in fields.items():
+        value = variables.get(field, '')
+        if not re.fullmatch(r'[0-9a-f]{40}', value):
+            raise RuntimeError('Exactly one full deployment commit is required: ' + field)
+        actual[name] = value
+    if actual != expected:
+        raise RuntimeError('Deployment variables differ from approved source pins')
+    return actual
 
 
 def digest(path):
@@ -73,6 +105,8 @@ def deployed_configuration(chain, urls):
             raise RuntimeError('Deployed partition granularity does not match selected chain')
         if index < 2 and row.get('hold') != ['2']:
             raise RuntimeError('Deployed source hold must be two partitions')
+        if index < 2 and row.get('gather') != ['1']:
+            raise RuntimeError('Deployed source gather must be one partition')
     return expected
 
 

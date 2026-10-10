@@ -41,6 +41,51 @@ def module(name):
 
 
 class ContractTests(unittest.TestCase):
+    def test_deployment_guard_rejects_actual_yaml_pin_overrides(self):
+        try:
+            from ansible.parsing.dataloader import DataLoader
+        except ImportError:
+            self.skipTest('Actual Ansible loader required on the control host')
+        import focused
+        expected = {'env': focused.ENV_HEAD, 'maven': focused.MAVEN_HEAD}
+        original = (HERE / 'common.yml').read_text()
+        loader = DataLoader()
+        parsed = loader.load(original)
+        self.assertEqual(parsed['archiver_env_ref'], expected['env'])
+        self.assertEqual(parsed['archiver_maven_src_tag'], expected['maven'])
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            nonmapping = original.replace(': ', ':')
+            self.assertIsInstance(loader.load(nonmapping), str)
+            (root / 'common.yml').write_text(nonmapping)
+            with self.assertRaisesRegex(RuntimeError, 'plain double-quoted scalar'):
+                contract.deployment_pins(root, expected)
+            for field in ('archiver_env_ref', 'archiver_maven_src_tag'):
+                for value in ('"' + 'f' * 40 + '"', "'" + 'f' * 40 + "'", 'f' * 40):
+                    changed = original + '\n' + field + ': ' + value + '\n'
+                    with self.subTest(field=field, value=value):
+                        self.assertEqual(loader.load(changed)[field], 'f' * 40)
+                        (root / 'common.yml').write_text(changed)
+                        with self.assertRaises(RuntimeError):
+                            contract.deployment_pins(root, expected)
+
+    def test_deployment_and_both_inspectors_require_the_same_approved_commits(self):
+        import focused
+        initializer = module('initialize-fresh')
+        expected = {'env': focused.ENV_HEAD, 'maven': focused.MAVEN_HEAD}
+        self.assertEqual({name.removesuffix('_head'): value for name, value in initializer.SOURCE_PINS.items()}, expected)
+        self.assertEqual(contract.deployment_pins(HERE, expected), expected)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            original = (HERE / 'common.yml').read_text()
+            for name, value in expected.items():
+                (root / 'common.yml').write_text(original.replace(value, '0' * 40))
+                with self.subTest(name=name), self.assertRaisesRegex(RuntimeError, 'Deployment variables differ'):
+                    contract.deployment_pins(root, expected)
+            (root / 'common.yml').write_text(original + '\narchiver_env_ref: "' + expected['env'] + '"\n')
+            with self.assertRaisesRegex(RuntimeError, 'Exactly one full deployment commit'):
+                contract.deployment_pins(root, expected)
+
     @unittest.skipUnless(EXTRACTED, 'Actual retained observation inputs are required')
     def test_fresh_initialization_refuses_real_prior_observation_without_changes(self):
         initializer = module('initialize-fresh')
@@ -148,8 +193,10 @@ class ContractTests(unittest.TestCase):
                 status = 200
             def transport(url, **kwargs):
                 import urllib.parse
+                if url.endswith('/getAllNamedFlags'):
+                    return Response(b'{}')
                 queried.add(urllib.parse.parse_qs(urllib.parse.urlsplit(url).query)['pv'][0])
-                stores = ['pb://localhost/arch/' + tier + '?partitionGranularity=' + granularity + '&hold=2'
+                stores = ['pb://localhost/arch/' + tier + '?partitionGranularity=' + granularity + '&hold=2&gather=1'
                           for tier, granularity in zip(('sts', 'mts', 'lts'), contract.CHAINS['shortened'])]
                 return Response(json.dumps({'dataStores': stores}).encode())
             with patch.object(observe, 'TOOLS', tools), patch.object(observe, 'OUT', out), \
@@ -241,6 +288,8 @@ class ContractTests(unittest.TestCase):
                     stdout = ' '.join(['-1'] * 20)
                     self.assertEqual(args[-20:], [name + suffix for name in
                         ['AASOAK:DB:CH' + str(n).zfill(2) for n in range(1, 11)] for suffix in ('.MDEL', '.ADEL')])
+                elif args[:2] == ['systemctl', 'show'] and 'ActiveState' in args:
+                    stdout = 'inactive\n'
                 elif args[:2] == ['systemctl', 'show']:
                     base = (units / collect.IOC_UNIT).read_text()
                     command = next(line[len('ExecStart='):] for line in base.splitlines() if line.startswith('ExecStart='))

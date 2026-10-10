@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install the original fixture and collector without registering PVs."""
+"""Install fixture units offline; registration and startup are explicit operations."""
 
 import hashlib
 import json
@@ -21,6 +21,10 @@ def main():
     os.environ['PATH'] = '/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin'
     if (OUT / 'observation.json').exists():
         raise RuntimeError('An observation has already started')
+    for unit in ('epicsarchiverap-maven.service', 'etl-soak-ioc.service'):
+        state = subprocess.check_output(['systemctl', 'show', unit, '--value', '-p', 'ActiveState'], text=True).strip()
+        if state not in ('inactive', 'failed'):
+            raise RuntimeError('Fixture installation requires an inactive unit: ' + unit)
     if hashlib.sha256((TOOLS / 'pvs-all.csv').read_bytes()).hexdigest() != FIXTURE_SHA:
         raise RuntimeError('Unexpected fixture digest')
     count = subprocess.check_output(['mysql', '--protocol=SOCKET', '-N', '-B', 'archappl',
@@ -61,9 +65,8 @@ def main():
         'Type=oneshot\nUMask=0077\nExecStart=/usr/bin/python3 /usr/local/share/etl-soak/observe.py finish\n'
         'TimeoutStartSec=15min\n')
     subprocess.run(['systemctl', 'daemon-reload'], check=True)
-    subprocess.run(['systemctl', 'enable', '--now', 'etl-soak-ioc.service'], check=True)
-    subprocess.run(['systemctl', 'restart', 'epicsarchiverap-maven.service'], check=True)
-    print(json.dumps({'fixture_sha256': FIXTURE_SHA, 'ca_address': '127.0.0.1', 'ca_auto_address': 'NO'}))
+    print(json.dumps({'fixture_sha256': FIXTURE_SHA, 'ca_address': '127.0.0.1', 'ca_auto_address': 'NO',
+                      'startup_required': True}))
 
 
 if __name__ == '__main__':

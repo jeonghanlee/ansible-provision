@@ -137,11 +137,20 @@ def start(duration=DURATION, chain='shortened'):
         if contract.deployed_configuration(chain, row['dataStores']) != prepared['configuration']:
             raise RuntimeError('Deployed store evidence differs from preparation')
     before = unit_state()
+    import focused
+    focused_proof = focused.require_continuity(chain)
+    measurement = json.loads((OUT / 'measurement-config.json').read_text())
+    uptime = float(Path('/proc/uptime').read_text().split()[0])
+    maximum_age = max(uptime - int(jvm['start']) / os.sysconf('SC_CLK_TCK')
+                      for jvm in focused_proof['identity']['jvms'].values())
+    if measurement['jfr_duration_hours'] * 3600 - maximum_age < duration + 2700:
+        raise RuntimeError('JFR duration cannot cover the observation and final capture')
     journal_proof = journal_retention.validate(OUT / 'journal-retention-proof.json', TOOLS)
     now = datetime.datetime.now(datetime.timezone.utc)
     monotonic_start = time.monotonic()
     end = now + datetime.timedelta(seconds=duration)
     record = {'started_at': now.isoformat(), 'earliest_finish_at': end.isoformat(),
+              'focused_continuity': focused_proof,
               'initial_sample_record': 'initial-sample.json',
               'duration_seconds': duration, 'boot_id': BOOT.read_text().strip(),
               'monotonic_start': monotonic_start, 'fixture_sha256': latest['fixture_sha256'],

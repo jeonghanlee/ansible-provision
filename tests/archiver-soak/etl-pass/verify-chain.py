@@ -33,7 +33,10 @@ def verify(chain, duration):
                 raise RuntimeError('PV configuration HTTP failure')
             data = json.load(response)
         configuration = contract.deployed_configuration(chain, data['dataStores'])
-        return {'pv': row['pv'], 'dataStores': data['dataStores'], 'configuration': configuration}
+        modes = [urllib.parse.parse_qs(urllib.parse.urlsplit(url).query, keep_blank_values=True)
+                 for url in data['dataStores']]
+        return {'pv': row['pv'], 'dataStores': data['dataStores'], 'configuration': configuration,
+                'store_modes': modes, 'typeinfo': data}
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as executor:
         observed = list(executor.map(query, rows))
@@ -48,6 +51,10 @@ def verify(chain, duration):
               'duration_seconds': duration, 'verified_pvs': len(observed),
               'fixture_sha256': contract.digest(fixture), 'source_sha256': contract.digest(source),
               'tool_hashes': hashes}
+    with urllib.request.urlopen(collect.MGMT + '/getAllNamedFlags', timeout=30) as response:
+        if response.status != 200:
+            raise RuntimeError('Named flags HTTP failure')
+        record['flags'] = json.load(response)
     collect.write_json(observe.OUT / 'chain-verification.json', record)
     print(json.dumps({'chain': chain, 'verified_pvs': len(observed)}))
 

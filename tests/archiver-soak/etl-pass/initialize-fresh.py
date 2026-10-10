@@ -22,8 +22,8 @@ import measure
 import observe
 
 ENV_SOURCE = Path('/opt/epicsarchiverap-env-src/epicsarchiverap-env')
-SOURCE_PINS = {'env_head': 'd09dca7a604840bc3f8dcd9edd7a7434fdf6992e',
-               'maven_head': 'aa953a44bd2e6fb2a299224b97d365e7753a2fd8'}
+SOURCE_PINS = {'env_head': '482cf2939ea997064e4a2df64e3cb420681f4566',
+               'maven_head': '162269e7db97f527626ba0b387933a8c47e8bb57'}
 INSTALL = Path('/opt/epicsarchiverap-maven')
 STAMP = Path('/var/tmp/archiver-build.config')
 LOGGER = 'org.epics.archiverappliance.etl.common.ETLPassDriver'
@@ -44,6 +44,8 @@ def fresh():
 
 
 def deployment():
+    contract.deployment_pins(observe.TOOLS, {name.removesuffix('_head'): value
+                                          for name, value in SOURCE_PINS.items()})
     hashes = observe.tool_hashes()
     pins = {name: observe.checked(['git', '-C', str(path), 'rev-parse', 'HEAD'])
             for name, path in (('env_head', ENV_SOURCE),
