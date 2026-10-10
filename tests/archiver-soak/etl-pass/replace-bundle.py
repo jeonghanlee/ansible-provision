@@ -82,6 +82,15 @@ def frozen_members(directory, accepted):
     return sorted(files)
 
 
+def reject_links(directory, label):
+    """Refuse a symbolic link or a non-regular file: an overwrite would write through it."""
+    for path in [Path(directory), *sorted(Path(directory).rglob('*'))]:
+        if path.is_symlink():
+            raise RuntimeError('Refusing a symbolic link in the ' + label + ': ' + str(path))
+        if not (path.is_dir() or path.is_file()):
+            raise RuntimeError('Refusing a non-regular file in the ' + label + ': ' + str(path))
+
+
 def tree(directory):
     """Map every relative file path of a directory to its digest, mode and timestamp."""
     found = {}
@@ -99,8 +108,10 @@ def replace(installed, bundle, accepted, units=INACTIVE_UNITS, now=None):
     installed = Path(installed)
     if not installed.is_dir():
         raise RuntimeError('The installed directory is missing: ' + str(installed))
+    reject_links(installed, 'installed directory')
     with tempfile.TemporaryDirectory() as scratch:
         directory = unpack(bundle, scratch)
+        reject_links(directory, 'frozen bundle')
         members = frozen_members(directory, accepted)
         staged = installed.parent / (installed.name + '.new-' + accepted[:8])
         preserved = installed.parent / (installed.name + '.prev-' + (now or stamp()))
@@ -123,14 +134,17 @@ def replace(installed, bundle, accepted, units=INACTIVE_UNITS, now=None):
             raise RuntimeError('A file that is not a bundle member changed in the staged copy')
         commands = ['mv -T -- ' + str(installed) + ' ' + str(rejected),
                     'mv -T -- ' + str(preserved) + ' ' + str(installed)]
+        recovery = 'mv -T -- ' + str(preserved) + ' ' + str(installed)
         print('Rollback commands, run in order:', flush=True)
         for command in commands:
             print('  ' + command, flush=True)
+        print('If the second rename fails after the first, no installed directory exists; run:', flush=True)
+        print('  ' + recovery, flush=True)
         installed.rename(preserved)
         staged.rename(installed)
     frozen_members(installed, accepted)
     return {'installed': str(installed), 'preserved': str(preserved), 'staged_name': staged.name,
-            'bundle_json_sha256': accepted, 'members': members, 'rollback': commands}
+            'bundle_json_sha256': accepted, 'members': members, 'rollback': commands, 'recovery': recovery}
 
 
 def rollback(installed, preserved, now=None):

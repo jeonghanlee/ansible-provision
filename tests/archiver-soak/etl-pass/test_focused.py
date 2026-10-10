@@ -718,6 +718,11 @@ class RecheckProofConsumerTests(unittest.TestCase):
         other['proofs']['default'] = other['proofs']['shortened']
         with self.assertRaisesRegex(RuntimeError, 'outside the chain root'):
             focused.recheck_acceptance(self.root('default'), 'default', other)
+        for field, value in (('chain', 'default'), ('result', 'Incomplete')):
+            with self.subTest(proof_field=field):
+                variant, approved = self.reproof(chain, fields={field: value})
+                with self.assertRaisesRegex(RuntimeError, 'Passed recheck proof for this chain is required'):
+                    focused.recheck_acceptance(variant, chain, approved)
 
     def test_evidence_set_condition_rejects_altered_and_missing_files(self):
         chain = 'shortened'
@@ -873,6 +878,29 @@ class BundleReplacementTests(unittest.TestCase):
         with self.systemctl(), self.assertRaisesRegex(RuntimeError, 'Refusing an existing sibling'):
             self.step.replace(self.installed, self.candidate, self.accepted, now='20261010T000000Z')
         self.assertEqual(self.step.tree(self.installed), self.before)
+
+    def test_symbolic_links_and_special_files_are_refused_before_any_write(self):
+        outside = self.base / 'outside.py'
+        outside.write_bytes(b'ORIGINAL OUTSIDE FILE\n')
+        linked = self.installed / 'focused.py'
+        linked.unlink()
+        linked.symlink_to(outside)
+        with self.systemctl(), self.assertRaisesRegex(RuntimeError, 'symbolic link in the installed directory'):
+            self.step.replace(self.installed, self.candidate, self.accepted, now='20261010T000000Z')
+        self.assertEqual(outside.read_bytes(), b'ORIGINAL OUTSIDE FILE\n')
+        self.assertEqual(self.siblings(), ['candidate', 'etl-soak', 'outside.py'])
+        linked.unlink()
+        os.mkfifo(linked)
+        with self.systemctl(), self.assertRaisesRegex(RuntimeError, 'non-regular file in the installed directory'):
+            self.step.replace(self.installed, self.candidate, self.accepted, now='20261010T000000Z')
+        linked.unlink()
+        shutil.copyfile(self.HERE / 'focused.py', linked)
+        member = self.candidate / 'measure.py'
+        member.unlink()
+        member.symlink_to(self.HERE / 'measure.py')
+        with self.systemctl(), self.assertRaisesRegex(RuntimeError, 'symbolic link in the frozen bundle'):
+            self.step.replace(self.installed, self.candidate, self.accepted, now='20261010T000000Z')
+        self.assertEqual(self.siblings(), ['candidate', 'etl-soak', 'outside.py'])
 
     def accepted_of(self, directory):
         return focused.file_digest(directory / 'bundle.json')

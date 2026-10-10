@@ -279,7 +279,8 @@ literal). `continuity` records the recheck proof hash beside the original result
 `focused.py check-recheck --chain=<chain> --bundle-root=<frozen bundle directory>
 --scratch=<new directory outside /var/lib/etl-focused>` performs the live comparison without
 writing under the retained tree and records the path of every imported project module in
-`recheck-acceptance.json`. Run it from a private staging directory that holds only the
+`recheck-acceptance.json`. It does not take the per-chain lock, whose file lives under the
+retained tree, so it can run beside a `continuity` action. Run it from a private staging directory that holds only the
 candidate `focused.py` and `PBFixture.java`; the installed modules are found through
 `PYTHONPATH`, behind the script directory.
 
@@ -289,8 +290,11 @@ bundle. `replace --bundle=<directory or tar>` requires `bundle.json` to match th
 or preserved sibling and any active sampler or finish unit, copies the whole installed
 directory with `cp -a` (ownership, mode, timestamps, security context), overwrites only the
 members and `bundle.json`, verifies the staged copy, then renames the installed directory to
-`<installed>.prev-<UTC>` and the staged copy into place. It prints both rollback commands
-first and deletes nothing. `rollback --preserved=<directory>` renames the current
+`<installed>.prev-<UTC>` and the staged copy into place. It refuses a symbolic link or a
+non-regular file in the installed directory or the bundle, because an overwrite would write
+through it. It prints both rollback commands and, for a failure between the two renames, the
+single `mv` that restores the preserved sibling; it deletes nothing except the temporary
+directory used to unpack an archive. `rollback --preserved=<directory>` renames the current
 installation to `<installed>.rejected-<UTC>` and the preserved sibling back into place.
 
 ### GC And Latency Extension
