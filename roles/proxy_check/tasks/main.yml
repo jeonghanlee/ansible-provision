@@ -1,0 +1,112 @@
+---
+# roles/proxy_check/tasks/main.yml
+# Read-only proxy readiness check for a general server. Streams the single-authority
+# cloud-provision checker to the target, authenticates it against the pinned
+# SHA-256, and runs it in check mode with the site-owned private input opened as a
+# read-only descriptor after become. The role never writes, repairs, or reconciles
+# proxy configuration and does not reimplement the checker. Only a fixed result
+# line leaves the target; private values never enter a command line or a log.
+# Raw and root-only so it runs on Rocky Linux without Python-backed modules.
+- name: Run the read-only proxy check
+  ansible.builtin.raw: |
+    /bin/bash -p -s << 'PROXY_CHECK_WRAPPER_EOF'
+    set -euo pipefail
+    export PATH=/usr/sbin:/usr/bin:/sbin:/bin
+    unset BASH_ENV ENV CDPATH
+    umask 0077
+    input={{ proxy_check_input_path | quote }}
+    pinned={{ proxy_check_contract_sha256 | quote }}
+    workspace=""
+    ready_re='^proxy_contract schema=3 mode=check scope=general-server os=rocky identities=6 status=(ready|needs-change)$'
+    refusal_re='^proxy_contract identity=([a-z0-9_-]+) key=([a-z0-9_-]+) reason=([a-z0-9_-]+)$'
+
+    function report {
+      printf 'proxy_check status=%s detail=%s\n' "$1" "$2"
+      exit 0
+    }
+
+    function cleanup {
+      if [[ -n "${workspace}" ]]; then
+        rm -rf -- "${workspace}"
+      fi
+    }
+    trap cleanup EXIT
+    trap 'exit 1' HUP INT TERM
+
+    if [[ "$(id -u)" != 0 ]]; then
+      report refused not-root
+    fi
+    if [[ "${input}" != /* || "${input}" == *[!A-Za-z0-9_./-]* ]]; then
+      report refused invalid-input-path
+    fi
+    if [[ ! "${pinned}" =~ ^[0-9a-f]{64}$ ]]; then
+      report refused invalid-pin
+    fi
+    if [[ ! -f "${input}" || -L "${input}" ]]; then
+      report refused input-unavailable
+    fi
+
+    workspace="$(mktemp -d /run/proxy-check.XXXXXX)"
+    cat > "${workspace}/script" << 'PROXY_CHECK_SCRIPT_EOF'
+    {{ lookup('ansible.builtin.file', proxy_check_contract_path) }}
+    PROXY_CHECK_SCRIPT_EOF
+    chmod 0700 -- "${workspace}/script"
+    actual="$(sha256sum -- "${workspace}/script")"
+    actual="${actual%% *}"
+    if [[ "${actual}" != "${pinned}" ]]; then
+      report refused source-mismatch
+    fi
+
+    rc=0
+    /bin/bash -p "${workspace}/script" check --input-fd 3 3< "${input}" \
+      > "${workspace}/stdout" 2> "${workspace}/stderr" || rc=$?
+    out="$(< "${workspace}/stdout")"
+    err="$(< "${workspace}/stderr")"
+
+    case "${rc}" in
+      0|2)
+        if [[ "${out}" != *$'\n'* && "${out}" =~ ${ready_re} ]]; then
+          if [[ "${rc}" == 0 && "${BASH_REMATCH[1]}" == ready ]]; then
+            report ready none
+          fi
+          if [[ "${rc}" == 2 && "${BASH_REMATCH[1]}" == needs-change ]]; then
+            report needs-change none
+          fi
+        fi
+        report refused invalid-result
+        ;;
+      1)
+        if [[ "${err}" != *$'\n'* && "${err}" =~ ${refusal_re} ]]; then
+          report refused "${BASH_REMATCH[1]}.${BASH_REMATCH[2]}.${BASH_REMATCH[3]}"
+        fi
+        report refused unparsed
+        ;;
+      *)
+        report refused "exit-${rc}"
+        ;;
+    esac
+    PROXY_CHECK_WRAPPER_EOF
+  register: proxy_check_result
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  no_log: true
+
+# Ansible's --check flag alone does not inspect the proxy files; the raw task above
+# always runs the checker. Only a validated fixed line is exposed on failure.
+- name: Require a ready proxy check
+  ansible.builtin.assert:
+    that:
+      - proxy_check_result.rc == 0
+      - proxy_check_result.stdout_lines | length == 1
+      - proxy_check_result.stdout_lines[0] == 'proxy_check status=ready detail=none'
+    fail_msg: >-
+      General-server proxy check is not ready ({{ proxy_check_line }}).
+      Check the server proxy files, proxy_check_input_path, and the pinned checker source.
+    quiet: true
+  vars:
+    proxy_check_line: >-
+      {{ proxy_check_result.stdout_lines[0]
+         if (proxy_check_result.stdout_lines | default([]) | length == 1 and
+             proxy_check_result.stdout_lines[0] is match('^proxy_check status=(needs-change|refused) detail=[a-z0-9_.-]+$'))
+         else 'proxy_check status=refused detail=no-valid-result' }}

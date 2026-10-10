@@ -163,9 +163,24 @@ reports unchanged with either value. Other configuration writers must be
 excluded while reconciliation runs, as required by the producer contract.
 
 The `archiver_server_sqlite` assembly imports `archiver_dev_sqlite.yml` after
-a read-only prerequisite play. Its group variables select the system-only
-proxy scope, SQLite backend, full source pins, and an explicit site checkout
-owner. The proxy remains a separate first precondition. Runtime membership in
+a read-only prerequisite play and a `proxy_check` play. Its group variables
+select the system-only proxy scope, SQLite backend, full source pins, and an
+explicit site checkout owner. The server owns its proxy files; the `proxy_check`
+role only inspects them:
+
+```
+control host                                    target (root, /bin/bash -p)
+  proxy_contract.bash (pinned SHA-256)  ──raw──▶  /run/proxy-check.XXXXXX/script (0700)
+                                                   │ source hash == pinned value
+                                                   └── script check --input-fd 3 3< <private input>
+                                                         exit 0 ready │ 2 needs-change │ 1 refused
+fixed result line  ◀──────────────────────────  proxy_check status=<s> detail=<token>
+```
+
+The raw task runs with `check_mode: false`, `changed_when: false`, and `no_log`;
+only a validated fixed line is shown. `proxy_check` also precedes the
+`archiver_build` operator when `proxy_scope` is `general-server`; the default
+`cloud` scope is unchanged. Runtime membership in
 `rocky8` and `archiver_server_sqlite` supplies both OS and group variables.
 The group sets `common_manage_sudo=false` to preserve the existing sudo policy
 and `chrony_ptp_kvm=false` to omit VM clock setup and synchronization waits.

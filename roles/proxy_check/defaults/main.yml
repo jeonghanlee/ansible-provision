@@ -1,0 +1,19 @@
+---
+# roles/proxy_check/defaults/main.yml
+
+# Persistent private input on the target, owned by the site: root:root 0600 with
+# one hard link, holding the seven schema-3 fields. No value ships here; supply
+# it per host through an inventory override or -e proxy_check_input_path=<path>.
+# The role fails when it is unset.
+proxy_check_input_path: ""
+
+# Read-only checker in the control-host cloud-provision checkout. The role
+# streams it to the target and runs it in check mode. It is never vendored into
+# this repository. Override per site if the checkout does not sit beside this one.
+proxy_check_contract_path: "{{ role_path }}/../../../cloud-provision/bin/proxy_contract.bash"
+
+# SHA-256 of the complete checker source, pinned to cloud-provision commit
+# 05cf57398d09882f628d7356316f31576ca840c6. The staged source must equal this
+# value before it runs, and the private input carries the same value in its
+# script_sha256 field.
+proxy_check_contract_sha256: "dcf63cb79ecaf6a8dc9c955e5c1cec01cb69e3c92db21b9d0a3fa51f3ea36cff"

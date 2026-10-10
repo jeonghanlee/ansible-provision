@@ -1,8 +1,9 @@
 ---
 # playbooks/species/archiver_server_sqlite.yml
 # General-server SQLite provisioning reuses the development operator assembly.
-# Apply op.proxy first with the same site inventory. Read-only preconditions
-# reject an incompatible selection before any operator installs packages.
+# The server owns its proxy configuration. Read-only preconditions reject an
+# incompatible selection, and the proxy_check role requires a ready schema-3
+# checker result, before any operator installs packages.
 - name: Verify general-server SQLite prerequisites
   hosts: vacua
   gather_facts: false
@@ -28,16 +29,17 @@
           printf '%s\n' 'Error: epics_ioc_engineers must select an existing checkout owner' >&2
           exit 1
         fi
-        for control in proxy-contract.input proxy-contract.lock; do
-          path="/run/cloud-provision/${control}"
-          test -s "${path}"
-          grep -Fxq 'schema=2' "${path}"
-          grep -Fxq 'scope=general-server' "${path}"
-        done
-        grep -Fxq 'state=applied' /run/cloud-provision/proxy-contract.lock
         ARCHIVER_SERVER_CHECK_EOF
       changed_when: false
       check_mode: false
+      tags: [always]
+
+- name: Verify general-server proxy readiness
+  hosts: vacua
+  gather_facts: false
+  become: true
+  roles:
+    - role: proxy_check
       tags: [always]
 
 - import_playbook: archiver_dev_sqlite.yml

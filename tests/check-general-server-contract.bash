@@ -96,7 +96,8 @@ printf '%s\n' '[ PASS ] Ansible expands the same eight SQLite operators in order
 # consumer condition. This check uses the controller's actual OS probes.
 make -s -C "${TOP}" archiver_dev_sqlite.rocky8.check \
     RUNTIME_INVENTORY="${WORKSPACE}/runtime.ini" ANSIBLE_LIMIT=localhost \
-    ANSIBLE_TAGS= ANSIBLE_OPTS="-e @${WORKSPACE}/site.yml" > "${WORKSPACE}/full-check.log" 2>&1
+    ANSIBLE_TAGS= ANSIBLE_OPTS="-e @${WORKSPACE}/site.yml -e proxy_scope=cloud" \
+    > "${WORKSPACE}/full-check.log" 2>&1
 grep -Eq '^localhost[[:space:]]+:.*changed=0.*unreachable=0.*failed=0' "${WORKSPACE}/full-check.log"
 grep -Fq 'TASK [archiver_build : Stop on configuration drift against the installed appliance]' "${WORKSPACE}/full-check.log"
 grep -Fq 'TASK [archiver_build : Wait for the detached archiver build to finish]' "${WORKSPACE}/full-check.log"
@@ -133,4 +134,35 @@ expect_guard_refusal cloud-scope \
     'general-server proxy scope and SQLite backend are required' "${WORKSPACE}/runtime.ini" '{"proxy_scope":"cloud"}'
 expect_guard_refusal mariadb-backend \
     'general-server proxy scope and SQLite backend are required' "${WORKSPACE}/runtime.ini" '{"archiver_db_backend":"mariadb"}'
-printf '%s\n' 'Summary: 9 passed / 9 total'
+python3 - "${WORKSPACE}/archiver_server_sqlite.tasks" <<'PYTHON'
+from pathlib import Path
+import sys
+
+text = Path(sys.argv[1]).read_text()
+check = text.find("proxy_check : Run the read-only proxy check")
+require = text.find("proxy_check : Require a ready proxy check")
+first_operator = text.find("Apply the common operator")
+if not 0 <= check < require < first_operator:
+    raise SystemExit("Error: proxy readiness does not precede the first operator")
+PYTHON
+if grep -Fq '/run/cloud-provision' "${TOP}/playbooks/species/archiver_server_sqlite.yml"; then
+    printf '%s\n' 'Error: the group assembly still reads the schema-2 runtime lock' >&2
+    exit 1
+fi
+printf '%s\n' '[ PASS ] Group assembly requires the proxy check before any operator and reads no schema-2 lock'
+
+# A non-root local controller reaches the real raw wrapper, which must refuse
+# before opening the private input; the positive paths need root on a target.
+if [[ "$(id -u)" != 0 ]]; then
+    if ansible-playbook -i "${TOP}/inventory/lab.ini" -i "${WORKSPACE}/runtime.ini" \
+        --limit localhost --tags always -e "@${WORKSPACE}/site.yml" \
+        "${TOP}/playbooks/species/archiver_server_sqlite.yml" > "${WORKSPACE}/proxy-check.log" 2>&1; then
+        printf '%s\n' 'Error: the proxy check accepted a non-root execution' >&2
+        exit 1
+    fi
+    grep -Fq 'proxy_check status=refused detail=not-root' "${WORKSPACE}/proxy-check.log"
+    printf '%s\n' '[ PASS ] Actual proxy check refuses a non-root execution with a fixed diagnostic'
+    printf '%s\n' 'Summary: 11 passed / 11 total'
+else
+    printf '%s\n' 'Summary: 10 passed / 10 total'
+fi
