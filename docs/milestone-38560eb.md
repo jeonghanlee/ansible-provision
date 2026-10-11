@@ -52,10 +52,15 @@ guest was refused by a defect of the journal configuration check, corrected in a
 frozen bundle (M25 T6) that the accepted replacement step delivered to both fresh guests
 the same day; after it the instrumentation, measured preparation and `prepare` completed
 on both chains (shortened at 08:01 UTC, default at 08:33 UTC), so both guests hold a
-schema-5 preparation for the 86400-second window with the replaced tools. Negative
-and abort checks, final-restart continuity, capacity and readiness gates and both 24-hour
-observations stay pending and need their own recorded authority; do not restart or reseed a
-running guest to bypass them.
+schema-5 preparation for the 86400-second window with the replaced tools. Later that day
+the owner authorized the pre-launch checks (health, chain, empty and abort runtime
+probes), the private capacity-window renewal and the launch of both 86400-second
+observations, chain by chain with the shortened chain first. On the shortened guest every
+pre-launch check passed and the launch was refused at the continuity's strict tool
+comparison against the replaced bundle; the owner extended the approved-replacement rule
+to that comparison in a newly frozen bundle, whose delivery to both guests and the
+repeated pre-launch checks and launch follow. Do not restart, reseed or re-register a
+guest during an active observation.
 Earlier amendment and preparation evidence follows.
 Local code implementation and verification were authorized on 2026-10-01.
 Dedicated VM acquisition and deployment were subsequently authorized on
@@ -2855,6 +2860,24 @@ pair's recheck proofs stay consumable under it. The regression
 `test_tools_comparison_allows_only_the_approved_replacements` now also refuses a second,
 unapproved `journal_retention.py`.
 
+Decision Date: 2026-10-11. The first launch attempt on the shortened guest was refused at
+the launch continuity: for a Passed original result `continuity` compared the focused
+result's run-time tool hashes with the installed bundle strictly, so the approved
+replacement above did not apply there. The owner extended the rule: `continuity` now
+compares `artifacts`, `pvs` and `flags` strictly and the tools through the same
+`check_recheck_tools` as the recheck branch (`compare_focused_configuration`), and the
+branch selection between a Passed original and a recheck proof is one function,
+`check_focused_continuity`, that `continuity` calls. The regressions run on the retained
+Passed focused records of both fresh guests (their `result.json` and final-inspection
+inventory, kept privately in `work/m22-clean-20261010/focused-passed/` and selected by
+`FOCUSED_PASSED_EVIDENCE`) and on the retained recheck records: the strict comparison
+refuses the delivered bundle, the new comparison and the selector accept it on both
+branches, and an unapproved tool change or a changed flag is refused on both. The
+newly frozen bundle is
+`d72cfc575cf1603d5303e448940756608d9c4b7c75fc314f441faceb61f31178` (changed member
+`focused.py` `814152eba1d235109f793e8d847ea8ace2647885cf93ec2671db63a46daad62d`); the
+replacement step literal follows it.
+
 Premise: the original `result.json` receives `artifacts`, `pvs`, `flags`, `tools`,
 `source_manifest_sha256`, `baseline_sha256`, `evidence_sha256` and `helper_sha256` only
 after the final comparison passes, so an Incomplete original carries none of them.
@@ -3089,6 +3112,18 @@ README names the first-run directory, which this guest's partial run makes unusa
 directory and the failed transient unit of the refused run stay in place until the owner
 decides their disposition.
 
+Decision Date: 2026-10-11. With the preparation complete on both fresh guests, the owner
+authorized the pre-launch checks and the launch, chain by chain with the shortened chain
+first and stopping on any failure: `verify-health.py`, `verify-chain.py` and
+`verify-runtime.py empty` and `abort` for the 86400-second window (the abort probe stops
+the appliance and restarts it after a successful verification, followed by a repeated
+readiness proof), a private step that renews the current capacity window from two
+`contract.py` snapshots about 300 seconds apart and rewrites `capacity-input.json` and
+`capacity.json` while keeping the previous files, and `launch-retest.py` opening one
+86400-second observation per chain within the README's freshness limits. The observations
+then run to their automatic finish; no reinstall, re-registration or appliance restart
+during an active observation.
+
 The prerequisite is chronological append input. An empty historical source filename
 does not establish an empty destination: the failed continuations had newer MTS data
 before seed. Preserve the accepted old-eight-sample boundary fixture, middle/recent
@@ -3246,6 +3281,7 @@ owner acceptance and implementation authorization are recorded separately above.
 | T14 bundle replacement on both fresh guests | 2026-10-11, 07:29 to 07:31 UTC | The accepted replacement step delivered the refrozen bundle (SHA256 `43970448a8c23f48cb43c40966e98732a652409a5fdfe3d4dfcc5e65cbfe8c17`) from a private staging directory on each guest, running as root: the installed directory was copied, only `bundle.json`, `focused.py` and `journal_retention.py` changed (41 files on the shortened guest, 40 on the default guest), the preserved sibling `etl-soak.prev-<UTC>` equals the pre-delivery hash listing, the installed bundle verifies 24 members, directory ownership and security context are unchanged, and the appliance and IOC stayed active with the sampler and finish timers inactive. | Delivery records and before/after hash listings in each guest's private staging directory; nothing deleted. The shortened initialization record keeps the pre-replacement tool hashes while its preparation and later observation records carry the replaced ones; no shipped check compares the two (read in `initialize-fresh.py` and `observe.py`), so the difference is an evidence note, not a gate. The default guest was initialized after the delivery, so its records agree. |
 | T14 measured preparation and prepare, shortened guest | 2026-10-11, 07:29 to 08:01 UTC | After the delivery, `check` passed in 1.2 s; `measure` into the run-numbered directory ran seven retention snapshots and three capacity points and ended Succeeded at 07:59:56 UTC; `prepare` for the 86400-second window succeeded at 08:00:41 UTC in 0.8 s. The journal retention budget passed (system 507,429,921 and user 276,828,160 bytes under the 1 GiB effective cap), the capacity projection is 12,553,757,630 bytes against 40,211,886,080 available, and the preparation record is schema 5 with the 24 replaced tool hashes. | `/var/lib/etl-soak-fresh-measurements-r2/{retention,capacity}` and `/var/lib/etl-soak/{preparation.json,capacity.json,capacity-input.json,journal-retention-proof.json,state.json}` on the guest; transient units `m22-fresh-check2-shortened`, `m22-fresh-measure2-shortened` and `m22-fresh-prepare-shortened` (collected). The runtime checks, launch and observation remain pending under their own authority. |
 | T14 initialization, measured preparation and prepare, default guest | 2026-10-11, 08:01 to 08:33 UTC | With the refrozen bundle already delivered, `instruments` succeeded in 19.4 s at 08:01:24 UTC (appliance restarted; four JVMs, each with a GC log file and a JFR check recorded; schema 5; observation not started), the 903 PVs reconnected within about 50 s, `check` succeeded in 0.9 s at 08:02:14 UTC, `measure` into the first-run directory ran seven retention snapshots and three capacity points and ended Succeeded at 08:32:19 UTC, and `prepare` for the 86400-second window succeeded at 08:33:22 UTC in 0.7 s. The journal retention budget passed (system 526,855,726 and user 276,910,586 bytes under the 1 GiB effective cap), the capacity projection is 10,195,449,564 bytes against 39,179,419,648 available, and the initialization and preparation records carry the same replaced tool hashes. | `/var/lib/etl-soak-fresh-measurements/{retention,capacity}` and the preparation records under `/var/lib/etl-soak` on the guest; transient units `m22-fresh-instruments-default`, `m22-fresh-check-default`, `m22-fresh-measure-default` and `m22-fresh-prepare-default`, all ended Succeeded and collected. The authorized preparation sequence is complete on both fresh guests; the runtime checks, launch and observation remain pending under their own authority. |
+| T15 first launch attempt, shortened guest | 2026-10-11, 08:46 to 08:58 UTC | Through the private run-to-launch procedure as root: `verify-health.py` passed twice (two distinct health invocations, full samples with 903 archiving PVs and no errors; closed passes 10 then 0), `verify-chain.py` passed, a closed ETL pass was already recorded (9,760 bytes), `verify-runtime.py empty` passed, `verify-runtime.py abort` passed (early and repeated finish rejected, verdict Incomplete, whole-unit stop rc 0 in 11.5 s, no errors, four complete GC recordings) and restarted the appliance, all 903 PVs were archiving and connected after five polls, `verify-health.py` passed again after 240 s, and the private capacity refresh took two real samples 300 s apart and rewrote the capacity files (required growth 12,706,788,547 bytes against 39,872,937,984 available, previous files preserved). `launch-retest.py` with a target 75 s ahead then failed at `focused.continuity`: "Focused evidence differs from current tools", because the Passed focused result carries the run-time tool hashes of the previous bundle and the continuity compared them strictly with the replaced bundle. No observation opened; the appliance and IOC stayed active with both observation timers inactive. | `health-verification.json`, `chain-verification.json`, `empty-data-verification.json`, `terminal-path-verification.json`, `launch-started.json` and `launch-failed.json` under `/var/lib/etl-soak`, the terminal probe directory beside it, and the local log `launch-shortened.log` in the private `work/m22-clean-20261010/`. The runtime proofs expire one hour after 08:47 UTC, so the checks rerun before the next launch. The continuity rule is corrected in the consumer amendment above. |
 
 ##### Focused Deployment Amendment (2026-10-07)
 
