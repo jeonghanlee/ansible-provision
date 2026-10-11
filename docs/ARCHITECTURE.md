@@ -38,7 +38,7 @@ operation above that baseline. The first-pass validation environment uses
      |                     mariadb_uds, archiver_build
      | archiver_dev_tcp -> archiver_dev_uds with mariadb_tcp in place of mariadb_uds
      | archiver_dev_sqlite -> archiver_dev_uds with sqlite in place of mariadb_uds
-     | archiver_server_sqlite -> read-only proxy_check, then archiver_dev_sqlite on an existing server
+     | archiver_server_sqlite -> archiver_dev_sqlite on an existing server (proxy set by its owner)
      | archiver_dev     -> deprecated alias of archiver_dev_uds
      |
      V
@@ -83,13 +83,13 @@ ansible-provision/
 |-- playbooks/
 |   |-- operators/                   (one playbook per operator, 21, and the deprecated mariadb alias)
 |   `-- species/                     (one assembly per species, 12, and the deprecated archiver_dev alias)
-`-- roles/                           (one role per operator, 21, and the proxy_check precondition)
+`-- roles/                           (one role per operator, 21, and the optional proxy_check)
     |-- common/      rt/          provenance/  python/
     |-- proxy/       epics/       epics_build/ epics_support/
     |-- procserv/    conserver/   con/         java/        tomcat/
     |-- nfs_sim/     iocrunner/   testusers/   ethercat/
     |-- mariadb_uds/ mariadb_tcp/ sqlite/      archiver_build/
-    `-- proxy_check/                 (read-only precondition, not an operator)
+    `-- proxy_check/                 (optional read-only precondition, not wired in)
 ```
 
 ---
@@ -166,10 +166,16 @@ reports unchanged with either value. Other configuration writers must be
 excluded while reconciliation runs, as required by the producer contract.
 
 The `archiver_server_sqlite` assembly imports `archiver_dev_sqlite.yml` after
-a read-only prerequisite play and a `proxy_check` play. Its group variables
-select the system-only proxy scope, SQLite backend, full source pins, and an
-explicit site checkout owner. The server owns its proxy files; the `proxy_check`
-role only inspects them:
+a read-only prerequisite play. Its group variables select the system-only
+proxy scope, SQLite backend, full source pins, and an explicit site checkout
+owner. The server owner sets the proxy configuration directly; the assembly
+neither writes nor checks it, and `archiver_build` keeps its own precondition
+that a proxied host carries `/etc/maven-proxy-settings.xml`. Runtime
+membership in `rocky8` and `archiver_server_sqlite` supplies both OS and group
+variables.
+
+The optional `proxy_check` role is a read-only proxy readiness gate that is not
+part of the assembly. It is added to the playbooks only when a site needs it:
 
 ```
 control host                                    target (root, /bin/bash -p)
@@ -181,10 +187,7 @@ fixed result line  ◀───────────────────�
 ```
 
 The raw task runs with `check_mode: false`, `changed_when: false`, and `no_log`;
-only a validated fixed line is shown. `proxy_check` also precedes the
-`archiver_build` operator when `proxy_scope` is `general-server`; the default
-`cloud` scope is unchanged. Runtime membership in
-`rocky8` and `archiver_server_sqlite` supplies both OS and group variables.
+only a validated fixed line is shown.
 The group sets `common_manage_sudo=false` to preserve the existing sudo policy
 and `chrony_ptp_kvm=false` to omit VM clock setup and synchronization waits.
 

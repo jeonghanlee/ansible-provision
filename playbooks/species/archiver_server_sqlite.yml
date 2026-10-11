@@ -1,9 +1,9 @@
 ---
 # playbooks/species/archiver_server_sqlite.yml
 # General-server SQLite provisioning reuses the development operator assembly.
-# The server owns its proxy configuration. Read-only preconditions reject an
-# incompatible selection, and the proxy_check role requires a ready schema-3
-# checker result, before any operator installs packages.
+# The server owner sets the proxy configuration directly; this assembly neither
+# writes nor checks it. Read-only preconditions reject an incompatible selection
+# before any operator installs packages.
 - name: Verify general-server SQLite prerequisites
   hosts: vacua
   gather_facts: false
@@ -32,14 +32,6 @@
         ARCHIVER_SERVER_CHECK_EOF
       changed_when: false
       check_mode: false
-      tags: [always]
-
-- name: Verify general-server proxy readiness
-  hosts: vacua
-  gather_facts: false
-  become: true
-  roles:
-    - role: proxy_check
       tags: [always]
 
 - import_playbook: archiver_dev_sqlite.yml

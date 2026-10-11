@@ -344,9 +344,9 @@ Maven reads a proxy only from a settings file. This operator consumes the file
 the cloud-provision proxy contract owns at `/etc/maven-proxy-settings.xml` and
 writes none of its own. On a proxied host that does not carry it, the operator
 refuses before starting a build. Apply `op.proxy` before the assembly to
-reconcile the file, including when a profile marker already exists. A
-general-server host prepares the file itself and the `proxy_check` role verifies
-it before the build.
+reconcile the file, including when a profile marker already exists. The owner
+of a general-server host prepares the file directly; the assembly neither writes
+nor checks it.
 
 `archiver_java_heapsize` (default `256M`) sets the heap of every instance
 explicitly; four instances at a 1G heap oversubscribe a 4 GB host. A changed
@@ -408,9 +408,10 @@ part of the recorded knob set. The cloud-provision generator emits the
 The `archiver_server_sqlite` group provisions an existing Rocky Linux 8.10
 server. Its playbook imports `archiver_dev_sqlite.yml`, reusing common,
 provenance, python, epics, java, tomcat, sqlite, and archiver_build in that order.
-It excludes MariaDB operators. The server owns its proxy configuration; the
-assembly runs the read-only schema-3 proxy check and stops unless it reports
-ready, before any operator installs packages.
+It excludes MariaDB operators. The server owner sets the proxy configuration
+directly (environment, DNF, and the Maven settings file); the assembly neither
+writes nor checks it, and `archiver_build` refuses to start a build on a proxied
+host that lacks `/etc/maven-proxy-settings.xml`.
 
 | Target | Playbook | Purpose |
 | --- | --- | --- |
@@ -439,9 +440,6 @@ when the site lacks passwordless sudo.
 | Variable | General-server value |
 | --- | --- |
 | `proxy_scope` | `general-server`, supplied by the group |
-| `proxy_check_input_path` | Required absolute path of the server-owned private input (root:root 0600); no default |
-| `proxy_check_contract_path` | Shipped cloud-provision `bin/proxy_contract.bash`; default is the sibling checkout |
-| `proxy_check_contract_sha256` | Pinned source SHA-256 `dcf63cb79ecaf6a8dc9c955e5c1cec01cb69e3c92db21b9d0a3fa51f3ea36cff` |
 | `epics_ioc_engineers` | Required nonempty list whose first entry is an existing EPICS checkout owner; group default is empty |
 | `archiver_db_backend` | `sqlite`, supplied by the group |
 | `archiver_env_ref` | `e2ade5a184098379424ed87972ff308490eeedec` |
@@ -449,18 +447,21 @@ when the site lacks passwordless sudo.
 | `common_manage_sudo` | `false`; preserve the existing sudo policy |
 | `chrony_ptp_kvm` | `false`; omit VM clock setup and synchronization waits |
 
-Use cloud-provision commit `05cf57398d09882f628d7356316f31576ca840c6`
-for this interface. The `proxy_check` role streams the producer checker, requires
-its source to equal the pinned SHA-256, and runs `check --input-fd` as root with
-the private input opened read-only after become. It writes no proxy file and owns
-neither the artifact list nor Maven XML. Exit 0 with a ready result is the only
-accepted outcome; a needs-change or refused result stops the run with a fixed
-diagnostic line, and private values never reach a command line or log. The
-`script_sha256` field of the private input must equal the pinned value. The
-default `cloud` scope retains schema 1 and the `proxy` role. The assembly guard
-checks group membership, scope, backend, and existing checkout owner; the
-proxy check then runs before any provisioning operator. The same check also
-precedes `archiver_build` when `proxy_scope` is `general-server`.
+The assembly guard checks group membership, scope, backend, and existing
+checkout owner before any provisioning operator runs. The default `cloud` scope
+retains schema 1 and the `proxy` role.
+
+An optional read-only proxy readiness gate is available as the `proxy_check`
+role and is not part of the assembly. It streams the cloud-provision checker
+pinned at commit `05cf57398d09882f628d7356316f31576ca840c6` (source SHA-256
+`dcf63cb79ecaf6a8dc9c955e5c1cec01cb69e3c92db21b9d0a3fa51f3ea36cff`), runs
+`check --input-fd` as root with a server-owned private input, and stops unless
+the result is ready. To use it, add `- role: proxy_check` in a play after the
+guard play of `playbooks/species/archiver_server_sqlite.yml`, and before the
+`archiver_build` role in `playbooks/operators/archiver_build.yml` with
+`when: proxy_scope | default('cloud') == 'general-server'`; set
+`proxy_check_input_path`, and optionally `proxy_check_contract_path` and
+`proxy_check_contract_sha256`, in the site variables.
 
 Other site inputs use the existing operator defaults, including EPICS refs,
 install paths, service account, heap, storage, and journal limits. See
@@ -472,8 +473,9 @@ remove an independently installed MariaDB service.
 Local contract checks do not establish target provisioning or proxy recovery.
 The [proxy role suite](tests/proxy-role/README.md) defines actual-target tests
 with `PROXY_TEST_SCOPE=general-server` on a dedicated guest without `vmadmin`.
-The [proxy check suite](tests/proxy-check/README.md) runs the `proxy_check` role
-through the real playbooks with root become on a dedicated guest.
+The [proxy check suite](tests/proxy-check/README.md) runs the optional
+`proxy_check` role through the real playbooks, once wired in, with root become
+on a dedicated guest.
 
 After `sql.fill` the operator counts the tables in the configuration database and
 stops the build before install when there are none or they cannot be counted: an
@@ -497,4 +499,4 @@ build log names how to start it again.
 | `species/archiver_dev_uds.yml` | P_archiver-build P_mariadb-uds P_tomcat P_java (P_epics or P_epics-build) P_python P_provenance on bare (`archiver_dev` is a deprecated alias) |
 | `species/archiver_dev_tcp.yml` | P_archiver-build P_mariadb-tcp P_tomcat P_java (P_epics or P_epics-build) P_python P_provenance on bare |
 | `species/archiver_dev_sqlite.yml` | P_archiver-build P_sqlite P_tomcat P_java (P_epics or P_epics-build) P_python P_provenance on bare |
-| `species/archiver_server_sqlite.yml` | General-server prerequisite check and read-only proxy check, followed by `archiver_dev_sqlite.yml` |
+| `species/archiver_server_sqlite.yml` | General-server prerequisite check followed by `archiver_dev_sqlite.yml` |

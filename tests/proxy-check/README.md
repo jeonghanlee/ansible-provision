@@ -8,6 +8,10 @@ replaced. The local controller check is `tests/check-general-server-contract.bas
 
 ## Preconditions
 
+- The `proxy_check` role wired into `playbooks/species/archiver_server_sqlite.yml`
+  and `playbooks/operators/archiver_build.yml` as described in the general-server
+  section of `README.md`. The role is optional and unwired by default; the suite
+  refuses to run when the playbooks do not call it.
 - One disposable guest assigned to this test by its VM provider, reachable by
   key-only SSH with Ansible become to root. The suite rewrites the six proxy
   files and a private input; it must never run on a production host.

@@ -7,8 +7,5 @@
   gather_facts: false
   become: yes
   roles:
-    - role: proxy_check
-      when: proxy_scope | default('cloud') == 'general-server'
-      tags: [archiver_build]
     - role: archiver_build
       tags: [archiver_build]

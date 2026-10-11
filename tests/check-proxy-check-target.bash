@@ -77,6 +77,10 @@ function derive_inputs {
     ARTIFACTS="${CONTRACT_ROOT}/tests/fixtures/proxy-general-server-artifacts.tsv"
     PIN="$(sed -n 's/^proxy_check_contract_sha256: "\([0-9a-f]\{64\}\)"$/\1/p' "${TOP}/roles/proxy_check/defaults/main.yml")"
     [[ -n "${PIN}" ]] || die "role default pin not found"
+    if ! grep -Fq 'role: proxy_check' "${TOP}/playbooks/${GROUP_PLAYBOOK}.yml" \
+        || ! grep -Fq 'role: proxy_check' "${TOP}/playbooks/${FOCUSED_PLAYBOOK}.yml"; then
+        die "the proxy_check role is not wired into the group and focused playbooks; see README.md"
+    fi
     [[ -f "${CHECKER}" && -d "${FIXTURE}" && -f "${ARTIFACTS}" ]] || die "checker or fixture missing under ${CONTRACT_ROOT}"
     if [[ "$(sha256sum -- "${CHECKER}" | cut -d' ' -f1)" != "${PIN}" ]]; then
         die "checker source does not match the pinned SHA-256"

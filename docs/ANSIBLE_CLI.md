@@ -6,10 +6,9 @@
 the generated VM name when selecting one host.
 
 An existing general Rocky Linux 8.10 server uses a site-owned runtime inventory
-with the same host in `rocky8` and `archiver_server_sqlite`. The server owns
-its proxy files. Apply `archiver_server_sqlite.rocky8` with `RUNTIME_INVENTORY`,
-a private `ANSIBLE_OPTS` site file that sets `proxy_check_input_path`, and
-`ANSIBLE_LIMIT`; the assembly stops unless the read-only proxy check is ready.
+with the same host in `rocky8` and `archiver_server_sqlite`. The server owner
+sets its proxy files directly. Apply `archiver_server_sqlite.rocky8` with
+`RUNTIME_INVENTORY`, a private `ANSIBLE_OPTS` site file, and `ANSIBLE_LIMIT`.
 Required variables and producer revision are defined by the
 [general-server SQLite interface](../README.md#general-server-sqlite-interface).
 The `.check` form runs the assembly's read-only prerequisite guard; it skips
