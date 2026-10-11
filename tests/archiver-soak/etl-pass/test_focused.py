@@ -677,7 +677,8 @@ class RecheckProofConsumerTests(unittest.TestCase):
         tools = acceptance['inventory']['tools']
         delivered = self.bundle_copy('delivered')
         self.assertEqual(set(focused.check_recheck_tools(tools, delivered)), set(contract.BUNDLE_FILES))
-        cases = {'PBFixture.java': b'// changed helper source\n', 'contract.py': b'# changed tool\n'}
+        cases = {'PBFixture.java': b'// changed helper source\n', 'contract.py': b'# changed tool\n',
+                 'journal_retention.py': b'# a second, unapproved replacement\n'}
         for name, content in cases.items():
             original = (self.HERE / name).read_bytes()
             with self.subTest(changed=name):

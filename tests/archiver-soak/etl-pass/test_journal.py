@@ -5,7 +5,10 @@ import datetime
 import json
 import os
 from pathlib import Path
+import tempfile
+import time
 import unittest
+from unittest import mock
 
 import collect
 import evaluate
@@ -274,6 +277,44 @@ class RealJournalHeaderInputTests(unittest.TestCase):
         self.assertGreater(row['entries'], 0)
         with self.assertRaisesRegex(RuntimeError, 'Unsupported journal file header'):
             journal_coverage.read_header(root / 'header-239.txt')
+
+
+class DaemonConfigurationTests(unittest.TestCase):
+    # Values read on a guest whose role wrote the drop-in and restarted journald in one
+    # second: the daemon started 28 ms after the write, 1700.91 s after a boot at .458.
+    BOOT = 1791655105.458252
+    START_TICKS = '170091'
+    WRITE = 1791656806.347
+
+    def config(self, mtime):
+        directory = tempfile.TemporaryDirectory()
+        self.addCleanup(directory.cleanup)
+        path = Path(directory.name) / '50-archiver.conf'
+        path.write_text('[Journal]\nStorage=persistent\n')
+        os.utime(path, (mtime, mtime))
+        return [path]
+
+    def test_a_restart_within_the_write_second_is_applied_configuration(self):
+        start = retention.configuration_applied(self.config(self.WRITE), self.START_TICKS, self.BOOT, 100)
+        self.assertAlmostEqual(start, 1791656806.368252, places=6)
+        with self.assertRaisesRegex(RuntimeError, 'unverified'):
+            retention.configuration_applied(self.config(self.WRITE), self.START_TICKS, int(self.BOOT), 100)
+
+    def test_a_file_newer_than_one_tick_after_the_start_is_refused(self):
+        start = self.BOOT + int(self.START_TICKS) / 100
+        retention.configuration_applied(self.config(start + 0.009), self.START_TICKS, self.BOOT, 100)
+        with self.assertRaisesRegex(RuntimeError, 'unverified'):
+            retention.configuration_applied(self.config(start + 0.011), self.START_TICKS, self.BOOT, 100)
+        with self.assertRaisesRegex(RuntimeError, 'unverified'):
+            retention.configuration_applied([], self.START_TICKS, self.BOOT, 100)
+
+    def test_boot_epoch_keeps_the_fraction_of_a_second(self):
+        with mock.patch.object(retention, 'time') as clock:
+            clock.CLOCK_BOOTTIME = time.CLOCK_BOOTTIME
+            clock.time.return_value = 1791697000.123456
+            clock.clock_gettime.return_value = 41894.665204
+            self.assertAlmostEqual(retention.boot_epoch(), self.BOOT, places=6)
+        clock.clock_gettime.assert_called_once_with(time.CLOCK_BOOTTIME)
 
 
 @unittest.skipUnless(RETENTION_INPUT, 'Retained actual retention snapshots are required')

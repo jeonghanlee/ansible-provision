@@ -1203,6 +1203,10 @@ RECHECK_APPROVED = {
     # Producing version of the retained-record recheck; the running focused.py differs by design.
     'checker': '4265dfac7f62cb99e0a03a5db981a3449a37dc51365f05c156a5a20d3e264fd3',
     'helper': 'df29f030028d9c920c30a2faf360045b4595b40258666ef5dff7ab4939e4fb7d',
+    # Approved tool replacements since the recheck inventory, by name and digest.
+    'replacements': {
+        'journal_retention.py': 'd9210972cbc2511c57357de6bc4c0e4063ba53664cc8d1cf837a5d3353ab1d74',
+    },
 }
 
 
@@ -1297,7 +1301,10 @@ def check_recheck_tools(recorded_tools, bundle_root, approved=None):
     for name, digest in recorded_tools.items():
         if name == 'focused.py':
             continue
-        expected = approved['helper'] if name == 'PBFixture.java' else digest
+        if name == 'PBFixture.java':
+            expected = approved['helper']
+        else:
+            expected = approved.get('replacements', {}).get(name, digest)
         if current[name] != expected:
             raise RuntimeError('A tool other than the approved replacements changed: ' + name)
     return current

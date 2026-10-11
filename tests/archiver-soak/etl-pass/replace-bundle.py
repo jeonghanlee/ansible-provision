@@ -20,7 +20,7 @@ import tempfile
 
 INSTALLED = Path('/usr/local/share/etl-soak')
 # The accepted bundle.json SHA256 is filled in after the bundle freeze and before this step is reviewed.
-ACCEPTED_BUNDLE_SHA256 = '5168ca0e495ea8720704bada64f3297b8c12d48ae2037acfb4762f9cb237cd15'
+ACCEPTED_BUNDLE_SHA256 = '43970448a8c23f48cb43c40966e98732a652409a5fdfe3d4dfcc5e65cbfe8c17'
 INACTIVE_UNITS = ('etl-soak-sample.service', 'etl-soak-sample.timer', 'etl-soak-finish.service')
 BUSY_STATES = ('active', 'activating', 'deactivating', 'reloading')
 SCHEMA = 5

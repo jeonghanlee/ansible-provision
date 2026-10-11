@@ -272,8 +272,9 @@ requires, from retained files:
 
 Against a live appliance, `artifacts`, `pvs` and `flags` of a fresh inventory must equal
 the recheck inventory strictly. The tools of a verified bundle must equal the recheck-time
-tools except `focused.py` (excluded by name) and `PBFixture.java` (the approved helper
-literal). `continuity` records the recheck proof hash beside the original result hash and
+tools except `focused.py` (excluded by name), `PBFixture.java` (the approved helper
+literal) and the approved replacements listed by name and digest, currently
+`journal_retention.py`. `continuity` records the recheck proof hash beside the original result hash and
 `require_continuity` rejects a proof that does not bind both.
 
 `focused.py check-recheck --chain=<chain> --bundle-root=<frozen bundle directory>

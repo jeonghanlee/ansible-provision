@@ -109,6 +109,22 @@ def validate_load(sample):
         raise RuntimeError('Journal measurement lacks the actual approved 903-PV load')
 
 
+def boot_epoch():
+    # /proc/stat btime is this value truncated to whole seconds, which placed a daemon
+    # restarted within the second of its configuration write up to one second too early.
+    return time.time() - time.clock_gettime(time.CLOCK_BOOTTIME)
+
+
+def configuration_applied(config_paths, start_ticks, boot, clock_tick):
+    # The process start is known to one clock tick; a file is newer only beyond that.
+    if not config_paths:
+        raise RuntimeError('Journal configuration application to the running daemon is unverified')
+    start = boot + int(start_ticks) / clock_tick
+    if any(path.stat().st_mtime > start + 1 / clock_tick for path in config_paths):
+        raise RuntimeError('Journal configuration application to the running daemon is unverified')
+    return start
+
+
 def snapshot(require_load=False):
     version = command(['systemctl', '--version']).splitlines()[0]
     if not version.startswith('systemd 239 '):
@@ -118,14 +134,9 @@ def snapshot(require_load=False):
     command(['journalctl', '--sync'])
     config = command(['systemd-analyze', 'cat-config', 'systemd/journald.conf'])
     values = settings(config)
-    process_fields = Path('/proc/' + daemon['pid'] + '/stat').read_text().rsplit(')', 1)[1].split()
-    boot_epoch = next(int(line.split()[1]) for line in Path('/proc/stat').read_text().splitlines()
-                      if line.startswith('btime '))
-    process_epoch = boot_epoch + int(process_fields[19]) / os.sysconf('SC_CLK_TCK')
     config_paths = [Path(line[2:].strip()) for line in config.splitlines()
                     if line.startswith('# /') and line.rstrip().endswith('.conf')]
-    if not config_paths or any(path.stat().st_mtime > process_epoch for path in config_paths):
-        raise RuntimeError('Journal configuration application to the running daemon is unverified')
+    configuration_applied(config_paths, daemon['start_ticks'], boot_epoch(), os.sysconf('SC_CLK_TCK'))
     if values.get('Storage') != 'persistent':
         raise RuntimeError('Persistent journal storage must be explicitly verified')
     if not JOURNAL_ROOT.is_dir():
