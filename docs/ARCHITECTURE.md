@@ -38,6 +38,7 @@ operation above that baseline. The first-pass validation environment uses
      |                     mariadb_uds, archiver_build
      | archiver_dev_tcp -> archiver_dev_uds with mariadb_tcp in place of mariadb_uds
      | archiver_dev_sqlite -> archiver_dev_uds with sqlite in place of mariadb_uds
+     | archiver_server_sqlite -> read-only proxy_check, then archiver_dev_sqlite on an existing server
      | archiver_dev     -> deprecated alias of archiver_dev_uds
      |
      V
@@ -72,6 +73,7 @@ ansible-provision/
 |       |-- archiver_dev_tcp.yml     (loopback-TCP MariaDB)
 |       |-- archiver_dev.yml         (deprecated alias of archiver_dev_uds.yml)
 |       |-- archiver_dev_sqlite.yml  (archiver_db_backend: sqlite)
+|       |-- archiver_server_sqlite.yml (existing general server: system-only proxy scope, SQLite, source pins)
 |       |-- debian12.yml             (epics_os_dir: debian-12)
 |       |-- debian13.yml             (epics_os_dir: debian-13)
 |       |-- rocky8.yml               (epics_os_dir, rocky 3.9 python overrides)
@@ -79,14 +81,15 @@ ansible-provision/
 |       |-- ubuntu24.yml             (epics_os_dir: ubuntu-24.04)
 |       `-- ubuntu26.yml             (epics_os_dir: ubuntu-26.04)
 |-- playbooks/
-|   |-- operators/                   (one playbook per operator, 20)
-|   `-- species/                     (one assembly per species, 10)
-`-- roles/                           (one role per operator, 20)
+|   |-- operators/                   (one playbook per operator, 21, and the deprecated mariadb alias)
+|   `-- species/                     (one assembly per species, 12, and the deprecated archiver_dev alias)
+`-- roles/                           (one role per operator, 21, and the proxy_check precondition)
     |-- common/      rt/          provenance/  python/
     |-- proxy/       epics/       epics_build/ epics_support/
     |-- procserv/    conserver/   con/         java/        tomcat/
-    |-- nfs_sim/     iocrunner/   testusers/   ethercat/    mariadb/
-    `-- sqlite/      archiver_build/
+    |-- nfs_sim/     iocrunner/   testusers/   ethercat/
+    |-- mariadb_uds/ mariadb_tcp/ sqlite/      archiver_build/
+    `-- proxy_check/                 (read-only precondition, not an operator)
 ```
 
 ---
