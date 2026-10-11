@@ -370,12 +370,12 @@ Status tally: 21 Complete, 3 In progress, 0 Not started, 0 Deferred, 2 Blocked. 
 | Core | M23 | Add the Perl modules for the EPICS-env installed-tree utility to the EPICS OS package set | Milestone | Complete | No | D20 | `epics_os_packages` carries `perl-Digest-SHA`, `perl-JSON-PP`, `perl-Pod-Checker` and `perl-Test-Simple` on rocky8 and rocky10 and `perl` on debian12, debian13, ubuntu24 and ubuntu26; after the `epics` operator applies on each vacuum, the four modules load and `podchecker` runs; delivered in `4dfb290`, verified on all six vacua (`300ccc7`); [detail](#m23---add-the-perl-modules-for-the-epics-env-installed-tree-utility-to-the-epics-os-package-set) |
 | Core | M24 | Split the archiver MariaDB operator into socket and TCP operators and rename the archiver-dev species | Milestone | In progress | No | D21 | Operators `mariadb_uds` and `mariadb_tcp` and species `archiver-dev-uds`, `archiver-dev-tcp` and `archiver-dev-sqlite` exist with the group variables `archiver_dev_uds.yml`, `archiver_dev_tcp.yml` and `archiver_dev_sqlite.yml`; each species deploys on a fresh guest with its database reachable exactly as the cloud-provision definition states; the old `archiver-dev` name still resolves for a limited period; [detail](#m24---split-the-archiver-mariadb-operator-into-socket-and-tcp-operators-and-rename-the-archiver-dev-species) |
 | Core | M25 | Verify journal collection integrity and retention for the ETL soak | Milestone | In progress | No | D22 | The journal checks formerly T22-T28 of the ETL soak (kernel-journal coverage after cursor loss and in quiet intervals, rotation and event delivery, detection of required-record loss, boundaries and boot identity, the retention budget in preparation and in a 24-hour window, and abort and terminal integration) each pass in their stated environment, including a compressed rehearsal of the full collection path under a reduced journal cap; [detail](#m25---verify-journal-collection-integrity-and-retention-for-the-etl-soak) |
-| Core | M26 | Provision the SQLite Archiver Appliance on an existing general Rocky Linux 8.10 server | Milestone | Blocked | No | M18, G5, D25 | The `archiver_server_sqlite` assembly applies on the existing server only after the read-only schema-3 proxy check reports ready, installs the appliance on the SQLite backend at the pinned sources, and passes the install checks on that server; the proxy check itself passed on the local controller, a Rocky 8.10 guest and a Debian 13 guest; [detail](#m26---provision-the-sqlite-archiver-appliance-on-an-existing-general-rocky-linux-810-server) |
+| Core | M26 | Provision the SQLite Archiver Appliance on an existing general Rocky Linux 8.10 server | Milestone | Blocked | No | M18, G5, D26 | The `archiver_server_sqlite` assembly applies on the existing server without a proxy readiness gate, installs the appliance on the SQLite backend at the pinned sources, and passes the install checks on that server; the optional `proxy_check` role and its suite exist but are not part of the assembly; [detail](#m26---provision-the-sqlite-archiver-appliance-on-an-existing-general-rocky-linux-810-server) |
 | Gate | G1 | the production IOC server reaches the internal git host | External gate | Complete | No | | Reachability achieved through the site HTTP proxy's CONNECT tunnel (an ssh `ProxyCommand` over the proxy), not a firewall whitelist: the owner's key authenticates and `git ls-remote` returns the refs; confirmed 2026-09-03 by the successful iocserver clone (M4/T2) |
 | Gate | G2 | cloud-provision ships the middleware package baseline and the middleware VM | External gate | Open | No | | The middleware operator/species structure and OS package baseline (system OpenJDK 21, Tomcat 9.0.121, MariaDB; no Maven package) originate in cloud-provision (`docs/milestone-e260630.md` M11) as the normative source and a middleware VM is provisionable there, before ansible-provision mirrors the set and layers its roles; owned by the cloud-provision session |
 | Gate | G3 | epicsarchiverap-env ships a `sql.fill` that loads the configuration schema when the database and application account are provisioned externally | External gate | Complete | No | | Complete when the jeonghanlee/epicsarchiverap-env#47 fix commit is on `modernize` and epicsarchiverap-env records #47's acceptance as met: with only the application account, `make sql.fill` loads the schema, `make sql.show` lists `PVTypeInfo`, `PVAliases`, `ArchivePVRequests` and `ExternalDataServers`, and an absent database exits non-zero. Observing it on an archiver-dev host is M14/T17, not this gate; owned by the epicsarchiverap-env session; met 2026-09-23: the fix is `1fc20a8` on `modernize`, and #47 closed with epicsarchiverap-env's acceptance recorded |
 | Gate | G4 | Prepare two independent ETL soak environments | External gate | Complete | No | | Two fresh archiver-dev VM inventories are available; the owner selected the same existing 903-PV fixture for both chains, and initial disk and host capacity were assessed on 2026-09-28; [detail](#g4---prepare-two-independent-etl-soak-environments) |
-| Gate | G5 | The server owner supplies the private proxy-check input and approves the installation on the existing server | External gate | Open | No | | The server-owned private input (seven schema-3 fields, `script_sha256` equal to the pinned value) and the six prepared proxy files exist, and the owner has approved the installation; [detail](#g5---the-server-owner-supplies-the-private-proxy-check-input-and-approves-the-installation-on-the-existing-server) |
+| Gate | G5 | The server owner prepares the proxy settings and approves the installation on the existing server | External gate | Open | No | | The server owner has set the proxy configuration directly (environment, DNF, and the Maven settings file) and has approved the installation; [detail](#g5---the-server-owner-prepares-the-proxy-settings-and-approves-the-installation-on-the-existing-server) |
 
 ### Decisions
 
@@ -405,7 +405,8 @@ Status tally: 21 Complete, 3 In progress, 0 Not started, 0 Deferred, 2 Blocked. 
 | D22 | The journal checks of the ETL soak, T22-T28 of `M22`, are a separate work unit `M25` with its own completion criteria, tests and results, so that a journal check cannot decide the ETL scheduler verdict of `M22` and the reverse. `M22` keeps T1-T21 and opens an observation after T27's preparation portion passes; T22-T28 become `M25` T1-T7 and a compressed rehearsal of the full collection path is added as T8. The observations that were running on 2026-10-05 are left as they are. | Owner decision, 2026-10-05 |
 | D23 | A check belongs to the work unit whose purpose it serves: a check whose failure makes the ETL conclusion of `M22` unreliable (record loss, coverage gaps, suppression, the stored-entry count, the kernel journal) stays in `M22`; a check of the journal settings or of the collection method (the retention budget) belongs to `M25`. A failed in-window journal budget is therefore recorded in the sample and reported by the evaluator as `journal_budget_failed_samples`, and it no longer counts toward the abort or the ETL verdict. | Owner decision, 2026-10-06 |
 | D24 | `M3` is retired. The old roles `base_os` and `app_epics` it hardened were superseded by the operator/species model (`D3`), the surface it covered was re-verified through the operator roles, and its Debian 13 re-verification is waived because it targets roles that are no longer used. | Owner decision, 2026-10-06 |
-| D25 | Proxy readiness of a general Rocky 8.10 server is verified read-only by the cloud-provision schema-3 checker, pinned by commit `05cf57398d09882f628d7356316f31576ca840c6` and source SHA-256 `dcf63cb79ecaf6a8dc9c955e5c1cec01cb69e3c92db21b9d0a3fa51f3ea36cff`, through a `proxy_check` role that precedes the group assembly and, for the general-server scope, `archiver_build`. The server owner prepares the six proxy files and the private input; `op.proxy` and the schema-2 runtime lock no longer gate this assembly. | Owner decision, 2026-10-10 |
+| D25 | Proxy readiness of a general Rocky 8.10 server is verified read-only by the cloud-provision schema-3 checker, pinned by commit `05cf57398d09882f628d7356316f31576ca840c6` and source SHA-256 `dcf63cb79ecaf6a8dc9c955e5c1cec01cb69e3c92db21b9d0a3fa51f3ea36cff`, through a `proxy_check` role that precedes the group assembly and, for the general-server scope, `archiver_build`. The server owner prepares the six proxy files and the private input; `op.proxy` and the schema-2 runtime lock no longer gate this assembly. Superseded for the assembly wiring by `D26`. | Owner decision, 2026-10-10 |
+| D26 | A general Rocky 8.10 server is provisioned without a proxy readiness gate: its owner sets the proxy configuration directly (environment, DNF, and the Maven settings file `/etc/maven-proxy-settings.xml`), the assembly neither writes nor checks it, and `archiver_build` keeps its precondition that a proxied host carries that file. The `proxy_check` role and its suite stay available and are wired in only when a site needs a gate. | Owner decision, 2026-10-11 |
 
 ### Assignment History
 
@@ -4938,28 +4939,30 @@ journalctl behavior, which is recorded in `M22`'s results (a systemd 239
 
 An existing general Rocky Linux 8.10 server, which the site configures itself, receives the EPICS Archiver
 Appliance on the SQLite configuration database through the `archiver_server_sqlite` assembly. The server owner
-prepares its proxy files and a private input; this row's assembly only inspects them. It changes nothing about
+sets its proxy configuration directly; this row's assembly neither writes nor checks it. It changes nothing about
 proxy configuration, SSH or sudo access policy, VM accounts or the existing database service, and it applies the
 existing sudo policy and clock settings of the server unchanged.
 
 ##### Scope
 
-The `proxy_check` role (read-only precondition), its use before the group assembly and before `archiver_build`
-for the general-server scope, the group variables that keep the existing sudo policy (`common_manage_sudo=false`)
-and omit KVM PTP setup (`chrony_ptp_kvm=false`), the documentation of this interface, the local contract test,
-real guest verification of the proxy check, and the installation checks on the server itself.
+The group variables that keep the existing sudo policy (`common_manage_sudo=false`) and omit KVM PTP setup
+(`chrony_ptp_kvm=false`), the documentation of this interface, the local contract test, the optional
+`proxy_check` role with its real-target suite (available, not part of the assembly), and the installation checks
+on the server itself.
 
-Out of scope: the proxy files and values (server owner), the checker (cloud-provision owner), MariaDB stop or
-removal (a separate owner approval), SSH and sudo access policy, the source pins `archiver_env_ref` and
-`archiver_maven_src_tag`, and any change to the cloud-scope `proxy` role.
+Out of scope: the proxy files and values (server owner), the checker (cloud-provision owner), a proxy readiness
+gate in the assembly, MariaDB stop or removal (a separate owner approval), SSH and sudo access policy, the source
+pins `archiver_env_ref` and `archiver_maven_src_tag`, and any change to the cloud-scope `proxy` role.
 
 ##### Completion Criteria
 
-- The group assembly and the focused `archiver_build` operator proceed only when the checker reports ready, and
-  refuse with a fixed diagnostic on needs-change, refusal, wrong source hash, unsafe input or a non-Rocky 8.10
-  target, without writing any file or exposing any input value (T1 to T3).
-- On the existing server the check reports ready with the server-owned input and the assembly installs the
-  appliance at the pinned sources (T4).
+- The group assembly resolves and applies without a proxy readiness gate or the schema-2 runtime lock, and the
+  guard still refuses an incompatible selection before any operator runs (T1).
+- When wired in, the optional `proxy_check` role proceeds only on a ready checker result and refuses with a
+  fixed diagnostic on needs-change, refusal, wrong source hash, unsafe input or a non-Rocky 8.10 target, without
+  writing any file or exposing any input value (T2, T3; the role is not part of the assembly).
+- On the existing server, with its proxy settings set by its owner, the assembly installs the appliance at the
+  pinned sources (T4).
 - On that server: the four SQLite tables are present, the service account has access, four JVMs run, readiness
   and an actual health timer run succeed, three changing numeric PVs of a real IOC are collected and queried, new
   data arrives after a restart, and re-applying at the same pins changes nothing (T5).
@@ -4967,16 +4970,18 @@ removal (a separate owner approval), SSH and sudo access policy, the source pins
 ##### Dependencies And Decisions
 
 - `M18`: the SQLite operator and `archiver-dev-sqlite` species this assembly reuses.
-- `G5` (Open): the server-owned input, the prepared proxy files and the installation approval. M26 is Blocked on
-  it; resume as In progress when `G5` is Complete.
-- `D25` (2026-10-10): the read-only schema-3 check, its pin, and the removal of `op.proxy` and the schema-2
-  runtime lock from this assembly.
+- `G5` (Open): the server owner's proxy settings and the installation approval. M26 is Blocked on it; resume as
+  In progress when `G5` is Complete.
+- `D26` (2026-10-11): the assembly applies without a proxy readiness gate; the server owner sets the proxy
+  configuration directly; `proxy_check` stays available and unwired.
+- `D25` (2026-10-10): the read-only schema-3 check and its pin, superseded for the assembly wiring by `D26`; the
+  removal of `op.proxy` and the schema-2 runtime lock from this assembly still stands.
 
 ##### Implementation Plan
 
 - Plan Status: accepted
-- Plan Acceptance: 2026-10-10; the owner accepted the proxy check wiring design (steps 1 to 4) in the working session; steps 5 and 6 await `G5`
-- Implementation Authorization: 2026-10-10 for steps 1 to 4 (local code, documentation, and verification on two fresh guests acquired through the cloud provider's request path); none for steps 5 and 6 until `G5` is Complete
+- Plan Acceptance: 2026-10-10; the owner accepted the proxy check wiring design (steps 1 to 4) in the working session. 2026-10-11; the owner directed removing the wiring and keeping the role available (step 5); steps 6 and 7 await `G5`
+- Implementation Authorization: 2026-10-10 for steps 1 to 4 (local code, documentation, and verification on two fresh guests acquired through the cloud provider's request path); 2026-10-11 for step 5; none for steps 6 and 7 until `G5` is Complete
 - Superseded Plan Artifacts: none
 
 1. Add the `proxy_check` role: it streams the pinned checker, requires its source hash to equal the pin, runs
@@ -4986,34 +4991,36 @@ removal (a separate owner approval), SSH and sudo access policy, the source pins
    `proxy_scope` is `general-server`; keep the cloud scope unchanged.
 3. Align the interface documentation and the local contract test.
 4. Verify on a fresh Rocky 8.10 guest and a fresh Debian 13 guest through the real playbooks.
-5. After `G5`: apply the assembly on the server and record the proxy check result.
-6. Verify the install checks of T5 on the server; stopping MariaDB is a separate owner approval and its data and
+5. Remove the role from the group and focused playbooks and align the documentation and local contract test;
+   keep the role and its suite, to be wired in only when a site needs a gate.
+6. After `G5`: apply the assembly on the server.
+7. Verify the install checks of T5 on the server; stopping MariaDB is a separate owner approval and its data and
    enablement are preserved.
 
 ##### Test Plan
 
 | Label | Layer | Method | Environment | Expected Result |
 | --- | --- | --- | --- | --- |
-| T1 | Local contract | Run `tests/check-general-server-contract.bash`: real Make selection, inventory resolution, syntax, eight-operator order, development check mode, guard refusals, proxy check ordering, and the non-root refusal of the real wrapper | Local controller | All checks pass |
-| T2 | Real target | Run `tests/check-proxy-check-target.bash --target rocky8`, which drives the group and focused playbooks through Ansible with root become against the pinned checker: ready, needs-change, input absent, wrong input pin, wrong role pin, unsafe input mode and symlink, empty and relative input path, control character in a file, runtime state removed, check mode, focused `archiver_build` stop and cloud-scope skip | Fresh Rocky 8.10 guest | Ready only for matching files; every other case stops with a fixed token; protected files unchanged; no input value in output |
-| T3 | Real target | Run `tests/check-proxy-check-target.bash --target non-rocky` against a non-Rocky target with the fixture input | Fresh Debian 13 guest | Refusal with a fixed token, no operator runs, nothing written |
-| T4 | Real target | Apply the assembly with the server-owned input and prepared files | The existing server | The check reports ready; the assembly proceeds |
+| T1 | Local contract | Run `tests/check-general-server-contract.bash`: real Make selection, inventory resolution, syntax, eight-operator order, development check mode, guard refusals, and the absence of a proxy check or schema-2 runtime lock in the group assembly | Local controller | All checks pass |
+| T2 | Real target | With the role wired in, run `tests/check-proxy-check-target.bash --target rocky8`, which drives the group and focused playbooks through Ansible with root become against the pinned checker: ready, needs-change, input absent, wrong input pin, wrong role pin, unsafe input mode and symlink, empty and relative input path, control character in a file, runtime state removed, check mode, focused `archiver_build` stop and cloud-scope skip | Fresh Rocky 8.10 guest | Ready only for matching files; every other case stops with a fixed token; protected files unchanged; no input value in output |
+| T3 | Real target | With the role wired in, run `tests/check-proxy-check-target.bash --target non-rocky` against a non-Rocky target with the fixture input | Fresh Debian 13 guest | Refusal with a fixed token, no operator runs, nothing written |
+| T4 | Real target | Apply the assembly with the proxy settings set by the server owner | The existing server | The assembly proceeds past the guard and the Maven settings precondition |
 | T5 | Real target | Verify the SQLite tables, service account access, four JVMs, readiness, a real health timer run, three changing numeric PVs of a real IOC, new data after a restart, and a same-pin re-apply | The existing server | Each item passes |
 
 ##### Verification Results
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
-| T1 | 2026-10-10 22:49:45 UTC | Debian controller, non-root, commit `e89002d` | Passed | 11 of 11 checks passed; the same test passed 9 of 9 on the sudo policy change alone before the proxy check commit. |
-| T2 | 2026-10-11 00:26:37 UTC | Rocky 8.10 guest, key-only account with passwordless sudo, pinned checker at cloud-provision `05cf573`, run through `tests/check-proxy-check-target.bash --target rocky8` | Passed | 21 of 21 cases passed through the real playbooks with root become. Protected files and the input were unchanged across the ready runs, no input value appeared in any play output, and the guest was restored to its original state. An earlier run of the same cases with a throwaway driver on 2026-10-10 20:55:57 UTC also passed 21 of 21. |
-| T3 | 2026-10-11 00:26:47 UTC | Debian 13 guest, same account shape, run through `tests/check-proxy-check-target.bash --target non-rocky` | Passed | 7 of 7 cases passed: input absent refused as `input-unavailable`; with the fixture input the checker refused as `runtime.os.unsupported-platform`, also under check mode; no operator ran; protected files and the input were unchanged; no value in any play output; the guest was restored. An earlier run with a throwaway driver on 2026-10-10 21:00:28 UTC also passed 7 of 7. This does not establish behavior on a host that never had the provider's default account. |
+| T1 | 2026-10-11 08:22:44 UTC | Debian controller, non-root, working tree after the wiring removal | Passed | 10 of 10 checks passed. Earlier runs: 11 of 11 at commit `e89002d` with the role wired in, and 9 of 9 on the sudo policy change alone. |
+| T2 | 2026-10-11 00:26:37 UTC | Rocky 8.10 guest, key-only account with passwordless sudo, pinned checker at cloud-provision `05cf573`, role wired in at commit `d6e496e`, run through `tests/check-proxy-check-target.bash --target rocky8` | Passed | 21 of 21 cases passed through the real playbooks with root become. Protected files and the input were unchanged across the ready runs, no input value appeared in any play output, and the guest was restored to its original state. An earlier run of the same cases with a throwaway driver on 2026-10-10 20:55:57 UTC also passed 21 of 21. |
+| T3 | 2026-10-11 00:26:47 UTC | Debian 13 guest, same account shape, role wired in at commit `d6e496e`, run through `tests/check-proxy-check-target.bash --target non-rocky` | Passed | 7 of 7 cases passed: input absent refused as `input-unavailable`; with the fixture input the checker refused as `runtime.os.unsupported-platform`, also under check mode; no operator ran; protected files and the input were unchanged; no value in any play output; the guest was restored. An earlier run with a throwaway driver on 2026-10-10 21:00:28 UTC also passed 7 of 7. This does not establish behavior on a host that never had the provider's default account. |
 | T4 | Not run | The existing server | Pending | Needs `G5`. |
 | T5 | Not run | The existing server | Pending | Needs `G5` and T4. |
 
 ##### Closure Evidence
 
-- Not complete. Commits `2831187` and `e89002d` carry the code and documentation on `origin/m14-middleware-reconcile`.
-  The row stays open until T4 and T5 pass on the server.
+- Not complete. Commits `2831187` and `e89002d` carry the code and documentation on `origin/m14-middleware-reconcile`;
+  the wiring removal follows them. The row stays open until T4 and T5 pass on the server.
 
 #### G1 - the production IOC server reaches the internal git host
 
@@ -5138,7 +5145,7 @@ initial capacity assessment before deployment and registration.
   and the initial capacity assessment are available. No application deployment
   or soak acceptance is claimed by this gate.
 
-#### G5 - The server owner supplies the private proxy-check input and approves the installation on the existing server
+#### G5 - The server owner prepares the proxy settings and approves the installation on the existing server
 
 - Origin: 38560eb / G5
 - GitHub Issue: none
@@ -5146,21 +5153,21 @@ initial capacity assessment before deployment and registration.
 
 ##### Summary
 
-The server configuration owner prepares the six proxy files of the existing general server and the private input
-file (root:root 0600, one hard link) with exactly the seven schema-3 fields, whose `script_sha256` equals the
-pinned checker hash, and provides its path and the site proxy values as private site inputs. The same owner
-approves the installation. `M26` depends on these before its server checks.
+The server configuration owner sets the proxy configuration of the existing general server directly
+(environment, DNF, and the Maven settings file `/etc/maven-proxy-settings.xml`) and approves the installation.
+The assembly neither writes nor checks these files (`D26`). `M26` depends on them before its server checks.
 
 ##### Completion Criteria
 
-- The private input and the six proxy files exist on the server and the check reports ready (`M26` / T4).
+- The proxy settings are in place on the server and, on a proxied host, `/etc/maven-proxy-settings.xml` exists
+  (`M26` / T4).
 - The owner's approval of the installation is recorded with its date.
 
 ##### Verification Results
 
 | Observed At | Result | Evidence |
 | --- | --- | --- |
-| 2026-10-10 | Pending | The request, with the pushed commit, the pin and the required variables, was sent to the server configuration session on 2026-10-10; no input or approval has been received. |
+| 2026-10-11 | Pending | On 2026-10-11 the server configuration session withdrew the private input and the checker gate and asked for the wiring removal; the installation approval and the proxy settings on the server have not been reported. |
 
 ##### Closure Evidence
 
