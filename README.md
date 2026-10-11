@@ -472,6 +472,8 @@ remove an independently installed MariaDB service.
 Local contract checks do not establish target provisioning or proxy recovery.
 The [proxy role suite](tests/proxy-role/README.md) defines actual-target tests
 with `PROXY_TEST_SCOPE=general-server` on a dedicated guest without `vmadmin`.
+The [proxy check suite](tests/proxy-check/README.md) runs the `proxy_check` role
+through the real playbooks with root become on a dedicated guest.
 
 After `sql.fill` the operator counts the tables in the configuration database and
 stops the build before install when there are none or they cannot be counted: an
