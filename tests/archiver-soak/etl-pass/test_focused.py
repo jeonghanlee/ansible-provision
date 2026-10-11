@@ -573,6 +573,72 @@ class InitialChunkKeyTests(unittest.TestCase):
                                          expected_keys=self.keys)
 
 
+@unittest.skipUnless(os.environ.get('FOCUSED_PASSED_EVIDENCE'),
+                     'Retained Passed focused records (<chain>/result.json and final inspection) required')
+class PassedContinuityTests(unittest.TestCase):
+    """The launch continuity of a Passed original allows only the approved tool replacements."""
+
+    HERE = Path(__file__).resolve().parent
+    CHAINS = ('shortened', 'default')
+
+    def setUp(self):
+        self.scratch = tempfile.TemporaryDirectory()
+        self.addCleanup(self.scratch.cleanup)
+
+    def bundle_copy(self, name, changes=None):
+        destination = Path(self.scratch.name) / name
+        destination.mkdir()
+        for member in (*contract.BUNDLE_FILES, 'bundle.json'):
+            shutil.copyfile(self.HERE / member, destination / member)
+        for member, content in (changes or {}).items():
+            (destination / member).write_bytes(content)
+        contract.freeze(destination)
+        return destination
+
+    def records(self, chain, bundle):
+        """The retained Passed result and the inventory a later readback takes with the given bundle installed."""
+        root = Path(os.environ['FOCUSED_PASSED_EVIDENCE']) / chain
+        result = json.loads((root / 'result.json').read_text())
+        final = json.loads((root / 'final-inspection' / 'inventory.json').read_text())
+        self.assertEqual(result['result'], 'Passed')
+        self.assertEqual({key: final[key] for key in ('artifacts', 'pvs', 'flags', 'tools')},
+                         {key: result[key] for key in ('artifacts', 'pvs', 'flags', 'tools')})
+        return dict(final, tools=contract.verify_bundle(bundle)), result
+
+    def test_a_passed_result_accepts_the_installed_bundle_with_the_approved_replacements(self):
+        delivered = self.bundle_copy('delivered')
+        for chain in self.CHAINS:
+            with self.subTest(chain=chain):
+                recorded, result = self.records(chain, delivered)
+                self.assertNotEqual(result['tools'], recorded['tools'])
+                with self.assertRaisesRegex(RuntimeError, 'differs from current tools'):
+                    focused.compare_configuration(recorded, result)
+                self.assertEqual(set(focused.compare_focused_configuration(recorded, result, delivered)),
+                                 set(contract.BUNDLE_FILES))
+
+    def test_unapproved_tool_or_configuration_changes_are_refused(self):
+        refrozen = self.bundle_copy('refrozen', {'contract.py': (self.HERE / 'contract.py').read_bytes() + b'# changed tool\n'})
+        recorded, result = self.records('shortened', refrozen)
+        with self.assertRaisesRegex(RuntimeError, 'approved replacements changed: contract.py'):
+            focused.compare_focused_configuration(recorded, result, refrozen)
+        delivered = self.bundle_copy('delivered')
+        recorded, result = self.records('shortened', delivered)
+        changed = dict(recorded, flags=dict(recorded['flags'], extra='x'))
+        with self.assertRaisesRegex(RuntimeError, 'differs from current flags'):
+            focused.compare_focused_configuration(changed, result, delivered)
+
+    def test_the_continuity_selector_takes_the_passed_branch(self):
+        delivered = self.bundle_copy('delivered')
+        recorded, result = self.records('default', delivered)
+        accepted = {'result': result, 'recheck': None}
+        self.assertEqual(set(focused.check_focused_continuity(accepted, recorded, delivered)),
+                         set(contract.BUNDLE_FILES))
+        refrozen = self.bundle_copy('refrozen', {'measure.py': (self.HERE / 'measure.py').read_bytes() + b'\n'})
+        with self.assertRaisesRegex(RuntimeError, 'approved replacements changed: measure.py'):
+            focused.check_focused_continuity(accepted, dict(recorded, tools=contract.verify_bundle(refrozen)),
+                                             refrozen)
+
+
 @unittest.skipUnless(os.environ.get('FOCUSED_RECHECK_ARCHIVES'),
                      'Retained final and recheck evidence archives required')
 class RecheckProofConsumerTests(unittest.TestCase):
@@ -671,6 +737,20 @@ class RecheckProofConsumerTests(unittest.TestCase):
                 self.assertIsNone(accepted['result'])
                 self.assertEqual(accepted['recheck']['proof_sha256'], acceptance['proof_sha256'])
                 self.assertEqual(focused.file_digest(self.root(chain) / 'result.json'), original)
+
+    def test_the_continuity_selector_takes_the_recheck_branch(self):
+        accepted = focused.accepted_focused_result(self.root('shortened'), 'shortened')
+        self.assertIsNone(accepted['result'])
+        delivered = self.bundle_copy('delivered')
+        recorded = dict(accepted['recheck']['inventory'], tools=contract.verify_bundle(delivered))
+        self.assertEqual(set(focused.check_focused_continuity(accepted, recorded, delivered)),
+                         set(contract.BUNDLE_FILES))
+        changed = dict(recorded, flags=dict(recorded['flags'], extra='x'))
+        with self.assertRaisesRegex(RuntimeError, 'differs from the recheck inventory: flags'):
+            focused.check_focused_continuity(accepted, changed, delivered)
+        refrozen = self.bundle_copy('refrozen-selector', {'contract.py': (self.HERE / 'contract.py').read_bytes() + b'# changed\n'})
+        with self.assertRaisesRegex(RuntimeError, 'approved replacements changed: contract.py'):
+            focused.check_focused_continuity(accepted, recorded, refrozen)
 
     def test_tools_comparison_allows_only_the_approved_replacements(self):
         acceptance = focused.recheck_acceptance(self.root('shortened'), 'shortened')

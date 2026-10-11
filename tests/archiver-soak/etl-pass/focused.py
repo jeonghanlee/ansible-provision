@@ -1100,6 +1100,22 @@ def compare_configuration(recorded, result):
             raise RuntimeError('Focused evidence differs from current ' + key)
 
 
+def compare_focused_configuration(recorded, result, bundle_root, approved=None):
+    """Compare a later inventory with a Passed focused result, allowing the approved tool replacements."""
+    for key in ('artifacts', 'pvs', 'flags'):
+        if recorded[key] != result[key]:
+            raise RuntimeError('Focused evidence differs from current ' + key)
+    return check_recheck_tools(result['tools'], bundle_root, approved)
+
+
+def check_focused_continuity(accepted, recorded, bundle_root, approved=None):
+    """Compare a later inventory with the accepted focused proof, a Passed original or a recheck."""
+    if accepted['recheck'] is None:
+        return compare_focused_configuration(recorded, accepted['result'], bundle_root, approved)
+    check_recheck_configuration(accepted['recheck'], recorded)
+    return check_recheck_tools(accepted['recheck']['inventory']['tools'], bundle_root, approved)
+
+
 def recheck(root, chain):
     failure = json.loads((root / 'result.json').read_text())
     if (failure.get('result') != 'Incomplete' or failure.get('chain') != chain
@@ -1355,11 +1371,7 @@ def continuity(root, chain):
     name = 'continuity-' + dt.datetime.now(dt.timezone.utc).strftime('%Y%m%dT%H%M%S%f')
     inventory_name = name + '-inventory.json'
     recorded = inventory(root, chain, inventory_name)
-    if accepted['recheck'] is None:
-        compare_configuration(recorded, accepted['result'])
-    else:
-        check_recheck_configuration(accepted['recheck'], recorded)
-        check_recheck_tools(accepted['recheck']['inventory']['tools'], observe.TOOLS)
+    check_focused_continuity(accepted, recorded, observe.TOOLS)
     specs = json.loads((root / 'manifest.json').read_text())['pvs']
     classpath = str(root / 'helper-classes') + ':' + str(INSTALL / 'etl/webapps/etl/WEB-INF/classes') + ':' + str(INSTALL / 'etl/webapps/etl/WEB-INF/lib/*')
     snapshot = pb(root, classpath, 'snapshot', name + '.json')
