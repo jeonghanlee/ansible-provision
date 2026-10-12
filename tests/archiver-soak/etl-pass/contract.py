@@ -26,6 +26,14 @@ OFFSETS = (300, 600)
 GROWTH_FIELDS = ('data', 'application_logs', 'journal', 'jfr', 'measurement')
 CAPTURE_RESERVE = 512 * 1024 ** 2
 SAMPLE_GAP_SECONDS = 320
+# Sample checks whose failure invalidates the scheduler evidence itself: the appliance or its
+# management interface down, the fixture population not archiving, a JVM identity change, the
+# sampler unable to record, an unsynchronized clock, changed tools, a lost pass journal, a changed
+# fixture or a failing appliance health command. Only these may request an abort and only these
+# decide the scheduler verdict; every other check is an instrument finding recorded beside it.
+ABORT_CHECKS = ('appliance', 'mgmt', 'pv_status_request', 'pv_status', 'metrics_request', 'jvm_restart',
+                'instances', 'collection', 'clock', 'tool_bundle', 'journal', 'fixture_adjustment',
+                'health_invocation')
 BUNDLE_FILES = ('contract.py', 'aggregate.py', 'evidence.py', 'observe.py', 'collect.py',
                 'measure.py', 'health-event.py', 'prepare-retest.py', 'verify-health.py',
                 'verify-runtime.py', 'verify-chain.py', 'launch-retest.py',

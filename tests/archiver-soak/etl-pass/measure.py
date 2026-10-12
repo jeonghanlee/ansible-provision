@@ -28,8 +28,8 @@ POLL_SECONDS = 1.0
 PROBE_TIMEOUT_SECONDS = 30.0
 FRESHNESS_WINDOW_SECONDS = 30
 RETRIEVAL_WORKERS = 2
-JFR_ARCHIVE_LIMIT_BYTES = 512 * 1024 * 1024
-JFR_DUMP_RESERVE_BYTES = 72 * 1024 * 1024
+# Snapshot retention is bounded by the free-space reserve and the capacity projection only; the
+# retained snapshots are evidence and are never pruned or capped by a fixed archive size.
 MINIMUM_FREE_BYTES = 2 * 1024 * 1024 * 1024
 JSTAT_FIELDS = ('S0C', 'S1C', 'S0U', 'S1U', 'EC', 'EU', 'OC', 'OU', 'MC', 'MU',
                 'CCSC', 'CCSU', 'YGC', 'YGCT', 'FGC', 'FGCT', 'CGC', 'CGCT', 'GCT')
@@ -53,9 +53,6 @@ def append(path, fields, rows):
 
 
 def dump_jfr(out, raw, component, pid, complete=False):
-    retained = sum(path.stat().st_size for path in (out / 'raw').rglob('*.jfr'))
-    if not complete and retained > JFR_ARCHIVE_LIMIT_BYTES - JFR_DUMP_RESERVE_BYTES:
-        raise RuntimeError('JFR snapshot archive limit reached')
     filesystem = os.statvfs(out)
     if filesystem.f_bavail * filesystem.f_frsize < MINIMUM_FREE_BYTES:
         raise RuntimeError('Insufficient free space for measurement')

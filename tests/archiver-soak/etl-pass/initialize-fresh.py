@@ -209,7 +209,6 @@ def instruments():
               'jfr_maxsize_mib_per_jvm': measure.RECORDING_LIMIT_BYTES // 1024 ** 2,
               'jfr_duration_hours': JFR_HOURS, 'gc_log_mib_per_file': GC_FILE_MIB,
               'gc_log_archives_per_jvm': GC_ARCHIVES,
-              'jfr_snapshot_archive_limit_mib': measure.JFR_ARCHIVE_LIMIT_BYTES // 1024 ** 2,
               'snapshot_jfr_maxage_minutes': 10, 'snapshot_jfr_maxsize_mib': 8,
               'minimum_free_space_gib': measure.MINIMUM_FREE_BYTES // 1024 ** 3,
               'retrieval_workers': measure.RETRIEVAL_WORKERS,

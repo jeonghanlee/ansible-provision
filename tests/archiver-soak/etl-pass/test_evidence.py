@@ -122,5 +122,79 @@ class EvidenceTests(unittest.TestCase):
         self.assertIn('retained_sample_failure', result['failed_assertions'])
 
 
+class SchedulerVerdictTests(unittest.TestCase):
+    """The scheduler verdict and the metrics request-window tolerance on the shipped evaluator."""
+
+    def passes(self, *ended):
+        return [{'endedAt': value, 'busyMillis': '100', 'pvCount': '903'} for value in ended]
+
+    def test_a_pass_ending_inside_the_metrics_request_is_accepted_either_way(self):
+        summary = {'metrics_observed_at': '2026-10-12T08:35:02.123121+00:00', 'metrics_ms': 48.999}
+        closed = self.passes('2026-10-12T08:30:02.295678+00:00', '2026-10-12T08:35:02.096940+00:00')
+        variants = evaluate.metric_variants(closed, summary)
+        self.assertEqual([len(rows) for rows in variants], [2, 1])
+        before = self.passes('2026-10-12T08:30:02.295678+00:00', '2026-10-12T08:35:02.070000+00:00')
+        self.assertEqual([len(rows) for rows in evaluate.metric_variants(before, summary)], [2])
+        self.assertEqual([len(rows) for rows in evaluate.metric_variants(closed[1:], summary)], [1, 0])
+
+    def test_instrument_findings_never_decide_the_scheduler_verdict(self):
+        checks = contract.ABORT_CHECKS
+        result = evaluate.scheduler_result(['gc', 'latency', 'metric_snapshot_counter', 'kernel_journal',
+                                            'journal_retention_budget'], ['gc_pair_coverage', 'kernel_journal_coverage'],
+                                           checks)
+        self.assertEqual(result['scheduler_verdict'], 'Passed')
+        self.assertEqual(result['scheduler_failed_assertions'], [])
+        self.assertEqual(result['abort_checks'], sorted(checks))
+        for name in ('pv_status', 'etl_jobs', 'boot_changed', 'orderly_stop', 'health_invocation', 'jvm_restart'):
+            with self.subTest(failure=name):
+                self.assertEqual(evaluate.scheduler_result(['gc', name], [], checks)['scheduler_failed_assertions'], [name])
+        for name in ('aborted_observation', 'scheduled_pass_coverage', 'full_sample_coverage',
+                     'appliance_invocation_identity', 'required_pass_wait'):
+            with self.subTest(missing=name):
+                self.assertEqual(evaluate.scheduler_result([], ['gc_pair_coverage', name], checks)['scheduler_verdict'],
+                                 'Incomplete')
+
+    def test_failed_final_collections_enter_by_their_recorded_errors(self):
+        terminal = {'finish_started_at': '2026-10-12T12:35:04+00:00', 'errors': ['final_sample', 'final_journal']}
+        window = [{'sample_kind': 'full', 'observed_at': '2026-10-12T12:35:04.252780+00:00',
+                   'errors': [{'check': 'gc'}]},
+                  {'sample_kind': 'journal', 'observed_at': '2026-10-12T12:35:20+00:00', 'errors': []}]
+        self.assertEqual(evaluate.terminal_sample_failures(terminal, window, contract.ABORT_CHECKS), [])
+        window[0]['errors'].append({'check': 'pv_status'})
+        self.assertEqual(evaluate.terminal_sample_failures(terminal, window, contract.ABORT_CHECKS), ['final_sample'])
+        self.assertEqual(evaluate.terminal_sample_failures(terminal, window[:1], contract.ABORT_CHECKS),
+                         ['final_sample', 'final_journal'])
+
+
+@unittest.skipUnless(EVIDENCE, 'ETL_SOAK_EVIDENCE must name retained completed runtime evidence')
+class SchedulerVerdictEvidenceTests(unittest.TestCase):
+    setUp = EvidenceTests.setUp
+    write = EvidenceTests.write
+    result = EvidenceTests.result
+    window_samples = EvidenceTests.window_samples
+    schema_four_negative = EvidenceTests.schema_four_negative
+
+    def test_sample_instrument_error_fails_the_overall_verdict_only(self):
+        self.schema_four_negative()
+        path, row = self.window_samples()[0]
+        row['errors'].append({'check': 'gc', 'type': 'RuntimeError', 'message': 'JFR snapshot archive limit reached'})
+        self.write(path, row)
+        result = self.result()
+        self.assertNotEqual(result['verdict'], 'Passed')
+        self.assertIn('gc', result['failed_assertions'])
+        self.assertNotIn('gc', result['scheduler_failed_assertions'])
+        self.assertEqual(result['abort_checks'], sorted(contract.ABORT_CHECKS))
+
+    def test_sample_abort_listed_error_fails_both_verdicts(self):
+        self.schema_four_negative()
+        path, row = self.window_samples()[0]
+        row['errors'].append({'check': 'pv_status', 'message': 'fixture population is not fully archiving'})
+        self.write(path, row)
+        result = self.result()
+        self.assertIn('pv_status', result['failed_assertions'])
+        self.assertIn('pv_status', result['scheduler_failed_assertions'])
+        self.assertNotEqual(result['scheduler_verdict'], 'Passed')
+
+
 if __name__ == '__main__':
     unittest.main()

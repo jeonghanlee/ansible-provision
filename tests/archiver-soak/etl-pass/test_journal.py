@@ -423,5 +423,64 @@ class RealModificationTimeInputTests(unittest.TestCase):
         self.assertTrue(retention.interval_budget(second, bounds, first, terminal=True)['passed'])
 
 
+class TerminalCheckpointTests(unittest.TestCase):
+    """The shipped checkpoint query loop at the journalctl boundary."""
+
+    ROW = {'__CURSOR': 's=1;i=10;b=' + 'a' * 32, '__REALTIME_TIMESTAMP': '1791900000000000',
+           '_UID': '0', 'SYSLOG_IDENTIFIER': journal_coverage.MARKER_TAG, 'MESSAGE': 'marker'}
+
+    def transport(self, outputs):
+        """journalctl --sync succeeds; each tail query returns the next prepared stdout."""
+        calls = []
+
+        def run(args, **kwargs):
+            calls.append(args)
+            if args[:2] == ['journalctl', '--sync']:
+                return mock.Mock(returncode=0, stdout='', stderr='')
+            return mock.Mock(returncode=0, stdout=outputs.pop(0), stderr='')
+        return run, calls
+
+    def test_late_marker_is_found_on_a_later_attempt_and_the_receipt_is_the_successful_query(self):
+        with tempfile.TemporaryDirectory() as directory:
+            raw = Path(directory)
+            run, calls = self.transport(['', '', json.dumps(self.ROW) + '\n'])
+            with mock.patch('journal_coverage.subprocess.run', side_effect=run), \
+                    mock.patch('journal_coverage.time.sleep') as sleep:
+                tail, attempts = journal_coverage.terminal_checkpoint(raw, 'a' * 32, 'marker')
+            self.assertEqual((tail, attempts), (self.ROW, 3))
+            self.assertEqual(sleep.call_count, 2)
+            self.assertEqual(sum(args[:2] == ['journalctl', '--sync'] for args in calls), 3)
+            self.assertEqual(json.loads((raw / 'system-journal-tail.jsonl').read_text()), self.ROW)
+            receipt = json.loads((raw / 'system-journal-tail.jsonl.receipt.json').read_text())
+            self.assertIn('MESSAGE=marker', receipt['command'])
+
+    def test_missing_marker_still_fails_after_the_bounded_attempts(self):
+        with tempfile.TemporaryDirectory() as directory:
+            raw = Path(directory)
+            run, calls = self.transport([''] * journal_coverage.CHECKPOINT_ATTEMPTS)
+            with mock.patch('journal_coverage.subprocess.run', side_effect=run), \
+                    mock.patch('journal_coverage.time.sleep'), \
+                    self.assertRaisesRegex(RuntimeError, 'no unique root-owned terminal checkpoint'):
+                journal_coverage.terminal_checkpoint(raw, 'a' * 32, 'marker')
+            self.assertEqual(sum(args[0] == 'journalctl' and '--sync' not in args for args in calls),
+                             journal_coverage.CHECKPOINT_ATTEMPTS)
+
+    def test_a_non_root_or_duplicate_marker_is_not_retried_into_acceptance(self):
+        with tempfile.TemporaryDirectory() as directory:
+            raw = Path(directory)
+            foreign = dict(self.ROW, _UID='1000')
+            run, _ = self.transport([json.dumps(foreign) + '\n'] * journal_coverage.CHECKPOINT_ATTEMPTS)
+            with mock.patch('journal_coverage.subprocess.run', side_effect=run), \
+                    mock.patch('journal_coverage.time.sleep'), \
+                    self.assertRaisesRegex(RuntimeError, 'no unique root-owned terminal checkpoint'):
+                journal_coverage.terminal_checkpoint(raw, 'a' * 32, 'marker')
+            run, calls = self.transport([json.dumps(self.ROW) + '\n' + json.dumps(self.ROW) + '\n'])
+            with mock.patch('journal_coverage.subprocess.run', side_effect=run), \
+                    mock.patch('journal_coverage.time.sleep') as sleep, \
+                    self.assertRaisesRegex(RuntimeError, 'no unique root-owned terminal checkpoint'):
+                journal_coverage.terminal_checkpoint(raw, 'a' * 32, 'marker')
+            self.assertEqual(sleep.call_count, 0)
+
+
 if __name__ == '__main__':
     unittest.main()

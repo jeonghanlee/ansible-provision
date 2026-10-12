@@ -14,6 +14,7 @@ import unittest
 from unittest.mock import patch
 
 import collect
+import contract
 import measure
 import observe
 import evaluate
@@ -339,6 +340,123 @@ class RetestTests(unittest.TestCase):
         value = evaluate.epoch('2026-09-30T06:00:00.123456789Z')
         self.assertEqual(value, datetime.datetime(2026, 9, 30, 6, 0, 0, 123456,
                                                   tzinfo=datetime.timezone.utc).timestamp())
+
+
+class AbortPolicyTests(unittest.TestCase):
+    """The shipped counters and abort decision, driven by real sample summaries at the systemd boundary."""
+
+    def summary(self, raw, *checks):
+        return {'sample_kind': 'full', 'completed_at': '2026-10-12T12:35:04+00:00', 'raw_directory': str(raw),
+                'disk': {'available_bytes': 20 * 1024 ** 3},
+                'errors': [{'check': check, 'type': 'RuntimeError', 'message': check} for check in checks]}
+
+    def run_samples(self, out, samples):
+        """Apply the shipped counters and abort decision to consecutive full samples; return the abort requests."""
+        requests = []
+
+        def transport(args, **kwargs):
+            requests.append(args)
+            return subprocess.CompletedProcess(args, 0, '', '')
+
+        state = {}
+        checks = collect.abort_checks(out)
+        for index, checks_failed in enumerate(samples):
+            raw = out / 'raw' / ('sample-' + str(index))
+            raw.mkdir(parents=True)
+            summary = self.summary(raw, *checks_failed)
+            collect.write_json(raw / 'sample.json', summary)
+            state.update(collect.failure_counters(state, summary, checks))
+            with patch('subprocess.run', side_effect=transport):
+                collect.abort_if_required(out, summary, state)
+        return requests, state
+
+    def observation(self, out):
+        collect.write_json(out / 'observation.json',
+                           {'abort_policy': {'consecutive_failures': 2, 'checks': list(contract.ABORT_CHECKS)}})
+
+    def test_instrument_failures_never_request_abort_and_stay_counted(self):
+        with tempfile.TemporaryDirectory() as directory:
+            out = Path(directory)
+            self.observation(out)
+            requests, state = self.run_samples(out, [('gc',), ('gc',), ('gc', 'latency'), ('journal_retention_budget',)])
+            self.assertEqual(requests, [])
+            self.assertFalse((out / 'abort-request.json').exists())
+            self.assertEqual(state['consecutive_failures'], 4)
+            self.assertEqual(state['consecutive_abort_failures'], 0)
+
+    def test_two_consecutive_abort_listed_failures_request_abort(self):
+        with tempfile.TemporaryDirectory() as directory:
+            out = Path(directory)
+            self.observation(out)
+            requests, state = self.run_samples(out, [('pv_status',), ('gc', 'appliance')])
+            self.assertEqual(len(requests), 1)
+            self.assertIn(collect.ABORT_UNIT, requests[0])
+            request = json.loads((out / 'abort-request.json').read_text())
+            self.assertEqual(request['reason'], 'consecutive_sample_failures')
+            self.assertTrue(request['trigger_sample'].endswith('sample-1/sample.json'))
+            self.assertEqual(state['consecutive_abort_failures'], 2)
+
+    def test_an_instrument_failure_between_two_abort_listed_failures_resets_the_count(self):
+        with tempfile.TemporaryDirectory() as directory:
+            out = Path(directory)
+            self.observation(out)
+            requests, state = self.run_samples(out, [('pv_status',), ('gc',), ('jvm_restart',)])
+            self.assertEqual(requests, [])
+            self.assertEqual(state['consecutive_failures'], 3)
+            self.assertEqual(state['consecutive_abort_failures'], 1)
+
+    def test_disk_reserve_still_requests_abort_at_once(self):
+        with tempfile.TemporaryDirectory() as directory:
+            out = Path(directory)
+            self.observation(out)
+            raw = out / 'raw' / 'low'
+            raw.mkdir(parents=True)
+            summary = dict(self.summary(raw), disk={'available_bytes': measure.MINIMUM_FREE_BYTES - 1})
+            requests = []
+            with patch('subprocess.run', side_effect=lambda args, **k: requests.append(args) or
+                       subprocess.CompletedProcess(args, 0, '', '')):
+                collect.abort_if_required(out, summary, collect.failure_counters({}, summary, contract.ABORT_CHECKS))
+            self.assertEqual(len(requests), 1)
+            self.assertEqual(json.loads((out / 'abort-request.json').read_text())['reason'], 'disk_reserve')
+
+    def test_manifest_without_a_check_list_uses_the_contract_default(self):
+        with tempfile.TemporaryDirectory() as directory:
+            out = Path(directory)
+            collect.write_json(out / 'observation.json', {'abort_policy': {'consecutive_failures': 2}})
+            self.assertEqual(collect.abort_checks(out), set(contract.ABORT_CHECKS))
+            requests, _ = self.run_samples(out, [('collection',), ('collection',)])
+            self.assertEqual(len(requests), 1)
+
+    def test_abort_listed_checks_exclude_instrument_checks(self):
+        self.assertEqual(set(contract.ABORT_CHECKS) & {'gc', 'latency', 'journal_retention_budget', 'kernel_journal',
+                                                        'heap', 'process', 'metrics', 'event_rates'}, set())
+        for name in ('appliance', 'pv_status', 'jvm_restart', 'instances', 'collection', 'clock', 'tool_bundle',
+                     'journal', 'fixture_adjustment', 'health_invocation'):
+            self.assertIn(name, contract.ABORT_CHECKS)
+
+
+class SnapshotArchiveTests(unittest.TestCase):
+    def test_snapshot_dump_is_not_refused_by_the_size_of_the_retained_archive(self):
+        self.assertFalse(hasattr(measure, 'JFR_ARCHIVE_LIMIT_BYTES'))
+        with tempfile.TemporaryDirectory() as directory:
+            out = Path(directory)
+            raw = out / 'raw' / 'now'
+            raw.mkdir(parents=True)
+            (out / 'jvm').mkdir()
+            earlier = out / 'raw' / 'earlier'
+            earlier.mkdir()
+            with (earlier / 'engine.jfr').open('wb') as stream:
+                stream.truncate(600 * 1024 ** 2)
+
+            def jcmd(args, timeout=90):
+                Path(args[args.index('filename=' + str(out / 'jvm' / 'engine-checkpoint.jfr'))][9:]).write_bytes(b'JFR')
+                return 'Dumped recording'
+
+            with patch.object(measure, 'command', side_effect=jcmd):
+                destination = measure.dump_jfr(out, raw, 'engine', '4242')
+            self.assertEqual(destination, raw / 'engine.jfr')
+            self.assertEqual(destination.read_bytes(), b'JFR')
+            self.assertIn('Dumped recording', (raw / 'engine-jfr-dump.txt').read_text())
 
 
 if __name__ == '__main__':

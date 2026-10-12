@@ -430,8 +430,14 @@ units and sets a separate 45-minute bound on finish/abort services to cover
 collection and shutdown deadlines. The IOC, data, VM and inventories are retained.
 
 `observe.py abort` records Incomplete and cancels both timers. Two consecutive
-failed full samples request abort; less than 2 GiB free requests immediate
-abort. A single genuine health failure or full-sample error prevents Passed.
+full samples that each fail an abort-listed check request abort; less than
+2 GiB free requests immediate abort. The abort-listed checks are
+`contract.ABORT_CHECKS`, recorded in the manifest's `abort_policy.checks`: the
+appliance and its management interface, the fixture population, JVM identity,
+the sampler itself, the clock, the tool bundle, the pass journal, the fixture
+and the appliance health command. Any other failed check is recorded in the
+sample and the observation continues. A single genuine health failure or
+full-sample error still prevents an overall Passed.
 Journal collection preserves invocation IDs, accepted exit statuses, cursors
 and completion events; missing or suppressed coverage prevents success.
 The collector requires the latest completed health invocation to be successful
@@ -449,6 +455,17 @@ metrics against the initial counters, checks five-second timing and ordering,
 and evaluates health, freshness, JVM identity and GC coverage. Missing required
 coverage is Incomplete; a completed window with a failed assertion is Failed.
 Passed requires all assertions and the actual normal terminal path to succeed.
+The result also carries `scheduler_verdict`, `scheduler_failed_assertions` and
+`scheduler_missing_coverage`, computed only from the observation contract
+(duration, UTC midnight, boot, chain, schedule, bundle, abort), the pass
+records and their fields, timing and ordering, the appliance stop, the
+sampler's own coverage and the abort-listed sample checks; a failed final
+collection enters it by the recorded final sample's errors, not by name.
+Metric, GC, latency, journal and health-journal findings stay in the overall
+verdict and never decide the scheduler verdict; of the aggregated numerical
+items only `terminal_manifest_mismatch` enters it. A pass that ends inside a
+metrics request window is accepted under either counter reading;
+`metric_window_ambiguities` counts such snapshot and transition pairs.
 An observation recorded under any other schema is Incomplete with
 `unsupported_observation_schema`; earlier-schema sources are not shipped.
 Schema-2 inputs
@@ -487,9 +504,10 @@ The collector retains each failure instead of treating absent data as success.
 JFR enables `GCHeapSummary`, `GarbageCollection`, `GCPhasePause` and `DataLoss`.
 Each JVM's recording is bounded to 64 MiB and 26 hours, with a recording saved
 on exit. GC logging uses a 16 MiB active file and three archives. Five-minute
-collection takes ten-minute JFR snapshots limited to 8 MiB each, checks a
-512 MiB snapshot archive limit and requires at least 2 GiB free before a dump.
-A limit or JFR data-loss event is a collection failure.
+collection takes ten-minute JFR snapshots limited to 8 MiB each and requires
+at least 2 GiB free before a dump; retained snapshots are never pruned or
+capped, and the capacity projection carries their measured growth. A JFR
+data-loss event is a collection failure.
 
 Snapshots overlap. Before counting events or summing pause durations,
 deduplicate by component, JVM identity, event type, GC ID and heap marker or
@@ -508,7 +526,10 @@ with collections, and concurrent counters with remark/cleanup pauses.
 `G1Old` includes concurrent mark and undo events and differs from jstat `CGC`.
 Schema-5 kernel collection archives all journal entries between system-only
 checkpoints, then extracts the kernel rows. Quiet intervals advance a root-owned
-terminal marker without depending on the last kernel entry. Each interval
+terminal marker without depending on the last kernel entry. The marker's tail
+query is repeated up to ten times, 0.5 s apart and each after a journal flush,
+because the syslog path can deliver the marker after the first query;
+`journal-coverage.json` records `checkpoint_attempts`. Each interval
 must return its system anchor and terminal marker; per-file sequence
 identities remain recorded separately. `journalctl` before systemd 248 does
 not return an entry whose boot, timestamp and content equal the entry before
@@ -637,8 +658,9 @@ changes require new evidence.
 Each collection and final capture preserves its actual snapshot, gap and
 budget. A higher rate observed over at least 300 seconds increases the
 retained bound; a shorter gap is still checked against its gap limit. Missing/failing
-input remains a sample error; one error prevents Passed, two consecutive
-failed full samples request abort, and the 2-GiB reserve rule still applies.
+input remains a sample error; one error prevents an overall Passed, the journal
+retention and coverage checks are not abort-listed and never request abort,
+and the 2-GiB reserve rule still applies.
 Live preparation and the T22-T28 scenarios establish integration behavior;
 local arithmetic/parser checks alone do not authorize a new observation.
 

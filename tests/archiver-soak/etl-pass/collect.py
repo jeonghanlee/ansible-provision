@@ -530,7 +530,7 @@ def _sample(out, fixture, journal_only=False):
                     summary["errors"].append({"check": "jvm_restart", "message": name})
     summary["completed_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
     if not journal_only:
-        state["consecutive_failures"] = previous.get("consecutive_failures", 0) + 1 if summary["errors"] else 0
+        state.update(failure_counters(previous, summary, abort_checks(out)))
     write_json(raw / "sample.json", summary)
     write_json(out / "latest.json", summary)
     if not journal_only:
@@ -544,13 +544,32 @@ def _sample(out, fixture, journal_only=False):
     return bool(summary["errors"])
 
 
+def abort_checks(out):
+    """The checks that may request an abort: the manifest's recorded policy, else the contract default."""
+    manifest_path = out / "observation.json"
+    policy = json.loads(manifest_path.read_text()).get("abort_policy", {}) if manifest_path.exists() else {}
+    return set(policy.get("checks", contract.ABORT_CHECKS))
+
+
+def critical(summary, checks):
+    """A sample counts toward an abort only when one of its errors names an abort-listed check."""
+    return any(error.get("check") in checks for error in summary.get("errors", []))
+
+
+def failure_counters(previous, summary, checks):
+    """Advance the consecutive counters of a full sample: any failed check, and abort-listed checks only."""
+    return {"consecutive_failures": previous.get("consecutive_failures", 0) + 1 if summary["errors"] else 0,
+            "consecutive_abort_failures": (previous.get("consecutive_abort_failures", 0) + 1
+                                           if critical(summary, checks) else 0)}
+
+
 def abort_if_required(out, summary, state):
     manifest_path = out / "observation.json"
     if summary['sample_kind'] == 'full' and manifest_path.exists():
         manifest = json.loads(manifest_path.read_text())
         policy = manifest.get("abort_policy", {})
         low_space = summary.get("disk", {}).get("available_bytes", measure.MINIMUM_FREE_BYTES) < measure.MINIMUM_FREE_BYTES
-        repeated = state["consecutive_failures"] >= policy.get("consecutive_failures", float("inf"))
+        repeated = state.get("consecutive_abort_failures", 0) >= policy.get("consecutive_failures", float("inf"))
         if policy and (low_space or repeated) and not any((out / name).exists() for name in
                                                         ("shutdown.json", "abort.json", "shutdown-started.json", "abort-started.json")):
             if not (out / 'abort-request.json').exists():
@@ -581,7 +600,7 @@ def sample(out, fixture, journal_only=False):
                        'raw_directory': str(raw), 'sample_kind': 'journal' if journal_only else 'full',
                        'errors': [{'check': 'collection', 'type': type(error).__name__, 'message': str(error)}]}
             if not journal_only:
-                state['consecutive_failures'] = state.get('consecutive_failures', 0) + 1
+                state.update(failure_counters(state, summary, abort_checks(out)))
                 write_json(out / 'latest-full.json', summary)
             write_json(raw / 'sample.json', summary)
             write_json(out / 'latest.json', summary)

@@ -17,6 +17,10 @@ ENUMERATION_TIMEOUT = 120
 ACCOUNTING_ATTEMPTS = 600
 ACCOUNTING_SETTLE_SECONDS = 0.005
 ACCOUNTING_RETRY_SECONDS = 0.05
+# The terminal checkpoint is emitted through the syslog path and may reach the journal after the
+# first query even after a synchronous flush; the tail query is repeated within a small bound.
+CHECKPOINT_ATTEMPTS = 10
+CHECKPOINT_RETRY_SECONDS = 0.5
 # signature, flags, state, reserved, file/machine/boot/sequence ids, sizes and offsets, object and entry
 # counts, tail and head sequence numbers.
 HEADER = struct.Struct('<8s8xB7x16s16s16s16s64xQQQ')
@@ -198,6 +202,26 @@ def account(raw, boot, holes, tail_number):
     return {key: value for key, value in record.items() if key not in ('files', 'partial_files')}
 
 
+def terminal_checkpoint(raw, boot, marker, attempts=CHECKPOINT_ATTEMPTS, retry_seconds=CHECKPOINT_RETRY_SECONDS):
+    """Return the unique root-owned checkpoint entry and the number of query attempts it took.
+
+    Every attempt flushes the journal and rewrites the tail query receipt, so the archived tail is
+    always the one that succeeded; the bound keeps a lost checkpoint a visible failure.
+    """
+    for attempt in range(1, attempts + 1):
+        synced = subprocess.run(['journalctl', '--sync'], capture_output=True, text=True, timeout=QUERY_TIMEOUT)
+        if synced.returncode or synced.stderr.strip():
+            raise RuntimeError('System journal checkpoint synchronization failed')
+        tails = query(['--system', '-b', boot, 'SYSLOG_IDENTIFIER=' + MARKER_TAG,
+                       'MESSAGE=' + marker], raw / 'system-journal-tail.jsonl')
+        if len(tails) == 1 and tails[0].get('_UID') == '0':
+            return tails[0], attempt
+        if len(tails) > 1:
+            break
+        time.sleep(retry_seconds)
+    raise RuntimeError('System journal has no unique root-owned terminal checkpoint')
+
+
 def collect(raw, previous, now):
     boot = BOOT.read_text().strip().replace('-', '')
     daemon = daemon_identity()
@@ -228,14 +252,7 @@ def collect(raw, previous, now):
         'returncode': emitted.returncode, 'stdout': emitted.stdout, 'stderr': emitted.stderr}) + '\n')
     if emitted.returncode:
         raise RuntimeError('System journal checkpoint emission failed')
-    synced = subprocess.run(['journalctl', '--sync'], capture_output=True, text=True, timeout=QUERY_TIMEOUT)
-    if synced.returncode or synced.stderr.strip():
-        raise RuntimeError('System journal checkpoint synchronization failed')
-    tails = query(['--system', '-b', boot, 'SYSLOG_IDENTIFIER=' + MARKER_TAG,
-                   'MESSAGE=' + marker], raw / 'system-journal-tail.jsonl')
-    if len(tails) != 1 or tails[0].get('_UID') != '0':
-        raise RuntimeError('System journal has no unique root-owned terminal checkpoint')
-    tail = tails[0]
+    tail, attempts = terminal_checkpoint(raw, boot, marker)
     ended = int(tail['__REALTIME_TIMESTAMP'])
     if ended < timestamp(began):
         raise RuntimeError('System journal checkpoint precedes collection start')
@@ -262,6 +279,7 @@ def collect(raw, previous, now):
              'first_sequence': coordinates(anchor, boot)[1],
              'last_sequence': coordinates(tail, boot)[1],
              'sequence_records': len(interval), 'required_records': len(required),
+             'checkpoint_attempts': attempts,
              'sequence_holes': holes, 'sequence_missing': sum(last - first + 1 for first, last in holes),
              'sequence_accounting': accounted,
              'stream_sequence_ids': sorted({coordinates(row, boot)[0] for row in interval}),

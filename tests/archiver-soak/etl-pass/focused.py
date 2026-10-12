@@ -1219,9 +1219,18 @@ RECHECK_APPROVED = {
     # Producing version of the retained-record recheck; the running focused.py differs by design.
     'checker': '4265dfac7f62cb99e0a03a5db981a3449a37dc51365f05c156a5a20d3e264fd3',
     'helper': 'df29f030028d9c920c30a2faf360045b4595b40258666ef5dff7ab4939e4fb7d',
-    # Approved tool replacements since the recheck inventory, by name and digest.
+    # Approved tool replacements since the recheck inventory, by name and digest: the journald start
+    # correction, then the abort allowlist, the scheduler verdict, the metrics request-window tolerance,
+    # the checkpoint retry and the removal of the snapshot archive limit.
     'replacements': {
         'journal_retention.py': 'd9210972cbc2511c57357de6bc4c0e4063ba53664cc8d1cf837a5d3353ab1d74',
+        'contract.py': 'c95072b012646255c4034d47a281d8e8598361d576597107ef201e331b16c5ad',
+        'collect.py': 'ba4c1c88b45a5e2a411abcc497553552f3748234382eb4b1e723e54c4cb4fc2d',
+        'measure.py': 'ae568453d73d9333c219e35102364e51710b5550cff0378b3fea6d7a732e49cf',
+        'observe.py': 'aeee39890e2df6e4d2cc208bc5f0b57e21c7642ec37391019ca5e1c075adb8c1',
+        'evaluate.py': '8bab452a0f63d5e57043d2571344b0ea30a1b3115f7fbca7b2b06aa53b50b5bd',
+        'initialize-fresh.py': 'c596402ede0b4aef73ee8620e0737fa7acef67153970f0036580ba7ea7a43423',
+        'journal_coverage.py': '48e95a71c4a9300500fbf9b419c9bdb5134c7ca00c47f0b73f80f1c1441c9fd6',
     },
 }
 

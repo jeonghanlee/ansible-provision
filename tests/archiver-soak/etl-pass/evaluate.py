@@ -18,6 +18,60 @@ PASS = re.compile(r'ETL pass of transition (\d+) cadence (\d+) s: ETLPassRecord\
 TIMING_TOLERANCE = 5.0
 SAMPLE_GAP_LIMIT = contract.SAMPLE_GAP_SECONDS
 HEALTH_GAP_LIMIT = 120
+# The scheduler verdict reads only the items that describe the observation contract, the appliance,
+# the fixture population, the pass records and the sampler's own coverage, plus the abort-listed
+# sample checks of the manifest. Metric, GC, latency, journal and health-journal items stay in the
+# overall verdict and are reported beside it; they never decide the scheduler verdict.
+SCHEDULER_FAILURES = frozenset((
+    'chain_configuration', 'observation_duration', 'utc_midnight', 'manifest_schedule', 'tool_bundle_changed',
+    'observation_contract', 'boot_changed', 'all_pv_freshness', 'disk_reserve', 'health_invocation',
+    'scheduled_pass_identity', 'etl_jobs', 'etl_timing_or_ordering', 'appliance_oom_or_forced_termination',
+    'orderly_stop', 'appliance_not_active_before_stop', 'stop_timeout_unavailable', 'etl_state_before_stop',
+    'missing_final_full_sample'))
+SCHEDULER_MISSING = frozenset((
+    'complete_bundle_hashes', 'installed_bundle_integrity', 'verified_store_configuration', 'aborted_observation',
+    'explicit_initial_sample', 'full_sample_coverage', 'initial_full_sample', 'final_full_sample',
+    'appliance_invocation_identity', 'scheduled_pass_coverage', 'appliance_journal_coverage', 'required_pass_wait',
+    'shutdown_work_state', 'unsupported_observation_schema', 'unreadable_or_conflicting_evidence'))
+TERMINAL_SAMPLE_ERRORS = {'final_sample': 'full', 'final_journal': 'journal'}
+
+
+def abort_checks(manifest):
+    return set(manifest.get('abort_policy', {}).get('checks', contract.ABORT_CHECKS))
+
+
+def metric_variants(closed, summary):
+    """Return the pass lists a metrics snapshot may reflect.
+
+    The appliance reads its counters at an unobservable instant inside the metrics request, so a pass
+    that ended between the request start and the response may or may not be counted; both readings
+    are accepted and the ambiguity is counted.
+    """
+    request_start = epoch(summary['metrics_observed_at']) - float(summary.get('metrics_ms') or 0) / 1000
+    ambiguous = sum(epoch(row['endedAt']) >= request_start for row in closed)
+    return [closed, closed[:len(closed) - ambiguous]] if ambiguous else [closed]
+
+
+def terminal_sample_failures(terminal, window, checks):
+    """Map a failed final collection to the scheduler verdict by the recorded sample's errors, not its name."""
+    mapped = []
+    finish = epoch(terminal['finish_started_at'])
+    for name, kind in TERMINAL_SAMPLE_ERRORS.items():
+        if name not in terminal.get('errors', []):
+            continue
+        samples = [row for row in window if row.get('sample_kind') == kind and epoch(row['observed_at']) >= finish]
+        if not samples or any(error.get('check') in checks for row in samples for error in row['errors']):
+            mapped.append(name)
+    return mapped
+
+
+def scheduler_result(failures, missing, checks, mapped_terminal=()):
+    decisive = SCHEDULER_FAILURES | set(checks)
+    failed = sorted({name for name in failures if name in decisive} | set(mapped_terminal))
+    absent = sorted({name for name in missing if name in SCHEDULER_MISSING})
+    return {'scheduler_verdict': 'Incomplete' if absent else 'Failed' if failed else 'Passed',
+            'scheduler_failed_assertions': failed, 'scheduler_missing_coverage': absent,
+            'abort_checks': sorted(checks)}
 
 
 def epoch(value):
@@ -273,15 +327,20 @@ def _evaluate(out, terminal, failures):
     if len(snapshots) != len(full):
         missing.append('metric_snapshot_coverage')
     baseline = json.loads(evidence.path(out, manifest['counter_baseline']).read_text())
+    ambiguities = 0
     for transition in (0, 1):
         metric = 'Passes so far in ETL(' + str(transition) + '&raquo;' + str(transition + 1) + ')'
         values = [next((int(row['value']) for row in snapshot if row['name'] == metric), None)
                   for snapshot in [baseline, *[value for row, value in snapshots]]]
         if any(value is None for value in values):
             missing.append('metric_counter_coverage')
-        elif full and values[-1] - values[0] != sum(row['transition'] == transition for row in records
-                if epoch(manifest['baseline_observed_at']) < epoch(row['endedAt']) <= epoch(full[-1]['metrics_observed_at'])):
-            failures.append('metric_counter_reconciliation')
+        elif full:
+            ended = sorted((row for row in records if row['transition'] == transition and
+                            epoch(manifest['baseline_observed_at']) < epoch(row['endedAt']) <= epoch(full[-1]['metrics_observed_at'])),
+                           key=lambda row: epoch(row['endedAt']))
+            counts = {len(rows) for rows in metric_variants(ended, full[-1])}
+            if values[-1] - values[0] not in counts:
+                failures.append('metric_counter_reconciliation')
         for summary, snapshot in snapshots:
             closed = sorted((row for row in records if row['transition'] == transition and
                              epoch(row['endedAt']) <= epoch(summary['metrics_observed_at'])),
@@ -289,11 +348,12 @@ def _evaluate(out, terminal, failures):
             if not closed:
                 missing.append('metric_pass_record_coverage')
                 continue
+            variants = metric_variants(closed, summary)
+            ambiguities += len(variants) - 1
             label = 'ETL(' + str(transition) + '&raquo;' + str(transition + 1) + ')'
             metrics = {row['name']: row['value'] for row in snapshot}
-            if int(metrics.get('Passes so far in ' + label, -1)) != len(closed):
+            if not any(int(metrics.get('Passes so far in ' + label, -1)) == len(rows) for rows in variants):
                 failures.append('metric_snapshot_counter')
-            last = closed[-1]
             for suffix, field in (('PVs', 'pvCount'), ('jobs failed', 'jobsFailed'),
                                   ('jobs aborted', 'jobsAborted'), ('jobs skipped', 'jobsSkipped'),
                                   ('partitions moved', 'partitionsMoved'), ('bytes moved', 'bytesMoved'),
@@ -301,15 +361,16 @@ def _evaluate(out, terminal, failures):
                 value = metrics.get('Last pass in ' + label + ' ' + suffix)
                 if value is None:
                     missing.append('metric_field_coverage')
-                elif int(value) != int(last[field]):
+                elif not any(int(value) == int(rows[-1][field]) for rows in variants if rows):
                     failures.append('metric_last_pass')
-            for name, expected_value in (
-                    ('Last pass in ' + label + ' busy time (s)', int(last['busyMillis']) / 1000),
+            for name, expected_values in (
+                    ('Last pass in ' + label + ' busy time (s)',
+                     [int(rows[-1]['busyMillis']) / 1000 for rows in variants if rows]),
                     ('Average busy time per pass in ' + label + ' (s)',
-                     sum(int(row['busyMillis']) for row in closed) / (1000 * len(closed)))):
+                     [sum(int(row['busyMillis']) for row in rows) / (1000 * len(rows)) for rows in variants if rows])):
                 if name not in metrics:
                     missing.append('metric_field_coverage')
-                elif abs(float(metrics[name]) - expected_value) > 0.005001:
+                elif not any(abs(float(metrics[name]) - expected_value) <= 0.005001 for expected_value in expected_values):
                     failures.append('metric_busy_time')
     pairs = collections.defaultdict(set)
     window_pairs = set()
@@ -368,18 +429,24 @@ def _evaluate(out, terminal, failures):
     if not terminal.get('etl_state_before_stop'):
         missing.append('shutdown_work_state')
     verdict = 'Incomplete' if missing else 'Failed' if failures else 'Passed'
+    checks = abort_checks(manifest)
     return {'verdict': verdict, 'failed_assertions': sorted(set(failures)), 'journal_budget_failed_samples': len(budget_failed),
             'missing_coverage': sorted(set(missing)), 'full_samples': len(full),
             'health_invocations': len(health), 'expected_passes': len(expected),
             'missing_passes': len(absent), 'duplicate_passes': len(duplicates),
-            'unexpected_passes': len(unexpected), 'incomplete_gc_pairs': incomplete_pairs}
+            'unexpected_passes': len(unexpected), 'incomplete_gc_pairs': incomplete_pairs,
+            'metric_window_ambiguities': ambiguities,
+            **scheduler_result(failures, missing, checks, terminal_sample_failures(terminal, window, checks))}
 
 
 def evaluate(out, terminal, aggregate_checks=True):
     schema = terminal.get('observation', {}).get('measurement_schema')
+    checks = abort_checks(terminal.get('observation', {}))
     if schema != contract.SCHEMA:
-        return {'verdict': 'Incomplete', 'failed_assertions': list(terminal.get('errors', [])),
-                'missing_coverage': ['unsupported_observation_schema']}
+        failures = list(terminal.get('errors', []))
+        return {'verdict': 'Incomplete', 'failed_assertions': failures,
+                'missing_coverage': ['unsupported_observation_schema'],
+                **scheduler_result(failures, ['unsupported_observation_schema'], checks)}
     failures = list(terminal.get('errors', []))
     try:
         result = _evaluate(out, terminal, failures)
@@ -393,11 +460,18 @@ def evaluate(out, terminal, aggregate_checks=True):
             result['failed_assertions'] = sorted(set(result['failed_assertions'] + numerical.get('failed_assertions', [])))
             result['missing_coverage'] = sorted(set(result['missing_coverage'] + numerical.get('missing_coverage', [])))
             result['verdict'] = 'Incomplete' if result['missing_coverage'] else 'Failed' if result['failed_assertions'] else 'Passed'
+            # Of the aggregate items only the manifest identity of the terminal record is observation contract.
+            if 'terminal_manifest_mismatch' in numerical.get('failed_assertions', []):
+                result['scheduler_failed_assertions'] = sorted(set(result['scheduler_failed_assertions']) |
+                                                               {'terminal_manifest_mismatch'})
+                if result['scheduler_verdict'] == 'Passed':
+                    result['scheduler_verdict'] = 'Failed'
         return result
     except (OSError, KeyError, ValueError, TypeError, RuntimeError) as error:
         return {'verdict': 'Incomplete', 'failed_assertions': sorted(set(failures)),
                 'missing_coverage': ['unreadable_or_conflicting_evidence'],
-                'evidence_error': type(error).__name__ + ': ' + str(error)}
+                'evidence_error': type(error).__name__ + ': ' + str(error),
+                **scheduler_result(failures, ['unreadable_or_conflicting_evidence'], checks)}
 
 
 if __name__ == '__main__':
