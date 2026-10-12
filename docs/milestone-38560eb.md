@@ -60,12 +60,18 @@ pre-launch check passed and the launch was refused at the continuity's strict to
 comparison against the replaced bundle; the owner extended the approved-replacement rule
 to that comparison in a newly frozen bundle, whose delivery invalidated the retention
 proofs bound to the earlier tools, so both guests were measured and prepared again under
-it. After the repeated pre-launch checks both 86400-second observations are open: the
-shortened chain since 2026-10-11T17:35:15 UTC (earliest finish 2026-10-12T17:35:15 UTC,
-312 expected firings) and the default chain since 2026-10-11T18:14:06 UTC (earliest finish
-2026-10-12T18:14:06 UTC, 27 expected firings). They finish on their own through the finish
-timers; their evaluation and the final comparison follow. Do not restart, reseed or
-re-register a guest during an active observation.
+it. After the repeated pre-launch checks both 86400-second observations opened (shortened
+2026-10-11T17:35:15 UTC, default 18:14:06 UTC) and both aborted themselves on 2026-10-12
+(12:35:04 and 15:45:04 UTC) at a fixed JFR snapshot archive bound of the sampler, with
+every pass planned before the abort recorded and no scheduler defect. The owner then ruled
+that instrument failures must neither end an observation nor decide the scheduler
+verification; the tool change (abort allowlist, scheduler verdict, bound removed, metrics
+window tolerance, checkpoint retry; decision of 2026-10-12) is implemented and verified
+locally as bundle `eb93dfe4…`. Next: deliver the bundle to both guests through the
+accepted replacement step, start the stopped appliance and health timer, move the aborted
+records aside, rerun `check`, `measure` and `prepare`, and relaunch both observations
+through the run-to-launch procedure. Do not restart, reseed or re-register a guest during
+an active observation.
 Earlier amendment and preparation evidence follows.
 Local code implementation and verification were authorized on 2026-10-01.
 Dedicated VM acquisition and deployment were subsequently authorized on
@@ -3157,6 +3163,41 @@ verification, the capacity renewal and the launch, all inside the one-hour valid
 the runtime proofs. The default guest keeps its preparation and runs the same procedure
 with the same wait.
 
+Decision Date: 2026-10-12. Both first full-window observations ended by the sampler's own
+abort request at the fixed JFR snapshot archive bound (results row "T16 first full-window
+attempt, both guests, self-aborted"), the seventh 24-hour attempt since 2026-09-29
+(pairs counted once) to end on an instrument gate and none on a scheduler defect. The owner ruled
+that an instrument failure must neither end an observation nor decide the scheduler
+verification, and after a debate with one independent reviewer (two rounds; the review
+record is private to the session) accepted the following tool change, frozen as bundle
+`eb93dfe4f16a4c92952bd1c418f766ef078194b528a37e99a15e7f577bae3eeb`. (1) The abort policy
+is an allowlist, `contract.ABORT_CHECKS`, recorded in the manifest's `abort_policy.checks`:
+only a check that invalidates the scheduler evidence (the appliance and its management
+interface, the fixture population, JVM identity, the sampler itself, the clock, the tool
+bundle, the pass journal, the fixture and the appliance health command) counts toward the
+two consecutive failures that request an abort, counted per sample; every other check is
+recorded and the observation continues; the 2 GiB reserve abort is unchanged. (2) The
+evaluator adds `scheduler_verdict`, `scheduler_failed_assertions` and
+`scheduler_missing_coverage`, read from the observation contract (duration, UTC midnight,
+boot, chain, schedule, bundle, abort), the pass records and their fields, timing and
+ordering, the appliance stop, the sampler's own coverage and the allowlisted checks, with a
+failed final collection entering by its recorded errors; the overall verdict keeps its
+meaning and each observation records both, the overall one first. (3) The fixed 512 MiB
+snapshot archive bound is removed; the 2 GiB free-space check before each dump, the
+capacity projection's measured `jfr` rate and its 512 MiB capture reserve remain. (4) A
+pass that ends inside a metrics request window is accepted under either counter reading
+and the snapshot is counted in `metric_window_ambiguities`. (5) The kernel-journal
+checkpoint tail query is repeated up to ten times, 0.5 s apart, each after a flush, and
+`journal-coverage.json` records `checkpoint_attempts`; this is an `M25` instrument change
+and claims no `M25` result. Rejected during the debate: replacing the capture reserve by a
+JFR rate, because the reserve covers the terminal captures that no rate contains. The
+relaunch sequence, both chains in parallel: delivery through the accepted replacement
+step, start of the appliance and health timer that the abort stopped, the aborted records
+moved into `superseded-<UTC>/` with nothing deleted, `check`, `measure`, `prepare` (the
+delivery invalidates the retention proof), then the existing run-to-launch procedure;
+`instruments` does not rerun, so each guest's `measurement-config.json` keeps the
+superseded `jfr_snapshot_archive_limit_mib` field, which no shipped check reads.
+
 The prerequisite is chronological append input. An empty historical source filename
 does not establish an empty destination: the failed continuations had newer MTS data
 before seed. Preserve the accepted old-eight-sample boundary fixture, middle/recent
@@ -3319,6 +3360,8 @@ owner acceptance and implementation authorization are recorded separately above.
 | T15 third launch attempt, shortened guest | 2026-10-11, 09:24 to 10:01 UTC | `measure` into the run-numbered directory ended Succeeded at 09:54:30 UTC and `prepare` at 09:54:56 UTC with the final bundle's tool hashes. The procedure then passed both health verifications, the chain check, the empty-data check and the abort probe (restart at about 09:56 UTC, 903 PVs reconnected after six polls), and failed the repeated health verification after 240 s: the first full sample passed with the proof-to-sample write rate at 83,958 bytes/s (required 1,052,374,616 of 1,073,741,824 bytes) and the second, 9 s later, failed at 94,249 bytes/s (required 1,114,526,616), both measured from the proof's last snapshot at 09:54:30 UTC across the restart burst (32,677,888 then 37,515,264 bytes written). The default guest's `measure` ended Succeeded at 09:54:56 UTC and its `prepare` at 09:55:56 UTC. | `/var/lib/etl-soak-fresh-measurements-r3` (shortened) and `-r2` (default); the raw sample directories of 10:00:59 and 10:01:08 UTC with their retention snapshots; the local log `launch-shortened-3.log`. The decision above records the chosen remedy. |
 | T15 fourth attempt and observation start, shortened guest | 2026-10-11, 16:24 to 17:35 UTC | The preparation records moved into `superseded-20261011T162441Z`; `measure` into `/var/lib/etl-soak-fresh-measurements-r4` ended Succeeded at 16:54:47 UTC (measured bounds 47,683 bytes/s system and 27,949 bytes/s user, the user bound from an 8 MiB allocation step of the user journal; required 1,010,474,516 of 1,073,741,824 bytes, passed) and `prepare` at 16:55:34 UTC. The procedure from 16:56:06 UTC passed both health verifications, the chain check (a closed pass of 23,376 bytes already recorded), the empty-data check and the abort probe (restart at 16:56:52 UTC, 903 PVs after five polls), waited 1800 s, passed the repeated health verification at 17:27:35 and 17:27:44 UTC with no errors, and renewed the capacity window with two real samples (required growth 16,544,106,643 bytes against 37,029,502,976 available). The first launch command was refused by systemd because the transient unit name of the morning's failed attempt still existed; `launch-retest.py` ran at 17:34:00 UTC under a unique unit name: chain and health checks, the capacity check, the continuity of the Passed focused result under the replaced bundle and the readiness sample passed, and the observation opened at 17:35:15 UTC with 312 expected firings and the sample and finish timers active. | `observation.json`, `launch-started.json`, `initial-sample.json` and `readiness-continuity.json` under `/var/lib/etl-soak`; the local log `launch-shortened-4.log`; the earliest finish is 2026-10-12T17:35:15 UTC. The morning's failed transient units stay loaded as failed on the guest; the procedure now names launch units by time. |
 | T15 launch and observation start, default guest | 2026-10-11, 17:35 to 18:14 UTC | With the preparation of 09:55 UTC kept (measured and prepared under the final bundle), the procedure passed both health verifications (903 archiving PVs, no errors), the chain check (a closed pass of 8,781 bytes already recorded), the empty-data check and the abort probe (early and repeated finish rejected, verdict Incomplete, whole-unit stop rc 0 in 13.1 s, no errors, four complete GC recordings; 903 PVs archiving and connected after six polls), waited 1800 s, passed the repeated health verification at 18:07:24 and 18:07:33 UTC with no errors, and renewed the capacity window with two real samples 300 s apart (required growth 11,366,051,777 bytes against 35,334,057,984 available, previous files preserved). `launch-retest.py` ran at 18:12:51 UTC under a time-named unit with a target 75 s ahead: chain and health checks, the capacity check, the continuity of the Passed focused result under the replaced bundle and the readiness sample passed, and the observation opened at 18:14:06 UTC with 27 expected firings (24 hourly and 3 eight-hourly) and the sample and finish timers active. | `observation.json`, `launch-started.json`, `initial-sample.json` and `readiness-continuity.json` under `/var/lib/etl-soak`; the continuity records of 18:13 UTC under `/var/lib/etl-focused/default`; the local log `launch-default.log`; the earliest finish is 2026-10-12T18:14:06 UTC. Both 86400-second observations are open and finish through their finish timers. |
+| T16 first full-window attempt, both guests, self-aborted | 2026-10-12, 12:35 and 15:45 UTC | Both observations ended by the sampler's own abort request after two consecutive full samples failed the `gc` check with "JFR snapshot archive limit reached": shortened at 12:35:04 UTC after 68,389 s, default at 15:45:04 UTC after 77,458 s. Each `abort.json` records verdict Incomplete, the appliance stopped with rc 0 in 11.4 s and 13.1 s, boot unchanged, and four complete GC recordings (134 and 150 MiB). The cause is the fixed bound of 440 MiB (512 MiB less a 72 MiB reserve) that `measure.dump_jfr` applied to every snapshot under `raw/`: ten-minute snapshots average 0.36 MiB per JVM, about 1.45 MiB per sample and about 420 MiB per 288 samples, and the pre-launch measurement and verification snapshots in the same directory (shortened 109.6 MiB, default 69.0 MiB) consumed the margin; the totals stood at 440.2 and 440.1 MiB with the disks at 41 and 50 percent. Every pass planned before the abort fired (shortened 247 of 312, default 23 of 27; missing, duplicate and unexpected 0; incomplete GC pairs 0; budget-failed samples 0). The shortened record also holds one `kernel_journal` sample failure at 01:45:00 UTC (the checkpoint marker reached the journal after its tail query) and three metric assertions (`metric_snapshot_counter`, `metric_last_pass`, `metric_busy_time`) from the 08:35:00 UTC snapshot, whose 49 ms metrics request contained a pass end (counter 188 against 189 closed passes). | `abort.json`, `abort-request.json`, every sample, `passes.jsonl` and `final-gc/` under `/var/lib/etl-soak` on each guest; the evaluation embedded in `abort.json`; the earlier observation archives hold no per-sample JFR, so this was the first full window under the per-sample snapshot bound. The tool change and the relaunch are in the decision of 2026-10-12. |
+| T13 abort allowlist, scheduler verdict and snapshot bound removal | 2026-10-12, 21:16 to 22:20 UTC | Shipped changes: `contract.ABORT_CHECKS` and the per-sample counters `consecutive_abort_failures` in `collect.py`; `abort_policy.checks` in the launch manifest; `scheduler_verdict`, `metric_variants` and the final-collection mapping in `evaluate.py`; `terminal_checkpoint` with a bounded retry in `journal_coverage.py`; the archive bound removed from `measure.py` and its field from `initialize-fresh.py`; eight approved replacements in `focused.py`; README. Local checks on the control host: 139 tests passed, 40 skipped (15 new: allowlist, per-sample reset, disk reserve, contract default, snapshot dump without a bound, checkpoint retry and bound, metric window variants, scheduler verdict membership, final-collection mapping, and two replays of the early-return scheduler mapping on retained runtime evidence). The new evaluator on read-only copies of both aborted records (JFR snapshots excluded): overall Incomplete; scheduler verdict Incomplete with exactly `aborted_observation`, `full_sample_coverage`, `required_pass_wait`, `scheduled_pass_coverage` and `observation_duration` (plus `tool_bundle_changed` against the host bundle); `gc` and `final_sample` outside it; the shortened record's three metric assertions cleared with two counted ambiguities; the one `kernel_journal` failure stays in the overall verdict. Bundle frozen as `eb93dfe4…`, 24 members, SHA256SUMS regenerated (55 entries), the replacement step's accepted hash updated, delivery archive verified against `bundle.json`. | Working tree at this record; the private review record under `work/review_sessions/`; the evaluator outputs on the copied records in the session scratch directory. Delivery, re-preparation and relaunch follow under the decision of 2026-10-12. |
 
 ##### Focused Deployment Amendment (2026-10-07)
 
