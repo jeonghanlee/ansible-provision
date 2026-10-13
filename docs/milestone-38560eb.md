@@ -31,7 +31,27 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: Preserve the retained pair of cold guests, which was shut down
+Next session entry point: Use the accepted independent plans in the current M22 and M25
+details below. Their first implementation steps separate the ETL workflow from the
+journal study using the same immutable source baseline; neither waits for the other.
+The current authorization covers this documentation and commit preparation only.
+Obtain implementation authorization for the revised plan before changing tools or
+deployments. There are three execution units: journal, shortened ETL and default ETL.
+Each has its own preparation, full-day observation and completion decision.
+
+The current plans and D27 supersede the earlier journal prerequisites, capacity-budget
+acceptance and compressed budget rehearsal. The tools still implement the combined
+workflow; plan acceptance does not establish that separation has been implemented.
+Preserve prior evidence and distinguish an owner-requested stop from an automatic abort.
+No current deployment state was observed while recording this revision.
+
+<details>
+<summary>Historical entry notes before the independent plans</summary>
+
+These notes retain their original observations and instructions for historical evidence.
+They do not authorize a current run or override the current M22/M25 plans.
+
+Previous entry point: Preserve the retained pair of cold guests, which was shut down
 normally with its disks and files kept and nothing deleted, together with their original
 failed-run evidence and all earlier M22 evidence. On 2026-10-10 the owner restarted the
 preparation on two fresh guests, one per store chain; a retained guest is restarted only on
@@ -360,6 +380,8 @@ verified on the production IOC server 2026-09-04 (con 1.1.0 replaced by 1.2.0,
 full mode carries every OS tree, second apply `failed=0`). Delivered in
 `fd4ff1c` and `13bc8e6`.
 
+</details>
+
 Status tally: 21 Complete, 3 In progress, 0 Not started, 0 Deferred, 2 Blocked. 5 external gates (3 Complete, 2 Open).
 
 ## Milestone
@@ -389,10 +411,10 @@ Status tally: 21 Complete, 3 In progress, 0 Not started, 0 Deferred, 2 Blocked. 
 | Core | M19 | Add an ioc-group operator fixture account with linger | Milestone | Complete | No | | The `testusers` operator also creates `opc`, a member of the `ioc` group with systemd linger enabled, while `opa`, `opb`, `obs`, `usera` and `userb` keep their current membership and linger; a fresh iocrunner host applied through this repository shows that state and re-applies cleanly; delivered in `32ea95f`; [detail](#m19---add-an-ioc-group-operator-fixture-account-with-linger) |
 | Core | M21 | Reach the archiver MariaDB over its Unix socket | Milestone | Complete | No | M17 | `archiver_build` writes `DB_SOCKET` for the `mariadb` backend and the `archiver_dev` group returns to `skip-networking`; fresh Rocky 8.10 and Debian 13 `archiver_dev` hosts build with TCP closed, serve mgmt and persist PV configuration, and an installed TCP host moves over in one forced run; delivered in `8a5c355`; [detail](#m21---reach-the-archiver-mariadb-over-its-unix-socket) |
 | Core | M20 | Align the test-user handoff document with the operator model | Milestone | Complete | No | | `docs/test_users_handoff.md` names `roles/testusers`, `playbooks/operators/testusers.yml`, the `iocrunner` species order and the bake's species step instead of the retired `app_ioc_runner`, `roles/test_users`, `playbooks/07_test_users.yml`, `CONFIG_SITE` list and `site.yml`; delivered in `268a060`; [detail](#m20---align-the-test-user-handoff-document-with-the-operator-model) |
-| Core | M22 | Verify the ETL pass scheduler on two parallel store chains | Milestone | In progress | No | M17, M21, G4 | Both fixed-ref deployments run for at least 24 hours across UTC midnight with the same 903-PV fixture; pass timing and metrics match the scheduler design, normal-load passes do not overrun, each unit stops within its configured timeout, and the earlier soak comparison is recorded; [detail](#m22---verify-the-etl-pass-scheduler-on-two-parallel-store-chains) |
+| Core | M22 | Verify the ETL pass scheduler on two parallel store chains | Milestone | In progress | No | M17, M21, G4, D27 | Independently packaged ETL preparation, both 903-PV full-day observations, physical/retrieval checks, complete pass and measurement evidence, timed shutdown and reproducible comparison pass without journal-study tools or results; [detail](#m22---verify-the-etl-pass-scheduler-on-two-parallel-store-chains) |
 | Core | M23 | Add the Perl modules for the EPICS-env installed-tree utility to the EPICS OS package set | Milestone | Complete | No | D20 | `epics_os_packages` carries `perl-Digest-SHA`, `perl-JSON-PP`, `perl-Pod-Checker` and `perl-Test-Simple` on rocky8 and rocky10 and `perl` on debian12, debian13, ubuntu24 and ubuntu26; after the `epics` operator applies on each vacuum, the four modules load and `podchecker` runs; delivered in `4dfb290`, verified on all six vacua (`300ccc7`); [detail](#m23---add-the-perl-modules-for-the-epics-env-installed-tree-utility-to-the-epics-os-package-set) |
 | Core | M24 | Split the archiver MariaDB operator into socket and TCP operators and rename the archiver-dev species | Milestone | In progress | No | D21 | Operators `mariadb_uds` and `mariadb_tcp` and species `archiver-dev-uds`, `archiver-dev-tcp` and `archiver-dev-sqlite` exist with the group variables `archiver_dev_uds.yml`, `archiver_dev_tcp.yml` and `archiver_dev_sqlite.yml`; each species deploys on a fresh guest with its database reachable exactly as the cloud-provision definition states; the old `archiver-dev` name still resolves for a limited period; [detail](#m24---split-the-archiver-mariadb-operator-into-socket-and-tcp-operators-and-rename-the-archiver-dev-species) |
-| Core | M25 | Verify journal collection integrity and retention for the ETL soak | Milestone | In progress | No | D22 | The journal checks formerly T22-T28 of the ETL soak (kernel-journal coverage after cursor loss and in quiet intervals, rotation and event delivery, detection of required-record loss, boundaries and boot identity, the retention budget in preparation and in a 24-hour window, and abort and terminal integration) each pass in their stated environment, including a compressed rehearsal of the full collection path under a reduced journal cap; [detail](#m25---verify-journal-collection-integrity-and-retention-for-the-etl-soak) |
+| Core | M25 | Verify independent journal recording, retention and collection | Milestone | In progress | No | D27 | Every required record reaches the live journal, baseline records remain directly readable after at least 24 hours, later records remain readable through the final check, and the archive matches by identity/content; all seven scenarios pass independently of ETL acceptance and without a capacity forecast or inherited cap; [detail](#m25---verify-independent-journal-recording-retention-and-collection) |
 | Core | M26 | Provision the SQLite Archiver Appliance on an existing general Rocky Linux 8.10 server | Milestone | Blocked | No | M18, G5, D26 | The `archiver_server_sqlite` assembly applies on the existing server without a proxy readiness gate, installs the appliance on the SQLite backend at the pinned sources, and passes the install checks on that server; the optional `proxy_check` role and its suite exist but are not part of the assembly; [detail](#m26---provision-the-sqlite-archiver-appliance-on-an-existing-general-rocky-linux-810-server) |
 | Gate | G1 | the production IOC server reaches the internal git host | External gate | Complete | No | | Reachability achieved through the site HTTP proxy's CONNECT tunnel (an ssh `ProxyCommand` over the proxy), not a firewall whitelist: the owner's key authenticates and `git ls-remote` returns the refs; confirmed 2026-09-03 by the successful iocserver clone (M4/T2) |
 | Gate | G2 | cloud-provision ships the middleware package baseline and the middleware VM | External gate | Open | No | | The middleware operator/species structure and OS package baseline (system OpenJDK 21, Tomcat 9.0.121, MariaDB; no Maven package) originate in cloud-provision (`docs/milestone-e260630.md` M11) as the normative source and a middleware VM is provisionable there, before ansible-provision mirrors the set and layers its roles; owned by the cloud-provision session |
@@ -430,6 +452,7 @@ Status tally: 21 Complete, 3 In progress, 0 Not started, 0 Deferred, 2 Blocked. 
 | D24 | `M3` is retired. The old roles `base_os` and `app_epics` it hardened were superseded by the operator/species model (`D3`), the surface it covered was re-verified through the operator roles, and its Debian 13 re-verification is waived because it targets roles that are no longer used. | Owner decision, 2026-10-06 |
 | D25 | Proxy readiness of a general Rocky 8.10 server is verified read-only by the cloud-provision schema-3 checker, pinned by commit `05cf57398d09882f628d7356316f31576ca840c6` and source SHA-256 `dcf63cb79ecaf6a8dc9c955e5c1cec01cb69e3c92db21b9d0a3fa51f3ea36cff`, through a `proxy_check` role that precedes the group assembly and, for the general-server scope, `archiver_build`. The server owner prepares the six proxy files and the private input; `op.proxy` and the schema-2 runtime lock no longer gate this assembly. Superseded for the assembly wiring by `D26`. | Owner decision, 2026-10-10 |
 | D26 | A general Rocky 8.10 server is provisioned without a proxy readiness gate: its owner sets the proxy configuration directly (environment, DNF, and the Maven settings file `/etc/maven-proxy-settings.xml`), the assembly neither writes nor checks it, and `archiver_build` keeps its precondition that a proxied host carries that file. The `proxy_check` role and its suite stay available and are wired in only when a site needs a gate. | Owner decision, 2026-10-11 |
+| D27 | M22 and M25 have independent packages, preparation, execution, evidence and completion. M22 alone changes the existing ETL integration; M25 extracts its standalone journal workflow from the same immutable baseline. Neither requires the other's merge or result. Journal acceptance measures actual delivery, live retention and collection equality on sufficient disk, without an inherited cap or calculated retention horizon. All required in-window records receive final live reads, and actual retrieval messages must be correlated to requests. Supersedes the coupling and budget prerequisites of D22/D23 and the earlier plans; historical results retain their original meaning. | 2026-10-13 |
 
 ### Assignment History
 
@@ -2815,6 +2838,153 @@ accepted 2026-07-05 state own; the cloud-provision bake script.
 - GitHub Issue: none; external request `jeonghanlee/epicsarchiverap-maven#12`
 - Status: In progress
 
+##### Summary
+
+Complete ETL functionality and two full-day scheduler observations independently of
+the journal integrity and retention study. A separate scheduler verdict alone does
+not remove the current shared preparation, bundle, collection and evaluation dependencies.
+This current plan supersedes the historical plans below under D27.
+
+##### Scope
+
+M22 owns `tests/archiver-soak/etl-pass/`, its runtime dependencies, procedure and this
+completion record. It alone removes journal-study calls from the existing integration.
+Keep actual ETL pass logs, health outcomes and process diagnostics as ETL evidence.
+The journal package must not be required at build, installation, preparation, runtime
+or replay. Use immutable baseline commit `649fee80561611f1494c1c3ce1f9546f6c619173`
+for both separations; preserve earlier bundles, schemas and results for original replay.
+
+Out of scope: journal retention-budget design, all-stream sequence accounting,
+rotation/vacuum fault testing, journal acceptance, scheduler or store-policy changes,
+new storage-failure tests, host sizing and the engine sample-buffer fix tracked in
+`jeonghanlee/epicsarchiverap-maven#29`.
+
+##### Completion Criteria
+
+- Installation, preparation, both chains, normal finish, abort and offline replay run
+  through the shipped ETL path without journal-study tools, proofs, directories or services.
+- Only ETL-owned paths and this completion record change. The package can be built,
+  installed, verified and completed from the baseline without applying M25 changes.
+- A journal-only package change cannot alter ETL proof validity, evaluator results or
+  exit status. A missing or changed actual ETL dependency remains detectable.
+- Both deployments retain exact source/artifact identities, effective per-PV stores,
+  hold/gather settings, fixture and stop timeout. Focused evidence demonstrates physical
+  movement, source retention/deletion, reduction and HTTP retrieval on its stated scope.
+- Each chain runs for at least 86400 seconds in UTC and monotonic time across UTC
+  midnight. Scheduled passes are unique, ordered, successful and complete; starts meet
+  the five-second tick bound from the planned time or preceding-transition completion,
+  retaining original `plannedAt`. Metrics match the pass records; no normal-load overrun passes.
+- Required per-component heap, GC cause/pause, jstat, RSS, actual event-rate, retrieval
+  freshness and visibility measurements are complete. Report gaps, restarts and OOM
+  evidence; missing required measurements prevent completion of their criterion.
+- Normal final collection succeeds and each whole-unit stop finishes within actual
+  `TimeoutStopSec` without forced termination. Early abort is not full-window acceptance.
+- The numerical comparison reports last-pass and average busy time and weekly usage,
+  with actual event rate, retrieval concurrency, store age and resource differences.
+  Without comparable historical rates, report a descriptive comparison only.
+- Another maintainer reproduces the verdict and numerical report from sanitized
+  evidence and the frozen ETL tools. Every criterion is required; M25 completion is not.
+
+##### Dependencies And Decisions
+
+- M17, M21 and G4 remain completed deployment prerequisites; D27 owns the current
+  separation. No M25 preparation, proof or result is an execution or completion gate.
+- The common fixture is the preserved 903-PV list and accepted deadband override:
+  775 non-array scalar/string/state PVs at 1 Hz, 8 arrays with configured capacity
+  1000 elements at 1 Hz, 110 fast PVs at 10 Hz and 10 slow PVs at 0.1 Hz.
+  It has 880 MONITOR and 23 SCAN registrations. Source processing, registration and
+  archived events are distinct; nominal rate times duration is not an observed count.
+  Preserve actual generated values, timestamps and ordering independently for comparison.
+- Shortened uses STS PARTITION_5MIN/hold 2, MTS PARTITION_HOUR/hold 2 and LTS
+  PARTITION_DAY, with ETL cadences 5 minutes and 1 hour. Default uses STS
+  PARTITION_HOUR/hold 2, MTS PARTITION_DAY/hold 2 and LTS PARTITION_YEAR, with
+  cadences 1 hour and 8 hours. Record effective gather settings from each deployment.
+- Scheduled ticks do not prove data eligibility. Seed historical inputs with the real
+  native writer and allow normal startup and the scheduler to process them. New default
+  data alone cannot demonstrate LTS movement in 24 hours. Generate live PV data throughout.
+- The existing focused physical/retrieval comparison covers four scalar-double PVs,
+  one per raw/lastSample_10/lastSample_30/lastSample_60 policy. Configuration and pass
+  population checks cover 903 PVs. Do not claim exact value equality for every PV/type.
+- Record actual preparation, observation and final-check durations. The default focused
+  path can wait up to 28800 plus 600 seconds for a regular repeat pass before its
+  separate 24-hour observation; this is a wait bound, not an estimated test duration.
+- The existing ETL start contract refuses an existing observation or free space below
+  2 GiB. This runtime disk reserve is separate from the rejected journal size cap and
+  retention forecast. Other checks report findings; missing ETL evidence still prevents
+  successful completion. Preserve the two-sample abort allowlist for appliance availability,
+  ETL pass collection, sampler operation, ETL/engine JVM identity and fixture population,
+  plus the immediate disk-reserve stop.
+
+##### Implementation Plan
+
+- Plan Status: accepted
+- Plan Acceptance: 2026-10-13; independent scope, completion conditions and signal plan accepted with both review corrections incorporated
+- Implementation Authorization: none for this revised implementation or new deployment/test runs; documentation and commit preparation only
+- Superseded Plan Artifacts: earlier combined workflow plans below, including journal-study start/completion gates and package-wide journal proof coupling
+
+1. Define ETL-only evidence fields, sources, coverage and failure meanings in the
+   procedure and evaluator. Keep scheduler correctness separate from completeness of
+   GC, metrics, retrieval and comparison evidence; neither missing data nor a disabled
+   assertion is success.
+2. Remove journal-study imports and calls from measurement, preparation, focused
+   continuity, readiness, start, periodic collection, finish, abort, aggregation,
+   evaluation and replay. Retain independently checked ETL pass and process evidence.
+3. Freeze an independently installable ETL package with only actual dependencies.
+   Bind proofs and approved replacements to that package, fixture, configuration and
+   deployment. Exclude journal-study files and use separate paths, locks and units.
+4. Align every entry point and runtime probe with the start/abort contract. The negative
+   freshness probe must report its finding without opening and aborting the real run.
+5. Run the installed ETL path from preparation through normal terminal capture and
+   replay on a dedicated deployment, then exercise negative collection and abort.
+   Cover JFR accumulation, normal store shrink, a metrics request overlapping a pass end
+   and post-restart continuity with real shipped fixtures or retained real inputs.
+   Demonstrate independence when journal artifacts are absent, failed or separately changed.
+6. Freeze the verified package, verify focused continuity against each final deployment,
+   and execute the shortened and default full-day observations independently. A journal
+   study result cannot force restart, remeasurement or replacement of either observation.
+7. Perform normal final capture and timed stop, replay frozen evidence, produce the
+   workload comparison and update this record and the ETL procedure. Preserve original
+   unsuccessful results and distinguish operator termination, automatic abort and assertion failure.
+
+##### Test Plan
+
+The labels in this table apply to the current independent plan. Earlier labels remain
+qualified by their historical plan and observation dates below. Tests use the real
+installed path and shipped fixtures; no internal mock or reconstructed substitute
+establishes integration acceptance.
+
+| Label | Layer | Method | Environment | Expected Result |
+| --- | --- | --- | --- | --- |
+| T1 | Package independence | Install from the fixed baseline without M25 changes; exercise entry points with journal artifacts absent, failed and changed | Dedicated ETL deployment | No journal dependency or verdict change; altered ETL dependencies are rejected |
+| T2 | Start and terminal contract | Execute preparation, negative freshness, normal finish, failed collection, abort and replay | Installed separated ETL package | Real behavior matches the start/abort contract and preserves failed outcomes |
+| T3 | Measurement regressions | Exercise JFR accumulation, store shrink, pass-end overlap and restart continuity with real fixtures/retained inputs | Dedicated deployment and frozen replay | Required measurements stay usable or report the actual failure; no false success |
+| T4 | Physical functionality | Run the native PB writer, normal scheduler, physical decode and HTTP comparison for both chains | Each final deployment, eligible historical data plus live fixture | Movement, retention/deletion and policy reduction match independent expected values within the stated four-PV scope |
+| T5 | Full-window scheduling | Run both chains for at least 86400 seconds across UTC midnight and inspect every scheduled pass | Two independent 903-PV deployments | Both clocks, coverage, uniqueness, ordering, tick bounds, metrics and no-overrun criteria hold |
+| T6 | Required measurements | Compare retained GC/heap, jstat, RSS, rates, freshness and visibility evidence with their contracts | Each full-window bundle | Every required measurement is present and evaluated; gaps and restart/OOM evidence are explicit |
+| T7 | Normal stop | Capture final evidence and measure each whole-unit stop | Each completed full-day deployment | Final capture succeeds; stop meets actual TimeoutStopSec without forced termination |
+| T8 | Comparison and delivery | Replay the frozen evaluator and reproduce the numerical comparison from sanitized evidence | Recipient using delivered tools/data | Verdict and report reproduce; unequal loads and missing historical rates limit claims appropriately |
+
+##### Verification Results
+
+The accepted revision has not been implemented or executed. Static review confirmed
+fixture counts and configured ETL cadences; it does not establish runtime acceptance.
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T1-T8 | Not run under the independent plan | Not deployed | Pending | Current combined tools and earlier observations do not establish independent acceptance |
+
+##### Closure Evidence
+
+- Not complete. All current completion criteria and T1-T8 require real-path evidence.
+  Earlier successful checks remain evidence only for their original versions and scope.
+
+<details>
+<summary>Historical combined ETL plans and verification</summary>
+
+The following text is retained unchanged as historical evidence. Its authorizations,
+test labels, capacity calculations and journal dependencies do not override D27 or
+the current independent plan. Use each original frozen bundle for historical replay.
+
 ##### Retained-Record Recheck Proof Consumer Amendment (2026-10-09)
 
 Plan Status: accepted
@@ -4798,6 +4968,8 @@ Local journal-candidate verification supplements the pending live checks:
   aborted observation cases awaits a completed schema-5 observation.
   No carrying commit exists for the current code or results.
 
+</details>
+
 #### M23 - Add the Perl modules for the EPICS-env installed-tree utility to the EPICS OS package set
 
 - Origin: 38560eb / M23
@@ -4993,12 +5165,184 @@ bundle, which pins no species name.
 
 - Not started.
 
-#### M25 - Verify journal collection integrity and retention for the ETL soak
+#### M25 - Verify independent journal recording, retention and collection
 
 - Origin: 38560eb / M25
 - Identity History: transferred on 2026-10-05 from `M22` / T22-T28 (`D22`)
 - GitHub Issue: none
 - Status: In progress
+
+##### Summary
+
+Verify actual delivery to journald, continued live readability and collector equality
+as three separate outcomes over a real 24-hour observation. The result states what was
+recorded, when it was directly read again and whether the archive preserves it.
+Collection alone does not prove live retention. This independent plan supersedes the
+budget study and compressed rehearsal below under D27.
+
+##### Scope
+
+M25 owns the new `tests/archiver-soak/journal-validation/` package, its procedure and
+this completion record. Extract only required generation, collection, direct-query,
+comparison and lifecycle dependencies from immutable source commit
+`649fee80561611f1494c1c3ce1f9546f6c619173`. Do not modify or import the evolving ETL tree;
+M22 owns removal of calls from that integration. Install under `/opt/journal-validation`,
+keep evidence under `/var/lib/journal-validation`, locks under `/run/journal-validation`
+and units under the `journal-validation-*` namespace. Preserve historical bundles/results.
+
+Use the actual target journald/journalctl, appliance logging paths and extracted shipped
+collector on a dedicated deployment. Record installed versions, effective configuration
+and real workload. System, kernel, appliance and health paths each require evidence.
+
+Out of scope: ETL functionality/performance acceptance, changes to an ETL deployment,
+production-wide logging policy, disk sizing, capacity forecasting and retention claims
+beyond the observed period. Isolated test settings must not affect other deployments.
+
+##### Completion Criteria
+
+- The package installs, executes and completes independently of ETL acceptance tools,
+  records, services, changes and completion status.
+- Every scenario records its purpose, paths/events, planned and actual actions, expected
+  results and evidence-based verdict. All seven scenarios below meet their expectations.
+  The positive observation spans a full 24 hours within one boot, measured by UTC and
+  monotonic time; an early stop or elapsed time without evidence is insufficient.
+- Every baseline record remains in the live journal with its expected content at least
+  86400 seconds after initial direct confirmation. Every required in-window event was
+  actually generated and appears in initial, applicable intermediate and final direct
+  reads. Report its actual age; an exported copy is not a final live read.
+- The archive contains every required journal record exactly once with matching content
+  across collection, rotation, restart and terminal boundaries. Report missing, repeated
+  or changed identities explicitly; counts alone cannot establish equality.
+- Quiet intervals and obsolete anchors cause no false loss verdict. Deliberate loss and
+  unproved boundaries never yield complete coverage. Correct detection in a negative
+  scenario is distinct from successful retention in the positive observation.
+- Sufficient disk capacity for the day is an established premise. No inherited size
+  cap, capacity study, forecast, safety multiplier or calculated retention horizon is
+  a readiness or success condition. Configure positive-test retention without the old
+  artificial restriction and retain actual settings, command outcomes and errors.
+- A recipient reproduces each scenario/path verdict and per-event comparison from
+  sanitized evidence and frozen tools. Completion neither requires nor establishes M22 acceptance.
+
+##### Dependencies And Decisions
+
+- D27 supersedes the budget prerequisites and open budget-formula choice in the historical
+  D22/D23 plan. There is no M22 merge, preparation, observation or completion dependency.
+- Use the same 903-PV fixture: 775 non-array PVs at 1 Hz, 8 arrays with capacity 1000
+  elements at 1 Hz, 110 fast PVs at 10 Hz and 10 slow PVs at 0.1 Hz. These configured
+  rates are workload descriptions, not observed event counts or proof of array occupancy.
+- Proposed journal stimuli are identifiable system records every second, real kernel
+  records every 10 seconds, actual retrieval requests every second and health executions
+  every minute. Actual ETL log entries come from real passes, never simulated pass markers.
+  The new stimulus schedule is planned work, not an already verified capability.
+
+###### Appliance Request And Logging Contract
+
+Before t0, specify the real retrieval endpoint, fixture PV/time range, expected application
+messages and correlation fields for the installed version. Assign an independent producer
+ID and a distinct request tuple that can be connected unambiguously to the application's
+own PV/time-range messages. A producer-only ID or a synthetic system marker is insufficient.
+
+Configure the dedicated deployment's actual `DataRetrievalServlet` logger at DEBUG,
+retain stdout through the real appliance-to-journald path and verify effective logger,
+appender and journal-priority filtering. Normal request diagnostics in the pinned source
+are DEBUG; the default root level is INFO. HTTP success therefore does not prove an
+application log emission. Define the required message set per request in advance rather
+than assuming exactly one journal record per request.
+
+Execute the selected request during preparation and directly confirm its required live
+journal messages, content and source identity. Preserve logger/thread context where
+needed to prove correlation, as well as effective settings and installed source identity.
+An ambiguous match, missing message or query error remains incomplete or failed. An
+access-log file cannot replace the appliance journal path. For every scheduled request,
+record planned/actual time, parameters, HTTP outcome, expected messages and direct queries;
+report request execution, application-emission evidence, journal visibility and collection separately.
+
+###### Observation And Comparison Contract
+
+Record the question, required events, generation/read schedule, lifecycle actions and
+expected results before each scenario. Maintain an independent producer record of unique
+IDs, sequence, expected payload, emission time and outcome. Do not derive expected IDs
+from collector output. A skipped or failed required action makes the scenario incomplete
+or failed and cannot be omitted to obtain Passed. Health records retain the actual
+systemd invocation identity and outcome; kernel records require the actual kernel path.
+
+Emit and directly confirm baseline records on every required path before t0. Continue
+real logging, scheduled events and collection for at least 86400 elapsed seconds after
+t0 within one boot. Retain initial and scheduled intermediate direct reads. At the final
+checkpoint, query the running deployment's live journal for every required baseline and
+in-window ID and payload. Baseline age since initial direct confirmation must be at least
+86400 seconds; later records must survive through that read with their actual younger ages
+reported. Perform restart and deliberate-loss scenarios separately. Do not extend the
+positive observation merely to wait for natural rotation.
+
+Retain first visibility, journal timestamp/cursor, boot/source identity and UTC/monotonic
+query times separately from the collector. A timeout or query error is unresolved, not
+Passed. First-observed delay is a measured bound, not the exact instant of durable storage.
+Independently compare all required journal records to the combined archive, deduplicating
+overlap by cursor, boot and source identity. Keep raw queries, producer records, command
+outcomes, archive records, hashes and real file copies where needed. An archive containing
+a record cannot establish that the live journal still contains it.
+
+The final report gives purpose, expected/actual events and times, initial/later visibility,
+collection comparison, observed age and verdict per scenario and logging path. A zero-event
+interval needs independent evidence that no required event was emitted. Limit conclusions
+to tested paths, workload, lifecycle actions and observed duration.
+
+##### Implementation Plan
+
+- Plan Status: accepted
+- Plan Acceptance: 2026-10-13; independent recording/retention criteria and signal plan accepted with request correlation and all-record final live reads
+- Implementation Authorization: none for this revised implementation or new deployment/test runs; documentation and commit preparation only
+- Superseded Plan Artifacts: earlier combined collector/budget plan and T8 compressed budget rehearsal below; historical evidence remains preserved
+
+1. Extract the independent package from the fixed baseline and provide deployment,
+   real-path triggers, producer evidence, collection, direct reads, comparisons and
+   terminal handling. No ETL acceptance package or journal-budget proof is required.
+2. Establish initial delivery on every actual logging path before the longer observation.
+   Keep producer and direct-query evidence to distinguish emission, delivery and collection
+   failures; correct an observed defect before relying on that path.
+3. Execute each of the seven scenarios with its recorded schedule and expected outcomes.
+   Keep positive retention separate from deliberate deletion and failure evidence. Record
+   actual action/query durations, timeouts and failures without substituting storage forecasts.
+4. Correct reproduced collector defects against retained real inputs and rerun affected
+   scenarios through the shipped path. No stub or internal-function replacement proves
+   acceptance. Preserve unsuccessful runs and their original verdicts.
+5. Finish the full-day direct reads and archive comparisons, retain normal-stop and
+   post-stop capture evidence, and deliver sanitized data plus frozen replay tools.
+   Update this completion record and the journal procedure independently of M22.
+
+##### Test Plan
+
+These seven labels belong to the current independent plan; earlier T1-T8 retain their
+historical meanings below. All use the real dedicated deployment and shipped paths.
+
+| Label | Layer | Method | Environment | Expected Result |
+| --- | --- | --- | --- | --- |
+| T1 | Initial delivery | Trigger identified system/kernel/appliance/health events and retain independent producer outcomes plus direct queries | Dedicated journal deployment | Every required emission is accounted for and found with matching payload/source; requests correlate to actual application logs |
+| T2 | Full-day live retention | Re-query baseline and later IDs at scheduled checkpoints and after at least 86400 seconds; separately compare archive | Same boot, live logging and collection throughout | Baselines remain readable after 24 hours, later records survive to the final read with actual ages, and archive identity/content matches exactly |
+| T3 | Rotation and concurrent collection | Emit before/during/after real rotation, including rotation during collection; explicitly rotate when needed | Dedicated real journald and collector | Required records remain readable and archived exactly once without an artificial cap or waiting indefinitely for natural rotation |
+| T4 | Quiet intervals and obsolete anchors | Establish a quiet kernel interval with other logging; separately remove only a pre-window anchor while preserving required records | Dedicated journal deployment | Proven boundaries and all required IDs remain valid; no false loss or acceptance of unproved coverage |
+| T5 | Deliberate loss | Preserve evidence, then remove a journal file known to hold required uncollected events | Separate negative scenario | Direct reads and archive comparison identify missing IDs and refuse complete coverage; later events cannot erase failure |
+| T6 | Boundaries and restart | Place events across adjacent cutoffs and a real restart; include UTC midnight when claimed | Separate lifecycle scenario and retained real files | No omission/duplication, boot identities stay distinct, and unproved continuity remains unresolved |
+| T7 | Terminal capture and replay | Emit around normal stop/final capture, perform later reads and replay; separately exercise failure termination and repeated finish | Real terminal path and frozen evidence | Final evidence is complete and reproducible; repeated finish neither repeats stop nor overwrites failure |
+
+##### Verification Results
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T1-T7 | Not run under the independent plan | Not deployed | Pending | Source review identified DEBUG/INFO logging behavior; no new journal emission, live read or 24-hour observation was executed |
+
+##### Closure Evidence
+
+- Not complete. The independent package and all seven real-path scenarios remain to be
+  verified. Historical budget results do not prove these recording/retention criteria.
+
+<details>
+<summary>Historical combined journal study and verification</summary>
+
+The following original plan and results are historical. Its ETL dependencies, inherited
+cap, budget formula, open budget decision and compressed rehearsal are superseded by D27.
+They neither authorize current execution nor define current acceptance.
 
 ##### Summary
 
@@ -5114,6 +5458,8 @@ journalctl behavior, which is recorded in `M22`'s results (a systemd 239
 ##### Closure Evidence
 
 - Not complete.
+
+</details>
 
 #### M26 - Provision the SQLite Archiver Appliance on an existing general Rocky Linux 8.10 server
 
