@@ -537,6 +537,89 @@ class RecordOnlyStartTests(unittest.TestCase):
             self.assertEqual(json.loads((out / 'observation.json').read_text()), {'started_at': 'kept'})
 
 
+class RecordOnlyMeasurementTests(unittest.TestCase):
+    """The shipped measurement on a host without the appliance: every step fails and is recorded."""
+
+    def initializer(self):
+        import importlib.util
+        spec = importlib.util.spec_from_file_location('initialize_fresh', HERE / 'initialize-fresh.py')
+        module = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(module)
+        return module
+
+    def test_failed_steps_are_recorded_and_the_measurement_record_is_written(self):
+        initializer = self.initializer()
+        import journal_retention
+        with tempfile.TemporaryDirectory() as directory:
+            out = Path(directory) / 'out'
+            out.mkdir()
+            target = Path(directory) / 'measurements'
+            with patch.object(observe, 'OUT', out), patch.object(collect, 'STORE', out), \
+                    patch.object(journal_retention, 'INTERVAL_SECONDS', 0), \
+                    patch('subprocess.run', return_value=subprocess.CompletedProcess([], 1, '', 'unavailable')):
+                record = initializer.measurements(target, 86400, 'shortened')
+            written = json.loads((target / 'measurements.json').read_text())
+            self.assertEqual(written, record)
+            checks = {row['check'] for row in record['findings']}
+            for name in ('check', 'journal_snapshot', 'gc', 'latency', 'capacity_projection', 'journal_retention'):
+                self.assertIn(name, checks)
+            self.assertIsNone(record['required_growth_bytes'])
+            self.assertEqual(len(list(target.glob('progress-*.json'))), journal_retention.MINIMUM_INTERVALS + 1)
+
+    def test_snapshots_are_spaced_from_the_previous_snapshot_not_from_the_pass_start(self):
+        initializer = self.initializer()
+        import itertools
+        import journal_retention
+
+        class Clock:
+            now = 0.0
+
+            def monotonic(self):
+                return self.now
+
+            def sleep(self, seconds):
+                self.now += seconds
+
+        clock = Clock()
+        preamble = itertools.cycle((0.17, 0.07, 0.16, 0.07, 0.12, 0.07, 0.10))
+
+        def tool_hashes():
+            clock.now += next(preamble)
+            return {}
+
+        def snapshot(require_load=False):
+            return {'monotonic': clock.monotonic()}
+
+        with tempfile.TemporaryDirectory() as directory:
+            out = Path(directory) / 'out'
+            out.mkdir()
+            target = Path(directory) / 'measurements'
+            with patch.object(observe, 'OUT', out), patch.object(collect, 'STORE', out), \
+                    patch.object(initializer, 'time', clock), \
+                    patch.object(observe, 'tool_hashes', tool_hashes), \
+                    patch.object(journal_retention, 'snapshot', snapshot), \
+                    patch('subprocess.run', return_value=subprocess.CompletedProcess([], 1, '', 'unavailable')):
+                record = initializer.measurements(target, 86400, 'shortened')
+            files = sorted((target / 'retention').glob('snapshot-*.json'))
+            self.assertEqual(len(files), journal_retention.MINIMUM_INTERVALS + 1)
+            times = [json.loads(path.read_text())['monotonic'] for path in files]
+            spacing = [later - earlier for earlier, later in zip(times, times[1:])]
+            self.assertTrue(all(gap >= journal_retention.INTERVAL_SECONDS for gap in spacing), spacing)
+            self.assertNotIn('measurement_interval', {row['check'] for row in record['findings']})
+
+    def test_free_space_below_the_reserve_refuses_the_measurement(self):
+        initializer = self.initializer()
+        with tempfile.TemporaryDirectory() as directory:
+            out = Path(directory) / 'out'
+            out.mkdir()
+            target = Path(directory) / 'measurements'
+            with patch.object(observe, 'OUT', out), patch.object(collect, 'STORE', out), \
+                    patch.object(measure, 'MINIMUM_FREE_BYTES', 10 ** 18):
+                with self.assertRaisesRegex(RuntimeError, 'below the 2 GiB reserve'):
+                    initializer.measurements(target, 86400, 'shortened')
+            self.assertFalse(target.exists())
+
+
 class SnapshotArchiveTests(unittest.TestCase):
     def test_snapshot_dump_is_not_refused_by_the_size_of_the_retained_archive(self):
         self.assertFalse(hasattr(measure, 'JFR_ARCHIVE_LIMIT_BYTES'))

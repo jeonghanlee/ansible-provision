@@ -320,67 +320,95 @@ def measurements(directory, duration, chain):
     fresh()
     contract.validate_duration(duration)
     configuration = contract.chain_configuration(chain)
+    filesystem = os.statvfs(collect.STORE)
+    if filesystem.f_bavail * filesystem.f_frsize < measure.MINIMUM_FREE_BYTES:
+        raise RuntimeError('Free space is below the 2 GiB reserve; refusing to measure')
     directory.mkdir(mode=0o700)
-    baseline = check(directory)
-    hashes = baseline['deployment']['tool_hashes']
+    # Every step records its failure in `findings` and the measurement continues; only free space
+    # below the reserve, an existing observation or an existing measurement directory refuses.
+    findings = []
+
+    def recorded(name, action, fallback=None, index=None):
+        try:
+            return action()
+        except Exception as error:
+            row = {'check': name, 'type': type(error).__name__, 'message': str(error)}
+            if index is not None:
+                row['index'] = index
+            findings.append(row)
+            return fallback
+
+    baseline = recorded('check', lambda: check(directory), {})
+    hashes = baseline.get('deployment', {}).get('tool_hashes') or recorded('tool_bundle', observe.tool_hashes, {})
     capacity = directory / 'capacity'
     retention = directory / 'retention'
     capacity.mkdir(mode=0o700)
     retention.mkdir(mode=0o700)
-    previous = None
+    # Snapshots are spaced from the previous snapshot's own clock reading, never from the start of
+    # the pass, so the preamble time of one pass cannot shorten the interval below the proof minimum.
+    # A pass whose snapshot failed falls back to the start of that pass.
+    last = None
     points = []
-    # Interval, bundle, projection and retention budget findings are recorded; none refuses the measurement.
-    findings = []
     for index in range(journal_retention.MINIMUM_INTERVALS + 1):
-        if previous is not None:
-            target = previous['monotonic'] + journal_retention.INTERVAL_SECONDS
+        if last is not None:
+            target = last + journal_retention.INTERVAL_SECONDS
             while time.monotonic() < target:
                 time.sleep(min(5, target - time.monotonic()))
-            if time.monotonic() - previous['monotonic'] > contract.SAMPLE_GAP_SECONDS:
+            if time.monotonic() - last > contract.SAMPLE_GAP_SECONDS:
                 findings.append({'check': 'measurement_interval', 'index': index,
                                  'message': 'Journal measurement interval exceeded its declared maximum'})
+        last = time.monotonic()
         fresh()
-        if observe.tool_hashes() != hashes:
+        if recorded('tool_bundle', observe.tool_hashes, {}, index) != hashes:
             findings.append({'check': 'tool_bundle', 'index': index,
                              'message': 'Tool bundle changed during fresh measurements'})
-        unit_properties()
-        snapshot = journal_retention.snapshot(require_load=True)
-        journal_retention.save(retention / ('snapshot-' + str(index).zfill(3) + '.json'), snapshot)
+        recorded('units', unit_properties, None, index)
+        name = 'snapshot-' + str(index).zfill(3) + '.json'
+        snapshot = recorded('journal_snapshot', lambda: journal_retention.snapshot(require_load=True), None, index)
+        if snapshot is not None:
+            last = snapshot['monotonic']
+            journal_retention.save(retention / name, snapshot)
         if index in (0, journal_retention.MINIMUM_INTERVALS // 2, journal_retention.MINIMUM_INTERVALS):
             path = capacity / ('point-' + str(index).zfill(3) + '.json')
-            collect.write_json(path, contract.capacity_snapshot(observe.OUT, collect.STORE, INSTALL))
-            points.append(path)
+            point = recorded('capacity_snapshot', lambda: contract.capacity_snapshot(
+                observe.OUT, collect.STORE, INSTALL), None, index)
+            if point is not None:
+                collect.write_json(path, point)
+                points.append(path)
         raw = observe.OUT / 'raw' / ('measurement-' + str(index).zfill(3) + '-' +
               datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S.%fZ'))
         raw.mkdir(parents=True, mode=0o700)
         ts = datetime.datetime.now(datetime.timezone.utc).isoformat()
-        gc = measure.gc(observe.OUT, raw, ts)
-        latency = measure.latency(observe.OUT, raw, observe.TOOLS / 'pvs-all.csv', ts)
+        gc = recorded('gc', lambda: measure.gc(observe.OUT, raw, ts), None, index)
+        latency = recorded('latency', lambda: measure.latency(observe.OUT, raw, observe.TOOLS / 'pvs-all.csv', ts),
+                           None, index)
         collect.write_json(directory / ('progress-' + str(index).zfill(3) + '.json'), {
             'observed_at': datetime.datetime.now(datetime.timezone.utc).isoformat(),
-            'snapshot_sha256': contract.digest(retention / ('snapshot-' + str(index).zfill(3) + '.json')),
+            'snapshot_sha256': contract.digest(retention / name) if (retention / name).exists() else None,
             'gc': gc, 'latency': latency, 'raw_directory': str(raw), 'snapshot_index': index})
-        previous = snapshot
     windows = []
-    for index, role in enumerate(('historical', 'current')):
-        path = capacity / (role + '.json')
-        collect.write_json(path, contract.capacity_window(points[index], points[index + 1]))
-        windows.append({'role': role, 'source_path': path.name, 'source_sha256': contract.digest(path)})
+    if len(points) == 3:
+        for index, role in enumerate(('historical', 'current')):
+            path = capacity / (role + '.json')
+            window = recorded('capacity_window', lambda index=index: contract.capacity_window(points[index], points[index + 1]))
+            if window is not None:
+                collect.write_json(path, window)
+                windows.append({'role': role, 'source_path': path.name, 'source_sha256': contract.digest(path)})
+    else:
+        findings.append({'check': 'capacity_points', 'message': 'Fewer than three capacity points were taken'})
     collect.write_json(capacity / 'input.json', {
         'schema': 1, 'duration_seconds': duration, 'configuration': configuration, 'windows': windows})
-    try:
-        required = contract.capacity_projection(capacity / 'input.json', duration, configuration)
-    except RuntimeError as error:
-        required = None
-        findings.append({'check': 'capacity_projection', 'message': str(error)})
-    proof = journal_retention.prepare(retention, retention / 'proof.json', observe.TOOLS, strict=False)
-    if not proof['budget']['passed']:
+    required = recorded('capacity_projection', lambda: contract.capacity_projection(
+        capacity / 'input.json', duration, configuration))
+    proof = recorded('journal_retention', lambda: journal_retention.prepare(
+        retention, retention / 'proof.json', observe.TOOLS, strict=False), {})
+    if proof and not proof['budget']['passed']:
         findings.append({'check': 'journal_retention_budget',
                          'message': 'Journal retention budget does not satisfy byte/time limits'})
     record = {'schema': contract.SCHEMA, 'finished_at': datetime.datetime.now(datetime.timezone.utc).isoformat(),
               'duration_seconds': duration, 'configuration': configuration, 'tool_hashes': hashes,
               'capacity_evidence': str(capacity / 'input.json'), 'required_growth_bytes': required,
-              'retention_evidence': str(retention / 'proof.json'), 'budget': proof['budget'],
+              'retention_evidence': str(retention / 'proof.json'), 'budget': proof.get('budget'),
               'findings': findings, 'observation_started': False}
     collect.write_json(directory / 'measurements.json', record)
     return record

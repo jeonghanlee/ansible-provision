@@ -335,17 +335,24 @@ def _evaluate(out, terminal, failures):
                  for row in full if evidence.path(out, row['raw_directory']).joinpath('metrics.json').exists()]
     if len(snapshots) != len(full):
         missing.append('metric_snapshot_coverage')
-    baseline = json.loads(evidence.path(out, manifest['counter_baseline']).read_text())
+    # A start no longer requires a clean readiness sample, so its metrics baseline may be absent:
+    # that is missing metric coverage in the overall verdict, never an unreadable evaluation.
+    try:
+        baseline = json.loads(evidence.path(out, manifest['counter_baseline']).read_text())
+        baseline_at = epoch(manifest['baseline_observed_at'])
+    except (OSError, KeyError, TypeError, ValueError):
+        baseline, baseline_at = None, None
+        missing.append('metric_counter_coverage')
     ambiguities = 0
     for transition in (0, 1):
         metric = 'Passes so far in ETL(' + str(transition) + '&raquo;' + str(transition + 1) + ')'
         values = [next((int(row['value']) for row in snapshot if row['name'] == metric), None)
-                  for snapshot in [baseline, *[value for row, value in snapshots]]]
+                  for snapshot in [baseline or [], *[value for row, value in snapshots]]]
         if any(value is None for value in values):
             missing.append('metric_counter_coverage')
-        elif full:
+        elif full and baseline_at is not None:
             ended = sorted((row for row in records if row['transition'] == transition and
-                            epoch(manifest['baseline_observed_at']) < epoch(row['endedAt']) <= epoch(full[-1]['metrics_observed_at'])),
+                            baseline_at < epoch(row['endedAt']) <= epoch(full[-1]['metrics_observed_at'])),
                            key=lambda row: epoch(row['endedAt']))
             counts = {len(rows) for rows in metric_variants(ended, full[-1])}
             if values[-1] - values[0] not in counts:

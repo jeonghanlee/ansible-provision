@@ -427,10 +427,15 @@ presence are recorded at start, not required. `initialize-fresh.py prepare`
 records a failed retention proof, capacity projection or deployment check in
 `preparation.json` `findings` and refuses only free space below 2 GiB, an
 existing preparation or observation, and missing measurement arguments.
-`initialize-fresh.py measure` records a late interval, a changed bundle, a
-failed projection and a failed retention budget in `measurements.json`
-`findings`; it still stops when a snapshot, the GC or latency capture, the
-deployment check or a capacity size cannot be taken.
+`initialize-fresh.py measure` refuses only free space below 2 GiB, an existing
+observation or terminal record and an existing measurement directory; a failed
+deployment check, journal snapshot, GC or latency capture, capacity size,
+capacity window, projection or retention budget, a late interval or a changed
+bundle is recorded in `measurements.json` `findings` and the measurement
+continues. Each journal snapshot is spaced from the previous snapshot's own
+clock reading, so the five-minute minimum of the retention proof holds. An absent or
+unreadable readiness metrics baseline is missing metric coverage in the overall
+verdict, not an unreadable evaluation.
 
 `observe.py finish` runs after the manifest's full interval. It stops the sample
 timer, waits at most 180 seconds for in-window passes, collects a final full
