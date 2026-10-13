@@ -10,6 +10,7 @@ import fcntl
 import hashlib
 import json
 import os
+import re
 import shlex
 from pathlib import Path
 import subprocess
@@ -467,7 +468,8 @@ def _sample(out, fixture, journal_only=False):
                                       "heap_used_kb", "heap_cap_kb", "ygc", "fgc", "gct"], process_rows)
         summary["live_instances"] = [name for name in INSTANCES if name in pids]
         if len(summary["live_instances"]) != len(INSTANCES):
-            summary["errors"].append({"check": "instances", "message": "expected four live JVMs"})
+            summary["errors"].append({"check": "instances", "message": "expected four live JVMs; missing: " +
+                                      ",".join(name for name in INSTANCES if name not in pids)})
         summary["stores"] = {}
         for tier in TIERS:
             root = STORE / tier / "ArchiverStore"
@@ -530,7 +532,7 @@ def _sample(out, fixture, journal_only=False):
                     summary["errors"].append({"check": "jvm_restart", "message": name})
     summary["completed_at"] = datetime.datetime.now(datetime.timezone.utc).isoformat()
     if not journal_only:
-        state.update(failure_counters(previous, summary, abort_checks(out)))
+        state.update(failure_counters(previous, summary, **abort_policy(out)))
     write_json(raw / "sample.json", summary)
     write_json(out / "latest.json", summary)
     if not journal_only:
@@ -544,23 +546,40 @@ def _sample(out, fixture, journal_only=False):
     return bool(summary["errors"])
 
 
-def abort_checks(out):
-    """The checks that may request an abort: the manifest's recorded policy, else the contract default."""
+def abort_policy(out):
+    """The abort policy of the running observation: the manifest's recorded one, else the contract default."""
     manifest_path = out / "observation.json"
     policy = json.loads(manifest_path.read_text()).get("abort_policy", {}) if manifest_path.exists() else {}
-    return set(policy.get("checks", contract.ABORT_CHECKS))
+    return {"checks": set(policy.get("checks", contract.ABORT_CHECKS)),
+            "jvms": set(policy.get("jvms", contract.ABORT_JVMS))}
 
 
-def critical(summary, checks):
-    """A sample counts toward an abort only when one of its errors names an abort-listed check."""
-    return any(error.get("check") in checks for error in summary.get("errors", []))
+def abort_checks(out):
+    return abort_policy(out)["checks"]
 
 
-def failure_counters(previous, summary, checks):
+def critical(summary, checks, jvms=contract.ABORT_JVMS):
+    """A sample counts toward an abort only when one of its errors names an abort-listed check.
+
+    A JVM identity or presence error counts only when its message names an abort-listed JVM.
+    """
+    for error in summary.get("errors", []):
+        check = error.get("check")
+        if check not in checks:
+            continue
+        if check in ("jvm_restart", "instances"):
+            named = set(re.findall(r"[a-z]+", str(error.get("message", ""))))
+            if not named & set(jvms):
+                continue
+        return True
+    return False
+
+
+def failure_counters(previous, summary, checks, jvms=contract.ABORT_JVMS):
     """Advance the consecutive counters of a full sample: any failed check, and abort-listed checks only."""
     return {"consecutive_failures": previous.get("consecutive_failures", 0) + 1 if summary["errors"] else 0,
             "consecutive_abort_failures": (previous.get("consecutive_abort_failures", 0) + 1
-                                           if critical(summary, checks) else 0)}
+                                           if critical(summary, checks, jvms) else 0)}
 
 
 def abort_if_required(out, summary, state):
@@ -600,7 +619,7 @@ def sample(out, fixture, journal_only=False):
                        'raw_directory': str(raw), 'sample_kind': 'journal' if journal_only else 'full',
                        'errors': [{'check': 'collection', 'type': type(error).__name__, 'message': str(error)}]}
             if not journal_only:
-                state.update(failure_counters(state, summary, abort_checks(out)))
+                state.update(failure_counters(state, summary, **abort_policy(out)))
                 write_json(out / 'latest-full.json', summary)
             write_json(raw / 'sample.json', summary)
             write_json(out / 'latest.json', summary)

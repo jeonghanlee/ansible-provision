@@ -26,14 +26,20 @@ OFFSETS = (300, 600)
 GROWTH_FIELDS = ('data', 'application_logs', 'journal', 'jfr', 'measurement')
 CAPTURE_RESERVE = 512 * 1024 ** 2
 SAMPLE_GAP_SECONDS = 320
-# Sample checks whose failure invalidates the scheduler evidence itself: the appliance or its
-# management interface down, the fixture population not archiving, a JVM identity change, the
-# sampler unable to record, an unsynchronized clock, changed tools, a lost pass journal, a changed
-# fixture or a failing appliance health command. Only these may request an abort and only these
-# decide the scheduler verdict; every other check is an instrument finding recorded beside it.
-ABORT_CHECKS = ('appliance', 'mgmt', 'pv_status_request', 'pv_status', 'metrics_request', 'jvm_restart',
-                'instances', 'collection', 'clock', 'tool_bundle', 'journal', 'fixture_adjustment',
-                'health_invocation')
+# Sample checks that may request an abort, because continuing could not produce scheduler evidence
+# or the load premise is gone: the appliance down, the pass journal lost, the sampler unable to
+# record, the ETL or engine JVM replaced or missing, or the fixture population not archiving.
+# Every other failed check is recorded in the sample and the observation continues.
+ABORT_CHECKS = ('appliance', 'journal', 'collection', 'jvm_restart', 'instances', 'pv_status')
+# A JVM identity or presence error counts toward an abort only when it names one of these.
+ABORT_JVMS = ('engine', 'etl')
+# Sample checks that decide the scheduler verdict (with the abort-listed ones): the management
+# interface, JVM identity of any component, the clock, the tools, the fixture and the appliance
+# health command. Instrument findings (GC, latency, journal budget and coverage, metrics content)
+# stay in the overall verdict only.
+SCHEDULER_CHECKS = ('appliance', 'mgmt', 'pv_status_request', 'pv_status', 'metrics_request', 'jvm_restart',
+                    'instances', 'collection', 'clock', 'tool_bundle', 'journal', 'fixture_adjustment',
+                    'health_invocation')
 BUNDLE_FILES = ('contract.py', 'aggregate.py', 'evidence.py', 'observe.py', 'collect.py',
                 'measure.py', 'health-event.py', 'prepare-retest.py', 'verify-health.py',
                 'verify-runtime.py', 'verify-chain.py', 'launch-retest.py',
@@ -179,7 +185,11 @@ def capacity_projection(source, duration, configuration):
                 raise RuntimeError('Capacity measurements must be nonnegative integer bytes')
             growth = end['bytes'][field] - start['bytes'][field]
             if growth < 0:
-                raise RuntimeError('Capacity growth was interrupted by a reset or rotation')
+                if field != 'data':
+                    raise RuntimeError('Capacity growth was interrupted by a reset or rotation')
+                # The store shrinks legitimately when a pass reduces data or deletes moved sources;
+                # a shrinking window needs no space and contributes a zero rate.
+                growth = 0
             rates[field].append(growth / elapsed)
     if max(historical_ends) > min(current_starts):
         raise RuntimeError('Historical and current growth windows must be separate')

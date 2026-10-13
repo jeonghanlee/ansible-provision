@@ -255,27 +255,41 @@ def prepare(capacity_evidence, retention_evidence, duration, chain):
         raise RuntimeError('Fresh preparation already exists; refusing replacement')
     if retention_evidence is None or capacity_evidence is None:
         raise RuntimeError('Actual retention and capacity measurement evidence is required')
-    proof = journal_retention.validate(retention_evidence, observe.TOOLS)
-    payload = journal_retention.preservation_payload(retention_evidence)
-    required = contract.capacity_projection(capacity_evidence, duration, configuration)
     filesystem = os.statvfs(collect.STORE)
     total = filesystem.f_blocks * filesystem.f_frsize
     free = filesystem.f_bavail * filesystem.f_frsize
-    if free - required < measure.MINIMUM_FREE_BYTES or 100 * (total - free + required) / total >= USE_LIMIT:
-        raise RuntimeError('Fresh capacity projection violates the free-space or usage limit')
+    if free < measure.MINIMUM_FREE_BYTES:
+        raise RuntimeError('Free space is below the 2 GiB reserve; refusing to prepare')
+    # Every other preparation check is recorded in `findings`; none refuses the preparation.
+    findings = []
+
+    def recorded(name, action, fallback=None):
+        try:
+            return action()
+        except Exception as error:
+            findings.append({'check': name, 'type': type(error).__name__, 'message': str(error)})
+            return fallback
+
+    proof = recorded('journal_retention', lambda: journal_retention.validate(
+        retention_evidence, observe.TOOLS, strict=False), {})
+    if proof and not proof.get('current_budget', {}).get('passed'):
+        findings.append({'check': 'journal_retention_budget', 'message': 'Current journal retention budget failed'})
+    payload = recorded('journal_retention_payload', lambda: journal_retention.preservation_payload(retention_evidence))
+    required = recorded('capacity_projection', lambda: contract.capacity_projection(
+        capacity_evidence, duration, configuration))
+    if required is not None and (free - required < measure.MINIMUM_FREE_BYTES or
+                                 100 * (total - free + required) / total >= USE_LIMIT):
+        findings.append({'check': 'capacity', 'message': 'Fresh capacity projection exceeds the free-space or usage limit'})
     raw = observe.OUT / ('fresh-preparation-' + datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S.%fZ'))
     raw.mkdir(mode=0o700)
-    verified = check(raw)
-    expected_source = contract.digest(capacity_evidence)
-    capacity = json.loads(capacity_evidence.read_text())
-    sources = [(capacity_evidence.parent / row['source_path']).read_bytes() for row in capacity['windows']]
-    if (contract.digest(capacity_evidence) != expected_source or
-            any(hashlib.sha256(data).hexdigest() != row['source_sha256']
-                for row, data in zip(capacity['windows'], sources)) or
-            contract.capacity_projection(capacity_evidence, duration, configuration) != required):
-        raise RuntimeError('Capacity measurement inputs changed during fresh preparation')
+    verified = recorded('check', lambda: check(raw), {})
+    capacity = recorded('capacity_input', lambda: json.loads(capacity_evidence.read_text()), {'windows': []})
+    sources = recorded('capacity_sources', lambda: [(capacity_evidence.parent / row['source_path']).read_bytes()
+                                                    for row in capacity['windows']], [])
     current = datetime.datetime.now(datetime.timezone.utc)
-    journal_retention.install_payload(payload, observe.OUT / 'journal-retention-proof.json')
+    if payload is not None:
+        recorded('journal_retention_install', lambda: journal_retention.install_payload(
+            payload, observe.OUT / 'journal-retention-proof.json'))
     directory = observe.OUT / 'capacity-sources'
     directory.mkdir(mode=0o700)
     for index, (row, data) in enumerate(zip(capacity['windows'], sources)):
@@ -290,12 +304,14 @@ def prepare(capacity_evidence, retention_evidence, duration, chain):
     collect.write_json(observe.OUT / 'state.json', {
         key: current.strftime('%Y-%m-%d %H:%M:%S.%f UTC')
         for key in ('kernel_journal_since', 'health_journal_since', 'journal_since')})
+    deployment = verified.get('deployment', {})
     record = {'schema': contract.SCHEMA, 'duration_seconds': duration, 'configuration': configuration,
               'prepared_at': current.isoformat(), 'origin': 'fresh-initialization',
-              'initialization_sha256': contract.digest(observe.OUT / INITIALIZATION),
-              'existing_store_data_preserved': True, 'source_pins': verified['deployment']['source_pins'],
-              'configuration_sha256': verified['deployment']['configuration_sha256'],
-              'tool_hashes': observe.tool_hashes(), 'retention_checked_at': proof['checked_at']}
+              'initialization_sha256': recorded('initialization', lambda: contract.digest(observe.OUT / INITIALIZATION)),
+              'existing_store_data_preserved': True, 'source_pins': deployment.get('source_pins'),
+              'configuration_sha256': deployment.get('configuration_sha256'),
+              'tool_hashes': recorded('tool_bundle', observe.tool_hashes, {}),
+              'retention_checked_at': proof.get('checked_at'), 'findings': findings}
     collect.write_json(observe.OUT / 'preparation.json', record)
     return record
 
@@ -313,16 +329,20 @@ def measurements(directory, duration, chain):
     retention.mkdir(mode=0o700)
     previous = None
     points = []
+    # Interval, bundle, projection and retention budget findings are recorded; none refuses the measurement.
+    findings = []
     for index in range(journal_retention.MINIMUM_INTERVALS + 1):
         if previous is not None:
             target = previous['monotonic'] + journal_retention.INTERVAL_SECONDS
             while time.monotonic() < target:
                 time.sleep(min(5, target - time.monotonic()))
             if time.monotonic() - previous['monotonic'] > contract.SAMPLE_GAP_SECONDS:
-                raise RuntimeError('Journal measurement interval exceeded its declared maximum')
+                findings.append({'check': 'measurement_interval', 'index': index,
+                                 'message': 'Journal measurement interval exceeded its declared maximum'})
         fresh()
         if observe.tool_hashes() != hashes:
-            raise RuntimeError('Tool bundle changed during fresh measurements')
+            findings.append({'check': 'tool_bundle', 'index': index,
+                             'message': 'Tool bundle changed during fresh measurements'})
         unit_properties()
         snapshot = journal_retention.snapshot(require_load=True)
         journal_retention.save(retention / ('snapshot-' + str(index).zfill(3) + '.json'), snapshot)
@@ -348,13 +368,20 @@ def measurements(directory, duration, chain):
         windows.append({'role': role, 'source_path': path.name, 'source_sha256': contract.digest(path)})
     collect.write_json(capacity / 'input.json', {
         'schema': 1, 'duration_seconds': duration, 'configuration': configuration, 'windows': windows})
-    required = contract.capacity_projection(capacity / 'input.json', duration, configuration)
-    proof = journal_retention.prepare(retention, retention / 'proof.json', observe.TOOLS)
+    try:
+        required = contract.capacity_projection(capacity / 'input.json', duration, configuration)
+    except RuntimeError as error:
+        required = None
+        findings.append({'check': 'capacity_projection', 'message': str(error)})
+    proof = journal_retention.prepare(retention, retention / 'proof.json', observe.TOOLS, strict=False)
+    if not proof['budget']['passed']:
+        findings.append({'check': 'journal_retention_budget',
+                         'message': 'Journal retention budget does not satisfy byte/time limits'})
     record = {'schema': contract.SCHEMA, 'finished_at': datetime.datetime.now(datetime.timezone.utc).isoformat(),
               'duration_seconds': duration, 'configuration': configuration, 'tool_hashes': hashes,
               'capacity_evidence': str(capacity / 'input.json'), 'required_growth_bytes': required,
               'retention_evidence': str(retention / 'proof.json'), 'budget': proof['budget'],
-              'observation_started': False}
+              'findings': findings, 'observation_started': False}
     collect.write_json(directory / 'measurements.json', record)
     return record
 

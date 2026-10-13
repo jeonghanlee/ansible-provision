@@ -16,40 +16,63 @@ import journal_retention
 import focused
 
 
-def launch(target, duration, chain):
-    contract.preparation(observe.OUT, duration, chain)
-    observe.tool_hashes()
-    journal_retention.validate(observe.OUT / 'journal-retention-proof.json', observe.TOOLS)
+def launch(target, duration, chain, cause=None, corrective_action=None):
+    """Refresh readiness evidence and open the observation at the target.
+
+    Every refresh step is run and its failure recorded in `launch-started.json`; only the start's
+    own refusals (an existing observation, free space below the reserve) stop the launch.
+    """
     now = datetime.datetime.now(datetime.timezone.utc)
     target = target or now
     if target.tzinfo is None or not 0 <= (target - now).total_seconds() <= 120:
         raise RuntimeError('Launch target must be within the next 120 seconds with a timezone')
     if (observe.OUT / 'observation.json').exists():
         raise RuntimeError('An observation already exists')
+    findings = []
     record = {'launch_started_at': now.isoformat(), 'target': target.isoformat(),
-              'launcher_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
+              'launcher_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(), 'findings': findings}
+
+    def recorded(name, action):
+        try:
+            return action()
+        except Exception as error:
+            findings.append({'check': name, 'type': type(error).__name__, 'message': str(error)})
+            return None
+
+    recorded('preparation', lambda: contract.preparation(observe.OUT, duration, chain))
+    recorded('tool_bundle', observe.tool_hashes)
+    recorded('journal_retention', lambda: journal_retention.validate(
+        observe.OUT / 'journal-retention-proof.json', observe.TOOLS))
     collect.write_json(observe.OUT / 'launch-started.json', record)
     try:
-        verification = json.loads((observe.OUT / 'health-verification.json').read_text())
-        observe.checked(['/usr/bin/python3', str(observe.TOOLS / 'verify-chain.py'),
-                         '--chain', chain, '--duration-seconds', str(duration)])
-        observe.checked(['/usr/bin/python3', str(observe.TOOLS / 'verify-health.py'),
-                         '--cause', verification['cause'], '--corrective-action', verification['corrective_action']])
-        capacity_path = observe.OUT / 'capacity.json'
-        capacity = json.loads(capacity_path.read_text())
-        source = observe.OUT / 'capacity-input.json'
-        if hashlib.sha256(source.read_bytes()).hexdigest() != capacity['input_sha256']:
-            raise RuntimeError('Capacity projection input changed')
-        minimum = contract.capacity_projection(source, duration, contract.chain_configuration(chain))
-        if capacity['projected_growth_bytes'] < minimum:
-            raise RuntimeError('Capacity projection no longer covers measured growth')
-        filesystem = os.statvfs(collect.STORE)
-        capacity.update({'observed_at': datetime.datetime.now(datetime.timezone.utc).isoformat(),
-                         'available_bytes': filesystem.f_bavail * filesystem.f_frsize})
-        collect.write_json(capacity_path, capacity)
-        focused.continuity(focused.ROOT / chain, chain)
-        if collect.sample(observe.OUT, observe.TOOLS / 'pvs-all.csv'):
-            raise RuntimeError('Final launch readiness collection failed')
+        recorded('verify_chain', lambda: observe.checked(['/usr/bin/python3', str(observe.TOOLS / 'verify-chain.py'),
+                                                          '--chain', chain, '--duration-seconds', str(duration)]))
+        stored = recorded('health_verification', lambda: json.loads(
+            (observe.OUT / 'health-verification.json').read_text())) or {}
+        cause = cause or stored.get('cause')
+        corrective_action = corrective_action or stored.get('corrective_action')
+        if cause and corrective_action:
+            recorded('verify_health', lambda: observe.checked(['/usr/bin/python3', str(observe.TOOLS / 'verify-health.py'),
+                                                               '--cause', cause, '--corrective-action', corrective_action]))
+
+        def capacity_refresh():
+            capacity_path = observe.OUT / 'capacity.json'
+            capacity = json.loads(capacity_path.read_text())
+            filesystem = os.statvfs(collect.STORE)
+            capacity.update({'observed_at': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+                             'available_bytes': filesystem.f_bavail * filesystem.f_frsize})
+            collect.write_json(capacity_path, capacity)
+            source = observe.OUT / 'capacity-input.json'
+            if hashlib.sha256(source.read_bytes()).hexdigest() != capacity['input_sha256']:
+                raise RuntimeError('Capacity projection input changed')
+            minimum = contract.capacity_projection(source, duration, contract.chain_configuration(chain))
+            if capacity['projected_growth_bytes'] < minimum:
+                raise RuntimeError('Capacity projection no longer covers measured growth')
+        recorded('capacity', capacity_refresh)
+        recorded('focused_continuity', lambda: focused.continuity(focused.ROOT / chain, chain))
+        if recorded('readiness_sample', lambda: collect.sample(observe.OUT, observe.TOOLS / 'pvs-all.csv')):
+            findings.append({'check': 'readiness_sample', 'message': 'Final launch readiness collection recorded errors'})
+        collect.write_json(observe.OUT / 'launch-started.json', record)
         remaining = (target - datetime.datetime.now(datetime.timezone.utc)).total_seconds()
         if remaining > 0:
             time.sleep(remaining)
@@ -68,10 +91,12 @@ def main():
     parser.add_argument('--start-at')
     parser.add_argument('--duration-seconds', required=True, type=int, choices=contract.DURATIONS)
     parser.add_argument('--chain', required=True, choices=contract.CHAINS)
+    parser.add_argument('--cause', help='documented cause for an optional health verification, recorded only')
+    parser.add_argument('--corrective-action', help='documented corrective action for the optional health verification')
     args = parser.parse_args()
     target = (datetime.datetime.fromisoformat(args.start_at.replace('Z', '+00:00')) if args.start_at
               else None)
-    launch(target, args.duration_seconds, args.chain)
+    launch(target, args.duration_seconds, args.chain, args.cause, args.corrective_action)
 
 
 if __name__ == '__main__':

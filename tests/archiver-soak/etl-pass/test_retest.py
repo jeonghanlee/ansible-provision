@@ -346,9 +346,11 @@ class AbortPolicyTests(unittest.TestCase):
     """The shipped counters and abort decision, driven by real sample summaries at the systemd boundary."""
 
     def summary(self, raw, *checks):
+        """Each check is a name or a (name, message) pair, as collect.py records them."""
+        errors = [(check, check) if isinstance(check, str) else check for check in checks]
         return {'sample_kind': 'full', 'completed_at': '2026-10-12T12:35:04+00:00', 'raw_directory': str(raw),
                 'disk': {'available_bytes': 20 * 1024 ** 3},
-                'errors': [{'check': check, 'type': 'RuntimeError', 'message': check} for check in checks]}
+                'errors': [{'check': check, 'type': 'RuntimeError', 'message': message} for check, message in errors]}
 
     def run_samples(self, out, samples):
         """Apply the shipped counters and abort decision to consecutive full samples; return the abort requests."""
@@ -359,20 +361,21 @@ class AbortPolicyTests(unittest.TestCase):
             return subprocess.CompletedProcess(args, 0, '', '')
 
         state = {}
-        checks = collect.abort_checks(out)
+        policy = collect.abort_policy(out)
         for index, checks_failed in enumerate(samples):
             raw = out / 'raw' / ('sample-' + str(index))
             raw.mkdir(parents=True)
             summary = self.summary(raw, *checks_failed)
             collect.write_json(raw / 'sample.json', summary)
-            state.update(collect.failure_counters(state, summary, checks))
+            state.update(collect.failure_counters(state, summary, **policy))
             with patch('subprocess.run', side_effect=transport):
                 collect.abort_if_required(out, summary, state)
         return requests, state
 
     def observation(self, out):
         collect.write_json(out / 'observation.json',
-                           {'abort_policy': {'consecutive_failures': 2, 'checks': list(contract.ABORT_CHECKS)}})
+                           {'abort_policy': {'consecutive_failures': 2, 'checks': list(contract.ABORT_CHECKS),
+                                             'jvms': list(contract.ABORT_JVMS)}})
 
     def test_instrument_failures_never_request_abort_and_stay_counted(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -400,7 +403,7 @@ class AbortPolicyTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             out = Path(directory)
             self.observation(out)
-            requests, state = self.run_samples(out, [('pv_status',), ('gc',), ('jvm_restart',)])
+            requests, state = self.run_samples(out, [('pv_status',), ('gc',), (('jvm_restart', 'etl'),)])
             self.assertEqual(requests, [])
             self.assertEqual(state['consecutive_failures'], 3)
             self.assertEqual(state['consecutive_abort_failures'], 1)
@@ -427,12 +430,111 @@ class AbortPolicyTests(unittest.TestCase):
             requests, _ = self.run_samples(out, [('collection',), ('collection',)])
             self.assertEqual(len(requests), 1)
 
-    def test_abort_listed_checks_exclude_instrument_checks(self):
-        self.assertEqual(set(contract.ABORT_CHECKS) & {'gc', 'latency', 'journal_retention_budget', 'kernel_journal',
-                                                        'heap', 'process', 'metrics', 'event_rates'}, set())
-        for name in ('appliance', 'pv_status', 'jvm_restart', 'instances', 'collection', 'clock', 'tool_bundle',
-                     'journal', 'fixture_adjustment', 'health_invocation'):
-            self.assertIn(name, contract.ABORT_CHECKS)
+    def test_abort_listed_checks_are_the_evidence_stopping_ones(self):
+        self.assertEqual(set(contract.ABORT_CHECKS),
+                         {'appliance', 'journal', 'collection', 'jvm_restart', 'instances', 'pv_status'})
+        self.assertEqual(set(contract.ABORT_JVMS), {'engine', 'etl'})
+        self.assertTrue(set(contract.ABORT_CHECKS) <= set(contract.SCHEDULER_CHECKS))
+        for name in ('mgmt', 'pv_status_request', 'metrics_request', 'clock', 'tool_bundle', 'fixture_adjustment',
+                     'health_invocation'):
+            self.assertIn(name, contract.SCHEDULER_CHECKS)
+            self.assertNotIn(name, contract.ABORT_CHECKS)
+        self.assertEqual(set(contract.SCHEDULER_CHECKS) & {'gc', 'latency', 'journal_retention_budget',
+                                                            'kernel_journal', 'heap', 'process', 'metrics',
+                                                            'event_rates'}, set())
+
+    def test_verdict_deciding_but_not_abort_listed_checks_never_request_abort(self):
+        with tempfile.TemporaryDirectory() as directory:
+            out = Path(directory)
+            self.observation(out)
+            requests, state = self.run_samples(out, [('mgmt', 'pv_status_request'), ('metrics_request', 'clock'),
+                                                     ('health_invocation',), ('tool_bundle', 'fixture_adjustment')])
+            self.assertEqual(requests, [])
+            self.assertEqual(state['consecutive_abort_failures'], 0)
+
+    def test_jvm_identity_errors_count_only_for_the_etl_and_engine_jvms(self):
+        with tempfile.TemporaryDirectory() as directory:
+            out = Path(directory)
+            self.observation(out)
+            requests, state = self.run_samples(out, [(('jvm_restart', 'mgmt'),),
+                                                     (('instances', 'expected four live JVMs; missing: retrieval'),)])
+            self.assertEqual(requests, [])
+            self.assertEqual(state['consecutive_abort_failures'], 0)
+        with tempfile.TemporaryDirectory() as directory:
+            out = Path(directory)
+            self.observation(out)
+            requests, state = self.run_samples(out, [(('jvm_restart', 'etl'),),
+                                                     (('instances', 'expected four live JVMs; missing: engine,retrieval'),)])
+            self.assertEqual(len(requests), 1)
+            self.assertEqual(state['consecutive_abort_failures'], 2)
+
+
+class RecordOnlyStartTests(unittest.TestCase):
+    """The shipped observe.start with only a preparation and a readiness sample, at the systemd boundary."""
+
+    def prepared_out(self, out):
+        configuration = contract.chain_configuration('shortened')
+        collect.write_json(out / 'preparation.json', {'schema': contract.SCHEMA, 'duration_seconds': 86400,
+                                                      'configuration': configuration})
+        collect.write_json(out / 'latest-full.json', {
+            'sample_kind': 'full', 'errors': [{'check': 'gc', 'message': 'instrument'}],
+            'observed_at': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+            'raw_directory': str(out / 'raw' / 'readiness'), 'metrics_observed_at': '2026-10-12T23:00:00+00:00',
+            'archiving_pvs': 903, 'connected_pvs': 903, 'fixture_sha256': contract.FIXTURE_SHA,
+            'live_instances': list(collect.INSTANCES), 'clock': 'NTPSynchronized=yes'})
+        collect.write_json(out / 'state.json', {'processes': {name: {'pid': str(100 + index), 'start': '1'}
+                                                            for index, name in enumerate(collect.INSTANCES)}})
+        (out / 'passes.jsonl').write_text('{}\n')
+
+    def systemd(self, calls):
+        def run(args, **kwargs):
+            calls.append(args)
+            rc = 1 if args[:2] == ['systemctl', 'start'] else 0
+            return subprocess.CompletedProcess(args, rc, 'ActiveState=active\nInvocationID=abc\n', '')
+        return run
+
+    def test_missing_proofs_are_recorded_and_the_observation_opens(self):
+        with tempfile.TemporaryDirectory() as directory:
+            out, units = Path(directory) / 'out', Path(directory) / 'units'
+            out.mkdir()
+            units.mkdir()
+            self.prepared_out(out)
+            calls = []
+            with patch.object(observe, 'OUT', out), patch.object(observe, 'UNITS', units), \
+                    patch.object(collect, 'STORE', out), patch('subprocess.run', side_effect=self.systemd(calls)), \
+                    contextlib.redirect_stdout(io.StringIO()):
+                observe.start(86400, 'shortened')
+            manifest = json.loads((out / 'observation.json').read_text())
+            recorded = {row['check'] for row in manifest['start_findings']}
+            for name in ('readiness_sample', 'tool_bundle', 'health_verification', 'runtime_proofs', 'capacity',
+                         'chain_verification', 'focused_continuity', 'journal_retention'):
+                self.assertIn(name, recorded)
+            self.assertEqual(len(manifest['expected_firings']), 312)
+            self.assertEqual(json.loads((out / 'initial-sample.json').read_text())['rc'], 1)
+            self.assertTrue((units / (observe.FINISH + '.timer')).exists())
+            self.assertIn(['systemctl', 'enable', '--now', observe.SAMPLER + '.timer', observe.FINISH + '.timer'], calls)
+
+    def test_free_space_below_the_reserve_still_refuses_and_writes_nothing(self):
+        with tempfile.TemporaryDirectory() as directory:
+            out, units = Path(directory) / 'out', Path(directory) / 'units'
+            out.mkdir()
+            units.mkdir()
+            self.prepared_out(out)
+            with patch.object(observe, 'OUT', out), patch.object(observe, 'UNITS', units), \
+                    patch.object(collect, 'STORE', out), patch.object(measure, 'MINIMUM_FREE_BYTES', 10 ** 18), \
+                    patch('subprocess.run', side_effect=self.systemd([])):
+                with self.assertRaisesRegex(RuntimeError, 'below the 2 GiB reserve'):
+                    observe.start(86400, 'shortened')
+            self.assertFalse((out / 'observation.json').exists())
+            self.assertEqual(list(units.iterdir()), [])
+
+    def test_an_existing_observation_is_never_replaced(self):
+        with tempfile.TemporaryDirectory() as directory:
+            out = Path(directory)
+            collect.write_json(out / 'observation.json', {'started_at': 'kept'})
+            with patch.object(observe, 'OUT', out), self.assertRaisesRegex(RuntimeError, 'refusing to replace'):
+                observe.start(86400, 'shortened')
+            self.assertEqual(json.loads((out / 'observation.json').read_text()), {'started_at': 'kept'})
 
 
 class SnapshotArchiveTests(unittest.TestCase):

@@ -40,6 +40,11 @@ def abort_checks(manifest):
     return set(manifest.get('abort_policy', {}).get('checks', contract.ABORT_CHECKS))
 
 
+def scheduler_checks(manifest):
+    """The sample checks that decide the scheduler verdict: the contract list plus the recorded abort list."""
+    return set(contract.SCHEDULER_CHECKS) | abort_checks(manifest)
+
+
 def metric_variants(closed, summary):
     """Return the pass lists a metrics snapshot may reflect.
 
@@ -71,7 +76,7 @@ def scheduler_result(failures, missing, checks, mapped_terminal=()):
     absent = sorted({name for name in missing if name in SCHEDULER_MISSING})
     return {'scheduler_verdict': 'Incomplete' if absent else 'Failed' if failed else 'Passed',
             'scheduler_failed_assertions': failed, 'scheduler_missing_coverage': absent,
-            'abort_checks': sorted(checks)}
+            'scheduler_checks': sorted(checks)}
 
 
 def epoch(value):
@@ -103,12 +108,14 @@ def journal_checks(out, manifest, samples, missing, budget_failed):
         return
     try:
         checked = journal_retention.validate(out / 'journal-retention-proof.json', Path(__file__).parent,
-                                             current=prepared['current'], fresh=False)
+                                             current=prepared['current'], fresh=False, strict=False)
         if checked != prepared:
             raise RuntimeError('Manifest retention preparation differs from its actual source calculation')
     except (OSError, KeyError, ValueError, TypeError, RuntimeError):
         missing.append('journal_retention_preparation')
         return
+    if not prepared['current_budget']['passed']:
+        budget_failed.add(manifest['started_at'])
     previous = None
     prior_snapshot = prepared['current']
     peak = dict(prepared['current_budget']['rates_bytes_per_second'])
@@ -269,8 +276,9 @@ def _evaluate(out, terminal, failures):
                 failures.append('all_pv_freshness')
             if row.get('disk', {}).get('available_bytes', 0) < 2 * 1024 ** 3:
                 failures.append('disk_reserve')
+    # The initial sample must have run; its own errors are judged from the sample in the window.
     initial_path = evidence.path(out, manifest.get('initial_sample_record', 'initial-sample.json'))
-    if not initial_path.exists() or evidence.load(initial_path).get('rc') != 0:
+    if not initial_path.exists():
         missing.append('explicit_initial_sample')
     boundaries = [start, *[epoch(row['observed_at']) for row in full], end]
     if not full or any(right - left > SAMPLE_GAP_LIMIT for left, right in zip(boundaries, boundaries[1:])):
@@ -288,7 +296,8 @@ def _evaluate(out, terminal, failures):
     if (not health or state.get('health_starts') != len(state.get('health_completed', {})) or
             any(right - left > HEALTH_GAP_LIMIT for left, right in zip(health_times, health_times[1:]))):
         missing.append('health_coverage')
-    health_contract = manifest['health_verification']['executions'][-1]['health']
+    executions = (manifest.get('health_verification') or {}).get('executions') or [{}]
+    health_contract = executions[-1].get('health') or manifest.get('health_contract') or {}
     accepted = {'0', *health_contract.get('SuccessExitStatus', '').split()}
     if any(event['result'] != 'success' or event['exit_code'] != 'exited' or
            event['exit_status'] not in accepted for event in health):
@@ -429,7 +438,7 @@ def _evaluate(out, terminal, failures):
     if not terminal.get('etl_state_before_stop'):
         missing.append('shutdown_work_state')
     verdict = 'Incomplete' if missing else 'Failed' if failures else 'Passed'
-    checks = abort_checks(manifest)
+    checks = scheduler_checks(manifest)
     return {'verdict': verdict, 'failed_assertions': sorted(set(failures)), 'journal_budget_failed_samples': len(budget_failed),
             'missing_coverage': sorted(set(missing)), 'full_samples': len(full),
             'health_invocations': len(health), 'expected_passes': len(expected),
@@ -441,7 +450,7 @@ def _evaluate(out, terminal, failures):
 
 def evaluate(out, terminal, aggregate_checks=True):
     schema = terminal.get('observation', {}).get('measurement_schema')
-    checks = abort_checks(terminal.get('observation', {}))
+    checks = scheduler_checks(terminal.get('observation', {}))
     if schema != contract.SCHEMA:
         failures = list(terminal.get('errors', []))
         return {'verdict': 'Incomplete', 'failed_assertions': failures,

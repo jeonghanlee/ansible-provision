@@ -138,13 +138,13 @@ class SchedulerVerdictTests(unittest.TestCase):
         self.assertEqual([len(rows) for rows in evaluate.metric_variants(closed[1:], summary)], [1, 0])
 
     def test_instrument_findings_never_decide_the_scheduler_verdict(self):
-        checks = contract.ABORT_CHECKS
+        checks = contract.SCHEDULER_CHECKS
         result = evaluate.scheduler_result(['gc', 'latency', 'metric_snapshot_counter', 'kernel_journal',
                                             'journal_retention_budget'], ['gc_pair_coverage', 'kernel_journal_coverage'],
                                            checks)
         self.assertEqual(result['scheduler_verdict'], 'Passed')
         self.assertEqual(result['scheduler_failed_assertions'], [])
-        self.assertEqual(result['abort_checks'], sorted(checks))
+        self.assertEqual(result['scheduler_checks'], sorted(checks))
         for name in ('pv_status', 'etl_jobs', 'boot_changed', 'orderly_stop', 'health_invocation', 'jvm_restart'):
             with self.subTest(failure=name):
                 self.assertEqual(evaluate.scheduler_result(['gc', name], [], checks)['scheduler_failed_assertions'], [name])
@@ -159,10 +159,10 @@ class SchedulerVerdictTests(unittest.TestCase):
         window = [{'sample_kind': 'full', 'observed_at': '2026-10-12T12:35:04.252780+00:00',
                    'errors': [{'check': 'gc'}]},
                   {'sample_kind': 'journal', 'observed_at': '2026-10-12T12:35:20+00:00', 'errors': []}]
-        self.assertEqual(evaluate.terminal_sample_failures(terminal, window, contract.ABORT_CHECKS), [])
+        self.assertEqual(evaluate.terminal_sample_failures(terminal, window, contract.SCHEDULER_CHECKS), [])
         window[0]['errors'].append({'check': 'pv_status'})
-        self.assertEqual(evaluate.terminal_sample_failures(terminal, window, contract.ABORT_CHECKS), ['final_sample'])
-        self.assertEqual(evaluate.terminal_sample_failures(terminal, window[:1], contract.ABORT_CHECKS),
+        self.assertEqual(evaluate.terminal_sample_failures(terminal, window, contract.SCHEDULER_CHECKS), ['final_sample'])
+        self.assertEqual(evaluate.terminal_sample_failures(terminal, window[:1], contract.SCHEDULER_CHECKS),
                          ['final_sample', 'final_journal'])
 
 
@@ -183,7 +183,7 @@ class SchedulerVerdictEvidenceTests(unittest.TestCase):
         self.assertNotEqual(result['verdict'], 'Passed')
         self.assertIn('gc', result['failed_assertions'])
         self.assertNotIn('gc', result['scheduler_failed_assertions'])
-        self.assertEqual(result['abort_checks'], sorted(contract.ABORT_CHECKS))
+        self.assertEqual(result['scheduler_checks'], sorted(set(contract.SCHEDULER_CHECKS) | set(contract.ABORT_CHECKS)))
 
     def test_sample_abort_listed_error_fails_both_verdicts(self):
         self.schema_four_negative()

@@ -244,6 +244,45 @@ class ContractTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, 'source changed'):
                 contract.capacity_projection(source, 86400, configuration)
 
+    def test_capacity_projection_treats_a_shrinking_store_as_zero_growth(self):
+        """A pass that reduces data or deletes moved sources shrinks the store; only the other categories reset."""
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            end = datetime.datetime.now(datetime.timezone.utc)
+            boot = observe.BOOT.read_text().strip()
+
+            def window(shift_days, bytes_end):
+                return {'start': {'observed_at': (end - datetime.timedelta(days=shift_days, seconds=300)).isoformat(),
+                                  'boot_id': boot, 'bytes': dict.fromkeys(contract.GROWTH_FIELDS, 400)},
+                        'end': {'observed_at': (end - datetime.timedelta(days=shift_days)).isoformat(),
+                                'boot_id': boot, 'bytes': bytes_end}}
+
+            def projection(current_end):
+                paths = {}
+                for role, shift, value in (('historical', 1, dict.fromkeys(contract.GROWTH_FIELDS, 700)),
+                                           ('current', 0, current_end)):
+                    paths[role] = root / (role + '.json')
+                    paths[role].write_text(json.dumps(window(shift, value)))
+                configuration = contract.chain_configuration('shortened')
+                source = root / 'capacity.json'
+                source.write_text(json.dumps({'schema': 1, 'duration_seconds': 86400, 'configuration': configuration,
+                                              'windows': [{'role': role, 'source_path': path.name,
+                                                           'source_sha256': contract.digest(path)}
+                                                          for role, path in paths.items()]}))
+                return contract.capacity_projection(source, 86400, configuration)
+
+            # Every category grows 1 B/s in both windows: five categories over the duration.
+            self.assertEqual(projection(dict.fromkeys(contract.GROWTH_FIELDS, 700)), contract.CAPTURE_RESERVE + 5 * 86400)
+            # The store shrinks in the current window; the historical rate still bounds it, so nothing changes.
+            self.assertEqual(projection(dict(dict.fromkeys(contract.GROWTH_FIELDS, 700), data=280)),
+                             contract.CAPTURE_RESERVE + 5 * 86400)
+            # The store shrinks in the current window and grows faster elsewhere: the larger rates win.
+            self.assertEqual(projection(dict(dict.fromkeys(contract.GROWTH_FIELDS, 1000), data=280)),
+                             contract.CAPTURE_RESERVE + 4 * 2 * 86400 + 86400)
+            for field in ('journal', 'application_logs', 'jfr', 'measurement'):
+                with self.subTest(field=field), self.assertRaisesRegex(RuntimeError, 'reset or rotation'):
+                    projection(dict(dict.fromkeys(contract.GROWTH_FIELDS, 700), **{field: 280}))
+
     def test_gc_log_incremental_capture_preserves_rotated_file_and_rejects_truncation(self):
         import measure
         with tempfile.TemporaryDirectory() as directory:

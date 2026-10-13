@@ -382,13 +382,19 @@ remain required through the existing shipped tools before any observation.
 
 ### Observation And Shutdown
 
-`observe.py start` requires explicit duration/chain and a successful full sample less than 120 seconds old,
-903 archiving PVs, real closed-pass records, synchronized time, all four JVMs
-with actual heap/pause events, and six successful visibility probes. It writes
-an immutable schema-5 `observation.json`, captures JVM PID/start identities and starts five-minute
-sampling plus the finish timer. Select 86400 seconds for the full window;
-`--duration-seconds 7200` selects the accepted retest. All 903 PVs must contain
-actual archived timestamps inside the preceding 30-second query window.
+`observe.py start` requires explicit duration/chain and refuses only two
+conditions: an existing `observation.json` (evidence is never replaced) and free
+space below the 2 GiB reserve. Every other readiness check (a successful full
+sample under 120 seconds old, 903 archiving PVs, closed-pass records,
+synchronized time, four JVMs with heap/pause events, six visibility probes,
+health, runtime, chain, capacity, focused continuity, JFR coverage and the
+journal retention budget) is run and a failure is recorded in the manifest's
+`start_findings`; it never refuses the start, and the evaluator judges the
+evidence. It writes an immutable schema-5 `observation.json`, captures JVM
+PID/start identities and starts five-minute sampling plus the finish timer. Select 86400 seconds for the full window;
+`--duration-seconds 7200` selects the accepted retest. The readiness sample
+checks, and the start records, that all 903 PVs contain actual archived
+timestamps inside the preceding 30-second query window.
 An HTTP 200 response containing empty or older data does not establish freshness.
 The initial sampler result is retained separately in `initial-sample.json`.
 Normal finish requires the complete interval in both clocks. A 86400-second
@@ -410,13 +416,21 @@ Preparation, chain/runtime verification and launch require explicit
 `--duration-seconds` (7200 or 86400) and `--chain` (shortened or default).
 `verify-chain.py` queries every shipped PV's actual `dataStores`, verifies
 granularities/hold-two sources and binds its proof to fixture, boot, duration,
-configuration and complete tool hashes. `launch-retest.py` repeats the chain
-and health checks and stamps the capacity record, but it does not measure
-growth: it refuses a current capacity window that ended more than 600 seconds
-earlier. An omitted `--start-at` starts immediately after readiness; an
-explicit timezone-aware target must be within 120 seconds. Runtime proofs
-expire after one hour; the full sample must be under 120 seconds old, and
-store/capacity verification under 600 seconds old.
+configuration and complete tool hashes. `launch-retest.py` reruns the chain
+and health checks, stamps the capacity record, rechecks the capacity window,
+the retention proof and focused continuity, and takes a final full sample;
+each failure is recorded in `launch-started.json` under `findings` and none
+stops the launch. An omitted `--start-at` starts immediately after readiness;
+an explicit timezone-aware target must be within 120 seconds. Runtime proofs,
+the abort probe and the capacity renewal are optional evidence: their age and
+presence are recorded at start, not required. `initialize-fresh.py prepare`
+records a failed retention proof, capacity projection or deployment check in
+`preparation.json` `findings` and refuses only free space below 2 GiB, an
+existing preparation or observation, and missing measurement arguments.
+`initialize-fresh.py measure` records a late interval, a changed bundle, a
+failed projection and a failed retention budget in `measurements.json`
+`findings`; it still stops when a snapshot, the GC or latency capture, the
+deployment check or a capacity size cannot be taken.
 
 `observe.py finish` runs after the manifest's full interval. It stops the sample
 timer, waits at most 180 seconds for in-window passes, collects a final full
@@ -432,12 +446,16 @@ collection and shutdown deadlines. The IOC, data, VM and inventories are retaine
 `observe.py abort` records Incomplete and cancels both timers. Two consecutive
 full samples that each fail an abort-listed check request abort; less than
 2 GiB free requests immediate abort. The abort-listed checks are
-`contract.ABORT_CHECKS`, recorded in the manifest's `abort_policy.checks`: the
-appliance and its management interface, the fixture population, JVM identity,
-the sampler itself, the clock, the tool bundle, the pass journal, the fixture
-and the appliance health command. Any other failed check is recorded in the
-sample and the observation continues. A single genuine health failure or
-full-sample error still prevents an overall Passed.
+`contract.ABORT_CHECKS`, recorded in the manifest's `abort_policy`: the
+appliance down, the pass journal lost, the sampler itself unable to record,
+the ETL or engine JVM replaced or missing (`abort_policy.jvms`; a management
+or retrieval JVM is recorded only), and the fixture population not archiving.
+These are the conditions under which continuing cannot produce scheduler
+evidence or the load premise is gone. Any other failed check, including the
+management interface, the clock, the tools, the fixture and the appliance
+health command, is recorded in the sample and the observation continues. A
+single genuine health failure or full-sample error still prevents an overall
+Passed.
 Journal collection preserves invocation IDs, accepted exit statuses, cursors
 and completion events; missing or suppressed coverage prevents success.
 The collector requires the latest completed health invocation to be successful
@@ -459,8 +477,12 @@ The result also carries `scheduler_verdict`, `scheduler_failed_assertions` and
 `scheduler_missing_coverage`, computed only from the observation contract
 (duration, UTC midnight, boot, chain, schedule, bundle, abort), the pass
 records and their fields, timing and ordering, the appliance stop, the
-sampler's own coverage and the abort-listed sample checks; a failed final
-collection enters it by the recorded final sample's errors, not by name.
+sampler's own coverage and the verdict-deciding sample checks
+(`contract.SCHEDULER_CHECKS`, a superset of the abort-listed ones: the
+appliance and its management interface, the fixture population, JVM identity
+of any component, the sampler, the clock, the tools, the fixture and the
+appliance health command); a failed final collection enters it by the
+recorded final sample's errors, not by name.
 Metric, GC, latency, journal and health-journal findings stay in the overall
 verdict and never decide the scheduler verdict; of the aggregated numerical
 items only `terminal_manifest_mismatch` enters it. A pass that ends inside a
@@ -670,24 +692,28 @@ Capacity inputs are private schema-1 JSON with `duration_seconds`, the normalize
 are required. Each source has `start`/`end` objects with `observed_at`, matching
 `boot_id` and a `bytes` map covering `data`, `application_logs`, `journal`, `jfr`
 and `measurement`. Current growth must match this boot and end within 600
-seconds. Unsupported resets/rotations prevent preparation. The projection
+seconds. A decrease of the journal, log, JFR or measurement category is an
+unsupported reset or rotation that leaves no projection (recorded as a finding);
+a decrease of the store category counts as zero growth, because a pass reduces
+data and deletes moved sources. The projection
 uses the greater measured rate for each category over the selected duration,
 plus 512 MiB. Preparation takes `--capacity-evidence` and
-`--projected-growth-bytes` at least that value, retains source inputs and checks
-85-percent usage and the 2-GiB reserve again before start.
+`--projected-growth-bytes` at least that value, retains source inputs and records
+whether the projection keeps 85-percent usage and the 2-GiB reserve; only
+current free space below 2 GiB refuses.
 
 From the installed tool directory, take snapshots across an actual collection
 interval; `after.json` must follow `before.json`. Build both role sources before
-preparation. Repeat readiness after the abort probe before launch.
+preparation. When the optional abort probe runs, it restarts the appliance;
+take the launch readiness after it.
 
-Launch more than ten minutes after the last capacity measurement needs a new
-current window first: take two snapshots about 300 seconds apart with real full
-samples between them, build the current source with `--capacity-window`, store
-it with its digest under `capacity-sources/`, rewrite `capacity-input.json`
-with the unchanged historical window, recompute the projection and rewrite
-`capacity.json` (keep the previous files), then launch within 600 seconds and
-within one hour of the runtime proofs. No shipped command writes those two
-files, so a launch after a fresh preparation uses a private step for it.
+A current capacity window is optional: a launch more than ten minutes after the
+last capacity measurement records a stale window as a finding. To renew it, take
+two snapshots about 300 seconds apart with real full samples between them, build
+the current source with `--capacity-window`, store it with its digest under
+`capacity-sources/`, rewrite `capacity-input.json` with the unchanged historical
+window, recompute the projection and rewrite `capacity.json` (keep the previous
+files). No shipped command writes those two files.
 
 ```bash
 python3 contract.py --capacity-snapshot=before.json

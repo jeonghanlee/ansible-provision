@@ -335,7 +335,7 @@ def historical_bounds(proof, root, first, bounds):
     return bounds
 
 
-def prepare(directory, output, tools, histories=()):
+def prepare(directory, output, tools, histories=(), strict=True):
     paths = sorted(directory.glob('snapshot-*.json'))
     samples = [json.loads(path.read_text()) for path in paths]
     bounds = measured_bounds(samples)
@@ -358,12 +358,13 @@ def prepare(directory, output, tools, histories=()):
         'historical_sources': history_groups, 'latest': current, 'budget': budget}
     load_sources(proof, output.parent)
     save(output, proof)
-    if not budget['passed']:
+    if strict and not budget['passed']:
         raise RuntimeError('Journal retention budget does not satisfy byte/time limits')
     return proof
 
 
-def validate(proof_path, tools, current=None, fresh=True):
+def validate(proof_path, tools, current=None, fresh=True, strict=True):
+    """Recheck a retention proof; with strict False a failed budget is returned in the result, not raised."""
     proof = json.loads(proof_path.read_text())
     if proof.get('schema') != contract.SCHEMA or proof.get('tool_hashes') != contract.verify_bundle(tools):
         raise RuntimeError('Journal retention proof belongs to another bundle or schema')
@@ -374,16 +375,16 @@ def validate(proof_path, tools, current=None, fresh=True):
     if any(proof.get(key) != latest.get(key) for key in ('boot_id', 'daemon', 'policy_sha256')):
         raise RuntimeError('Journal retention proof identity is inconsistent')
     baseline = bounded_interval(baseline, samples[-1], latest)
-    if proof['budget'] != calculation(latest, baseline) or not proof['budget']['passed']:
+    if proof['budget'] != calculation(latest, baseline) or (strict and not proof['budget']['passed']):
         raise RuntimeError('Journal retention calculation is inconsistent or failed')
     current = current or snapshot()
     elapsed(latest, current)
     age = (datetime.datetime.now(datetime.timezone.utc) -
            datetime.datetime.fromisoformat(current['observed_at'])).total_seconds()
-    if fresh and not 0 <= age <= PROOF_MAX_AGE:
+    if strict and fresh and not 0 <= age <= PROOF_MAX_AGE:
         raise RuntimeError('Journal retention proof is stale')
     result = calculation(current, bounded_interval(baseline, latest, current))
-    if not result['passed']:
+    if strict and not result['passed']:
         raise RuntimeError('Current journal retention budget failed')
     return {**proof, 'checked_at': current['observed_at'], 'current': current, 'current_budget': result}
 

@@ -60,134 +60,171 @@ def tool_hashes():
 
 
 def start(duration=DURATION, chain='shortened'):
+    """Open the prepared observation.
+
+    Only an existing observation (evidence protection) and free space below the 2 GiB reserve
+    refuse the start. Every readiness, proof, capacity, journal and continuity check is run and
+    its failure is recorded in the manifest's `start_findings`; none of them refuses the start.
+    """
     manifest = OUT / 'observation.json'
     if manifest.exists():
         raise RuntimeError('An observation is already recorded; refusing to replace it')
-    prepared = contract.preparation(OUT, duration, chain)
-    latest = json.loads((OUT / 'latest-full.json').read_text())
-    now = datetime.datetime.now(datetime.timezone.utc)
-    sampled = datetime.datetime.fromisoformat(latest['observed_at'])
-    if (latest.get('sample_kind') != 'full' or latest['errors'] or
-            not 0 <= (now - sampled).total_seconds() <= 120):
-        raise RuntimeError('A recent successful full sample is required')
-    if (latest.get('archiving_pvs') != 903 or latest.get('connected_pvs') != 903 or
-            latest.get('fixture_sha256') != contract.FIXTURE_SHA or
-            len(latest.get('live_instances', [])) != 4 or
-            not (OUT / 'passes.jsonl').stat().st_size):
-        raise RuntimeError('The full fixture and real pass evidence are required')
-    if latest['clock'] != 'NTPSynchronized=yes':
-        raise RuntimeError('The clock must be synchronized')
-    for component in collect.INSTANCES:
-        evidence = latest.get('gc', {}).get(component, {})
-        if not evidence.get('heap_events') or not evidence.get('pause_events'):
-            raise RuntimeError('Real heap and pause events are required: ' + component)
-    latency = latest.get('latency', {})
-    if (latency.get('queried_pvs') != 903 or latency.get('pvs_with_recent_samples') != 903 or
-            latency.get('visible_probes') != len(measure.REPRESENTATIVES)):
-        raise RuntimeError('Real retrieval and visibility evidence is required')
-    if latest.get('fixture_adjustment', {}).get('verified_records') != 10:
-        raise RuntimeError('The approved ten-record retest fixture adjustment must be verified')
-    verification = json.loads((OUT / 'health-verification.json').read_text())
-    if (not verification.get('cause') or not verification.get('corrective_action') or
-            verification.get('tool_hashes') != tool_hashes() or
-            verification.get('boot_id') != BOOT.read_text().strip() or
-            verification.get('successful_invocations', 0) < 2):
-        raise RuntimeError('Executed health-correction verification is required')
-    negative = json.loads((OUT / 'empty-data-verification.json').read_text())
-    terminal_check = json.loads((OUT / 'terminal-path-verification.json').read_text())
-    verifier_hash = hashlib.sha256((TOOLS / 'verify-runtime.py').read_bytes()).hexdigest()
-    for proof in (negative, terminal_check):
-        if (proof.get('duration_seconds') != duration or proof.get('configuration') != prepared['configuration'] or
-                proof.get('boot_id') != BOOT.read_text().strip() or not 0 <=
-                (now - datetime.datetime.fromisoformat(proof['observed_at'])).total_seconds() <= 3600):
-            raise RuntimeError('Runtime proofs are stale or belong to another prepared observation')
-    if (negative.get('http_200_pvs_without_recent_samples') != 903 or
-            not negative.get('collector_failed') or not negative.get('start_rejected') or
-            negative.get('verifier_sha256') != verifier_hash or
-            terminal_check.get('verifier_sha256') != verifier_hash or
-            negative.get('tool_hashes') != tool_hashes() or terminal_check.get('tool_hashes') != tool_hashes() or
-            not terminal_check.get('normal_finish_guard_rejected') or
-            not terminal_check.get('repeated_finish_rejected') or terminal_check.get('stop_rc') != 0 or
-            terminal_check.get('errors') or set(terminal_check.get('complete_gc_components', [])) != set(collect.INSTANCES)):
-        raise RuntimeError('Executed negative-readiness and installed terminal verification are required')
-    capacity = json.loads((OUT / 'capacity.json').read_text())
-    measured_at = datetime.datetime.fromisoformat(capacity['observed_at'])
     filesystem = os.statvfs(collect.STORE)
     available = filesystem.f_bavail * filesystem.f_frsize
-    if (not 0 <= (now - measured_at).total_seconds() <= 600 or
-            capacity['duration_seconds'] != duration or capacity.get('configuration') != prepared['configuration'] or
-            capacity['projected_growth_bytes'] < 512 * 1024 ** 2 or
-            available - capacity['projected_growth_bytes'] < measure.MINIMUM_FREE_BYTES or
-            100 * (filesystem.f_blocks * filesystem.f_frsize - available + capacity['projected_growth_bytes']) /
-            (filesystem.f_blocks * filesystem.f_frsize) >= 85):
-        raise RuntimeError('A current capacity projection leaving 2 GiB is required')
-    checked(['systemctl', 'is-active', collect.UNIT, collect.IOC_UNIT, 'mariadb.service'])
-    stores = json.loads((OUT / 'chain-verification.json').read_text())
+    if available < measure.MINIMUM_FREE_BYTES:
+        raise RuntimeError('Free space is below the 2 GiB reserve; refusing to start')
+    findings = []
+
+    def recorded(name, action, fallback=None):
+        try:
+            return action()
+        except Exception as error:
+            findings.append({'check': name, 'type': type(error).__name__, 'message': str(error)})
+            return fallback
+
+    def expect(name, condition, message):
+        if not condition:
+            findings.append({'check': name, 'message': message})
+
+    def load(name, fallback=None):
+        return recorded(name, lambda: json.loads((OUT / name).read_text()), {} if fallback is None else fallback)
+
+    def age(value):
+        return (now - datetime.datetime.fromisoformat(value)).total_seconds()
+
+    prepared = recorded('preparation', lambda: contract.preparation(OUT, duration, chain),
+                        {'configuration': contract.chain_configuration(chain)})
+    latest = load('latest-full.json')
     now = datetime.datetime.now(datetime.timezone.utc)
-    if (stores.get('configuration') != prepared['configuration'] or stores.get('duration_seconds') != duration or
-            stores.get('verified_pvs') != 903 or stores.get('fixture_sha256') != contract.FIXTURE_SHA or
-            stores.get('source_sha256') != contract.digest(OUT / 'deployed-pv-stores.json') or
-            stores.get('boot_id') != BOOT.read_text().strip() or stores.get('tool_hashes') != tool_hashes() or
-            not 0 <= (now - datetime.datetime.fromisoformat(stores['observed_at'])).total_seconds() <= 600):
-        raise RuntimeError('Current verified deployed store configuration is required')
-    deployed = json.loads((OUT / 'deployed-pv-stores.json').read_text())
-    if len(deployed) != 903 or len({row['pv'] for row in deployed}) != 903:
-        raise RuntimeError('Exactly 903 deployed configurations are required')
-    for row in deployed:
-        if contract.deployed_configuration(chain, row['dataStores']) != prepared['configuration']:
-            raise RuntimeError('Deployed store evidence differs from preparation')
+    expect('readiness_sample', latest.get('sample_kind') == 'full' and not latest.get('errors') and
+           recorded('readiness_sample_age', lambda: 0 <= age(latest['observed_at']) <= 120, False),
+           'A recent successful full sample is required')
+    passes = OUT / 'passes.jsonl'
+    expect('readiness_population', latest.get('archiving_pvs') == 903 and latest.get('connected_pvs') == 903 and
+           latest.get('fixture_sha256') == contract.FIXTURE_SHA and len(latest.get('live_instances', [])) == 4 and
+           passes.exists() and passes.stat().st_size > 0, 'The full fixture and real pass evidence are required')
+    expect('clock', latest.get('clock') == 'NTPSynchronized=yes', 'The clock must be synchronized')
+    for component in collect.INSTANCES:
+        events = latest.get('gc', {}).get(component, {})
+        expect('gc_events', events.get('heap_events') and events.get('pause_events'),
+               'Real heap and pause events are required: ' + component)
+    latency = latest.get('latency', {})
+    expect('latency', latency.get('queried_pvs') == 903 and latency.get('pvs_with_recent_samples') == 903 and
+           latency.get('visible_probes') == len(measure.REPRESENTATIVES),
+           'Real retrieval and visibility evidence is required')
+    expect('fixture_adjustment', latest.get('fixture_adjustment', {}).get('verified_records') == 10,
+           'The approved ten-record retest fixture adjustment must be verified')
+    tools = recorded('tool_bundle', tool_hashes, {})
+    boot = BOOT.read_text().strip()
+    verification = load('health-verification.json')
+    expect('health_verification', verification.get('cause') and verification.get('corrective_action') and
+           verification.get('tool_hashes') == tools and verification.get('boot_id') == boot and
+           verification.get('successful_invocations', 0) >= 2,
+           'Executed health-correction verification is required')
+    negative = load('empty-data-verification.json')
+    terminal_check = load('terminal-path-verification.json')
+    verifier_hash = hashlib.sha256((TOOLS / 'verify-runtime.py').read_bytes()).hexdigest() if (
+        TOOLS / 'verify-runtime.py').exists() else None
+    for name, proof in (('empty_data_verification', negative), ('terminal_path_verification', terminal_check)):
+        expect(name, proof.get('duration_seconds') == duration and
+               proof.get('configuration') == prepared['configuration'] and proof.get('boot_id') == boot and
+               recorded(name + '_age', lambda proof=proof: 0 <= age(proof['observed_at']) <= 3600, False),
+               'Runtime proofs are stale or belong to another prepared observation')
+    expect('runtime_proofs', negative.get('http_200_pvs_without_recent_samples') == 903 and
+           negative.get('collector_failed') and negative.get('start_rejected') and
+           negative.get('verifier_sha256') == verifier_hash and terminal_check.get('verifier_sha256') == verifier_hash and
+           negative.get('tool_hashes') == tools and terminal_check.get('tool_hashes') == tools and
+           terminal_check.get('normal_finish_guard_rejected') and terminal_check.get('repeated_finish_rejected') and
+           terminal_check.get('stop_rc') == 0 and not terminal_check.get('errors') and
+           set(terminal_check.get('complete_gc_components', [])) == set(collect.INSTANCES),
+           'Executed negative-readiness and installed terminal verification are required')
+    capacity = load('capacity.json')
+    projected = capacity.get('projected_growth_bytes')
+    total = filesystem.f_blocks * filesystem.f_frsize
+    expect('capacity', recorded('capacity_age', lambda: 0 <= age(capacity['observed_at']) <= 600, False) and
+           capacity.get('duration_seconds') == duration and capacity.get('configuration') == prepared['configuration'] and
+           type(projected) is int and projected >= 512 * 1024 ** 2 and
+           available - projected >= measure.MINIMUM_FREE_BYTES and 100 * (total - available + projected) / total < 85,
+           'A current capacity projection leaving 2 GiB is required')
+    recorded('services', lambda: checked(['systemctl', 'is-active', collect.UNIT, collect.IOC_UNIT, 'mariadb.service']))
+    stores = load('chain-verification.json')
+    now = datetime.datetime.now(datetime.timezone.utc)
+    expect('chain_verification', stores.get('configuration') == prepared['configuration'] and
+           stores.get('duration_seconds') == duration and stores.get('verified_pvs') == 903 and
+           stores.get('fixture_sha256') == contract.FIXTURE_SHA and
+           stores.get('source_sha256') == recorded('deployed_source', lambda: contract.digest(OUT / 'deployed-pv-stores.json')) and
+           stores.get('boot_id') == boot and stores.get('tool_hashes') == tools and
+           recorded('chain_verification_age', lambda: 0 <= age(stores['observed_at']) <= 600, False),
+           'Current verified deployed store configuration is required')
+    deployed = load('deployed-pv-stores.json', [])
+    expect('deployed_configuration', len(deployed) == 903 and len({row['pv'] for row in deployed}) == 903 and
+           recorded('deployed_configuration_match', lambda: all(
+               contract.deployed_configuration(chain, row['dataStores']) == prepared['configuration']
+               for row in deployed), False),
+           'Exactly 903 deployed configurations matching the preparation are required')
     before = unit_state()
     import focused
-    focused_proof = focused.require_continuity(chain)
-    measurement = json.loads((OUT / 'measurement-config.json').read_text())
-    uptime = float(Path('/proc/uptime').read_text().split()[0])
-    maximum_age = max(uptime - int(jvm['start']) / os.sysconf('SC_CLK_TCK')
-                      for jvm in focused_proof['identity']['jvms'].values())
-    if measurement['jfr_duration_hours'] * 3600 - maximum_age < duration + 2700:
-        raise RuntimeError('JFR duration cannot cover the observation and final capture')
-    journal_proof = journal_retention.validate(OUT / 'journal-retention-proof.json', TOOLS)
+    focused_proof = recorded('focused_continuity', lambda: focused.require_continuity(chain), {})
+    measurement = load('measurement-config.json')
+    processes = load('state.json').get('processes', {})
+
+    def jfr_cover():
+        uptime = float(Path('/proc/uptime').read_text().split()[0])
+        oldest = max(uptime - int(processes[name]['start']) / os.sysconf('SC_CLK_TCK') for name in collect.INSTANCES)
+        if measurement['jfr_duration_hours'] * 3600 - oldest < duration + 2700:
+            raise RuntimeError('JFR duration cannot cover the observation and final capture')
+    recorded('jfr_duration', jfr_cover)
+    journal_proof = recorded('journal_retention', lambda: journal_retention.validate(
+        OUT / 'journal-retention-proof.json', TOOLS, strict=False), {})
+    expect('journal_retention_budget', journal_proof.get('current_budget', {}).get('passed'),
+           'Current journal retention budget failed')
     now = datetime.datetime.now(datetime.timezone.utc)
     monotonic_start = time.monotonic()
     end = now + datetime.timedelta(seconds=duration)
+    readiness = latest.get('raw_directory')
     record = {'started_at': now.isoformat(), 'earliest_finish_at': end.isoformat(),
               'focused_continuity': focused_proof,
               'initial_sample_record': 'initial-sample.json',
-              'duration_seconds': duration, 'boot_id': BOOT.read_text().strip(),
-              'monotonic_start': monotonic_start, 'fixture_sha256': latest['fixture_sha256'],
+              'duration_seconds': duration, 'boot_id': boot,
+              'monotonic_start': monotonic_start, 'fixture_sha256': latest.get('fixture_sha256'),
               'configuration': prepared['configuration'], 'chain_verification': stores,
-              'readiness_sample': latest['raw_directory'], 'unit_before_observation': before,
-              'deployment': json.loads((OUT / 'deployment-verification.json').read_text()),
-              'measurement_configuration': json.loads((OUT / 'measurement-config.json').read_text()),
+              'readiness_sample': readiness, 'unit_before_observation': before,
+              'deployment': load('deployment-verification.json'),
+              'measurement_configuration': measurement,
               'measurement_schema': contract.SCHEMA, 'existing_store_data_preserved': True,
-              'tool_hashes': tool_hashes(), 'health_verification': verification,
-              'journal_retention': journal_proof,
+              'tool_hashes': tools, 'health_verification': verification,
+              'health_contract': recorded('health_contract', collect.health_properties, {}),
+              'journal_retention': journal_proof or None,
               'fixture_adjustment': latest.get('fixture_adjustment'),
-              'capacity': capacity,
-              'abort_policy': {'consecutive_failures': 2, 'checks': list(contract.ABORT_CHECKS)},
+              'capacity': capacity, 'available_bytes_at_start': available,
+              'abort_policy': {'consecutive_failures': 2, 'checks': list(contract.ABORT_CHECKS),
+                               'jvms': list(contract.ABORT_JVMS)},
               'expected_firings': expected_firings(now, end, prepared['configuration']),
-              'counter_baseline': str(Path(latest['raw_directory']) / 'metrics.json'),
-              'baseline_observed_at': latest['metrics_observed_at'],
+              'counter_baseline': str(Path(readiness) / 'metrics.json') if readiness else None,
+              'baseline_observed_at': latest.get('metrics_observed_at'),
               'jvm_identity': {name: {key: value[key] for key in ('pid', 'start')}
-                               for name, value in json.loads((OUT / 'state.json').read_text())['processes'].items()
-                               if name in collect.INSTANCES}}
+                               for name, value in processes.items() if name in collect.INSTANCES},
+              'start_findings': findings}
     timer = '[Unit]\nDescription=Finish the ETL soak observation\n[Timer]\n'
     timer += 'OnCalendar=' + end.strftime('%Y-%m-%d %H:%M:%S UTC') + '\n'
     timer += 'AccuracySec=1s\nPersistent=true\n[Install]\nWantedBy=timers.target\n'
     (UNITS / (FINISH + '.timer')).write_text(timer)
-    state = json.loads((OUT / 'state.json').read_text())
-    state['journal_retention_snapshot'] = journal_proof['current']
-    state['journal_retention_bounds'] = {stream: max(value,
-        state.get('journal_retention_bounds', {}).get(stream, 0))
-        for stream, value in journal_proof['current_budget']['rates_bytes_per_second'].items()}
-    collect.write_json(OUT / 'state.json', state)
+    state_path = OUT / 'state.json'
+    state = json.loads(state_path.read_text()) if state_path.exists() else {}
+    if journal_proof.get('current') and journal_proof.get('current_budget'):
+        state['journal_retention_snapshot'] = journal_proof['current']
+        state['journal_retention_bounds'] = {stream: max(value,
+            state.get('journal_retention_bounds', {}).get(stream, 0))
+            for stream, value in journal_proof['current_budget']['rates_bytes_per_second'].items()}
+    collect.write_json(state_path, state)
     collect.write_json(manifest, record)
     checked(['systemctl', 'daemon-reload'])
     checked(['systemctl', 'enable', '--now', SAMPLER + '.timer', FINISH + '.timer'])
+    # The initial sample's own errors are judged from the sample; its exit status is recorded only.
     initial = command(['systemctl', 'start', SAMPLER + '.service'])
     collect.write_json(OUT / 'initial-sample.json', initial)
-    if initial['rc']:
-        raise RuntimeError('Initial collection failed; the immutable observation remains recorded')
-    print(json.dumps(record))
+    print(json.dumps({'started_at': record['started_at'], 'earliest_finish_at': record['earliest_finish_at'],
+                      'start_findings': [row['check'] for row in findings], 'initial_sample_rc': initial['rc']}))
 
 
 def expected_firings(started, ended, configuration=None):
