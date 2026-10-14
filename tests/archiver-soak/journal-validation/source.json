@@ -1,0 +1,9 @@
+{
+  "baseline_commit": "649fee80561611f1494c1c3ce1f9546f6c619173",
+  "files": {
+    "journal_coverage.py": {
+      "source": "tests/archiver-soak/etl-pass/journal_coverage.py",
+      "sha256": "48e95a71c4a9300500fbf9b419c9bdb5134c7ca00c47f0b73f80f1c1441c9fd6"
+    }
+  }
+}

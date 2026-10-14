@@ -1,0 +1,12 @@
+{
+  "deployment_role": "journal-validation",
+  "appliance_unit": "epicsarchiverap-maven.service",
+  "appliance_artifact": "/path/to/deployed/retrieval.war",
+  "retrieval_catalina_base": "/opt/epicsarchiverap-maven/retrieval",
+  "softioc": "/path/to/epics/base/bin/linux-x86_64/softIoc",
+  "user": "tomcat",
+  "group": "tomcat",
+  "health_script": "/opt/epicsarchiverap-maven/archappl.bash",
+  "mgmt_url": "http://127.0.0.1:17665/mgmt/bpl",
+  "retrieval_url": "http://127.0.0.1:17668/retrieval/data/getData.json"
+}
