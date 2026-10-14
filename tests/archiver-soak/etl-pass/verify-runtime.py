@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify real freshness rejection and terminal paths before opening a retest."""
+"""Verify real freshness findings and terminal paths before opening a retest."""
 
 import argparse
 import datetime
@@ -15,13 +15,11 @@ from unittest.mock import patch
 import collect
 import observe
 import contract
-import journal_retention
 
 EMPTY_WINDOW_EPOCH = 946684800
 
 def empty_data(duration, chain):
     contract.preparation(observe.OUT, duration, chain)
-    journal_retention.validate(observe.OUT / 'journal-retention-proof.json', observe.TOOLS)
     if (observe.OUT / 'observation.json').exists():
         raise RuntimeError('Runtime preflight requires no observation')
     with patch('time.time', return_value=EMPTY_WINDOW_EPOCH):
@@ -31,25 +29,21 @@ def empty_data(duration, chain):
     missing = sum(row.get('http') == 200 and row['outcome'] == 'no_sample_in_window' for row in rows)
     if not failed or missing != 903:
         raise RuntimeError('The negative collection must fail before testing readiness')
-    rejected = False
-    try:
-        observe.start(duration, chain)
-    except RuntimeError as error:
-        rejected = 'recent successful full sample' in str(error)
-    if (observe.OUT / 'observation.json').exists():
-        observe.terminal(aborted=True, reason='Unexpected start during negative readiness verification')
-        raise RuntimeError('Negative readiness unexpectedly opened an observation; aborted')
+    readiness = observe.start(duration, chain, readiness_only=True)
+    finding = any(row['check'] == 'readiness_sample' for row in readiness['start_findings'])
+    unopened = not (observe.OUT / 'observation.json').exists()
     record = {'clock_boundary_substituted': True, 'real_appliance_and_fixture': True,
               'duration_seconds': duration, 'configuration': contract.chain_configuration(chain),
               'observed_at': datetime.datetime.now(datetime.timezone.utc).isoformat(),
               'boot_id': observe.BOOT.read_text().strip(),
               'http_200_pvs_without_recent_samples': missing,
               'empty_response_pvs': sum(row.get('returned_samples') == 0 for row in rows),
-              'collector_failed': failed, 'start_rejected': rejected,
+              'collector_failed': failed, 'readiness_finding_recorded': finding,
+              'observation_not_opened': unopened, 'readiness_findings': readiness['start_findings'],
               'tool_hashes': observe.tool_hashes(),
               'sample': latest['raw_directory'], 'verifier_sha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest()}
     collect.write_json(observe.OUT / 'empty-data-verification.json', record)
-    if not rejected:
+    if not finding or not unopened:
         raise RuntimeError('Negative readiness verification failed')
     print(json.dumps(record))
 
@@ -64,7 +58,6 @@ def abort_probe(duration, chain):
     probe.mkdir(mode=0o710)
     os.chown(probe, 0, grp.getgrnam('mid').gr_gid)
     probe.chmod(0o710)
-    journal_retention.install_proof(main / 'journal-retention-proof.json', probe / 'journal-retention-proof.json')
     collect.write_json(probe / 'preparation.json', prepared)
     (probe / 'jvm').mkdir(mode=0o700)
     user = pwd.getpwnam('mid-srv')
@@ -77,20 +70,12 @@ def abort_probe(duration, chain):
     if collect.sample(probe, observe.TOOLS / 'pvs-all.csv'):
         raise RuntimeError('Probe full collection failed; retained the probe directory')
     latest = json.loads((probe / 'latest-full.json').read_text())
-    journal_proof = journal_retention.validate(probe / 'journal-retention-proof.json', observe.TOOLS)
-    state = json.loads((probe / 'state.json').read_text())
-    state['journal_retention_snapshot'] = journal_proof['current']
-    state['journal_retention_bounds'] = {stream: max(value,
-        state.get('journal_retention_bounds', {}).get(stream, 0))
-        for stream, value in journal_proof['current_budget']['rates_bytes_per_second'].items()}
-    collect.write_json(probe / 'state.json', state)
     now = datetime.datetime.now(datetime.timezone.utc)
     end = now + datetime.timedelta(seconds=duration)
     manifest = {'started_at': now.isoformat(), 'earliest_finish_at': end.isoformat(),
                 'duration_seconds': duration, 'boot_id': observe.BOOT.read_text().strip(),
                 'measurement_schema': contract.SCHEMA, 'configuration': prepared['configuration'],
                 'tool_hashes': observe.tool_hashes(),
-                'journal_retention': journal_proof,
                 'monotonic_start': time.monotonic(), 'unit_before_observation': observe.unit_state(),
                 'health_verification': json.loads((main / 'health-verification.json').read_text()),
                 'expected_firings': observe.expected_firings(now, end, prepared['configuration']),

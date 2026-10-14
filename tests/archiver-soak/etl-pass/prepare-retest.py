@@ -15,7 +15,6 @@ import collect
 import measure
 import observe
 import contract
-import journal_retention
 
 FILES = (*contract.BUNDLE_FILES, 'bundle.json')
 CAPTURE_RESERVE = contract.CAPTURE_RESERVE
@@ -27,14 +26,10 @@ STAMP_PATH = Path('/var/tmp/archiver-build.config')
 CONFIG_PATH = Path('/opt/epicsarchiverap-maven/archappl.conf')
 
 
-def prepare(bundle, projected_growth, capacity_evidence, duration, chain, retention_evidence=None):
+def prepare(bundle, projected_growth, capacity_evidence, duration, chain):
     contract.validate_duration(duration)
     configuration = contract.chain_configuration(chain)
     contract.verify_bundle(bundle)
-    if retention_evidence is None:
-        raise RuntimeError('Measured journal retention preparation evidence is required')
-    journal_retention.validate(retention_evidence, bundle)
-    retention_payload = journal_retention.preservation_payload(retention_evidence)
     if projected_growth < CAPTURE_RESERVE or not capacity_evidence.is_file():
         raise RuntimeError('A measured growth projection with a 512 MiB capture allowance is required')
     required_growth = contract.capacity_projection(capacity_evidence, duration, configuration)
@@ -116,7 +111,6 @@ def prepare(bundle, projected_growth, capacity_evidence, duration, chain, retent
     (observe.OUT / 'jvm').mkdir(mode=0o700)
     os.chown(observe.OUT / 'jvm', account.pw_uid, account.pw_gid)
     collect.write_json(observe.OUT / 'preparation.json', record)
-    journal_retention.install_payload(retention_payload, observe.OUT / 'journal-retention-proof.json')
     capacity_sources = observe.OUT / 'capacity-sources'
     capacity_sources.mkdir()
     for index, window in enumerate(capacity_input['windows']):
@@ -171,13 +165,12 @@ def main():
     parser.add_argument('bundle', type=Path)
     parser.add_argument('--projected-growth-bytes', required=True, type=int)
     parser.add_argument('--capacity-evidence', required=True, type=Path)
-    parser.add_argument('--journal-retention-evidence', required=True, type=Path)
     parser.add_argument('--duration-seconds', required=True, type=int, choices=contract.DURATIONS)
     parser.add_argument('--chain', required=True, choices=contract.CHAINS)
     args = parser.parse_args()
     with collect.locked(observe.OUT.parent / (observe.OUT.name + '.lifecycle.lock')):
         prepare(args.bundle, args.projected_growth_bytes, args.capacity_evidence,
-                args.duration_seconds, args.chain, args.journal_retention_evidence)
+                args.duration_seconds, args.chain)
 
 
 if __name__ == '__main__':

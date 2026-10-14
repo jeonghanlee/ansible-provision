@@ -22,8 +22,7 @@ import resource_helpers as resources
 import measure
 import contract
 import math
-import journal_coverage
-import journal_retention
+import pass_source
 
 UNIT = "epicsarchiverap-maven.service"
 HEALTH_UNIT = "epicsarchiverap-maven-health.service"
@@ -35,11 +34,12 @@ TIERS = ("sts", "mts", "lts")
 JOURNAL_KEYS = ("__CURSOR", "__REALTIME_TIMESTAMP", "SYSLOG_IDENTIFIER",
                 "PRIORITY", "MESSAGE", "_PID", "_SYSTEMD_INVOCATION_ID",
                 "INVOCATION_ID", "EXIT_CODE", "EXIT_STATUS", "SERVICE_RESULT",
-                "MESSAGE_ID", "UNIT", "_BOOT_ID")
+                "MESSAGE_ID", "UNIT", "_BOOT_ID", "_TRANSPORT")
 HEALTH_PREFIX = "ETL_SOAK_HEALTH "
 ABORT_UNIT = "etl-soak-abort.service"
 HEALTH_COMMAND = Path('/opt/epicsarchiverap-maven/archappl.bash')
 HEALTH_COMPLETION_MAX_AGE_SECONDS = 120
+BOOT_ID_FILE = Path('/proc/sys/kernel/random/boot_id')
 
 
 @contextlib.contextmanager
@@ -201,16 +201,6 @@ def directory_bytes(root):
     return tolerated_du(result.returncode, result.stdout, result.stderr)
 
 
-def budget_capture(summary, action):
-    # A failed journal budget is a finding about the journal settings, not about the observed ETL: it is recorded
-    # in the sample but is not a sample error, so it neither counts toward an abort nor changes the ETL verdict.
-    try:
-        return action()
-    except journal_retention.BudgetFailed as error:
-        summary['journal_budget_failed'] = str(error)
-        return None
-
-
 def write_json(path, value):
     temporary = path.with_suffix(path.suffix + ".tmp")
     temporary.write_text(json.dumps(value, indent=2) + "\n")
@@ -244,6 +234,15 @@ def request(endpoint, destination):
 
 
 def collect_journal(out, raw, previous, now):
+    pids = resources.jvm_pids()
+    configured = pids.get('etl') and pass_source.configured(pids['etl'])
+    if configured:
+        return collect_application_files(out, raw, previous, pids)
+    if previous.get('application_file_sources'):
+        if not pids:
+            stopped_pids, invocation = stopped_application_identity(out, previous)
+            return collect_application_files(out, raw, previous, stopped_pids, invocation, stopped=True)
+        raise RuntimeError('Configured independent application evidence is no longer available')
     command = ["journalctl", "-u", UNIT, "--no-pager", "--all", "-o", "json"]
     if previous.get("journal_cursor"):
         command += ["--cursor", previous["journal_cursor"]]
@@ -276,20 +275,70 @@ def collect_journal(out, raw, previous, now):
     return cursor, dict(counts), pass_count
 
 
+def stopped_application_identity(out, previous):
+    markers = [out / name for name in ('abort-started.json', 'shutdown-started.json') if (out / name).is_file()]
+    if len(markers) != 1:
+        raise RuntimeError('Stopped application capture requires one actual terminal operation')
+    marker = json.loads(markers[0].read_text())
+    before = properties(marker.get('before', ''))
+    observation = marker['observation']
+    initial = properties(observation['unit_before_observation'])
+    current = properties(run(['systemctl', 'show', UNIT, '-p', 'ActiveState', '-p', 'Result']))
+    invocation = before.get('InvocationID', '')
+    if (current.get('ActiveState') != 'inactive' or current.get('Result') != 'success'
+            or before.get('ActiveState') != 'active' or marker.get('stop', {}).get('rc') != 0
+            or not re.fullmatch(r'[0-9a-f]{32}', invocation) or invocation != initial.get('InvocationID')
+            or observation['boot_id'] != BOOT_ID_FILE.read_text().strip()):
+        raise RuntimeError('Stopped application capture lacks a verified same-boot normal stop')
+    processes = previous.get('processes', {})
+    if not set(INSTANCES).issubset(processes) or set(previous['application_file_sources']) != set(INSTANCES):
+        raise RuntimeError('Stopped application capture requires all four retained process and file identities')
+    pids = {name: str(processes[name]['pid']) for name in INSTANCES}
+    if any(not re.fullmatch(r'[1-9][0-9]*', pid) for pid in pids.values()):
+        raise RuntimeError('Stopped application capture has an invalid retained PID')
+    return pids, invocation
+
+
+def collect_application_files(out, raw, previous, pids, invocation=None, stopped=False):
+    if set(pids) != set(INSTANCES):
+        raise RuntimeError('Independent application evidence requires all four JVMs')
+    if invocation is None:
+        invocation = run(['systemctl', 'show', UNIT, '--value', '-p', 'InvocationID'])
+    sources, entries, counts = {}, [], {}
+    for component in INSTANCES:
+        prior = previous.get('application_file_sources', {}).get(component)
+        destination = raw / (component + '-application.jsonl')
+        rows = pass_source.read(component, destination, prior['capture'] if prior else None)
+        offset = prior['complete_bytes'] if prior else 0
+        rows = [row for row in rows if row['source_offset'] >= offset]
+        for row in rows:
+            if stopped and row['_SYSTEMD_INVOCATION_ID'] != invocation:
+                raise RuntimeError('A stopped application file contains a different new invocation')
+            if (row['_SYSTEMD_INVOCATION_ID'] == invocation and row['_PID'] != pids[component]):
+                raise RuntimeError('An application file event has a different JVM identity')
+        entries.extend(rows)
+        counts[component] = len(rows)
+        receipt = json.loads(destination.with_suffix(destination.suffix + '.receipt.json').read_text())
+        if stopped and receipt['trailing_bytes']:
+            raise RuntimeError('A stopped application file has an incomplete final record')
+        sources[component] = {'capture': str(destination), 'complete_bytes': receipt['complete_bytes']}
+    with (raw / 'journal.jsonl').open('w') as archive, (out / 'passes.jsonl').open('a') as passes:
+        pass_count = 0
+        for row in entries:
+            encoded = json.dumps(row) + '\n'
+            archive.write(encoded)
+            if 'ETL pass of transition ' in row['MESSAGE']:
+                if Path(row['source_file']).parent.parent.name != 'etl':
+                    raise RuntimeError('An ETL pass was emitted by a different component')
+                passes.write(encoded)
+                pass_count += 1
+    return None, counts, pass_count, sources
+
+
 def collect_kernel(raw, previous, now):
     cursor = previous.get('kernel_journal_cursor')
     since = previous.get('kernel_journal_since', now.strftime('%Y-%m-%d 00:00:00 UTC'))
-    command = ['journalctl', '-k', '-b', '--no-pager', '--all', '-o', 'json']
-    command += ['--cursor', cursor] if cursor else ['--since', since]
-    result = subprocess.run(command, capture_output=True, text=True, timeout=60)
-    if result.returncode:
-        raise RuntimeError('Kernel journal collection failed')
-    lines = result.stdout.splitlines()
-    if cursor:
-        if not lines or json.loads(lines[0]).get('__CURSOR') != cursor:
-            raise RuntimeError('Previous kernel journal cursor is unavailable')
-        lines = lines[1:]
-    else:
+    if not cursor:
         boot = run(['journalctl', '-b', '--no-pager', '-o', 'json', '--reverse', '--until', since, '--lines=1'])
         first_boot = json.loads(boot.splitlines()[0]) if boot else None
         if not first_boot or int(first_boot['__REALTIME_TIMESTAMP']) > datetime.datetime.fromisoformat(
@@ -297,15 +346,24 @@ def collect_kernel(raw, previous, now):
             raise RuntimeError('Journal retention begins after the collection boundary')
         (raw / 'journal-retention-before.json').write_text(json.dumps(
             {key: first_boot[key] for key in JOURNAL_KEYS if key in first_boot}) + '\n')
-        retained = run(['journalctl', '-k', '-b', '--no-pager', '-o', 'json', '--reverse', '--until', since, '--lines=1'])
-        if retained:
-            cursor = json.loads(retained.splitlines()[-1])['__CURSOR']
+        cursor = first_boot['__CURSOR']
+    command = ['journalctl', '-b', '--no-pager', '--all', '-o', 'json', '--cursor', cursor]
+    result = subprocess.run(command, capture_output=True, text=True, timeout=60)
+    (raw / 'kernel-checkpoint-journal.jsonl').write_text(result.stdout)
+    (raw / 'kernel-checkpoint-journal.stderr').write_text(result.stderr)
+    if result.returncode:
+        raise RuntimeError('Kernel journal collection failed')
+    lines = result.stdout.splitlines()
+    if not lines or json.loads(lines[0]).get('__CURSOR') != cursor:
+        raise RuntimeError('Previous kernel journal cursor is unavailable')
     events = 0
     with (raw / 'kernel-journal.jsonl').open('w') as archive:
-        for line in lines:
+        for line in lines[1:]:
             entry = json.loads(line)
-            archive.write(json.dumps({key: entry[key] for key in JOURNAL_KEYS if key in entry}) + '\n')
             cursor = entry['__CURSOR']
+            if entry.get('_TRANSPORT') != 'kernel':
+                continue
+            archive.write(json.dumps({key: entry[key] for key in JOURNAL_KEYS if key in entry}) + '\n')
             message = str(entry.get('MESSAGE', '')).lower()
             if any(term in message for term in ('suppressed', 'missed')):
                 raise RuntimeError('Kernel journal records were suppressed or missed')
@@ -371,7 +429,11 @@ def _sample(out, fixture, journal_only=False):
 
     journal = capture("journal", lambda: collect_journal(out, raw, previous, now))
     if journal is not None:
-        state["journal_cursor"] = journal[0]
+        if len(journal) == 4:
+            state['application_file_sources'] = journal[3]
+            state.pop('journal_cursor', None)
+        else:
+            state["journal_cursor"] = journal[0]
     health_journal = capture("health_journal", lambda: collect_health(out, raw, previous, now))
     if health_journal is not None:
         state.update({"health_journal_cursor": health_journal["cursor"],
@@ -388,26 +450,7 @@ def _sample(out, fixture, journal_only=False):
             summary["errors"].append({"check": "health_coverage", "message": "Health invocations lack completion records"})
         if journal_only and health_journal['starts'] != health_journal['completed_total']:
             summary['errors'].append({'check': 'health_coverage', 'message': 'Health completion coverage is incomplete'})
-    preparation_path = out / 'preparation.json'
-    current_schema = (json.loads(preparation_path.read_text()).get('schema')
-                      if preparation_path.exists() else None)
-    manifest_path = out / 'observation.json'
-    if manifest_path.exists():
-        current_schema = json.loads(manifest_path.read_text()).get('measurement_schema')
-    if current_schema == contract.SCHEMA:
-        capture('journal_retention_budget', lambda: budget_capture(summary, lambda: journal_retention.runtime(
-            out, raw, Path(__file__).parent, previous,
-            terminal=any((out / name).exists() for name in ('shutdown-started.json', 'abort-started.json')))))
-        snapshot_path = raw / 'journal-retention-snapshot.json'
-        budget_path = raw / 'journal-retention-budget.json'
-        if snapshot_path.exists():
-            state['journal_retention_snapshot'] = json.loads(snapshot_path.read_text())
-        if budget_path.exists():
-            bounds = json.loads(budget_path.read_text())['rates_bytes_per_second']
-            state['journal_retention_bounds'] = {stream: max(value,
-                previous.get('journal_retention_bounds', {}).get(stream, 0)) for stream, value in bounds.items()}
-    kernel = capture('kernel_journal', lambda: journal_coverage.collect(raw, previous, now)
-                     if current_schema == contract.SCHEMA else collect_kernel(raw, previous, now))
+    kernel = capture('kernel_journal', lambda: collect_kernel(raw, previous, now))
     if kernel is not None:
         state['kernel_journal_cursor'] = kernel['cursor']
         state['kernel_journal_since'] = kernel['since']

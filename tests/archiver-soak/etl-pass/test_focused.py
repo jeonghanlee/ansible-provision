@@ -19,6 +19,7 @@ from unittest.mock import patch
 import collect
 import contract
 import focused
+import pass_source
 
 
 class OfflinePreparationTests(unittest.TestCase):
@@ -88,17 +89,18 @@ class OfflinePreparationTests(unittest.TestCase):
 
 
 class FocusedContractTests(unittest.TestCase):
-    def test_empty_pass_poll_is_valid_and_malformed_journal_is_rejected(self):
+    def test_empty_application_file_is_valid_and_malformed_json_is_rejected(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
-            with patch.object(focused.observe.subprocess, 'run', return_value=
-                              subprocess.CompletedProcess(['journalctl'], 0, '', '')):
-                self.assertEqual(focused.passes(root, 'empty'), [])
-                self.assertEqual((root / 'passes-empty.jsonl').read_text(), '')
-            with patch.object(focused.observe.subprocess, 'run', return_value=
-                              subprocess.CompletedProcess(['journalctl'], 0, 'invalid', '')):
+            source = root / 'etl/logs' / pass_source.FILENAME
+            source.parent.mkdir(parents=True)
+            source.write_bytes(b'')
+            with patch.object(pass_source, 'INSTALL', root):
+                self.assertEqual(pass_source.read('etl', root / 'empty.jsonl'), [])
+                self.assertEqual((root / 'empty.jsonl').read_bytes(), b'')
+                source.write_bytes(b'invalid\n')
                 with self.assertRaises(json.JSONDecodeError):
-                    focused.passes(root, 'invalid')
+                    pass_source.read('etl', root / 'invalid.jsonl')
 
     @unittest.skipUnless(os.environ.get('FOCUSED_LOGGING_SOURCE'), 'Shipped logging configuration required')
     def test_logging_configuration_reuses_only_the_exact_dropin(self):
@@ -912,6 +914,10 @@ class BundleReplacementTests(unittest.TestCase):
 
     def siblings(self):
         return sorted(path.name for path in self.base.iterdir())
+
+    def test_default_acceptance_matches_the_shipped_frozen_bundle(self):
+        self.assertEqual(self.step.frozen_members(self.HERE, self.step.ACCEPTED_BUNDLE_SHA256),
+                         sorted(contract.BUNDLE_FILES))
 
     def test_swap_replaces_only_the_members_and_carries_every_other_file(self):
         with self.systemctl():

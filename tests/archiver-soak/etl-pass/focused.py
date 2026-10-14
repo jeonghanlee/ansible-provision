@@ -30,6 +30,8 @@ import collect
 import contract
 import evaluate
 import observe
+import pass_source
+import socket
 
 INSTALL = Path('/opt/epicsarchiverap-maven')
 SOURCE = Path('/opt/epicsarchiverap-env-src/epicsarchiverap-env')
@@ -614,14 +616,22 @@ def compare_recent_http(root, bins, label):
 
 
 def passes(root, invocation):
-    text = observe.checked(['journalctl', '-u', collect.UNIT, '_SYSTEMD_INVOCATION_ID=' + invocation,
-                            '--no-pager', '-o', 'json'])
+    events = pass_source.read('etl', root / ('application-file-' + invocation + '.jsonl'))
+    current = identity()
+    if current['invocation_id'] != invocation:
+        raise RuntimeError('Application file belongs to a different running invocation')
+    expected_pid = current['jvms']['etl']['pid']
+    if not pass_source.configured(expected_pid):
+        raise RuntimeError('The running ETL JVM lacks independent file logging')
     path = root / ('passes-' + invocation + '.jsonl')
     records = []
-    for line in text.splitlines():
-        row = json.loads(line)
+    for row in events:
+        if row['_SYSTEMD_INVOCATION_ID'] != invocation:
+            continue
         if evaluate.PASS.search(row.get('MESSAGE', '')):
-            records.append(line)
+            if row['_PID'] != expected_pid:
+                raise RuntimeError('An ETL pass file event has a different JVM identity')
+            records.append(json.dumps(row))
     path.write_text(''.join(line + '\n' for line in records))
     return evaluate.pass_records(path)
 
@@ -669,7 +679,7 @@ def ready():
             with CLIENT.open('http://127.0.0.1:%d/%s/bpl/startupState' % (port, component), timeout=10) as response:
                 if json.load(response).get('status') != 'STARTUP_COMPLETE':
                     return False
-        except (urllib.error.URLError, TimeoutError) as error:
+        except (urllib.error.URLError, TimeoutError, socket.timeout) as error:
             print('Startup HTTP not ready: ' + str(error), flush=True)
             return False
     return True
@@ -693,6 +703,7 @@ def configure_debug(root):
     if loggers is None or any(row.get('name') == LOGGER for row in loggers):
         raise RuntimeError('Unexpected existing pass logger configuration')
     ET.SubElement(loggers, 'Logger', name=LOGGER, level='debug')
+    pass_source.configure(tree)
     target = root / 'log4j2.xml'
     ET.ElementTree(tree).write(target, encoding='utf-8', xml_declaration=True)
     target.chmod(0o644)
@@ -731,7 +742,7 @@ def check_preparation(root, result):
         raise RuntimeError('Preparation source pins differ from the approved commits')
 
 
-def run(root, chain):
+def run(root, chain, initial_only=False):
     protect()
     root.mkdir(mode=0o755)
     root.chmod(0o755)
@@ -825,7 +836,7 @@ def run(root, chain):
         running = identity()
         wait_until('all 903 live PVs after startup',
                    lambda: live_population(root, recorded, 'live-after-start.json'), START_TIMEOUT)
-        finish_run(root, chain, recorded, classpath, specs, baseline, running, result)
+        finish_run(root, chain, recorded, classpath, specs, baseline, running, result, initial_only=initial_only)
     except BaseException as error:
         result['result'] = 'Incomplete'
         result['error'] = str(error)
@@ -836,7 +847,7 @@ def run(root, chain):
 
 
 def finish_run(root, chain, recorded, classpath, specs, baseline, running, result,
-               resume_guard=None, expected_tools=None):
+               resume_guard=None, expected_tools=None, initial_only=False):
     if artifacts() != recorded['artifacts']:
         raise RuntimeError('Artifacts changed during focused startup')
     def startup():
@@ -850,6 +861,43 @@ def finish_run(root, chain, recorded, classpath, specs, baseline, running, resul
     retention(specs, snapshot, passes(root, running['invocation_id']), chain, running['invocation_id'])
     compare_http(root, expected, specs, 'startup')
     recent_bins = capture_recent_bins(root, classpath, specs)
+    if initial_only:
+        check_preparation(root, result)
+        if identity() != running or observe.tool_hashes() != recorded['tools']:
+            raise RuntimeError('Runtime identity or tools changed during initial processing')
+    initial = root / 'functional-initial'
+    initial.mkdir(mode=0o700)
+    originals = [root / name for name in (
+        'inventory.json', 'manifest.json', 'baseline.json', 'startup.json', 'logging-configuration.json',
+        'preparation-binding.json', 'ca-before-start.json', 'recent-bin-source.json', 'recent-bin-expectations.json',
+        'application-file-' + running['invocation_id'] + '.jsonl',
+        'application-file-' + running['invocation_id'] + '.jsonl.receipt.json',
+        'passes-' + running['invocation_id'] + '.jsonl')]
+    originals.extend(root.glob('startup-http-*.json'))
+    originals.extend(root.glob('recent-source-http-*.json'))
+    for path in originals:
+        shutil.copy2(path, initial / path.name)
+    save(root, 'functional-initial-result.json', {
+        'result': 'Passed', 'scope': 'initial-functional-processing', 'chain': chain,
+        'started_at': result['started_at'], 'completed_at': now(), 'identity': running,
+        'exact_pv_count': len(specs), 'configured_population': len(recorded['pvs']),
+        'source': 'actual native writer, application file pass records, physical PB snapshots and HTTP',
+        'tool_hashes': recorded['tools'],
+        'evidence_sha256': {path.name: contract.digest(path) for path in initial.iterdir()},
+        'baseline_sha256': contract.digest(root / 'baseline.json'),
+        'startup_sha256': contract.digest(root / 'startup.json'),
+        'regular_pass_continuity': 'Pending', 'full_day_acceptance': 'Pending'})
+    if initial_only:
+        result.update(stage='initial-functional-processing-complete',
+                      initial_functional_result_sha256=contract.digest(root / 'functional-initial-result.json'),
+                      regular_pass_continuity='Pending', full_day_acceptance='Pending')
+        return
+    finish_repeats(root, chain, recorded, classpath, specs, baseline, running, result, recent_bins,
+                   resume_guard=resume_guard, expected_tools=expected_tools)
+
+
+def finish_repeats(root, chain, recorded, classpath, specs, baseline, running, result, recent_bins,
+                   resume_guard=None, expected_tools=None):
     def repeated():
         if identity() != running:
             raise RuntimeError('Appliance restarted during focused repeats')
@@ -880,7 +928,8 @@ def finish_run(root, chain, recorded, classpath, specs, baseline, running, resul
     check_completion(recorded, final, running, identity(), expected_tools, keys)
     if 'preparation_binding_sha256' in result:
         check_preparation(root, result)
-    result.update(result='Passed', identity=running, regular_passes=regular, artifacts=final['artifacts'],
+    result.update(result='Passed', regular_pass_continuity='Passed', full_day_acceptance='Pending',
+                  identity=running, regular_passes=regular, artifacts=final['artifacts'],
                   pvs=final['pvs'], flags=final['flags'], tools=final['tools'],
                   source_manifest_sha256=contract.digest(root / 'manifest.json'),
                   baseline_sha256=contract.digest(root / 'baseline.json'),
@@ -901,6 +950,44 @@ def finish_run(root, chain, recorded, classpath, specs, baseline, running, resul
         result['evidence_sha256'].update({str(root / name): file_digest(root / name)
                                          for name in ('preparation-binding.json', 'live-before-stop.json',
                                                       'live-after-start.json')})
+
+
+def continue_initial(root, chain):
+    result = json.loads((root / 'result.json').read_text())
+    phase_path = root / 'functional-initial-result.json'
+    phase = json.loads(phase_path.read_text())
+    if (result.get('result') != 'Incomplete' or result.get('chain') != chain
+            or result.get('stage') != 'initial-functional-processing-complete'
+            or contract.digest(phase_path) != result.get('initial_functional_result_sha256')
+            or phase.get('result') != 'Passed' or phase.get('chain') != chain):
+        raise RuntimeError('A completed initial functional phase is required')
+    if any(contract.digest(root / 'functional-initial' / name) != digest
+           for name, digest in phase['evidence_sha256'].items()):
+        raise RuntimeError('Original initial functional evidence changed')
+    if identity() != phase['identity'] or observe.tool_hashes() != phase['tool_hashes']:
+        raise RuntimeError('Original runtime identity or tools changed before regular continuity')
+    check_preparation(root, result)
+    recorded = json.loads((root / 'inventory.json').read_text())
+    if artifacts() != recorded['artifacts']:
+        raise RuntimeError('Original deployed artifacts changed before regular continuity')
+    original = root / 'initial-result.json'
+    if original.exists():
+        raise RuntimeError('An initial continuation is already recorded')
+    shutil.copy2(root / 'result.json', original)
+    result.update(stage='regular-pass-continuity', regular_continuity_started_at=now())
+    save(root, 'result.json', result)
+    specs = json.loads((root / 'manifest.json').read_text())['pvs']
+    baseline = json.loads((root / 'baseline.json').read_text())
+    recent_bins = json.loads((root / 'functional-initial/recent-bin-expectations.json').read_text())
+    classpath = str(root / 'helper-classes') + ':' + str(INSTALL / 'etl/webapps/etl/WEB-INF/classes') + ':' + str(INSTALL / 'etl/webapps/etl/WEB-INF/lib/*')
+    try:
+        finish_repeats(root, chain, recorded, classpath, specs, baseline, phase['identity'], result, recent_bins)
+    except BaseException as error:
+        result.update(result='Incomplete', error=str(error))
+        raise
+    finally:
+        result['finished_at'] = now()
+        save(root, 'result.json', result)
 
 
 def check_completion(recorded, final, running, current, expected_tools=None, expected_keys=None):
@@ -1223,15 +1310,13 @@ RECHECK_APPROVED = {
     # correction, then the abort allowlist, the scheduler verdict, the metrics request-window tolerance,
     # the checkpoint retry, the removal of the snapshot archive limit and the record-only start checks.
     'replacements': {
-        'journal_retention.py': '4fa67b4d0e395e8d5154eac8e87f9b1ad373ed73d34e9e7142a5e327709767cc',
         'contract.py': '406c832e7a81e1fb9e7a5a9cfdd2b0dcc761df4c00a7d5f1b808a4b6b179df85',
-        'collect.py': '48be8118721d870cc386c3045acf8de8cfd48f2430082ba0d15695547e87c8ed',
+        'collect.py': '7444a7b2f0d2383b7d77cfdad1f5511e3b6e0d4cb23c5b1b651d309e3bd0db7b',
         'measure.py': 'ae568453d73d9333c219e35102364e51710b5550cff0378b3fea6d7a732e49cf',
-        'observe.py': '590da5cf263e39acc36791bc2a2834ff9a7705cf09eb1f76a3036fb5f5ec028c',
+        'observe.py': '53286c777461beb17401c560d38d0382c3189ed9008842e036f3e893e20d4f73',
         'evaluate.py': 'afe08538cdb9588168513cd05643337683279dff4d12b838e9417f13d1d28123',
-        'initialize-fresh.py': '5ca853b1d0f42baee7076d1c639f2dc2f1e53ec2cd0c6d7752e1d8ec1f969c69',
-        'launch-retest.py': 'e4d41bd563d1f3aadc57a30364007ad886b66639912e457b44c70b081cf458ef',
-        'journal_coverage.py': '48e95a71c4a9300500fbf9b419c9bdb5134c7ca00c47f0b73f80f1c1441c9fd6',
+        'initialize-fresh.py': '2647f1ec79d65bf7e832ae4b5483374fd015ce94e674f4c5a06304b80c8f5487',
+        'launch-retest.py': 'f80d93eb395c811a4d9e89987e06284897da5c98c0e7f1b4fc2c8ce59d1333e8',
     },
 }
 
@@ -1325,6 +1410,8 @@ def check_recheck_tools(recorded_tools, bundle_root, approved=None):
     if set(current) != set(recorded_tools):
         raise RuntimeError('Tool set differs from the recheck inventory')
     for name, digest in recorded_tools.items():
+        if current[name] == digest:
+            continue
         if name == 'focused.py':
             continue
         if name == 'PBFixture.java':
@@ -1442,13 +1529,17 @@ def require_continuity(chain):
 def main():
     os.umask(0o077)
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('action', choices=('inventory', 'run', 'prepare-resume', 'resume', 'continuity', 'recheck',
+    parser.add_argument('action', choices=('inventory', 'run', 'continue-initial', 'prepare-resume', 'resume', 'continuity', 'recheck',
                                            'check-recheck'))
     parser.add_argument('--chain', required=True, choices=contract.CHAINS)
     parser.add_argument('--evidence-root', help='check-recheck: chain evidence root, default the retained tree')
     parser.add_argument('--bundle-root', help='check-recheck: directory of the frozen bundle to compare')
     parser.add_argument('--scratch', help='check-recheck: new private directory outside the retained tree')
+    parser.add_argument('--initial-only', action='store_true',
+                        help='run: preserve initial physical/HTTP checks and leave regular continuity Pending')
     args = parser.parse_args()
+    if args.initial_only and args.action != 'run':
+        parser.error('--initial-only is valid only with run')
     if args.action == 'check-recheck':
         if not args.bundle_root or not args.scratch:
             parser.error('check-recheck requires --bundle-root and --scratch')
@@ -1461,11 +1552,12 @@ def main():
     root = ROOT / ('inventory-' + args.chain if args.action == 'inventory' else args.chain)
     with collect.locked(ROOT / (args.chain + '.lock')):
         if args.action == 'run':
-            run(root, args.chain)
+            run(root, args.chain, initial_only=args.initial_only)
         else:
             root.mkdir(mode=0o755, exist_ok=True)
             root.chmod(0o755)
             {'inventory': inventory, 'continuity': continuity, 'recheck': recheck,
+             'continue-initial': continue_initial,
              'prepare-resume': prepare_resume, 'resume': resume}[args.action](root, args.chain)
 
 

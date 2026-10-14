@@ -15,7 +15,6 @@ import collect
 import measure
 import evaluate
 import contract
-import journal_retention
 
 TOOLS = Path('/usr/local/share/etl-soak')
 OUT = Path('/var/lib/etl-soak')
@@ -59,11 +58,11 @@ def tool_hashes():
     return contract.verify_bundle(TOOLS)
 
 
-def start(duration=DURATION, chain='shortened'):
+def start(duration=DURATION, chain='shortened', readiness_only=False):
     """Open the prepared observation.
 
     Only an existing observation (evidence protection) and free space below the 2 GiB reserve
-    refuse the start. Every readiness, proof, capacity, journal and continuity check is run and
+    refuse the start. Every readiness, proof and continuity check is run and
     its failure is recorded in the manifest's `start_findings`; none of them refuses the start.
     """
     manifest = OUT / 'observation.json'
@@ -131,21 +130,14 @@ def start(duration=DURATION, chain='shortened'):
                recorded(name + '_age', lambda proof=proof: 0 <= age(proof['observed_at']) <= 3600, False),
                'Runtime proofs are stale or belong to another prepared observation')
     expect('runtime_proofs', negative.get('http_200_pvs_without_recent_samples') == 903 and
-           negative.get('collector_failed') and negative.get('start_rejected') and
+           negative.get('collector_failed') and negative.get('readiness_finding_recorded') and negative.get('observation_not_opened') and
            negative.get('verifier_sha256') == verifier_hash and terminal_check.get('verifier_sha256') == verifier_hash and
            negative.get('tool_hashes') == tools and terminal_check.get('tool_hashes') == tools and
            terminal_check.get('normal_finish_guard_rejected') and terminal_check.get('repeated_finish_rejected') and
            terminal_check.get('stop_rc') == 0 and not terminal_check.get('errors') and
            set(terminal_check.get('complete_gc_components', [])) == set(collect.INSTANCES),
            'Executed negative-readiness and installed terminal verification are required')
-    capacity = load('capacity.json')
-    projected = capacity.get('projected_growth_bytes')
-    total = filesystem.f_blocks * filesystem.f_frsize
-    expect('capacity', recorded('capacity_age', lambda: 0 <= age(capacity['observed_at']) <= 600, False) and
-           capacity.get('duration_seconds') == duration and capacity.get('configuration') == prepared['configuration'] and
-           type(projected) is int and projected >= 512 * 1024 ** 2 and
-           available - projected >= measure.MINIMUM_FREE_BYTES and 100 * (total - available + projected) / total < 85,
-           'A current capacity projection leaving 2 GiB is required')
+    capacity = load('capacity.json') if (OUT / 'capacity.json').exists() else None
     recorded('services', lambda: checked(['systemctl', 'is-active', collect.UNIT, collect.IOC_UNIT, 'mariadb.service']))
     stores = load('chain-verification.json')
     now = datetime.datetime.now(datetime.timezone.utc)
@@ -174,10 +166,6 @@ def start(duration=DURATION, chain='shortened'):
         if measurement['jfr_duration_hours'] * 3600 - oldest < duration + 2700:
             raise RuntimeError('JFR duration cannot cover the observation and final capture')
     recorded('jfr_duration', jfr_cover)
-    journal_proof = recorded('journal_retention', lambda: journal_retention.validate(
-        OUT / 'journal-retention-proof.json', TOOLS, strict=False), {})
-    expect('journal_retention_budget', journal_proof.get('current_budget', {}).get('passed'),
-           'Current journal retention budget failed')
     now = datetime.datetime.now(datetime.timezone.utc)
     monotonic_start = time.monotonic()
     end = now + datetime.timedelta(seconds=duration)
@@ -194,7 +182,6 @@ def start(duration=DURATION, chain='shortened'):
               'measurement_schema': contract.SCHEMA, 'existing_store_data_preserved': True,
               'tool_hashes': tools, 'health_verification': verification,
               'health_contract': recorded('health_contract', collect.health_properties, {}),
-              'journal_retention': journal_proof or None,
               'fixture_adjustment': latest.get('fixture_adjustment'),
               'capacity': capacity, 'available_bytes_at_start': available,
               'abort_policy': {'consecutive_failures': 2, 'checks': list(contract.ABORT_CHECKS),
@@ -205,17 +192,14 @@ def start(duration=DURATION, chain='shortened'):
               'jvm_identity': {name: {key: value[key] for key in ('pid', 'start')}
                                for name, value in processes.items() if name in collect.INSTANCES},
               'start_findings': findings}
+    if readiness_only:
+        return record
     timer = '[Unit]\nDescription=Finish the ETL soak observation\n[Timer]\n'
     timer += 'OnCalendar=' + end.strftime('%Y-%m-%d %H:%M:%S UTC') + '\n'
     timer += 'AccuracySec=1s\nPersistent=true\n[Install]\nWantedBy=timers.target\n'
     (UNITS / (FINISH + '.timer')).write_text(timer)
     state_path = OUT / 'state.json'
     state = json.loads(state_path.read_text()) if state_path.exists() else {}
-    if journal_proof.get('current') and journal_proof.get('current_budget'):
-        state['journal_retention_snapshot'] = journal_proof['current']
-        state['journal_retention_bounds'] = {stream: max(value,
-            state.get('journal_retention_bounds', {}).get(stream, 0))
-            for stream, value in journal_proof['current_budget']['rates_bytes_per_second'].items()}
     collect.write_json(state_path, state)
     collect.write_json(manifest, record)
     checked(['systemctl', 'daemon-reload'])

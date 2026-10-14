@@ -102,6 +102,8 @@ class RetestTests(unittest.TestCase):
             if args[0] == 'journalctl':
                 if '--until' in args:
                     stdout = json.dumps({'__CURSOR': 'boot-cursor', '__REALTIME_TIMESTAMP': '1'})
+                elif '--cursor' in args and '-u' not in args:
+                    stdout = json.dumps({'__CURSOR': 'boot-cursor', '__REALTIME_TIMESTAMP': '1'})
                 else:
                     stdout = health_journal if collect.HEALTH_UNIT in args else ''
             elif collect.HEALTH_UNIT in args:
@@ -493,6 +495,25 @@ class RecordOnlyStartTests(unittest.TestCase):
             return subprocess.CompletedProcess(args, rc, 'ActiveState=active\nInvocationID=abc\n', '')
         return run
 
+    def test_readiness_only_reports_findings_without_starting_or_writing(self):
+        with tempfile.TemporaryDirectory() as directory:
+            out, units = Path(directory) / 'out', Path(directory) / 'units'
+            out.mkdir()
+            units.mkdir()
+            self.prepared_out(out)
+            before = {path.name: path.read_bytes() for path in out.iterdir()}
+            calls = []
+            with patch.object(observe, 'OUT', out), patch.object(observe, 'UNITS', units), \
+                    patch.object(collect, 'STORE', out), patch('subprocess.run', side_effect=self.systemd(calls)):
+                report = observe.start(86400, 'shortened', readiness_only=True)
+            self.assertIn('readiness_sample', {row['check'] for row in report['start_findings']})
+            self.assertFalse(any('journal_retention' in row['check'] for row in report['start_findings']))
+            self.assertEqual({path.name: path.read_bytes() for path in out.iterdir()}, before)
+            self.assertEqual(list(units.iterdir()), [])
+            self.assertFalse(any(args[:2] in (['systemctl', 'start'], ['systemctl', 'stop'],
+                                             ['systemctl', 'enable'], ['systemctl', 'daemon-reload'])
+                                 for args in calls))
+
     def test_missing_proofs_are_recorded_and_the_observation_opens(self):
         with tempfile.TemporaryDirectory() as directory:
             out, units = Path(directory) / 'out', Path(directory) / 'units'
@@ -506,9 +527,10 @@ class RecordOnlyStartTests(unittest.TestCase):
                 observe.start(86400, 'shortened')
             manifest = json.loads((out / 'observation.json').read_text())
             recorded = {row['check'] for row in manifest['start_findings']}
-            for name in ('readiness_sample', 'tool_bundle', 'health_verification', 'runtime_proofs', 'capacity',
-                         'chain_verification', 'focused_continuity', 'journal_retention'):
+            for name in ('readiness_sample', 'tool_bundle', 'health_verification', 'runtime_proofs',
+                         'chain_verification', 'focused_continuity'):
                 self.assertIn(name, recorded)
+            self.assertNotIn('capacity', recorded)
             self.assertEqual(len(manifest['expected_firings']), 312)
             self.assertEqual(json.loads((out / 'initial-sample.json').read_text())['rc'], 1)
             self.assertTrue((units / (observe.FINISH + '.timer')).exists())
@@ -549,27 +571,26 @@ class RecordOnlyMeasurementTests(unittest.TestCase):
 
     def test_failed_steps_are_recorded_and_the_measurement_record_is_written(self):
         initializer = self.initializer()
-        import journal_retention
         with tempfile.TemporaryDirectory() as directory:
             out = Path(directory) / 'out'
             out.mkdir()
             target = Path(directory) / 'measurements'
             with patch.object(observe, 'OUT', out), patch.object(collect, 'STORE', out), \
-                    patch.object(journal_retention, 'INTERVAL_SECONDS', 0), \
+                    patch.object(initializer, 'MEASUREMENT_INTERVAL_SECONDS', 0), \
                     patch('subprocess.run', return_value=subprocess.CompletedProcess([], 1, '', 'unavailable')):
                 record = initializer.measurements(target, 86400, 'shortened')
             written = json.loads((target / 'measurements.json').read_text())
             self.assertEqual(written, record)
             checks = {row['check'] for row in record['findings']}
-            for name in ('check', 'journal_snapshot', 'gc', 'latency', 'capacity_projection', 'journal_retention'):
+            for name in ('check', 'gc', 'latency'):
                 self.assertIn(name, checks)
-            self.assertIsNone(record['required_growth_bytes'])
-            self.assertEqual(len(list(target.glob('progress-*.json'))), journal_retention.MINIMUM_INTERVALS + 1)
+            self.assertFalse(any(name.startswith('capacity') for name in checks))
+            self.assertNotIn('required_growth_bytes', record)
+            self.assertEqual(len(list(target.glob('progress-*.json'))), initializer.MEASUREMENT_INTERVALS + 1)
 
     def test_snapshots_are_spaced_from_the_previous_snapshot_not_from_the_pass_start(self):
         initializer = self.initializer()
         import itertools
-        import journal_retention
 
         class Clock:
             now = 0.0
@@ -583,12 +604,9 @@ class RecordOnlyMeasurementTests(unittest.TestCase):
         clock = Clock()
         preamble = itertools.cycle((0.17, 0.07, 0.16, 0.07, 0.12, 0.07, 0.10))
 
-        def tool_hashes():
+        def transport(args, **kwargs):
             clock.now += next(preamble)
-            return {}
-
-        def snapshot(require_load=False):
-            return {'monotonic': clock.monotonic()}
+            return subprocess.CompletedProcess(args, 1, '', 'unavailable')
 
         with tempfile.TemporaryDirectory() as directory:
             out = Path(directory) / 'out'
@@ -596,15 +614,13 @@ class RecordOnlyMeasurementTests(unittest.TestCase):
             target = Path(directory) / 'measurements'
             with patch.object(observe, 'OUT', out), patch.object(collect, 'STORE', out), \
                     patch.object(initializer, 'time', clock), \
-                    patch.object(observe, 'tool_hashes', tool_hashes), \
-                    patch.object(journal_retention, 'snapshot', snapshot), \
-                    patch('subprocess.run', return_value=subprocess.CompletedProcess([], 1, '', 'unavailable')):
+                    patch('subprocess.run', side_effect=transport):
                 record = initializer.measurements(target, 86400, 'shortened')
-            files = sorted((target / 'retention').glob('snapshot-*.json'))
-            self.assertEqual(len(files), journal_retention.MINIMUM_INTERVALS + 1)
+            files = sorted(target.glob('progress-*.json'))
+            self.assertEqual(len(files), initializer.MEASUREMENT_INTERVALS + 1)
             times = [json.loads(path.read_text())['monotonic'] for path in files]
             spacing = [later - earlier for earlier, later in zip(times, times[1:])]
-            self.assertTrue(all(gap >= journal_retention.INTERVAL_SECONDS for gap in spacing), spacing)
+            self.assertTrue(all(gap >= initializer.MEASUREMENT_INTERVAL_SECONDS for gap in spacing), spacing)
             self.assertNotIn('measurement_interval', {row['check'] for row in record['findings']})
 
     def test_free_space_below_the_reserve_refuses_the_measurement(self):

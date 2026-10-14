@@ -41,6 +41,37 @@ def module(name):
 
 
 class ContractTests(unittest.TestCase):
+    def test_isolated_package_imports_and_verifies_without_journal_study(self):
+        with tempfile.TemporaryDirectory() as directory:
+            installed = Path(directory)
+            for name in (*contract.BUNDLE_FILES, 'bundle.json'):
+                shutil.copyfile(HERE / name, installed / name)
+            command = [sys.executable, '-B', '-c',
+                       'import importlib.util, pathlib, contract, collect, observe, evaluate, aggregate; '
+                       'contract.verify_bundle(pathlib.Path(".")); '
+                       'assert importlib.util.find_spec("journal_retention") is None; '
+                       'assert importlib.util.find_spec("journal_coverage") is None']
+            environment = {key: value for key, value in os.environ.items() if key != 'PYTHONPATH'}
+            result = subprocess.run(command, cwd=installed, env=environment, capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            for name in ('initialize-fresh.py', 'prepare-retest.py', 'verify-runtime.py', 'launch-retest.py'):
+                result = subprocess.run([sys.executable, '-B', name, '--help'], cwd=installed,
+                                        env=environment, capture_output=True, text=True)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertNotIn('--journal-retention-evidence', result.stdout)
+            before = contract.verify_bundle(installed)
+            for name in ('journal_retention.py', 'journal_coverage.py'):
+                (installed / name).write_text('raise RuntimeError("Unrelated study must not load")\n')
+            self.assertEqual(contract.verify_bundle(installed), before)
+            result = subprocess.run([sys.executable, '-B', '-c',
+                'import pathlib, contract, collect, observe, evaluate, aggregate; '
+                'contract.verify_bundle(pathlib.Path("."))'], cwd=installed, env=environment,
+                capture_output=True, text=True)
+            self.assertEqual(result.returncode, 0, result.stderr)
+            (installed / 'collect.py').write_text('# Changed ETL dependency\n')
+            with self.assertRaisesRegex(RuntimeError, 'frozen complete bundle'):
+                contract.verify_bundle(installed)
+
     def test_deployment_guard_rejects_actual_yaml_pin_overrides(self):
         try:
             from ansible.parsing.dataloader import DataLoader
@@ -98,37 +129,23 @@ class ContractTests(unittest.TestCase):
                 with self.assertRaisesRegex(RuntimeError, 'no prior observation'):
                     initializer.instruments()
                 with self.assertRaisesRegex(RuntimeError, 'no prior observation'):
-                    initializer.prepare(None, None, 86400, 'shortened')
+                    initializer.prepare(None, 86400, 'shortened')
             after = {str(path.relative_to(out)): contract.digest(path)
                      for path in out.rglob('*') if path.is_file()}
             self.assertEqual(after, before)
 
-    def test_fresh_preparation_refuses_absent_measurements_without_writing_files(self):
+    def test_fresh_preparation_records_actual_space_without_a_capacity_forecast(self):
         initializer = module('initialize-fresh')
         with tempfile.TemporaryDirectory() as directory:
             out = Path(directory)
-            with patch.object(observe, 'OUT', out):
-                with self.assertRaisesRegex(RuntimeError, 'measurement evidence is required'):
-                    initializer.prepare(None, None, 86400, 'shortened')
-            self.assertEqual(list(out.iterdir()), [])
-
-    @unittest.skipUnless(EXTRACTED and ARCHIVES, 'Real completed deployment and fixture evidence is required')
-    def test_prepare_refuses_missing_retention_proof_without_modifying_real_inputs(self):
-        preparation = module('prepare-retest')
-        original = Path(EXTRACTED) / 'shortened'
-        with tempfile.TemporaryDirectory() as directory:
-            out = Path(directory) / 'out'
-            shutil.copytree(original, out)
-            before = {str(path.relative_to(out)): contract.digest(path)
-                      for path in out.rglob('*') if path.is_file()}
-            with patch.object(observe, 'OUT', out):
-                with self.assertRaisesRegex(RuntimeError, 'journal retention preparation evidence'):
-                    preparation.prepare(HERE, contract.CAPTURE_RESERVE, out / 'capacity.json',
-                                        86400, 'shortened')
-            after = {str(path.relative_to(out)): contract.digest(path)
-                     for path in out.rglob('*') if path.is_file()}
-            self.assertEqual(after, before)
-            self.assertEqual(list(out.parent.iterdir()), [out])
+            with patch.object(observe, 'OUT', out), patch.object(collect, 'STORE', out):
+                result = initializer.prepare(None, 86400, 'shortened')
+            self.assertFalse(any(row['check'].startswith('capacity') for row in result['findings']))
+            actual = json.loads((out / 'capacity.json').read_text())
+            self.assertGreater(actual['available_bytes'], 0)
+            self.assertFalse(actual['forecast_required'])
+            self.assertNotIn('projected_growth_bytes', actual)
+            self.assertFalse((out / 'capacity-input.json').exists())
 
     def test_helper_and_jfr_changes_invalidate_frozen_bundle(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -365,7 +382,8 @@ class ContractTests(unittest.TestCase):
             raw = Path(directory)
             previous = {'kernel_journal_cursor': 'prior-day-cursor', 'kernel_journal_since': '2026-09-29 23:59:00 UTC'}
             rows = [{'__CURSOR': 'prior-day-cursor', 'MESSAGE': 'previous'},
-                    {'__CURSOR': 'new-day-cursor', '__REALTIME_TIMESTAMP': '1790726401000000', 'MESSAGE': 'normal'}]
+                    {'__CURSOR': 'new-day-cursor', '__REALTIME_TIMESTAMP': '1790726401000000',
+                     '_TRANSPORT': 'kernel', 'MESSAGE': 'normal'}]
             def transport(args, **kwargs):
                 self.assertIn('prior-day-cursor', args)
                 self.assertNotIn('--since', args)
@@ -384,18 +402,35 @@ class ContractTests(unittest.TestCase):
             boundary = datetime.datetime(2026, 9, 30, tzinfo=datetime.timezone.utc)
             before = {'__CURSOR': 'retained-before-window',
                       '__REALTIME_TIMESTAMP': str(int(boundary.timestamp() - 1) * 1000000)}
-            event = {'__CURSOR': 'in-window-kernel', 'MESSAGE': 'normal'}
+            event = {'__CURSOR': 'in-window-kernel', '_TRANSPORT': 'kernel', 'MESSAGE': 'normal'}
             def transport(args, **kwargs):
                 if '--until' in args:
                     output = json.dumps(before) if '--reverse' in args else ''
                 else:
-                    output = json.dumps(event)
+                    output = '\n'.join(json.dumps(row) for row in (before, event))
                 return subprocess.CompletedProcess(args, 0, output, '')
             with patch('subprocess.run', side_effect=transport):
                 result = collect.collect_kernel(raw, {'kernel_journal_since': '2026-09-30 00:00:00 UTC'}, boundary)
             self.assertTrue(result['coverage_complete'])
             self.assertEqual(result['cursor'], 'in-window-kernel')
             self.assertEqual(json.loads((raw / 'journal-retention-before.json').read_text()), before)
+
+    def test_quiet_kernel_advances_over_other_journal_records(self):
+        with tempfile.TemporaryDirectory() as directory:
+            raw = Path(directory)
+            previous = {'kernel_journal_cursor': 'previous-checkpoint'}
+            rows = [{'__CURSOR': 'previous-checkpoint'},
+                    {'__CURSOR': 'current-checkpoint', '_TRANSPORT': 'stdout', 'MESSAGE': 'normal'}]
+            def transport(args, **kwargs):
+                self.assertNotIn('-k', args)
+                self.assertEqual(args[-2:], ['--cursor', 'previous-checkpoint'])
+                return subprocess.CompletedProcess(args, 0, '\n'.join(json.dumps(row) for row in rows), '')
+            with patch('subprocess.run', side_effect=transport):
+                result = collect.collect_kernel(raw, previous, datetime.datetime.now(datetime.timezone.utc))
+            self.assertTrue(result['coverage_complete'])
+            self.assertEqual(result['cursor'], 'current-checkpoint')
+            self.assertEqual((raw / 'kernel-journal.jsonl').read_text(), '')
+            self.assertEqual(len((raw / 'kernel-checkpoint-journal.jsonl').read_text().splitlines()), 2)
 
     def test_invalid_aggregate_cli_has_nonzero_status_and_json(self):
         with tempfile.TemporaryDirectory() as directory:

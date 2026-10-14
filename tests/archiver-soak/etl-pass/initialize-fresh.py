@@ -17,9 +17,9 @@ import xml.etree.ElementTree as ET
 
 import collect
 import contract
-import journal_retention
 import measure
 import observe
+import pass_source
 
 ENV_SOURCE = Path('/opt/epicsarchiverap-env-src/epicsarchiverap-env')
 SOURCE_PINS = {'env_head': '482cf2939ea997064e4a2df64e3cb420681f4566',
@@ -33,7 +33,10 @@ GC_FILE_MIB = 16
 GC_ARCHIVES = 3
 START_TIMEOUT = 180
 USE_LIMIT = 85
-TIMEOUTS = dict(zip(journal_retention.TIMEOUT_UNITS, (240, 2700, 2700)))
+TIMEOUTS = {'etl-soak-sample.service': 240, 'etl-soak-finish.service': 2700,
+            'etl-soak-abort.service': 2700}
+MEASUREMENT_INTERVAL_SECONDS = 300
+MEASUREMENT_INTERVALS = 6
 
 
 def fresh():
@@ -72,7 +75,7 @@ def unit_properties():
         values = collect.properties(observe.checked(['systemctl', 'show', unit,
             '-p', 'LoadState', '-p', 'TimeoutStartUSec', '-p', 'ExecStart']))
         if (values.get('LoadState') != 'loaded' or
-                journal_retention.seconds(values.get('TimeoutStartUSec', '')) != timeout):
+                observe.timeout_seconds(values.get('TimeoutStartUSec', '')) != timeout):
             raise RuntimeError('A real loaded measurement unit with the approved timeout is required: ' + unit)
         properties[unit] = values
     return properties
@@ -115,6 +118,8 @@ def running_instruments(raw):
         (raw / (component + '-jfr-check.txt')).write_text(response)
         if 'name=etl-soak' not in response or '(running)' not in response:
             raise RuntimeError('The approved JFR recording is not running: ' + component)
+        if not pass_source.configured(pid):
+            raise RuntimeError('Independent application-file evidence is not configured: ' + component)
         logs = list((observe.OUT / 'jvm').glob('gc-' + pid + '-*.log*'))
         if not logs or not any(path.stat().st_size for path in logs):
             raise RuntimeError('Actual GC logs are missing: ' + component)
@@ -153,10 +158,12 @@ def instruments():
         raise RuntimeError('Unexpected appliance logging configuration')
     logging = xml.replace('        <Root level=',
         '        <Logger name="' + LOGGER + '" level="debug"/>\n        <Root level=')
-    ET.fromstring(logging)
+    tree = ET.fromstring(logging)
+    pass_source.configure(tree)
+    logging = ET.tostring(tree, encoding='unicode')
     ET.parse(observe.TOOLS / 'heap.jfc')
     filesystem = os.statvfs(observe.OUT)
-    if filesystem.f_bavail * filesystem.f_frsize < measure.MINIMUM_FREE_BYTES + contract.CAPTURE_RESERVE:
+    if filesystem.f_bavail * filesystem.f_frsize < measure.MINIMUM_FREE_BYTES:
         raise RuntimeError('Insufficient free space for fresh instruments and capture allowance')
     raw = observe.OUT / 'fresh-initialization-originals'
     raw.mkdir(mode=0o700)
@@ -247,16 +254,13 @@ def check(raw):
             'fixture_adjustment': load(raw), 'jvms': running_instruments(raw)}
 
 
-def prepare(capacity_evidence, retention_evidence, duration, chain):
+def prepare(capacity_evidence, duration, chain):
     fresh()
     contract.validate_duration(duration)
     configuration = contract.chain_configuration(chain)
     if (observe.OUT / 'preparation.json').exists() or (observe.OUT / 'state.json').exists():
         raise RuntimeError('Fresh preparation already exists; refusing replacement')
-    if retention_evidence is None or capacity_evidence is None:
-        raise RuntimeError('Actual retention and capacity measurement evidence is required')
     filesystem = os.statvfs(collect.STORE)
-    total = filesystem.f_blocks * filesystem.f_frsize
     free = filesystem.f_bavail * filesystem.f_frsize
     if free < measure.MINIMUM_FREE_BYTES:
         raise RuntimeError('Free space is below the 2 GiB reserve; refusing to prepare')
@@ -270,37 +274,13 @@ def prepare(capacity_evidence, retention_evidence, duration, chain):
             findings.append({'check': name, 'type': type(error).__name__, 'message': str(error)})
             return fallback
 
-    proof = recorded('journal_retention', lambda: journal_retention.validate(
-        retention_evidence, observe.TOOLS, strict=False), {})
-    if proof and not proof.get('current_budget', {}).get('passed'):
-        findings.append({'check': 'journal_retention_budget', 'message': 'Current journal retention budget failed'})
-    payload = recorded('journal_retention_payload', lambda: journal_retention.preservation_payload(retention_evidence))
-    required = recorded('capacity_projection', lambda: contract.capacity_projection(
-        capacity_evidence, duration, configuration))
-    if required is not None and (free - required < measure.MINIMUM_FREE_BYTES or
-                                 100 * (total - free + required) / total >= USE_LIMIT):
-        findings.append({'check': 'capacity', 'message': 'Fresh capacity projection exceeds the free-space or usage limit'})
     raw = observe.OUT / ('fresh-preparation-' + datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S.%fZ'))
     raw.mkdir(mode=0o700)
     verified = recorded('check', lambda: check(raw), {})
-    capacity = recorded('capacity_input', lambda: json.loads(capacity_evidence.read_text()), {'windows': []})
-    sources = recorded('capacity_sources', lambda: [(capacity_evidence.parent / row['source_path']).read_bytes()
-                                                    for row in capacity['windows']], [])
     current = datetime.datetime.now(datetime.timezone.utc)
-    if payload is not None:
-        recorded('journal_retention_install', lambda: journal_retention.install_payload(
-            payload, observe.OUT / 'journal-retention-proof.json'))
-    directory = observe.OUT / 'capacity-sources'
-    directory.mkdir(mode=0o700)
-    for index, (row, data) in enumerate(zip(capacity['windows'], sources)):
-        name = str(index) + '.json'
-        (directory / name).write_bytes(data)
-        row['source_path'] = directory.name + '/' + name
-    collect.write_json(observe.OUT / 'capacity-input.json', capacity)
     collect.write_json(observe.OUT / 'capacity.json', {
         'observed_at': current.isoformat(), 'duration_seconds': duration, 'configuration': configuration,
-        'projected_growth_bytes': required, 'measured_required_growth_bytes': required,
-        'available_bytes': free, 'input_sha256': contract.digest(observe.OUT / 'capacity-input.json')})
+        'available_bytes': free, 'forecast_required': False})
     collect.write_json(observe.OUT / 'state.json', {
         key: current.strftime('%Y-%m-%d %H:%M:%S.%f UTC')
         for key in ('kernel_journal_since', 'health_journal_since', 'journal_since')})
@@ -311,7 +291,7 @@ def prepare(capacity_evidence, retention_evidence, duration, chain):
               'existing_store_data_preserved': True, 'source_pins': deployment.get('source_pins'),
               'configuration_sha256': deployment.get('configuration_sha256'),
               'tool_hashes': recorded('tool_bundle', observe.tool_hashes, {}),
-              'retention_checked_at': proof.get('checked_at'), 'findings': findings}
+              'findings': findings}
     collect.write_json(observe.OUT / 'preparation.json', record)
     return record
 
@@ -340,41 +320,22 @@ def measurements(directory, duration, chain):
 
     baseline = recorded('check', lambda: check(directory), {})
     hashes = baseline.get('deployment', {}).get('tool_hashes') or recorded('tool_bundle', observe.tool_hashes, {})
-    capacity = directory / 'capacity'
-    retention = directory / 'retention'
-    capacity.mkdir(mode=0o700)
-    retention.mkdir(mode=0o700)
-    # Snapshots are spaced from the previous snapshot's own clock reading, never from the start of
-    # the pass, so the preamble time of one pass cannot shorten the interval below the proof minimum.
-    # A pass whose snapshot failed falls back to the start of that pass.
+    # Sample rounds are separated by a full interval; collection overruns are recorded.
     last = None
-    points = []
-    for index in range(journal_retention.MINIMUM_INTERVALS + 1):
+    for index in range(MEASUREMENT_INTERVALS + 1):
         if last is not None:
-            target = last + journal_retention.INTERVAL_SECONDS
+            target = last + MEASUREMENT_INTERVAL_SECONDS
             while time.monotonic() < target:
                 time.sleep(min(5, target - time.monotonic()))
             if time.monotonic() - last > contract.SAMPLE_GAP_SECONDS:
                 findings.append({'check': 'measurement_interval', 'index': index,
-                                 'message': 'Journal measurement interval exceeded its declared maximum'})
+                                 'message': 'Measurement interval exceeded its declared maximum'})
         last = time.monotonic()
         fresh()
         if recorded('tool_bundle', observe.tool_hashes, {}, index) != hashes:
             findings.append({'check': 'tool_bundle', 'index': index,
                              'message': 'Tool bundle changed during fresh measurements'})
         recorded('units', unit_properties, None, index)
-        name = 'snapshot-' + str(index).zfill(3) + '.json'
-        snapshot = recorded('journal_snapshot', lambda: journal_retention.snapshot(require_load=True), None, index)
-        if snapshot is not None:
-            last = snapshot['monotonic']
-            journal_retention.save(retention / name, snapshot)
-        if index in (0, journal_retention.MINIMUM_INTERVALS // 2, journal_retention.MINIMUM_INTERVALS):
-            path = capacity / ('point-' + str(index).zfill(3) + '.json')
-            point = recorded('capacity_snapshot', lambda: contract.capacity_snapshot(
-                observe.OUT, collect.STORE, INSTALL), None, index)
-            if point is not None:
-                collect.write_json(path, point)
-                points.append(path)
         raw = observe.OUT / 'raw' / ('measurement-' + str(index).zfill(3) + '-' +
               datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%S.%fZ'))
         raw.mkdir(parents=True, mode=0o700)
@@ -384,31 +345,9 @@ def measurements(directory, duration, chain):
                            None, index)
         collect.write_json(directory / ('progress-' + str(index).zfill(3) + '.json'), {
             'observed_at': datetime.datetime.now(datetime.timezone.utc).isoformat(),
-            'snapshot_sha256': contract.digest(retention / name) if (retention / name).exists() else None,
-            'gc': gc, 'latency': latency, 'raw_directory': str(raw), 'snapshot_index': index})
-    windows = []
-    if len(points) == 3:
-        for index, role in enumerate(('historical', 'current')):
-            path = capacity / (role + '.json')
-            window = recorded('capacity_window', lambda index=index: contract.capacity_window(points[index], points[index + 1]))
-            if window is not None:
-                collect.write_json(path, window)
-                windows.append({'role': role, 'source_path': path.name, 'source_sha256': contract.digest(path)})
-    else:
-        findings.append({'check': 'capacity_points', 'message': 'Fewer than three capacity points were taken'})
-    collect.write_json(capacity / 'input.json', {
-        'schema': 1, 'duration_seconds': duration, 'configuration': configuration, 'windows': windows})
-    required = recorded('capacity_projection', lambda: contract.capacity_projection(
-        capacity / 'input.json', duration, configuration))
-    proof = recorded('journal_retention', lambda: journal_retention.prepare(
-        retention, retention / 'proof.json', observe.TOOLS, strict=False), {})
-    if proof and not proof['budget']['passed']:
-        findings.append({'check': 'journal_retention_budget',
-                         'message': 'Journal retention budget does not satisfy byte/time limits'})
+            'gc': gc, 'latency': latency, 'raw_directory': str(raw), 'snapshot_index': index, 'monotonic': last})
     record = {'schema': contract.SCHEMA, 'finished_at': datetime.datetime.now(datetime.timezone.utc).isoformat(),
               'duration_seconds': duration, 'configuration': configuration, 'tool_hashes': hashes,
-              'capacity_evidence': str(capacity / 'input.json'), 'required_growth_bytes': required,
-              'retention_evidence': str(retention / 'proof.json'), 'budget': proof.get('budget'),
               'findings': findings, 'observation_started': False}
     collect.write_json(directory / 'measurements.json', record)
     return record
@@ -421,13 +360,12 @@ def main():
     parser.add_argument('action', choices=('instruments', 'check', 'measure', 'prepare'))
     parser.add_argument('--measurements', type=Path)
     parser.add_argument('--capacity-evidence', type=Path)
-    parser.add_argument('--journal-retention-evidence', type=Path)
     parser.add_argument('--duration-seconds', type=int, choices=contract.DURATIONS)
     parser.add_argument('--chain', choices=contract.CHAINS)
     args = parser.parse_args()
     if args.action == 'prepare' and any(value is None for value in
-            (args.capacity_evidence, args.journal_retention_evidence, args.duration_seconds, args.chain)):
-        parser.error('prepare requires both measurement inputs, duration and chain')
+            (args.duration_seconds, args.chain)):
+        parser.error('prepare requires duration and chain')
     if args.action == 'measure' and any(value is None for value in
             (args.measurements, args.duration_seconds, args.chain)):
         parser.error('measure requires a new measurement directory, duration and chain')
@@ -442,8 +380,7 @@ def main():
         elif args.action == 'measure':
             record = measurements(args.measurements, args.duration_seconds, args.chain)
         else:
-            record = prepare(args.capacity_evidence, args.journal_retention_evidence,
-                             args.duration_seconds, args.chain)
+            record = prepare(args.capacity_evidence, args.duration_seconds, args.chain)
     print(json.dumps({'action': args.action, 'schema': contract.SCHEMA,
                       'observed_at': datetime.datetime.now(datetime.timezone.utc).isoformat(),
                       'jvm_count': len(record.get('jvms', {})), 'observation_started': False}))

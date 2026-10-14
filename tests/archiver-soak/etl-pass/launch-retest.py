@@ -12,7 +12,6 @@ import time
 import collect
 import observe
 import contract
-import journal_retention
 import focused
 
 
@@ -41,8 +40,6 @@ def launch(target, duration, chain, cause=None, corrective_action=None):
 
     recorded('preparation', lambda: contract.preparation(observe.OUT, duration, chain))
     recorded('tool_bundle', observe.tool_hashes)
-    recorded('journal_retention', lambda: journal_retention.validate(
-        observe.OUT / 'journal-retention-proof.json', observe.TOOLS))
     collect.write_json(observe.OUT / 'launch-started.json', record)
     try:
         recorded('verify_chain', lambda: observe.checked(['/usr/bin/python3', str(observe.TOOLS / 'verify-chain.py'),
@@ -55,20 +52,6 @@ def launch(target, duration, chain, cause=None, corrective_action=None):
             recorded('verify_health', lambda: observe.checked(['/usr/bin/python3', str(observe.TOOLS / 'verify-health.py'),
                                                                '--cause', cause, '--corrective-action', corrective_action]))
 
-        def capacity_refresh():
-            capacity_path = observe.OUT / 'capacity.json'
-            capacity = json.loads(capacity_path.read_text())
-            filesystem = os.statvfs(collect.STORE)
-            capacity.update({'observed_at': datetime.datetime.now(datetime.timezone.utc).isoformat(),
-                             'available_bytes': filesystem.f_bavail * filesystem.f_frsize})
-            collect.write_json(capacity_path, capacity)
-            source = observe.OUT / 'capacity-input.json'
-            if hashlib.sha256(source.read_bytes()).hexdigest() != capacity['input_sha256']:
-                raise RuntimeError('Capacity projection input changed')
-            minimum = contract.capacity_projection(source, duration, contract.chain_configuration(chain))
-            if capacity['projected_growth_bytes'] < minimum:
-                raise RuntimeError('Capacity projection no longer covers measured growth')
-        recorded('capacity', capacity_refresh)
         recorded('focused_continuity', lambda: focused.continuity(focused.ROOT / chain, chain))
         if recorded('readiness_sample', lambda: collect.sample(observe.OUT, observe.TOOLS / 'pvs-all.csv')):
             findings.append({'check': 'readiness_sample', 'message': 'Final launch readiness collection recorded errors'})

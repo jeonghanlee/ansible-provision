@@ -11,8 +11,6 @@ import argparse
 
 import contract
 import evidence
-import journal_coverage
-import journal_retention
 
 PASS = re.compile(r'ETL pass of transition (\d+) cadence (\d+) s: ETLPassRecord\[(.*)\]')
 TIMING_TOLERANCE = 5.0
@@ -85,13 +83,15 @@ def epoch(value):
 
 
 def pass_records(path):
-    seen, records = set(), []
+    seen, records = {}, []
     for line in path.read_text().splitlines():
         entry = json.loads(line)
         cursor = entry['__CURSOR']
         if cursor in seen:
+            if seen[cursor] != entry:
+                raise RuntimeError('Conflicting ETL evidence at the same source position')
             continue
-        seen.add(cursor)
+        seen[cursor] = entry
         match = PASS.search(entry['MESSAGE'])
         if not match:
             raise RuntimeError('Unparsed completed ETL pass')
@@ -101,131 +101,10 @@ def pass_records(path):
     return records
 
 
-def journal_checks(out, manifest, samples, missing, budget_failed):
-    prepared = manifest.get('journal_retention')
-    if not prepared or prepared.get('tool_hashes') != manifest.get('tool_hashes'):
-        missing.append('journal_retention_preparation')
-        return
-    try:
-        checked = journal_retention.validate(out / 'journal-retention-proof.json', Path(__file__).parent,
-                                             current=prepared['current'], fresh=False, strict=False)
-        if checked != prepared:
-            raise RuntimeError('Manifest retention preparation differs from its actual source calculation')
-    except (OSError, KeyError, ValueError, TypeError, RuntimeError):
-        missing.append('journal_retention_preparation')
-        return
-    if not prepared['current_budget']['passed']:
-        budget_failed.add(manifest['started_at'])
-    previous = None
-    prior_snapshot = prepared['current']
-    peak = dict(prepared['current_budget']['rates_bytes_per_second'])
-    for sample in sorted(samples, key=lambda row: epoch(row['observed_at'])):
-        raw = evidence.path(out, sample['raw_directory'])
-        try:
-            proof = json.loads((raw / 'journal-coverage.json').read_text())
-            boot = manifest['boot_id'].replace('-', '')
-            rows = [json.loads(line) for line in (raw / 'journal-sequence.jsonl').read_text().splitlines()]
-            anchor = next(row for row in rows if row['__CURSOR'] == proof['system_anchor'])
-            tails = [json.loads(line) for line in (raw / 'system-journal-tail.jsonl').read_text().splitlines()]
-            if len(tails) != 1 or tails[0]['__CURSOR'] != proof['system_tail'] or tails[0].get('_UID') != '0':
-                raise RuntimeError('Missing system terminal checkpoint')
-            marker = json.loads((raw / 'journal-marker.json').read_text())
-            if (marker['returncode'] != 0 or not re.fullmatch(r'[0-9a-f]{32}', marker['marker']) or
-                    tails[0].get('MESSAGE') != marker['marker'] or
-                    tails[0].get('SYSLOG_IDENTIFIER') != journal_coverage.MARKER_TAG):
-                raise RuntimeError('Terminal checkpoint differs from the emitted system marker')
-            commands = {
-                'system-journal-tail.jsonl': ['--system', '-b', boot,
-                    'SYSLOG_IDENTIFIER=' + journal_coverage.MARKER_TAG, 'MESSAGE=' + marker['marker']],
-                'journal-sequence.jsonl': ['-b', boot, '--cursor', proof['system_anchor'], '--until', proof['through']]}
-            if (raw / 'system-journal-initial-anchor.jsonl').exists():
-                commands['system-journal-initial-anchor.jsonl'] = ['--system', '-b', boot,
-                    '--reverse', '--lines=1', '--until', proof['since']]
-                anchors = [json.loads(line) for line in (raw / 'system-journal-initial-anchor.jsonl').read_text().splitlines()]
-                if anchors != [anchor]:
-                    raise RuntimeError('Initial system anchor differs from its system-only query')
-            elif previous is None:
-                prior_raw = sorted((out / 'raw').glob('*/journal-coverage.json'))
-                if not any(json.loads(path.read_text()).get('system_tail') == proof['system_anchor']
-                           and path.parent != raw for path in prior_raw):
-                    raise RuntimeError('Initial carried system checkpoint lacks its archived source')
-            for name, arguments in commands.items():
-                receipt = json.loads((raw / (name + '.receipt.json')).read_text())
-                if (receipt['returncode'] != 0 or receipt['stderr'].strip() or
-                        receipt['stdout_sha256'] != contract.digest(raw / name) or
-                        receipt['command'] != ['journalctl', '--no-pager', '--all', '-o', 'json', *arguments]):
-                    raise RuntimeError('Journal query receipt differs from its archived source or required scope')
-            interval = journal_coverage.validate_interval(rows, anchor, tails[0], boot)
-            required = [row for row in interval if journal_coverage.timestamp(proof['since']) <=
-                        int(row['__REALTIME_TIMESTAMP']) <= journal_coverage.timestamp(proof['through'])]
-            if not (raw / 'system-journal-initial-anchor.jsonl').exists():
-                required = [row for row in required if row['__CURSOR'] != proof['system_anchor']]
-            kernel_rows = [row for row in required if row.get('_TRANSPORT') == 'kernel']
-            archived_kernel = [json.loads(line) for line in (raw / 'kernel-journal.jsonl').read_text().splitlines()]
-            if (kernel_rows != archived_kernel or proof['required_records'] != len(required) or
-                    any(any(term in str(row.get('MESSAGE', '')).lower() for term in ('suppressed', 'missed'))
-                        for row in required)):
-                raise RuntimeError('Required journal rows differ from the archived interval')
-            holes = journal_coverage.sequence_holes(interval, boot)
-            record = json.loads((raw / 'journal-sequence-accounting.json').read_text())
-            accounted = journal_coverage.accounting(record['files'], record['partial_files'], holes)
-            if (any(record[key] != value for key, value in accounted.items()) or not accounted['passed'] or
-                    record['boot_id'] != boot or proof['sequence_accounting'] != {'boot_id': boot, **accounted} or
-                    any(row['boot_id'] != boot for row in record['files'] if row['entries']) or
-                    accounted['last_sequence'] < journal_coverage.coordinates(tails[0], boot)[1]):
-                raise RuntimeError('Stored journal entries do not account for the interval')
-            if (proof['boot_id'] != boot or len(interval) != proof['sequence_records'] or
-                    proof['sequence_holes'] != holes or
-                    proof['sequence_missing'] != sum(last - first + 1 for first, last in holes) or
-                    contract.digest(raw / 'journal-sequence.jsonl') != proof['source_sha256'] or
-                    not proof['coverage_complete'] or
-                    proof['daemon'] != prepared['current']['daemon'] or
-                    proof['sequence_id'] != journal_coverage.coordinates(anchor, boot)[0] or
-                    proof['first_sequence'] != journal_coverage.coordinates(anchor, boot)[1] or
-                    proof['last_sequence'] != journal_coverage.coordinates(tails[0], boot)[1] or
-                    journal_coverage.timestamp(proof['through']) != int(tails[0]['__REALTIME_TIMESTAMP'])):
-                raise RuntimeError('Conflicting journal interval proof')
-            if previous:
-                if (proof['since'] != previous['through'] or proof['system_anchor'] != previous['system_tail'] or
-                        proof['daemon'] != previous['daemon']):
-                    raise RuntimeError('Journal intervals do not join')
-            elif journal_coverage.timestamp(proof['since']) > journal_coverage.timestamp(manifest['started_at']):
-                raise RuntimeError('Journal coverage begins after the observation')
-            if journal_coverage.timestamp(proof['through']) < journal_coverage.timestamp(sample['observed_at']):
-                raise RuntimeError('Journal coverage ends before the sample')
-            previous = proof
-            snapshot = json.loads((raw / 'journal-retention-snapshot.json').read_text())
-            budget = json.loads((raw / 'journal-retention-budget.json').read_text())
-            if snapshot['daemon'] != proof['daemon'] or snapshot['boot_id'] != boot:
-                raise RuntimeError('Journal coverage and retention identities differ')
-            gap = journal_retention.elapsed(prior_snapshot, snapshot)
-            peak = journal_retention.bounded_interval(peak, prior_snapshot, snapshot)
-            peak = {stream: max(peak[stream], budget['rates_bytes_per_second'][stream]) for stream in peak}
-            if any(budget['rates_bytes_per_second'][stream] < peak[stream] for stream in peak):
-                raise RuntimeError('Journal rate budget omits a measured higher rate')
-            prior_snapshot = snapshot
-            recalculated = journal_retention.calculation(snapshot, budget['rates_bytes_per_second'])
-            if any(budget.get(key) != value for key, value in recalculated.items() if key != 'passed'):
-                raise RuntimeError('Journal retention calculation differs from its inputs')
-            if budget.get('actual_gap_seconds') != gap:
-                raise RuntimeError('Journal retention gap differs from its actual snapshots')
-            terminal_starts = [json.loads((out / name).read_text())['finish_started_at']
-                               for name in ('shutdown-started.json', 'abort-started.json') if (out / name).exists()]
-            is_terminal = any(epoch(value) <= epoch(sample['observed_at']) for value in terminal_starts)
-            gap_limit = recalculated['terminal_gap_seconds' if is_terminal else 'periodic_gap_seconds']
-            if budget['passed'] != (recalculated['passed'] and gap <= gap_limit):
-                raise RuntimeError('Journal retention verdict differs from its limits')
-            if not budget['passed']:
-                budget_failed.add(sample['observed_at'])
-        except (OSError, StopIteration, KeyError, ValueError, TypeError, RuntimeError):
-            missing.append('journal_interval_or_budget_coverage')
-
-
 def _evaluate(out, terminal, failures):
     manifest = terminal['observation']
     start, end = epoch(manifest['started_at']), epoch(manifest['earliest_finish_at'])
     missing = []
-    budget_failed = set()
     duration = manifest.get('duration_seconds')
     configuration = manifest.get('configuration', {})
     try:
@@ -267,10 +146,7 @@ def _evaluate(out, terminal, failures):
     full = [row for row in window if row.get('sample_kind') == 'full']
     for row in window:
         for error in row['errors']:
-            if error['check'] == contract.JOURNAL_BUDGET_CHECK:
-                budget_failed.add(row['observed_at'])
-            else:
-                failures.append(error['check'])
+            failures.append(error['check'])
         if row.get('sample_kind') == 'full':
             if row.get('latency', {}).get('pvs_with_recent_samples') != 903:
                 failures.append('all_pv_freshness')
@@ -412,7 +288,7 @@ def _evaluate(out, terminal, failures):
             continue
         for line in journal.read_text().splitlines():
             entry = json.loads(line)
-            message = str(entry.get('MESSAGE', '')).lower()
+            message = (str(entry.get('MESSAGE', '')) + '\n' + str(entry.get('EXCEPTION', ''))).lower()
             if any(term in message for term in ('outofmemoryerror', 'killing process', 'sigkill', 'stop-sigterm timed out')):
                 failures.append('appliance_oom_or_forced_termination')
     # The complete recordings must be present independently of periodic snapshots.
@@ -436,7 +312,6 @@ def _evaluate(out, terminal, failures):
             missing.append('kernel_journal_coverage')
         if sample.get('sample_kind') == 'full' and not sample.get('event_rates'):
             missing.append('event_rate_coverage')
-    journal_checks(out, manifest, window, missing, budget_failed)
     for component in evidence.COMPONENTS:
         if not terminal.get('complete_gc_recordings', {}).get(component, {}).get('gc_logs'):
             missing.append('gc_log_coverage')
@@ -446,7 +321,7 @@ def _evaluate(out, terminal, failures):
         missing.append('shutdown_work_state')
     verdict = 'Incomplete' if missing else 'Failed' if failures else 'Passed'
     checks = scheduler_checks(manifest)
-    return {'verdict': verdict, 'failed_assertions': sorted(set(failures)), 'journal_budget_failed_samples': len(budget_failed),
+    return {'verdict': verdict, 'failed_assertions': sorted(set(failures)),
             'missing_coverage': sorted(set(missing)), 'full_samples': len(full),
             'health_invocations': len(health), 'expected_passes': len(expected),
             'missing_passes': len(absent), 'duplicate_passes': len(duplicates),

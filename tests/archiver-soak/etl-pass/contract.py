@@ -10,7 +10,7 @@ from pathlib import Path
 import urllib.parse
 import subprocess
 
-SCHEMA = 5
+SCHEMA = 6
 DURATIONS = (7200, 86400)
 FIXTURE_SHA = '037a92691bc23a6dcac37ec3613ad19c9f80b93b689209ec8dc403b519eaf594'
 CHAINS = {
@@ -20,8 +20,6 @@ CHAINS = {
 PARTITION_SECONDS = {'PARTITION_5MIN': 300, 'PARTITION_HOUR': 3600,
                      'PARTITION_DAY': 86400, 'PARTITION_YEAR': 31536000}
 MAX_CADENCE = 28800
-# A failed in-window journal budget is a finding about the journal settings, not about the observed ETL.
-JOURNAL_BUDGET_CHECK = 'journal_retention_budget'
 OFFSETS = (300, 600)
 GROWTH_FIELDS = ('data', 'application_logs', 'journal', 'jfr', 'measurement')
 CAPTURE_RESERVE = 512 * 1024 ** 2
@@ -35,7 +33,7 @@ ABORT_CHECKS = ('appliance', 'journal', 'collection', 'jvm_restart', 'instances'
 ABORT_JVMS = ('engine', 'etl')
 # Sample checks that decide the scheduler verdict (with the abort-listed ones): the management
 # interface, JVM identity of any component, the clock, the tools, the fixture and the appliance
-# health command. Instrument findings (GC, latency, journal budget and coverage, metrics content)
+# health command. Instrument findings (GC, latency, process diagnostics, metrics content)
 # stay in the overall verdict only.
 SCHEDULER_CHECKS = ('appliance', 'mgmt', 'pv_status_request', 'pv_status', 'metrics_request', 'jvm_restart',
                     'instances', 'collection', 'clock', 'tool_bundle', 'journal', 'fixture_adjustment',
@@ -44,8 +42,8 @@ BUNDLE_FILES = ('contract.py', 'aggregate.py', 'evidence.py', 'observe.py', 'col
                 'measure.py', 'health-event.py', 'prepare-retest.py', 'verify-health.py',
                 'verify-runtime.py', 'verify-chain.py', 'launch-retest.py',
                 'apply-fixture.py', 'evaluate.py', 'heap.jfc', 'resource_helpers.py',
-                'rate-semantics.json', 'journal_coverage.py', 'journal_retention.py', 'initialize-fresh.py',
-                'focused.py', 'PBFixture.java', 'common.yml', 'install-fixture.py')
+                'rate-semantics.json', 'initialize-fresh.py',
+                'focused.py', 'PBFixture.java', 'common.yml', 'install-fixture.py', 'pass_source.py')
 
 
 def deployment_pins(directory, expected):
