@@ -31,7 +31,7 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: M22 ETL functional verification is Complete and #30 was observed closed completed at 2026-10-15T18:09:12Z; no ETL acceptance test remains. M25/#31 is also complete/closed. Existing active work is M24 under D21; read its current detail before any separately authorized continuation. M29/#34 and M30/#35 remain Deferred tool Backlogs, alongside independent M27/#32 and M28/#33 journal-tool Backlogs. Existing shortened E4 automatic-abort behavior Passed retained-original verification with original Incomplete tool records preserved. The independent M31-M46 tool Backlogs are registered as #36-#51 under D31; M29/#34 and M30/#35 coordinate them without reopening M22 or M25.
+Next session entry point: M22 ETL functional verification is Complete and #30 was observed closed completed at 2026-10-15T18:09:12Z; no ETL acceptance test remains. M25/#31 is also complete/closed. M24/#52 is Complete/closed with its implementation commit and recorded mechanism/integration results in Closure Evidence. M14 remains Blocked on G2 and M26 remains Blocked on G5; no Milestone row is Ready. M29/#34 and M30/#35 remain Deferred tool Backlogs, alongside independent M27/#32 and M28/#33 journal-tool Backlogs. Existing shortened E4 automatic-abort behavior Passed retained-original verification with original Incomplete tool records preserved. The independent M31-M46 tool Backlogs are registered as #36-#51 under D31; M29/#34 and M30/#35 coordinate them without reopening M22 or M25.
 
 Both original shortened/default 24-hour ETL processing observations completed on 2026-10-15 UTC and are accepted under D29. They ran for 86416.387 and 86415.088 monotonic seconds before normal finish across UTC midnight. The unchanged native scheduler evaluator Passed with all 312 and 27 required passes present exactly once. Read-only initial, both-transition and final physical/HTTP comparisons Passed on each chain. Whole-unit normal stops returned 0 in 12.516 and 13.770 seconds, below the installed 300-second timeout. Each observation retained 290 in-window full samples and its original frozen bundle.
 
@@ -390,7 +390,7 @@ full mode carries every OS tree, second apply `failed=0`). Delivered in
 
 </details>
 
-Status tally: 22 Complete, 2 In progress, 0 Not started, 0 Deferred, 2 Blocked. 5 external gates (3 Complete, 2 Open). Backlog excluded: 2 Deferred carry-forward items.
+Status tally: 24 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 5 external gates (3 Complete, 2 Open). Backlog excluded: 20 Deferred carry-forward items.
 
 ## Milestone
 
@@ -421,7 +421,7 @@ Status tally: 22 Complete, 2 In progress, 0 Not started, 0 Deferred, 2 Blocked. 
 | Core | M20 | Align the test-user handoff document with the operator model | Milestone | Complete | No | | `docs/test_users_handoff.md` names `roles/testusers`, `playbooks/operators/testusers.yml`, the `iocrunner` species order and the bake's species step instead of the retired `app_ioc_runner`, `roles/test_users`, `playbooks/07_test_users.yml`, `CONFIG_SITE` list and `site.yml`; delivered in `268a060`; [detail](#m20---align-the-test-user-handoff-document-with-the-operator-model) |
 | Core | M22 | Verify the ETL pass scheduler on two parallel store chains | Milestone | Complete | No | M17, M21, G4, D27, D29, D30 | Actual ETL functionality and both full-day observations Passed; six criteria satisfied; #30 closed completed on 2026-10-15. M29/M30 tool work remains independent; [detail](#m22---verify-the-etl-pass-scheduler-on-two-parallel-store-chains) |
 | Core | M23 | Add the Perl modules for the EPICS-env installed-tree utility to the EPICS OS package set | Milestone | Complete | No | D20 | `epics_os_packages` carries `perl-Digest-SHA`, `perl-JSON-PP`, `perl-Pod-Checker` and `perl-Test-Simple` on rocky8 and rocky10 and `perl` on debian12, debian13, ubuntu24 and ubuntu26; after the `epics` operator applies on each vacuum, the four modules load and `podchecker` runs; delivered in `4dfb290`, verified on all six vacua (`300ccc7`); [detail](#m23---add-the-perl-modules-for-the-epics-env-installed-tree-utility-to-the-epics-os-package-set) |
-| Core | M24 | Split the archiver MariaDB operator into socket and TCP operators and rename the archiver-dev species | Milestone | In progress | No | D21 | Operators `mariadb_uds` and `mariadb_tcp` and species `archiver-dev-uds`, `archiver-dev-tcp` and `archiver-dev-sqlite` exist with the group variables `archiver_dev_uds.yml`, `archiver_dev_tcp.yml` and `archiver_dev_sqlite.yml`; each species deploys on a fresh guest with its database reachable exactly as the cloud-provision definition states; the old `archiver-dev` name still resolves for a limited period; [detail](#m24---split-the-archiver-mariadb-operator-into-socket-and-tcp-operators-and-rename-the-archiver-dev-species) |
+| Core | M24 | Split the archiver MariaDB operator into socket and TCP operators and rename the archiver-dev species | Milestone | Complete | No | D21 | Operators `mariadb_uds` and `mariadb_tcp` and species `archiver-dev-uds`, `archiver-dev-tcp` and `archiver-dev-sqlite` exist with the group variables `archiver_dev_uds.yml`, `archiver_dev_tcp.yml` and `archiver_dev_sqlite.yml`; each species deploys on a fresh guest with its database reachable exactly as the cloud-provision definition states; the old `archiver-dev` name still resolves for a limited period; delivered in `3b697e1`, with recorded T1/T2 Passed; #52 closed completed at 2026-10-16T06:42:05Z; [detail](#m24---split-the-archiver-mariadb-operator-into-socket-and-tcp-operators-and-rename-the-archiver-dev-species) |
 | Core | M25 | Verify independent journal recording, retention and collection | Milestone | Complete | No | D27, D28 | Accepted 24-hour recording, live retention and exact archive comparison Passed with zero violations/unresolved records; #31 closed completed on 2026-10-15. Two unexecuted tool checks are independent M27/M28 Backlog work; [detail](#m25---verify-independent-journal-recording-retention-and-collection) |
 | Core | M26 | Provision the SQLite Archiver Appliance on an existing general Rocky Linux 8.10 server | Milestone | Blocked | No | M18, G5, D26 | The `archiver_server_sqlite` assembly applies on the existing server without a proxy readiness gate, installs the appliance on the SQLite backend at the pinned sources, and passes the install checks on that server; the optional `proxy_check` role and its suite exist but are not part of the assembly; [detail](#m26---provision-the-sqlite-archiver-appliance-on-an-existing-general-rocky-linux-810-server) |
 | Gate | G1 | the production IOC server reaches the internal git host | External gate | Complete | No | | Reachability achieved through the site HTTP proxy's CONNECT tunnel (an ssh `ProxyCommand` over the proxy), not a firewall whitelist: the owner's key authenticates and `git ls-remote` returns the refs; confirmed 2026-09-03 by the successful iocserver clone (M4/T2) |
@@ -5139,18 +5139,13 @@ package names.
 #### M24 - Split the archiver MariaDB operator into socket and TCP operators and rename the archiver-dev species
 
 - Origin: 38560eb / M24
-- GitHub Issue: none; peer request from the cloud-provision session on 2026-10-05
-- Status: In progress
+- GitHub Issue: #52, https://github.com/jeonghanlee/ansible-provision/issues/52; peer request from the cloud-provision session on 2026-10-05
+- Status: Complete
+- GitHub Projection: observed 2026-10-16T06:43:15.845854+00:00; state `closed`; reason `completed`; label `enhancement`; milestone `Backlog`; assignee `jeonghanlee`; updated 2026-10-16T06:42:05Z.
 
 ##### Summary
 
-cloud-provision decided that the archiver configuration database is three
-operators and that every archiver species carries exactly one (`D21`). This
-repository has one `mariadb` role whose `mariadb_skip_networking` switch picks
-the socket-only or the loopback TCP mode, the species `archiver-dev` and
-`archiver-dev-sqlite`, and the group variables `archiver_dev.yml` and
-`archiver_dev_sqlite.yml`. The cloud-provision inventory generator already
-rejects the name `archiver-dev`.
+The archiver configuration database has separate socket-only MariaDB, loopback-TCP MariaDB and SQLite operators. The `archiver-dev-uds`, `archiver-dev-tcp` and `archiver-dev-sqlite` species select one database operator each. The MariaDB forms share task code, while the legacy `archiver-dev`, `archiver_dev` and `mariadb` names remain deprecated aliases of the socket-only form.
 
 ##### Scope
 
@@ -5236,7 +5231,11 @@ bundle, which pins no species name.
 
 ##### Closure Evidence
 
-- Not started.
+- Implementation: 3b697e1d18617d22372557cfbe31ea4ce92e7f2b delivers the two MariaDB operators, the UDS/TCP species and group variables, the deprecated aliases and the updated references. SQLite remains independently selectable.
+- Recorded mechanism verification: T1 Passed on 2026-10-06T01:38:30Z for inventory variables, playbook syntax, alias task resolution and Make target resolution.
+- Recorded integration verification: T2 Passed on 2026-10-06T03:08Z on three fresh Rocky 8.10 guests. The UDS guest had no MariaDB TCP listener; the TCP guest listened only on `127.0.0.1:3306`; the SQLite guest had MariaDB inactive. Each management API returned HTTP 200, each first apply had `failed=0`, and each re-apply had `failed=0` and `changed=0`.
+- Observed method: the integration runs invoked the species playbooks directly with generated inventories. Make targets and the deprecated alias were checked on the control host; a guest run through Make and a guest apply of the deprecated alias were not recorded. The original Test Plan and Verification Results remain unchanged.
+- GitHub issue: #52, https://github.com/jeonghanlee/ansible-provision/issues/52; observed `closed` with reason `completed`, closed at 2026-10-16T06:42:05Z. All six acceptance criteria are checked and the closure comment records the existing results.
 
 #### M25 - Verify independent journal recording, retention and collection
 
