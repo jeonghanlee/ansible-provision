@@ -31,7 +31,7 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: M22 ETL functional verification is Complete and #30 was observed closed completed at 2026-10-15T18:09:12Z; no ETL acceptance test remains. M25/#31 is also complete/closed. Existing active work is M24 under D21; read its current detail before any separately authorized continuation. M29/#34 and M30/#35 remain Deferred tool Backlogs, alongside independent M27/#32 and M28/#33 journal-tool Backlogs. Existing shortened E4 automatic-abort behavior Passed retained-original verification with original Incomplete tool records preserved. Read the independent M31-M46 tool Backlog details under D31 for separately scoped issue drafts; M29/#34 and M30/#35 coordinate them without reopening M22 or M25.
+Next session entry point: M22 ETL functional verification is Complete and #30 was observed closed completed at 2026-10-15T18:09:12Z; no ETL acceptance test remains. M25/#31 is also complete/closed. Existing active work is M24 under D21; read its current detail before any separately authorized continuation. M29/#34 and M30/#35 remain Deferred tool Backlogs, alongside independent M27/#32 and M28/#33 journal-tool Backlogs. Existing shortened E4 automatic-abort behavior Passed retained-original verification with original Incomplete tool records preserved. The independent M31-M46 tool Backlogs are registered as #36-#51 under D31; M29/#34 and M30/#35 coordinate them without reopening M22 or M25.
 
 Both original shortened/default 24-hour ETL processing observations completed on 2026-10-15 UTC and are accepted under D29. They ran for 86416.387 and 86415.088 monotonic seconds before normal finish across UTC midnight. The unchanged native scheduler evaluator Passed with all 312 and 27 required passes present exactly once. Read-only initial, both-transition and final physical/HTTP comparisons Passed on each chain. Whole-unit normal stops returned 0 in 12.516 and 13.770 seconds, below the installed 300-second timeout. Each observation retained 290 in-window full samples and its original frozen bundle.
 
@@ -6367,7 +6367,7 @@ Independent membership and transferred coverage:
 
 - Origin: 38560eb / M31
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: none; issue preparation only.
+- GitHub Issue: [#36](https://github.com/jeonghanlee/ansible-provision/issues/36)
 - Status: Deferred
 
 ##### Summary
@@ -6436,10 +6436,12 @@ The repository candidate at 3ff784e has collector SHA256 7444a7b2f0d2383b7d77cfd
 - Labels: `bug`
 - Milestone: `Backlog`
 - Assignee: `jeonghanlee`
-- Observed State: none
-- Observed Labels: none
-- Observed Milestone: none
-- Last Compared: not published; duplicate scan observed existing issues through #35 on 2026-10-15.
+- Observed State: OPEN
+- Observed Labels: `bug`
+- Observed Milestone: `Backlog`
+- Observed Assignees: `jeonghanlee`
+- Observed Updated At: 2026-10-16T02:44:44Z
+- Last Compared: 2026-10-16T02:46:24.487262+00:00; sequential issue create/readback confirmed exact prepared body and creation metadata. Recheck with `gh issue view 36 --repo jeonghanlee/ansible-provision`.
 - Prepared Body: `work/issue-kernel-cursor.md`
 - Prepared Body SHA256: 835e80de97131e19c3b6e8368b82498b194c4edb60706c7a3ad25d7a9bd19843
 
@@ -6448,7 +6450,7 @@ The repository candidate at 3ff784e has collector SHA256 7444a7b2f0d2383b7d77cfd
 
 - Origin: 38560eb / M32
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: none; issue preparation only.
+- GitHub Issue: [#37](https://github.com/jeonghanlee/ansible-provision/issues/37)
 - Status: Deferred
 
 ##### Summary
@@ -6512,10 +6514,12 @@ Out of scope: Repairing kernel cursor coverage or changing ETL application sched
 - Labels: `bug`
 - Milestone: `Backlog`
 - Assignee: `jeonghanlee`
-- Observed State: none
-- Observed Labels: none
-- Observed Milestone: none
-- Last Compared: not published; duplicate scan observed existing issues through #35 on 2026-10-15.
+- Observed State: OPEN
+- Observed Labels: `bug`
+- Observed Milestone: `Backlog`
+- Observed Assignees: `jeonghanlee`
+- Observed Updated At: 2026-10-16T02:44:50Z
+- Last Compared: 2026-10-16T02:46:24.487262+00:00; sequential issue create/readback confirmed exact prepared body and creation metadata. Recheck with `gh issue view 37 --repo jeonghanlee/ansible-provision`.
 - Prepared Body: `work/issue-etl-terminal-isolation.md`
 - Prepared Body SHA256: 00f908ce907c86c79151bb74fb81eb830bd1a8fbb5452cef35c6fb4339009a49
 
@@ -6524,7 +6528,7 @@ Out of scope: Repairing kernel cursor coverage or changing ETL application sched
 
 - Origin: 38560eb / M33
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: none; issue preparation only.
+- GitHub Issue: [#38](https://github.com/jeonghanlee/ansible-provision/issues/38)
 - Status: Deferred
 
 ##### Summary
@@ -6593,10 +6597,12 @@ The preserved original controller has SHA256 65acfd262aface090e995dfd5dc77d5b5db
 - Labels: `bug`
 - Milestone: `Backlog`
 - Assignee: `jeonghanlee`
-- Observed State: none
-- Observed Labels: none
-- Observed Milestone: none
-- Last Compared: not published; duplicate scan observed existing issues through #35 on 2026-10-15.
+- Observed State: OPEN
+- Observed Labels: `bug`
+- Observed Milestone: `Backlog`
+- Observed Assignees: `jeonghanlee`
+- Observed Updated At: 2026-10-16T02:44:58Z
+- Last Compared: 2026-10-16T02:46:24.487262+00:00; sequential issue create/readback confirmed exact prepared body and creation metadata. Recheck with `gh issue view 38 --repo jeonghanlee/ansible-provision`.
 - Prepared Body: `work/issue-journal-query-time.md`
 - Prepared Body SHA256: 36b660c6c7e58b16dee91433701b359893c9e230b955bbcbf8a88bc6c66ffac1
 
@@ -6605,7 +6611,7 @@ The preserved original controller has SHA256 65acfd262aface090e995dfd5dc77d5b5db
 
 - Origin: 38560eb / M34
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: none; issue preparation only.
+- GitHub Issue: [#39](https://github.com/jeonghanlee/ansible-provision/issues/39)
 - Status: Deferred
 
 ##### Summary
@@ -6669,10 +6675,12 @@ The complete-recording comparison selects the component without selecting the re
 - Labels: `bug`
 - Milestone: `Backlog`
 - Assignee: `jeonghanlee`
-- Observed State: none
-- Observed Labels: none
-- Observed Milestone: none
-- Last Compared: not published; duplicate scan observed existing issues through #35 on 2026-10-15.
+- Observed State: OPEN
+- Observed Labels: `bug`
+- Observed Milestone: `Backlog`
+- Observed Assignees: `jeonghanlee`
+- Observed Updated At: 2026-10-16T02:45:04Z
+- Last Compared: 2026-10-16T02:46:24.487262+00:00; sequential issue create/readback confirmed exact prepared body and creation metadata. Recheck with `gh issue view 39 --repo jeonghanlee/ansible-provision`.
 - Prepared Body: `work/issue-jfr-process-scope.md`
 - Prepared Body SHA256: 072fce69a17ef7784b48eaf6ea512d627564c8286098e6edfce2da8bdc2b3d10
 
@@ -6681,7 +6689,7 @@ The complete-recording comparison selects the component without selecting the re
 
 - Origin: 38560eb / M35
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: none; issue preparation only.
+- GitHub Issue: [#40](https://github.com/jeonghanlee/ansible-provision/issues/40)
 - Status: Deferred
 
 ##### Summary
@@ -6745,10 +6753,12 @@ Out of scope: JFR process selection, source-access fault production, and reopeni
 - Labels: `bug`
 - Milestone: `Backlog`
 - Assignee: `jeonghanlee`
-- Observed State: none
-- Observed Labels: none
-- Observed Milestone: none
-- Last Compared: not published; duplicate scan observed existing issues through #35 on 2026-10-15.
+- Observed State: OPEN
+- Observed Labels: `bug`
+- Observed Milestone: `Backlog`
+- Observed Assignees: `jeonghanlee`
+- Observed Updated At: 2026-10-16T02:45:10Z
+- Last Compared: 2026-10-16T02:46:24.487262+00:00; sequential issue create/readback confirmed exact prepared body and creation metadata. Recheck with `gh issue view 40 --repo jeonghanlee/ansible-provision`.
 - Prepared Body: `work/issue-terminal-order.md`
 - Prepared Body SHA256: 8d5c3f69533a0cabb079b2a033dda5bb59103ec47d462dc7caf31633ccd89da3
 
@@ -6757,7 +6767,7 @@ Out of scope: JFR process selection, source-access fault production, and reopeni
 
 - Origin: 38560eb / M36
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: none; issue preparation only.
+- GitHub Issue: [#41](https://github.com/jeonghanlee/ansible-provision/issues/41)
 - Status: Deferred
 
 ##### Summary
@@ -6821,10 +6831,12 @@ The runtime/scenario checker compares timestamp text instead of its UTC instant.
 - Labels: `bug`
 - Milestone: `Backlog`
 - Assignee: `jeonghanlee`
-- Observed State: none
-- Observed Labels: none
-- Observed Milestone: none
-- Last Compared: not published; duplicate scan observed existing issues through #35 on 2026-10-15.
+- Observed State: OPEN
+- Observed Labels: `bug`
+- Observed Milestone: `Backlog`
+- Observed Assignees: `jeonghanlee`
+- Observed Updated At: 2026-10-16T02:45:17Z
+- Last Compared: 2026-10-16T02:46:24.487262+00:00; sequential issue create/readback confirmed exact prepared body and creation metadata. Recheck with `gh issue view 41 --repo jeonghanlee/ansible-provision`.
 - Prepared Body: `work/issue-utc-pass-match.md`
 - Prepared Body SHA256: 4c6f0a297ce7095013b18d3579a02256c1221f5c699388c96d8230f70813b667
 
@@ -6833,7 +6845,7 @@ The runtime/scenario checker compares timestamp text instead of its UTC instant.
 
 - Origin: 38560eb / M37
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: none; issue preparation only.
+- GitHub Issue: [#42](https://github.com/jeonghanlee/ansible-provision/issues/42)
 - Status: Deferred
 
 ##### Summary
@@ -6897,10 +6909,12 @@ The legacy manifest still lists removed journal modules and older tool hashes, a
 - Labels: `bug`
 - Milestone: `Backlog`
 - Assignee: `jeonghanlee`
-- Observed State: none
-- Observed Labels: none
-- Observed Milestone: none
-- Last Compared: not published; duplicate scan observed existing issues through #35 on 2026-10-15.
+- Observed State: OPEN
+- Observed Labels: `bug`
+- Observed Milestone: `Backlog`
+- Observed Assignees: `jeonghanlee`
+- Observed Updated At: 2026-10-16T02:45:23Z
+- Last Compared: 2026-10-16T02:46:24.487262+00:00; sequential issue create/readback confirmed exact prepared body and creation metadata. Recheck with `gh issue view 42 --repo jeonghanlee/ansible-provision`.
 - Prepared Body: `work/issue-tool-checksums.md`
 - Prepared Body SHA256: 91f87e0eec44f033d9584ab0ad3b92f6e266d1183deeb73b070aa2c6f316fa49
 
@@ -6909,7 +6923,7 @@ The legacy manifest still lists removed journal modules and older tool hashes, a
 
 - Origin: 38560eb / M38
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: none; issue preparation only.
+- GitHub Issue: [#43](https://github.com/jeonghanlee/ansible-provision/issues/43)
 - Status: Deferred
 
 ##### Summary
@@ -7022,10 +7036,12 @@ Use the six-row scope matrix and preserve the two recorded planned-abort evidenc
 - Labels: `enhancement`
 - Milestone: `Backlog`
 - Assignee: `jeonghanlee`
-- Observed State: none
-- Observed Labels: none
-- Observed Milestone: none
-- Last Compared: not published; duplicate scan observed existing issues through #35 on 2026-10-15.
+- Observed State: OPEN
+- Observed Labels: `enhancement`
+- Observed Milestone: `Backlog`
+- Observed Assignees: `jeonghanlee`
+- Observed Updated At: 2026-10-16T02:45:29Z
+- Last Compared: 2026-10-16T02:46:24.487262+00:00; sequential issue create/readback confirmed exact prepared body and creation metadata. Recheck with `gh issue view 43 --repo jeonghanlee/ansible-provision`.
 - Prepared Body: `work/issue-package-independence.md`
 - Prepared Body SHA256: fcdb081256da410989e1c4839859f6590da0f3b6422a2ffed41fcaa82288dcf8
 
@@ -7034,7 +7050,7 @@ Use the six-row scope matrix and preserve the two recorded planned-abort evidenc
 
 - Origin: 38560eb / M39
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: none; issue preparation only.
+- GitHub Issue: [#44](https://github.com/jeonghanlee/ansible-provision/issues/44)
 - Status: Deferred
 
 ##### Summary
@@ -7114,10 +7130,12 @@ A wrong exit code, a failed scenario assertion, unavailable required verificatio
 - Labels: `enhancement`
 - Milestone: `Backlog`
 - Assignee: `jeonghanlee`
-- Observed State: none
-- Observed Labels: none
-- Observed Milestone: none
-- Last Compared: not published; duplicate scan observed existing issues through #35 on 2026-10-15.
+- Observed State: OPEN
+- Observed Labels: `enhancement`
+- Observed Milestone: `Backlog`
+- Observed Assignees: `jeonghanlee`
+- Observed Updated At: 2026-10-16T02:45:35Z
+- Last Compared: 2026-10-16T02:46:24.487262+00:00; sequential issue create/readback confirmed exact prepared body and creation metadata. Recheck with `gh issue view 44 --repo jeonghanlee/ansible-provision`.
 - Prepared Body: `work/issue-partial-source-availability.md`
 - Prepared Body SHA256: 679a14a94343b77c0915a18713e4e309e41b5360fa04a7f34f89f93e8517f540
 
@@ -7126,7 +7144,7 @@ A wrong exit code, a failed scenario assertion, unavailable required verificatio
 
 - Origin: 38560eb / M40
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: none; issue preparation only.
+- GitHub Issue: [#45](https://github.com/jeonghanlee/ansible-provision/issues/45)
 - Status: Deferred
 
 ##### Summary
@@ -7206,10 +7224,12 @@ A wrong exit code, a failed scenario assertion, unavailable required verificatio
 - Labels: `enhancement`
 - Milestone: `Backlog`
 - Assignee: `jeonghanlee`
-- Observed State: none
-- Observed Labels: none
-- Observed Milestone: none
-- Last Compared: not published; duplicate scan observed existing issues through #35 on 2026-10-15.
+- Observed State: OPEN
+- Observed Labels: `enhancement`
+- Observed Milestone: `Backlog`
+- Observed Assignees: `jeonghanlee`
+- Observed Updated At: 2026-10-16T02:45:41Z
+- Last Compared: 2026-10-16T02:46:24.487262+00:00; sequential issue create/readback confirmed exact prepared body and creation metadata. Recheck with `gh issue view 45 --repo jeonghanlee/ansible-provision`.
 - Prepared Body: `work/issue-all-source-abort.md`
 - Prepared Body SHA256: 3a356bbe83dadf95f19be431971c08cf8818e19acebb8b8ed725e57cedcd5b87
 
@@ -7218,7 +7238,7 @@ A wrong exit code, a failed scenario assertion, unavailable required verificatio
 
 - Origin: 38560eb / M41
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: none; issue preparation only.
+- GitHub Issue: [#46](https://github.com/jeonghanlee/ansible-provision/issues/46)
 - Status: Deferred
 
 ##### Summary
@@ -7278,10 +7298,12 @@ Out of scope: The separate journal collector verification in #32, product shutdo
 - Labels: `enhancement`
 - Milestone: `Backlog`
 - Assignee: `jeonghanlee`
-- Observed State: none
-- Observed Labels: none
-- Observed Milestone: none
-- Last Compared: not published; duplicate scan observed existing issues through #35 on 2026-10-15.
+- Observed State: OPEN
+- Observed Labels: `enhancement`
+- Observed Milestone: `Backlog`
+- Observed Assignees: `jeonghanlee`
+- Observed Updated At: 2026-10-16T02:45:49Z
+- Last Compared: 2026-10-16T02:46:24.487262+00:00; sequential issue create/readback confirmed exact prepared body and creation metadata. Recheck with `gh issue view 46 --repo jeonghanlee/ansible-provision`.
 - Prepared Body: `work/issue-etl-post-stop.md`
 - Prepared Body SHA256: 2c32ca81c2ec2a29b7e7f5752bc4f953cd8267fa3551ed42eec5c328eea0b0de
 
@@ -7290,7 +7312,7 @@ Out of scope: The separate journal collector verification in #32, product shutdo
 
 - Origin: 38560eb / M42
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: none; issue preparation only.
+- GitHub Issue: [#47](https://github.com/jeonghanlee/ansible-provision/issues/47)
 - Status: Deferred
 
 ##### Summary
@@ -7350,10 +7372,12 @@ Out of scope: New ETL storage-failure product tests, forcing data loss in accept
 - Labels: `enhancement`
 - Milestone: `Backlog`
 - Assignee: `jeonghanlee`
-- Observed State: none
-- Observed Labels: none
-- Observed Milestone: none
-- Last Compared: not published; duplicate scan observed existing issues through #35 on 2026-10-15.
+- Observed State: OPEN
+- Observed Labels: `enhancement`
+- Observed Milestone: `Backlog`
+- Observed Assignees: `jeonghanlee`
+- Observed Updated At: 2026-10-16T02:45:55Z
+- Last Compared: 2026-10-16T02:46:24.487262+00:00; sequential issue create/readback confirmed exact prepared body and creation metadata. Recheck with `gh issue view 47 --repo jeonghanlee/ansible-provision`.
 - Prepared Body: `work/issue-collection-races.md`
 - Prepared Body SHA256: f330f7e241e52434b11e6b3e1ac6e625235a29d42b1d23ce0feabc5c5ab03f9b
 
@@ -7362,7 +7386,7 @@ Out of scope: New ETL storage-failure product tests, forcing data loss in accept
 
 - Origin: 38560eb / M43
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: none; issue preparation only.
+- GitHub Issue: [#48](https://github.com/jeonghanlee/ansible-provision/issues/48)
 - Status: Deferred
 
 ##### Summary
@@ -7424,10 +7448,12 @@ Out of scope: Changing ETL functionality acceptance, rewriting raw measurements,
 - Labels: `enhancement`
 - Milestone: `Backlog`
 - Assignee: `jeonghanlee`
-- Observed State: none
-- Observed Labels: none
-- Observed Milestone: none
-- Last Compared: not published; duplicate scan observed existing issues through #35 on 2026-10-15.
+- Observed State: OPEN
+- Observed Labels: `enhancement`
+- Observed Milestone: `Backlog`
+- Observed Assignees: `jeonghanlee`
+- Observed Updated At: 2026-10-16T02:46:02Z
+- Last Compared: 2026-10-16T02:46:24.487262+00:00; sequential issue create/readback confirmed exact prepared body and creation metadata. Recheck with `gh issue view 48 --repo jeonghanlee/ansible-provision`.
 - Prepared Body: `work/issue-measurement-report.md`
 - Prepared Body SHA256: e2b7d61eed476c033e4c015e40b0c3be806f6163a70733ee8e8b43afcb73ba6f
 
@@ -7436,7 +7462,7 @@ Out of scope: Changing ETL functionality acceptance, rewriting raw measurements,
 
 - Origin: 38560eb / M44
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: none; issue preparation only.
+- GitHub Issue: [#49](https://github.com/jeonghanlee/ansible-provision/issues/49)
 - Status: Deferred
 
 ##### Summary
@@ -7496,10 +7522,12 @@ Out of scope: ETL functionality acceptance, host sizing, capacity forecasts, or 
 - Labels: `enhancement`
 - Milestone: `Backlog`
 - Assignee: `jeonghanlee`
-- Observed State: none
-- Observed Labels: none
-- Observed Milestone: none
-- Last Compared: not published; duplicate scan observed existing issues through #35 on 2026-10-15.
+- Observed State: OPEN
+- Observed Labels: `enhancement`
+- Observed Milestone: `Backlog`
+- Observed Assignees: `jeonghanlee`
+- Observed Updated At: 2026-10-16T02:46:08Z
+- Last Compared: 2026-10-16T02:46:24.487262+00:00; sequential issue create/readback confirmed exact prepared body and creation metadata. Recheck with `gh issue view 49 --repo jeonghanlee/ansible-provision`.
 - Prepared Body: `work/issue-workload-comparison.md`
 - Prepared Body SHA256: 9896b1e567fe7f077d8ca5322b0b4f927c98c13bbc7b1e3948d76696274678d7
 
@@ -7508,7 +7536,7 @@ Out of scope: ETL functionality acceptance, host sizing, capacity forecasts, or 
 
 - Origin: 38560eb / M45
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: none; issue preparation only.
+- GitHub Issue: [#50](https://github.com/jeonghanlee/ansible-provision/issues/50)
 - Status: Deferred
 
 ##### Summary
@@ -7573,10 +7601,12 @@ The comparison baseline consists of the complete evaluator JSON and complete num
 - Labels: `enhancement`
 - Milestone: `Backlog`
 - Assignee: `jeonghanlee`
-- Observed State: none
-- Observed Labels: none
-- Observed Milestone: none
-- Last Compared: not published; duplicate scan observed existing issues through #35 on 2026-10-15.
+- Observed State: OPEN
+- Observed Labels: `enhancement`
+- Observed Milestone: `Backlog`
+- Observed Assignees: `jeonghanlee`
+- Observed Updated At: 2026-10-16T02:46:15Z
+- Last Compared: 2026-10-16T02:46:24.487262+00:00; sequential issue create/readback confirmed exact prepared body and creation metadata. Recheck with `gh issue view 50 --repo jeonghanlee/ansible-provision`.
 - Prepared Body: `work/issue-etl-recipient-replay.md`
 - Prepared Body SHA256: 35e199b23df1d8ee1ed5e96b60748e8f350d6fd6e4615339c6561b45b64d06d9
 
@@ -7585,7 +7615,7 @@ The comparison baseline consists of the complete evaluator JSON and complete num
 
 - Origin: 38560eb / M46
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: none; issue preparation only.
+- GitHub Issue: [#51](https://github.com/jeonghanlee/ansible-provision/issues/51)
 - Status: Deferred
 
 ##### Summary
@@ -7645,10 +7675,12 @@ Out of scope: New runtime tests, ETL or journal functionality reacceptance, and 
 - Labels: `enhancement`
 - Milestone: `Backlog`
 - Assignee: `jeonghanlee`
-- Observed State: none
-- Observed Labels: none
-- Observed Milestone: none
-- Last Compared: not published; duplicate scan observed existing issues through #35 on 2026-10-15.
+- Observed State: OPEN
+- Observed Labels: `enhancement`
+- Observed Milestone: `Backlog`
+- Observed Assignees: `jeonghanlee`
+- Observed Updated At: 2026-10-16T02:46:21Z
+- Last Compared: 2026-10-16T02:46:24.487262+00:00; sequential issue create/readback confirmed exact prepared body and creation metadata. Recheck with `gh issue view 51 --repo jeonghanlee/ansible-provision`.
 - Prepared Body: `work/issue-elapsed-time-report.md`
 - Prepared Body SHA256: 68d2900c8145b4678bfa6a18d0edae84e59146ea7d60b2d90496abc3c5efbc12
 
