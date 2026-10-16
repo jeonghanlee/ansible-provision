@@ -68,6 +68,13 @@ def main():
         run(package / 'prepare.py', 'install', package, '--config', config, '--root', stage)
         installed = stage / 'opt/journal-validation'
         run(installed / 'prepare.py', 'verify', installed)
+        serialized = workspace / 'serialized-source.json'
+        code = ('import json,sys; from pathlib import Path; '
+                'sys.path.insert(0,sys.argv[1]); import prepare; '
+                'prepare.save(Path(sys.argv[2]),json.loads(Path(sys.argv[3]).read_text()))')
+        run('-c', code, installed, serialized, installed / 'source.json')
+        assert serialized.read_bytes() == (installed / 'source.json').read_bytes()
+        results.append('Streaming serialization preserves the exact frozen source JSON format')
         assert (stage / 'var/lib/journal-validation').stat().st_mode & 0o777 == 0o700
         assert (stage / 'run/journal-validation').stat().st_mode & 0o777 == 0o700
         units = sorted((stage / 'etc/systemd/system').glob('*.service'))

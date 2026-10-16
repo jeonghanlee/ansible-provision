@@ -481,7 +481,8 @@ def required_records(action, outcome, indexed_sources, config):
         wanted = HEALTH_PREFIX + json.dumps(health, sort_keys=True)
         markers = [row for row in messages.get(wanted, []) if
                 row.get('_TRANSPORT') == 'stdout' and row.get('_SYSTEMD_UNIT') == HEALTH_UNIT and
-                row.get('_SYSTEMD_INVOCATION_ID') == health.get('invocation_id')]
+                ('_SYSTEMD_INVOCATION_ID' not in row or
+                 row['_SYSTEMD_INVOCATION_ID'] == health.get('invocation_id'))]
         pattern = HEALTH_MESSAGES.get(health.get('exit_status'))
         main_pid = health.get('service_at_completion', {}).get('ExecMainPID')
         actual = [row for text, rows in messages.items() if pattern and pattern.fullmatch(text)

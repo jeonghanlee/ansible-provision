@@ -26,7 +26,8 @@ MODULES = {'journal_coverage.py': 'tests/archiver-soak/etl-pass/journal_coverage
            'register.py': 'tests/archiver-soak/etl-pass/register.py'}
 LOCAL_FILES = ('prepare.py', 'basic.py', 'long.py', 'lifecycle.py', 'rotation.py', 'rotation_during.py',
                'obsolete_anchor.py', 'window_coverage.py', 'boot_coverage.py', 'restart.py',
-               'interval.py', 'failure.py', 'loss.py', 'README.md', 'config.example.json')
+               'interval.py', 'failure.py', 'loss.py', 'check-health-records.py',
+               'README.md', 'config.example.json')
 SAFE_TOKEN = re.compile(r'^[A-Za-z0-9_./:+-]+$')
 
 
@@ -35,7 +36,9 @@ def digest(data):
 
 
 def save(path, value):
-    path.write_text(json.dumps(value, indent=2, sort_keys=True) + '\n')
+    with path.open('w') as stream:
+        json.dump(value, stream, indent=2, sort_keys=True)
+        stream.write('\n')
 
 
 def blob(repository, revision, name):

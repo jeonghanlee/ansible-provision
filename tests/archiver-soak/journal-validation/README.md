@@ -116,8 +116,30 @@ live-segment scope and is never claimed as continuously covered.
 
 **Out of scope:** actions not supported by the package entry points,
 ETL verification, and production deployment management. A basic result does
-not complete issue #31. The canonical plan remains in
-`docs/milestone-38560eb.md` in the source repository.
+not establish full-day preservation. Normal-stop/post-stop capture and replay
+on an independent recipient are separate verification scopes; this package's
+positive full-day observation does not claim either of them.
+
+## Reuse And Evidence Boundary
+
+Reusable source, configuration examples and procedures live in this directory.
+Build a fresh package for each deployment and retain its manifest with that
+observation. The build includes the retained-record health regression CLI;
+its input is operator-provided actual evidence, not a generated replacement.
+
+Keep deployment-specific configuration, host/VM identities, raw journal rows,
+producer ledgers, command receipts and evidence archives in private runtime
+storage. They are not source fixtures and must not be copied into this
+directory or committed. The repository's ignored `work/` directory may hold
+local operational records; reusable commands must not depend on its contents.
+
+Use `check-local.py` for actual package build/install checks, `basic.py` for
+the one-hour logging check and `long.py` for a new positive full-day observation.
+Use the saved observation's own frozen replay CLI to recheck completed records;
+replay does not start another 24-hour observation or operate services. Preserve
+the original package and unsuccessful result when explicitly testing corrected
+tools against a separate evidence copy. A new package manifest must never be
+presented as the original observation's manifest.
 
 ## Package And Data Flow
 
@@ -170,8 +192,8 @@ Use Python 3.9 or later. Both repositories must contain the pinned objects.
 Run the commands from this directory; destination directories must be new.
 
 ```bash
-repo=/data/gitsrc/ansible-provision
-app=/data/gitsrc/epicsarchiverap-maven
+repo=/absolute/path/to/ansible-provision
+app=/absolute/path/to/epicsarchiverap-maven
 pkg=/tmp/journal-package
 python3 -B prepare.py build --repository "$repo" --appliance-source "$app" --destination "$pkg"
 python3 -B prepare.py verify "$pkg"
@@ -263,6 +285,35 @@ logging inputs when the dispatched action and all required real source
 messages are confirmed. An attempted request without its complete actual
 source-message set remains Incomplete. The HTTP outcome stays recorded
 separately; missing messages and ambiguous correlation cannot produce Passed.
+
+Health completion markers must match the exact saved receipt JSON, stdout
+transport and health unit. When journal invocation metadata is present, it
+must match the receipt; its absence is accepted only for that exact marker.
+The actual health output still requires its recorded main PID and journal
+invocation identity. Conflicting identities, changed receipt contents and
+multiple distinct matching markers remain unacceptable. Disk-backed replay
+selects both invocation-bound records and the exact marker without invocation
+metadata, preserving every original journal field unchanged.
+
+`check-health-records.py` checks both shipped matchers with actual unresolved
+health evidence selected by `--evidence` and `--result`, using the tools named
+by `--package`. It preserves the positive records and separately checks
+explicit negative derivatives for missing markers, conflicting identities,
+changed bodies, wrong process IDs and distinct duplicate markers. It does not
+create a live observation or establish full-day acceptance.
+
+The evidence and result paths select a completed actual observation and its
+preserved unresolved source-set result. The package path selects the exact
+original or explicitly corrected frozen tools to test. None of these inputs
+is modified. The regression CLI reports each real-record case separately
+from its negative derivatives and does not replace full-day comparison.
+
+```bash
+pkg=/absolute/path/to/frozen-journal-package
+run=/absolute/path/to/retained-observation
+result=/absolute/path/to/preserved-incomplete-result.json
+python3 -B "$pkg/check-health-records.py" --package "$pkg" --evidence "$run" --result "$result"
+```
 
 Finalization waits for action completion and journal visibility, performs a
 separate final live query, and requests final collection. It records errors

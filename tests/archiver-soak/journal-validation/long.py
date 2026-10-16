@@ -172,9 +172,12 @@ class Index:
                     selected[key] = self.get('direct', key)
         elif action['path'] == 'health':
             invocation = outcome.get('health', {}).get('invocation_id', '')
+            marker = basic.HEALTH_PREFIX + json.dumps(outcome.get('health', {}), sort_keys=True)
             selected = dict((key, json.loads(payload)) for key, payload in self.db.execute(
-                'SELECT identity,payload FROM records WHERE kind=? AND invocation=? AND unit=?',
-                ('direct', invocation, basic.HEALTH_UNIT)))
+                'SELECT identity,payload FROM records WHERE kind=? AND invocation=? AND unit=? '
+                'UNION ALL SELECT identity,payload FROM records '
+                'WHERE kind=? AND message=? AND unit=? AND invocation IS NULL',
+                ('direct', invocation, basic.HEALTH_UNIT, 'direct', marker, basic.HEALTH_UNIT)))
         else:
             selected = dict((key, json.loads(payload)) for key, payload in self.db.execute(
                 'SELECT identity,payload FROM records WHERE kind=? AND message=?', ('direct', action['message'])))
