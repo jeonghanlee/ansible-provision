@@ -35,6 +35,8 @@ verification results are in [the work register](../../docs/milestone-38560eb.md)
 | `etl-pass/aggregate.py`, `evidence.py`, `rate-semantics.json` | Portable numerical aggregation, bounded GC overlap handling and pinned metric meanings |
 | `etl-pass/pass_source.py` | Capture actual per-component Log4j File events with producer PID/invocation, immutable file-prefix receipts and native completed-pass fields |
 | `journal-validation/` | Independent journal installation, producer schedules, direct queries, native collection and frozen replay |
+| `diagnostics/` | Retained full-day/fault-record analysis and actual fixed-interval physical/HTTP checkpoints |
+| `etl-scenarios/` | Preserved preparation, module challenge, actual source-fault and replay payloads with explicit private configuration |
 | `etl-pass/test_contract.py` | Contract, bundle, fixture-preservation and retained-export replay checks |
 | `etl-pass/focused.py`, `PBFixture.java`, `test_focused.py` | Installed configuration inventory, real writer/decoder, automatic two-hop physical/HTTP checks and subsequent regular-pass evidence |
 | `etl-pass/replace-bundle.py` | Replace an installed bundle by a frozen bundle while carrying every other file and keeping a preserved sibling and rollback; not a bundle member |
@@ -45,13 +47,20 @@ verification results are in [the work register](../../docs/milestone-38560eb.md)
 | `baseline/sampler.py`, `register.py`, `load_retrieval.py` | Original resource sampler, registration client and concurrent retrieval load client |
 | `baseline/journald_facts.sh`, `step2.sh`, `store-test.yml` | Original journald inspection, second load-step launcher and shortened store configuration |
 | `baseline/pilot/` | Earlier pilot IOC, sampler and installed policy source; independent of the 903-PV fixture |
-| `SHA256SUMS` | File hashes for this preserved copy |
+| `SHA256SUMS` | Legacy preserved-copy manifest; current source synchronization is separate maintenance work |
 
 The current sources originate from `work/soak-etl-pass-3bdf378c/`; baseline
 sources and fixtures originate from `work/soak-9eed006/`. The registration
 client is shared by both workflows. `resource_helpers.py` and the baseline
 sampler retain separate filenames because the current collector imports that
 module name. Original working copies remain in private evidence directories.
+
+Reusable retained-record diagnostics are documented in
+[`diagnostics/README.md`](diagnostics/README.md). Additional-test execution
+payloads are documented in [`etl-scenarios/README.md`](etl-scenarios/README.md).
+Each directory has its own source manifest. Both are separate from a recorded
+observation's frozen bundle and private evidence hashes. Copying source does
+not establish execution or acceptance of an unverified scenario.
 
 ## Environment And Fixture
 
