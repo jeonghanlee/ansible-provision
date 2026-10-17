@@ -31,7 +31,7 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: M22 ETL functional verification is Complete and #30 was observed closed completed at 2026-10-15T18:09:12Z; no ETL acceptance test remains. M25/#31 is also complete/closed. M24/#52 is Complete/closed with its implementation commit and recorded mechanism/integration results in Closure Evidence. M14 remains Blocked on G2 and M26 remains Blocked on G5; no Milestone row is Ready. M29/#34 and M30/#35 remain Deferred tool Backlogs, alongside independent M27/#32 and M28/#33 journal-tool Backlogs. Existing shortened E4 automatic-abort behavior Passed retained-original verification with original Incomplete tool records preserved. The independent M31-M46 tool Backlogs are registered as #36-#51 under D31; M29/#34 and M30/#35 coordinate them without reopening M22 or M25.
+Next session entry point: read M47-M50 in `docs/milestone-38560eb.md` for the four open tool issues #53 (Journal), #54 (ETL), #55 (Buffer) and #56 (Shared), then prepare the selected component follow-up before any new tool execution. Consolidation of #32-#51 is complete as tracking only: all twenty sources are closed not_planned, all 94 original acceptance conditions and evidence are retained, and unfinished work stays Deferred. M22/#30, M25/#31 and M24/#52 remain Complete/closed; M14 is Blocked on G2 and M26 on G5. No Milestone row is Ready.
 
 Both original shortened/default 24-hour ETL processing observations completed on 2026-10-15 UTC and are accepted under D29. They ran for 86416.387 and 86415.088 monotonic seconds before normal finish across UTC midnight. The unchanged native scheduler evaluator Passed with all 312 and 27 required passes present exactly once. Read-only initial, both-transition and final physical/HTTP comparisons Passed on each chain. Whole-unit normal stops returned 0 in 12.516 and 13.770 seconds, below the installed 300-second timeout. Each observation retained 290 in-window full samples and its original frozen bundle.
 
@@ -465,6 +465,8 @@ Status tally: 24 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 
 | D29 | Accept both completed shortened/default full-day ETL processing observations from retained actual scheduling, physical/HTTP and orderly-stop evidence. Preserve original Incomplete tool verdicts. Transfer kernel collector/ETL terminal isolation to M29 and JFR scope/terminal ordering correction to M30 as independent Deferred Backlog work. Neither gates the accepted ETL results or requires a repeat full-day run solely for tool correction. Other independence, fault/abort, measurement/report and recipient expectations remain unaccepted. | 2026-10-15 |
 | D30 | ETL test completion concerns actual movement, transformation, policy retention/deletion, HTTP retrieval and full-day repeated processing only. Those declared functional expectations Passed on both chains. Transfer all remaining package/source-fault/collection/measurement/report/independent-recipient tool checks to existing M29/#34 and M30/#35 after ETL acceptance; they do not gate it. Conclude the already executed E4 case from unchanged retained evidence and preserve original unsuccessful tool statuses. | 2026-10-15 |
 | D31 | Separate independent tool defects and unfinished verification/reporting into individually scoped Backlog work. M29/#34 and M30/#35 coordinate their respective child work; neither is one combined implementation. Preserve accepted ETL/journal results, actual shortened-case scope and original unsuccessful records. Corrected preparation failures and normal metrics overlap are not reopened as product defects. New corrective execution remains separately authorized. | 2026-10-15 |
+| D32 | Organize tool follow-ups under four representative Journal, ETL, Buffer and Shared issues. Preserve all existing #32-#51 scopes, criteria, evidence and states; give each one primary group without removing cross-group references. Add the reviewed buffer replay/progress and Maven coverage findings to Buffer, and installation/source-preservation work to Shared. Accepted ETL/journal/buffer results remain independent. Future repairs, source import and runtime tests remain Deferred; this decision authorizes grouping preparation only. | 2026-10-16 |
+| D33 | Consolidate GitHub tool tracking into four Journal, ETL, Buffer and Shared issues. Copy every original scope, acceptance criterion, verification method and evidence statement from #32-#51 before retiring those twenty issues with reason not planned and replacement links. Preserve unmet criteria directly in the replacements; source issue closure is not tool completion. Canonical component identities and unfinished verification remain independent and Deferred. Supersedes D32's plan to retain twenty open source issues. Actual GitHub mutation requires separate Issue delegation. | 2026-10-16 |
 
 ### Assignment History
 
@@ -5857,6 +5859,10 @@ The assembly neither writes nor checks these files (`D26`). `M26` depends on the
 | Tools | M44 | Compare ETL busy time and workload with retained earlier results | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m44---compare-etl-busy-time-and-workload-with-retained-earlier-results) |
 | Tools | M45 | Reproduce completed ETL observation reports on an independent recipient | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m45---reproduce-completed-etl-observation-reports-on-an-independent-recipient) |
 | Tools | M46 | Report actual test phase durations against the agreed allocations | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m46---report-actual-test-phase-durations-against-the-agreed-allocations) |
+| Tools | M47 | Track journal test tooling | Carry-forward | Deferred | No | D32, D33 | Track consolidated journal criteria directly; source issue closure is not test completion; [detail](#m47---track-journal-test-tooling) |
+| Tools | M48 | Track ETL test tooling | Carry-forward | Deferred | No | D32, D33 | Track consolidated etl criteria directly; source issue closure is not test completion; [detail](#m48---track-etl-test-tooling) |
+| Tools | M49 | Track buffer test tooling | Carry-forward | Deferred | No | D32, D33 | Track consolidated buffer criteria directly; source issue closure is not test completion; [detail](#m49---track-buffer-test-tooling) |
+| Tools | M50 | Track shared test tooling | Carry-forward | Deferred | No | D32, D33 | Track consolidated shared criteria directly; source issue closure is not test completion; [detail](#m50---track-shared-test-tooling) |
 
 Unassigned work is excluded from the release tally.
 
@@ -5866,7 +5872,8 @@ Unassigned work is excluded from the release tally.
 
 - Origin: 38560eb / M27
 - Identity History: created from the explicitly transferred M25 condition on 2026-10-15 (D28).
-- GitHub Issue: #32, https://github.com/jeonghanlee/ansible-provision/issues/32
+- GitHub Issue: #53, https://github.com/jeonghanlee/ansible-provision/issues/53
+- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #32 is closed not_planned at 2026-10-17T01:11:41Z; unfinished criteria are tracked in #53. Original issue references below are historical and do not create an active source-issue dependency.
 - Status: Deferred
 
 ##### Summary
@@ -5926,22 +5933,33 @@ Another positive 24-hour observation; ETL acceptance or changes to ETL deploymen
 
 ##### GitHub Projection
 
-- Title: `Verify collector capture around normal appliance shutdown`
+- Title: `Track journal test tooling`
 - Labels: `enhancement`
-- Milestone: `Backlog`
+- GitHub Milestone: `Backlog`
 - Assignee: `jeonghanlee`
-- Issue: #32, https://github.com/jeonghanlee/ansible-provision/issues/32
+- Issue: #53, https://github.com/jeonghanlee/ansible-provision/issues/53
+- Projection Scope: Component contract from historical source #32; current tracking uses its section in the consolidated issue.
 - Observed State: open
-- GitHub Updated At: 2026-10-15T08:18:47Z
-- Last Compared: 2026-10-15T08:18:48.738215+00:00; exact body and intended metadata matched after creation.
-- Published Body SHA256: `e78f5657a4f19188c95c1ab65d2e326597d1d0c241fadea21ad49c8fe02ffa57`
-- Prepared Body SHA256: `e78f5657a4f19188c95c1ab65d2e326597d1d0c241fadea21ad49c8fe02ffa57`
+- Observed Labels: `enhancement`
+- Observed Milestone: `Backlog`
+- Observed Assignees: `jeonghanlee`
+- Observed Updated At: 2026-10-17T01:09:36Z
+- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
+- Prepared Body: `work/issue-tools-journal.md`
+- Published Body SHA256: 57226e8a00e7b8aca7c4a5143f1ff5a915bc8b13dea7b1e2f5d99d032d46305d
+- Historical Source Issue: #32, https://github.com/jeonghanlee/ansible-provision/issues/32
+- Historical Source State: closed
+- Historical Source Reason: not_planned
+- Historical Source Closed At: 2026-10-17T01:11:41Z
+- Historical Original Body SHA256: e78f5657a4f19188c95c1ab65d2e326597d1d0c241fadea21ad49c8fe02ffa57
+- Historical Retired Body SHA256: 4a9a855859ce219f3c01ea691c54655751b94e91def73820e50fead75022f3ba
 
 #### M28 - Reproduce journal results on an independent recipient
 
 - Origin: 38560eb / M28
 - Identity History: created from the explicitly transferred M25 condition on 2026-10-15 (D28).
-- GitHub Issue: #33, https://github.com/jeonghanlee/ansible-provision/issues/33
+- GitHub Issue: #53, https://github.com/jeonghanlee/ansible-provision/issues/53
+- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #33 is closed not_planned at 2026-10-17T01:11:45Z; unfinished criteria are tracked in #53. Original issue references below are historical and do not create an active source-issue dependency.
 - Status: Deferred
 
 ##### Summary
@@ -6001,23 +6019,33 @@ A new 24-hour recording, live appliance operations, ETL acceptance, collector no
 
 ##### GitHub Projection
 
-- Title: `Reproduce journal results on an independent recipient`
+- Title: `Track journal test tooling`
 - Labels: `enhancement`
-- Milestone: `Backlog`
+- GitHub Milestone: `Backlog`
 - Assignee: `jeonghanlee`
-- Issue: #33, https://github.com/jeonghanlee/ansible-provision/issues/33
+- Issue: #53, https://github.com/jeonghanlee/ansible-provision/issues/53
+- Projection Scope: Component contract from historical source #33; current tracking uses its section in the consolidated issue.
 - Observed State: open
-- GitHub Updated At: 2026-10-15T08:18:50Z
-- Last Compared: 2026-10-15T08:18:51.922027+00:00; exact body and intended metadata matched after creation.
-- Published Body SHA256: `eb48705ecf2b144e98bb607e9cf18c789c6fe83f37e2e1fa54755e26d5490481`
-- Prepared Body SHA256: `eb48705ecf2b144e98bb607e9cf18c789c6fe83f37e2e1fa54755e26d5490481`
-
+- Observed Labels: `enhancement`
+- Observed Milestone: `Backlog`
+- Observed Assignees: `jeonghanlee`
+- Observed Updated At: 2026-10-17T01:09:36Z
+- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
+- Prepared Body: `work/issue-tools-journal.md`
+- Published Body SHA256: 57226e8a00e7b8aca7c4a5143f1ff5a915bc8b13dea7b1e2f5d99d032d46305d
+- Historical Source Issue: #33, https://github.com/jeonghanlee/ansible-provision/issues/33
+- Historical Source State: closed
+- Historical Source Reason: not_planned
+- Historical Source Closed At: 2026-10-17T01:11:45Z
+- Historical Original Body SHA256: eb48705ecf2b144e98bb607e9cf18c789c6fe83f37e2e1fa54755e26d5490481
+- Historical Retired Body SHA256: e2cd3fb06080ce9b122340a648101bc72cbaaa2468af03950f29c42e78fae10e
 
 #### M29 - Track ETL collection-tool follow-ups
 
 - Origin: 38560eb / M29
 - Identity History: created from explicit M22 tool-defect Backlog separation on 2026-10-15 (D29).
-- GitHub Issue: #34, https://github.com/jeonghanlee/ansible-provision/issues/34
+- GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #34 is closed not_planned at 2026-10-17T01:11:50Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
 - Status: Deferred
 
 ##### Summary
@@ -6174,28 +6202,33 @@ Independent membership and transferred coverage:
 
 ##### GitHub Projection
 
-- Title: `Track ETL collection-tool follow-ups`
+- Title: `Track ETL test tooling`
 - Labels: `enhancement`
-- Milestone: `Backlog`
+- GitHub Milestone: `Backlog`
 - Assignee: `jeonghanlee`
-- Issue: #34, https://github.com/jeonghanlee/ansible-provision/issues/34
+- Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+- Projection Scope: Component contract from historical source #34; current tracking uses its section in the consolidated issue.
 - Observed State: open
-- Observed Title: `Fix kernel journal collection and ETL terminal isolation`
-- Observed Labels: `bug`
-- Prepared Body: `work/issue-tool-tracking-34-body.md`
-- Decomposition Projection: draft only; title/label/body changes have not been published. Bind actual created child references before publication.
-- GitHub Updated At: 2026-10-15T17:51:12Z
-- Last Compared: 2026-10-15T17:52:30.345Z; live body exactly matched the approved purpose/Backlog update and metadata stayed unchanged.
-- Published Body SHA256: e6f26dd5e6460c648f1ba9a295ede7df429a31cf9f1b682479a3818dc317f8d4
-- Prepared Body SHA256: 95370ab3d2536dae8d0e7ed161a8ac18411a1183d2ae512b2009f942d3821e98
-- Applied Purpose Update: 2026-10-15T17:52:30.345Z; body SHA256 e6f26dd5e6460c648f1ba9a295ede7df429a31cf9f1b682479a3818dc317f8d4; exact readback and unchanged metadata verified.
-
+- Observed Labels: `enhancement`
+- Observed Milestone: `Backlog`
+- Observed Assignees: `jeonghanlee`
+- Observed Updated At: 2026-10-17T01:09:40Z
+- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
+- Prepared Body: `work/issue-tools-etl.md`
+- Published Body SHA256: b6a0ab483695713866a62fe7ccf6cb65a4f04514238fa3adce424715686417f0
+- Historical Source Issue: #34, https://github.com/jeonghanlee/ansible-provision/issues/34
+- Historical Source State: closed
+- Historical Source Reason: not_planned
+- Historical Source Closed At: 2026-10-17T01:11:50Z
+- Historical Original Body SHA256: e6f26dd5e6460c648f1ba9a295ede7df429a31cf9f1b682479a3818dc317f8d4
+- Historical Retired Body SHA256: f30610fe813919c102d309d3401e81b9a9539374d6f081c3f7e5a03d150afc4e
 
 #### M30 - Track ETL evaluation and reporting follow-ups
 
 - Origin: 38560eb / M30
 - Identity History: created from explicit M22 tool-defect Backlog separation on 2026-10-15 (D29).
-- GitHub Issue: #35, https://github.com/jeonghanlee/ansible-provision/issues/35
+- GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #35 is closed not_planned at 2026-10-17T01:11:56Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
 - Status: Deferred
 
 ##### Summary
@@ -6345,28 +6378,33 @@ Independent membership and transferred coverage:
 
 ##### GitHub Projection
 
-- Title: `Track ETL evaluation and reporting follow-ups`
+- Title: `Track ETL test tooling`
 - Labels: `enhancement`
-- Milestone: `Backlog`
+- GitHub Milestone: `Backlog`
 - Assignee: `jeonghanlee`
-- Issue: #35, https://github.com/jeonghanlee/ansible-provision/issues/35
+- Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+- Projection Scope: Component contract from historical source #35; current tracking uses its section in the consolidated issue.
 - Observed State: open
-- Observed Title: `Fix ETL JFR scope and terminal evaluation order`
-- Observed Labels: `bug`
-- Prepared Body: `work/issue-tool-tracking-35-body.md`
-- Decomposition Projection: draft only; title/label/body changes have not been published. Bind actual created child references before publication.
-- GitHub Updated At: 2026-10-15T17:51:23Z
-- Last Compared: 2026-10-15T17:52:30.345Z; live body exactly matched the approved purpose/Backlog update and metadata stayed unchanged.
-- Published Body SHA256: 7ec602ee63c6a55ac10a79e54ac6af08dec019bc109d34976c76641484c3bbfd
-- Prepared Body SHA256: fa109228650ba93a46e979aee4f3f4900652f82c8ce70acda33a57a35b0b7adf
-
-- Applied Purpose Update: 2026-10-15T17:52:30.345Z; body SHA256 7ec602ee63c6a55ac10a79e54ac6af08dec019bc109d34976c76641484c3bbfd; exact readback and unchanged metadata verified.
+- Observed Labels: `enhancement`
+- Observed Milestone: `Backlog`
+- Observed Assignees: `jeonghanlee`
+- Observed Updated At: 2026-10-17T01:09:40Z
+- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
+- Prepared Body: `work/issue-tools-etl.md`
+- Published Body SHA256: b6a0ab483695713866a62fe7ccf6cb65a4f04514238fa3adce424715686417f0
+- Historical Source Issue: #35, https://github.com/jeonghanlee/ansible-provision/issues/35
+- Historical Source State: closed
+- Historical Source Reason: not_planned
+- Historical Source Closed At: 2026-10-17T01:11:56Z
+- Historical Original Body SHA256: 7ec602ee63c6a55ac10a79e54ac6af08dec019bc109d34976c76641484c3bbfd
+- Historical Retired Body SHA256: 20cac5c83b898cec983521fda96ac63e60ad10bc525a3d7d35f785d28565d632
 
 #### M31 - Preserve kernel cursor refusal evidence and prove interval coverage
 
 - Origin: 38560eb / M31
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: [#36](https://github.com/jeonghanlee/ansible-provision/issues/36)
+- GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #36 is closed not_planned at 2026-10-17T01:12:02Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
 - Status: Deferred
 
 ##### Summary
@@ -6431,25 +6469,33 @@ The repository candidate at 3ff784e has collector SHA256 7444a7b2f0d2383b7d77cfd
 
 ##### GitHub Projection
 
-- Title: `Preserve kernel cursor refusal evidence and prove interval coverage`
-- Labels: `bug`
-- Milestone: `Backlog`
+- Title: `Track ETL test tooling`
+- Labels: `enhancement`
+- GitHub Milestone: `Backlog`
 - Assignee: `jeonghanlee`
-- Observed State: OPEN
-- Observed Labels: `bug`
+- Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+- Projection Scope: Component contract from historical source #36; current tracking uses its section in the consolidated issue.
+- Observed State: open
+- Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-16T02:44:44Z
-- Last Compared: 2026-10-16T02:46:24.487262+00:00; sequential issue create/readback confirmed exact prepared body and creation metadata. Recheck with `gh issue view 36 --repo jeonghanlee/ansible-provision`.
-- Prepared Body: `work/issue-kernel-cursor.md`
-- Prepared Body SHA256: 835e80de97131e19c3b6e8368b82498b194c4edb60706c7a3ad25d7a9bd19843
-
+- Observed Updated At: 2026-10-17T01:09:40Z
+- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
+- Prepared Body: `work/issue-tools-etl.md`
+- Published Body SHA256: b6a0ab483695713866a62fe7ccf6cb65a4f04514238fa3adce424715686417f0
+- Historical Source Issue: #36, https://github.com/jeonghanlee/ansible-provision/issues/36
+- Historical Source State: closed
+- Historical Source Reason: not_planned
+- Historical Source Closed At: 2026-10-17T01:12:02Z
+- Historical Original Body SHA256: 835e80de97131e19c3b6e8368b82498b194c4edb60706c7a3ad25d7a9bd19843
+- Historical Retired Body SHA256: 60811fe3b7a63c73ee248cd095be5d2af36a22b122f2b377a0c095b9197b4b23
 
 #### M32 - Keep kernel diagnostics independent of the ETL terminal verdict
 
 - Origin: 38560eb / M32
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: [#37](https://github.com/jeonghanlee/ansible-provision/issues/37)
+- GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #37 is closed not_planned at 2026-10-17T01:12:07Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
 - Status: Deferred
 
 ##### Summary
@@ -6509,25 +6555,33 @@ Out of scope: Repairing kernel cursor coverage or changing ETL application sched
 
 ##### GitHub Projection
 
-- Title: `Keep kernel diagnostics independent of the ETL terminal verdict`
-- Labels: `bug`
-- Milestone: `Backlog`
+- Title: `Track ETL test tooling`
+- Labels: `enhancement`
+- GitHub Milestone: `Backlog`
 - Assignee: `jeonghanlee`
-- Observed State: OPEN
-- Observed Labels: `bug`
+- Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+- Projection Scope: Component contract from historical source #37; current tracking uses its section in the consolidated issue.
+- Observed State: open
+- Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-16T02:44:50Z
-- Last Compared: 2026-10-16T02:46:24.487262+00:00; sequential issue create/readback confirmed exact prepared body and creation metadata. Recheck with `gh issue view 37 --repo jeonghanlee/ansible-provision`.
-- Prepared Body: `work/issue-etl-terminal-isolation.md`
-- Prepared Body SHA256: 00f908ce907c86c79151bb74fb81eb830bd1a8fbb5452cef35c6fb4339009a49
-
+- Observed Updated At: 2026-10-17T01:09:40Z
+- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
+- Prepared Body: `work/issue-tools-etl.md`
+- Published Body SHA256: b6a0ab483695713866a62fe7ccf6cb65a4f04514238fa3adce424715686417f0
+- Historical Source Issue: #37, https://github.com/jeonghanlee/ansible-provision/issues/37
+- Historical Source State: closed
+- Historical Source Reason: not_planned
+- Historical Source Closed At: 2026-10-17T01:12:07Z
+- Historical Original Body SHA256: 00f908ce907c86c79151bb74fb81eb830bd1a8fbb5452cef35c6fb4339009a49
+- Historical Retired Body SHA256: 67a5f3b303cd5bc4572be567ce588262d246c6e0c6150f6ee37f3e1eda178af3
 
 #### M33 - Use timestamps accepted by systemd 239 journal queries
 
 - Origin: 38560eb / M33
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: [#38](https://github.com/jeonghanlee/ansible-provision/issues/38)
+- GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #38 is closed not_planned at 2026-10-17T01:12:13Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
 - Status: Deferred
 
 ##### Summary
@@ -6592,25 +6646,33 @@ The preserved original controller has SHA256 65acfd262aface090e995dfd5dc77d5b5db
 
 ##### GitHub Projection
 
-- Title: `Use timestamps accepted by systemd 239 journal queries`
-- Labels: `bug`
-- Milestone: `Backlog`
+- Title: `Track ETL test tooling`
+- Labels: `enhancement`
+- GitHub Milestone: `Backlog`
 - Assignee: `jeonghanlee`
-- Observed State: OPEN
-- Observed Labels: `bug`
+- Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+- Projection Scope: Component contract from historical source #38; current tracking uses its section in the consolidated issue.
+- Observed State: open
+- Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-16T02:44:58Z
-- Last Compared: 2026-10-16T02:46:24.487262+00:00; sequential issue create/readback confirmed exact prepared body and creation metadata. Recheck with `gh issue view 38 --repo jeonghanlee/ansible-provision`.
-- Prepared Body: `work/issue-journal-query-time.md`
-- Prepared Body SHA256: 36b660c6c7e58b16dee91433701b359893c9e230b955bbcbf8a88bc6c66ffac1
-
+- Observed Updated At: 2026-10-17T01:09:40Z
+- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
+- Prepared Body: `work/issue-tools-etl.md`
+- Published Body SHA256: b6a0ab483695713866a62fe7ccf6cb65a4f04514238fa3adce424715686417f0
+- Historical Source Issue: #38, https://github.com/jeonghanlee/ansible-provision/issues/38
+- Historical Source State: closed
+- Historical Source Reason: not_planned
+- Historical Source Closed At: 2026-10-17T01:12:13Z
+- Historical Original Body SHA256: 36b660c6c7e58b16dee91433701b359893c9e230b955bbcbf8a88bc6c66ffac1
+- Historical Retired Body SHA256: 9c83fae39efd46158d3a1961f6c31bac174ced6e6dac2254fc76ca314c7701ba
 
 #### M34 - Match JFR exports to the recording process and lifetime
 
 - Origin: 38560eb / M34
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: [#39](https://github.com/jeonghanlee/ansible-provision/issues/39)
+- GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #39 is closed not_planned at 2026-10-17T01:12:18Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
 - Status: Deferred
 
 ##### Summary
@@ -6670,25 +6732,33 @@ The complete-recording comparison selects the component without selecting the re
 
 ##### GitHub Projection
 
-- Title: `Match JFR exports to the recording process and lifetime`
-- Labels: `bug`
-- Milestone: `Backlog`
+- Title: `Track ETL test tooling`
+- Labels: `enhancement`
+- GitHub Milestone: `Backlog`
 - Assignee: `jeonghanlee`
-- Observed State: OPEN
-- Observed Labels: `bug`
+- Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+- Projection Scope: Component contract from historical source #39; current tracking uses its section in the consolidated issue.
+- Observed State: open
+- Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-16T02:45:04Z
-- Last Compared: 2026-10-16T02:46:24.487262+00:00; sequential issue create/readback confirmed exact prepared body and creation metadata. Recheck with `gh issue view 39 --repo jeonghanlee/ansible-provision`.
-- Prepared Body: `work/issue-jfr-process-scope.md`
-- Prepared Body SHA256: 072fce69a17ef7784b48eaf6ea512d627564c8286098e6edfce2da8bdc2b3d10
-
+- Observed Updated At: 2026-10-17T01:09:40Z
+- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
+- Prepared Body: `work/issue-tools-etl.md`
+- Published Body SHA256: b6a0ab483695713866a62fe7ccf6cb65a4f04514238fa3adce424715686417f0
+- Historical Source Issue: #39, https://github.com/jeonghanlee/ansible-provision/issues/39
+- Historical Source State: closed
+- Historical Source Reason: not_planned
+- Historical Source Closed At: 2026-10-17T01:12:18Z
+- Historical Original Body SHA256: 072fce69a17ef7784b48eaf6ea512d627564c8286098e6edfce2da8bdc2b3d10
+- Historical Retired Body SHA256: fc585144bc7ce08a68a5659e323594714bcc3a8e83fbf27fbfd360a40c808038
 
 #### M35 - Persist terminal state before evaluating terminal coherence
 
 - Origin: 38560eb / M35
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: [#40](https://github.com/jeonghanlee/ansible-provision/issues/40)
+- GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #40 is closed not_planned at 2026-10-17T01:12:25Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
 - Status: Deferred
 
 ##### Summary
@@ -6748,25 +6818,33 @@ Out of scope: JFR process selection, source-access fault production, and reopeni
 
 ##### GitHub Projection
 
-- Title: `Persist terminal state before evaluating terminal coherence`
-- Labels: `bug`
-- Milestone: `Backlog`
+- Title: `Track ETL test tooling`
+- Labels: `enhancement`
+- GitHub Milestone: `Backlog`
 - Assignee: `jeonghanlee`
-- Observed State: OPEN
-- Observed Labels: `bug`
+- Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+- Projection Scope: Component contract from historical source #40; current tracking uses its section in the consolidated issue.
+- Observed State: open
+- Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-16T02:45:10Z
-- Last Compared: 2026-10-16T02:46:24.487262+00:00; sequential issue create/readback confirmed exact prepared body and creation metadata. Recheck with `gh issue view 40 --repo jeonghanlee/ansible-provision`.
-- Prepared Body: `work/issue-terminal-order.md`
-- Prepared Body SHA256: 8d5c3f69533a0cabb079b2a033dda5bb59103ec47d462dc7caf31633ccd89da3
-
+- Observed Updated At: 2026-10-17T01:09:40Z
+- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
+- Prepared Body: `work/issue-tools-etl.md`
+- Published Body SHA256: b6a0ab483695713866a62fe7ccf6cb65a4f04514238fa3adce424715686417f0
+- Historical Source Issue: #40, https://github.com/jeonghanlee/ansible-provision/issues/40
+- Historical Source State: closed
+- Historical Source Reason: not_planned
+- Historical Source Closed At: 2026-10-17T01:12:25Z
+- Historical Original Body SHA256: 8d5c3f69533a0cabb079b2a033dda5bb59103ec47d462dc7caf31633ccd89da3
+- Historical Retired Body SHA256: 7e07ab771198fbd86242b2f9f86faf7ccb71da6c4c9169d1bed4ea21bbf9a403
 
 #### M36 - Match ETL pass times by UTC instant with nanosecond precision
 
 - Origin: 38560eb / M36
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: [#41](https://github.com/jeonghanlee/ansible-provision/issues/41)
+- GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #41 is closed not_planned at 2026-10-17T01:12:30Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
 - Status: Deferred
 
 ##### Summary
@@ -6826,25 +6904,33 @@ The runtime/scenario checker compares timestamp text instead of its UTC instant.
 
 ##### GitHub Projection
 
-- Title: `Match ETL pass times by UTC instant with nanosecond precision`
-- Labels: `bug`
-- Milestone: `Backlog`
+- Title: `Track ETL test tooling`
+- Labels: `enhancement`
+- GitHub Milestone: `Backlog`
 - Assignee: `jeonghanlee`
-- Observed State: OPEN
-- Observed Labels: `bug`
+- Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+- Projection Scope: Component contract from historical source #41; current tracking uses its section in the consolidated issue.
+- Observed State: open
+- Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-16T02:45:17Z
-- Last Compared: 2026-10-16T02:46:24.487262+00:00; sequential issue create/readback confirmed exact prepared body and creation metadata. Recheck with `gh issue view 41 --repo jeonghanlee/ansible-provision`.
-- Prepared Body: `work/issue-utc-pass-match.md`
-- Prepared Body SHA256: 4c6f0a297ce7095013b18d3579a02256c1221f5c699388c96d8230f70813b667
-
+- Observed Updated At: 2026-10-17T01:09:40Z
+- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
+- Prepared Body: `work/issue-tools-etl.md`
+- Published Body SHA256: b6a0ab483695713866a62fe7ccf6cb65a4f04514238fa3adce424715686417f0
+- Historical Source Issue: #41, https://github.com/jeonghanlee/ansible-provision/issues/41
+- Historical Source State: closed
+- Historical Source Reason: not_planned
+- Historical Source Closed At: 2026-10-17T01:12:30Z
+- Historical Original Body SHA256: 4c6f0a297ce7095013b18d3579a02256c1221f5c699388c96d8230f70813b667
+- Historical Retired Body SHA256: d4047244760114c545b1fabb6c27995c14eb92741a835e794109e58ff13182aa
 
 #### M37 - Refresh preserved-tool checksums
 
 - Origin: 38560eb / M37
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: [#42](https://github.com/jeonghanlee/ansible-provision/issues/42)
+- GitHub Issue: #56, https://github.com/jeonghanlee/ansible-provision/issues/56
+- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #42 is closed not_planned at 2026-10-17T01:13:17Z; unfinished criteria are tracked in #56. Original issue references below are historical and do not create an active source-issue dependency.
 - Status: Deferred
 
 ##### Summary
@@ -6904,25 +6990,33 @@ The legacy manifest still lists removed journal modules and older tool hashes, a
 
 ##### GitHub Projection
 
-- Title: `Refresh preserved-tool checksums`
-- Labels: `bug`
-- Milestone: `Backlog`
+- Title: `Track shared test tooling`
+- Labels: `enhancement`
+- GitHub Milestone: `Backlog`
 - Assignee: `jeonghanlee`
-- Observed State: OPEN
-- Observed Labels: `bug`
+- Issue: #56, https://github.com/jeonghanlee/ansible-provision/issues/56
+- Projection Scope: Component contract from historical source #42; current tracking uses its section in the consolidated issue.
+- Observed State: open
+- Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-16T02:45:23Z
-- Last Compared: 2026-10-16T02:46:24.487262+00:00; sequential issue create/readback confirmed exact prepared body and creation metadata. Recheck with `gh issue view 42 --repo jeonghanlee/ansible-provision`.
-- Prepared Body: `work/issue-tool-checksums.md`
-- Prepared Body SHA256: 91f87e0eec44f033d9584ab0ad3b92f6e266d1183deeb73b070aa2c6f316fa49
-
+- Observed Updated At: 2026-10-17T01:09:45Z
+- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
+- Prepared Body: `work/issue-tools-shared.md`
+- Published Body SHA256: 991316dabf5a9f3ac639c6550aa1a090cd16b43f0aa719c0e0afa8f477e906c2
+- Historical Source Issue: #42, https://github.com/jeonghanlee/ansible-provision/issues/42
+- Historical Source State: closed
+- Historical Source Reason: not_planned
+- Historical Source Closed At: 2026-10-17T01:13:17Z
+- Historical Original Body SHA256: 91f87e0eec44f033d9584ab0ad3b92f6e266d1183deeb73b070aa2c6f316fa49
+- Historical Retired Body SHA256: 443f83435287c3ec1cdefc9769116c01069ec1a12568dc429dbb0b7ff4ea6d81
 
 #### M38 - Finish ETL tool independence checks across both store chains
 
 - Origin: 38560eb / M38
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: [#43](https://github.com/jeonghanlee/ansible-provision/issues/43)
+- GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #43 is closed not_planned at 2026-10-17T01:12:35Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
 - Status: Deferred
 
 ##### Summary
@@ -7031,25 +7125,33 @@ Use the six-row scope matrix and preserve the two recorded planned-abort evidenc
 
 ##### GitHub Projection
 
-- Title: `Finish ETL tool independence checks across both store chains`
+- Title: `Track ETL test tooling`
 - Labels: `enhancement`
-- Milestone: `Backlog`
+- GitHub Milestone: `Backlog`
 - Assignee: `jeonghanlee`
-- Observed State: OPEN
+- Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+- Projection Scope: Component contract from historical source #43; current tracking uses its section in the consolidated issue.
+- Observed State: open
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-16T02:45:29Z
-- Last Compared: 2026-10-16T02:46:24.487262+00:00; sequential issue create/readback confirmed exact prepared body and creation metadata. Recheck with `gh issue view 43 --repo jeonghanlee/ansible-provision`.
-- Prepared Body: `work/issue-package-independence.md`
-- Prepared Body SHA256: fcdb081256da410989e1c4839859f6590da0f3b6422a2ffed41fcaa82288dcf8
-
+- Observed Updated At: 2026-10-17T01:09:40Z
+- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
+- Prepared Body: `work/issue-tools-etl.md`
+- Published Body SHA256: b6a0ab483695713866a62fe7ccf6cb65a4f04514238fa3adce424715686417f0
+- Historical Source Issue: #43, https://github.com/jeonghanlee/ansible-provision/issues/43
+- Historical Source State: closed
+- Historical Source Reason: not_planned
+- Historical Source Closed At: 2026-10-17T01:12:35Z
+- Historical Original Body SHA256: fcdb081256da410989e1c4839859f6590da0f3b6422a2ffed41fcaa82288dcf8
+- Historical Retired Body SHA256: f92276ed6c8cb16d1acf9a4d7e2107d172a23ded4eab75dd1e6ee30b228ad61e
 
 #### M39 - Finish partial-source ETL evidence verification on both chains
 
 - Origin: 38560eb / M39
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: [#44](https://github.com/jeonghanlee/ansible-provision/issues/44)
+- GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #44 is closed not_planned at 2026-10-17T01:12:41Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
 - Status: Deferred
 
 ##### Summary
@@ -7125,25 +7227,33 @@ A wrong exit code, a failed scenario assertion, unavailable required verificatio
 
 ##### GitHub Projection
 
-- Title: `Finish partial-source ETL evidence verification on both chains`
+- Title: `Track ETL test tooling`
 - Labels: `enhancement`
-- Milestone: `Backlog`
+- GitHub Milestone: `Backlog`
 - Assignee: `jeonghanlee`
-- Observed State: OPEN
+- Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+- Projection Scope: Component contract from historical source #44; current tracking uses its section in the consolidated issue.
+- Observed State: open
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-16T02:45:35Z
-- Last Compared: 2026-10-16T02:46:24.487262+00:00; sequential issue create/readback confirmed exact prepared body and creation metadata. Recheck with `gh issue view 44 --repo jeonghanlee/ansible-provision`.
-- Prepared Body: `work/issue-partial-source-availability.md`
-- Prepared Body SHA256: 679a14a94343b77c0915a18713e4e309e41b5360fa04a7f34f89f93e8517f540
-
+- Observed Updated At: 2026-10-17T01:09:40Z
+- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
+- Prepared Body: `work/issue-tools-etl.md`
+- Published Body SHA256: b6a0ab483695713866a62fe7ccf6cb65a4f04514238fa3adce424715686417f0
+- Historical Source Issue: #44, https://github.com/jeonghanlee/ansible-provision/issues/44
+- Historical Source State: closed
+- Historical Source Reason: not_planned
+- Historical Source Closed At: 2026-10-17T01:12:41Z
+- Historical Original Body SHA256: 679a14a94343b77c0915a18713e4e309e41b5360fa04a7f34f89f93e8517f540
+- Historical Retired Body SHA256: 06683d8b4391da23eb09cf1c0e6548c22a9492c0aff439937adc6f2e3d3b9af5
 
 #### M40 - Finish all-source evidence loss and automatic-abort verification
 
 - Origin: 38560eb / M40
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: [#45](https://github.com/jeonghanlee/ansible-provision/issues/45)
+- GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #45 is closed not_planned at 2026-10-17T01:12:47Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
 - Status: Deferred
 
 ##### Summary
@@ -7219,25 +7329,33 @@ A wrong exit code, a failed scenario assertion, unavailable required verificatio
 
 ##### GitHub Projection
 
-- Title: `Finish all-source evidence loss and automatic-abort verification`
+- Title: `Track ETL test tooling`
 - Labels: `enhancement`
-- Milestone: `Backlog`
+- GitHub Milestone: `Backlog`
 - Assignee: `jeonghanlee`
-- Observed State: OPEN
+- Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+- Projection Scope: Component contract from historical source #45; current tracking uses its section in the consolidated issue.
+- Observed State: open
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-16T02:45:41Z
-- Last Compared: 2026-10-16T02:46:24.487262+00:00; sequential issue create/readback confirmed exact prepared body and creation metadata. Recheck with `gh issue view 45 --repo jeonghanlee/ansible-provision`.
-- Prepared Body: `work/issue-all-source-abort.md`
-- Prepared Body SHA256: 3a356bbe83dadf95f19be431971c08cf8818e19acebb8b8ed725e57cedcd5b87
-
+- Observed Updated At: 2026-10-17T01:09:40Z
+- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
+- Prepared Body: `work/issue-tools-etl.md`
+- Published Body SHA256: b6a0ab483695713866a62fe7ccf6cb65a4f04514238fa3adce424715686417f0
+- Historical Source Issue: #45, https://github.com/jeonghanlee/ansible-provision/issues/45
+- Historical Source State: closed
+- Historical Source Reason: not_planned
+- Historical Source Closed At: 2026-10-17T01:12:47Z
+- Historical Original Body SHA256: 3a356bbe83dadf95f19be431971c08cf8818e19acebb8b8ed725e57cedcd5b87
+- Historical Retired Body SHA256: ffb6f5413fb7c396794f67c46de26f1d2f16e726ecc389df88837b5b926d94f4
 
 #### M41 - Verify ETL collector capture and refusal after normal shutdown
 
 - Origin: 38560eb / M41
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: [#46](https://github.com/jeonghanlee/ansible-provision/issues/46)
+- GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #46 is closed not_planned at 2026-10-17T01:12:52Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
 - Status: Deferred
 
 ##### Summary
@@ -7293,25 +7411,33 @@ Out of scope: The separate journal collector verification in #32, product shutdo
 
 ##### GitHub Projection
 
-- Title: `Verify ETL collector capture and refusal after normal shutdown`
+- Title: `Track ETL test tooling`
 - Labels: `enhancement`
-- Milestone: `Backlog`
+- GitHub Milestone: `Backlog`
 - Assignee: `jeonghanlee`
-- Observed State: OPEN
+- Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+- Projection Scope: Component contract from historical source #46; current tracking uses its section in the consolidated issue.
+- Observed State: open
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-16T02:45:49Z
-- Last Compared: 2026-10-16T02:46:24.487262+00:00; sequential issue create/readback confirmed exact prepared body and creation metadata. Recheck with `gh issue view 46 --repo jeonghanlee/ansible-provision`.
-- Prepared Body: `work/issue-etl-post-stop.md`
-- Prepared Body SHA256: 2c32ca81c2ec2a29b7e7f5752bc4f953cd8267fa3551ed42eec5c328eea0b0de
-
+- Observed Updated At: 2026-10-17T01:09:40Z
+- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
+- Prepared Body: `work/issue-tools-etl.md`
+- Published Body SHA256: b6a0ab483695713866a62fe7ccf6cb65a4f04514238fa3adce424715686417f0
+- Historical Source Issue: #46, https://github.com/jeonghanlee/ansible-provision/issues/46
+- Historical Source State: closed
+- Historical Source Reason: not_planned
+- Historical Source Closed At: 2026-10-17T01:12:52Z
+- Historical Original Body SHA256: 2c32ca81c2ec2a29b7e7f5752bc4f953cd8267fa3551ed42eec5c328eea0b0de
+- Historical Retired Body SHA256: 10bc62d816a02e3c0a4c03b927fa73253c52d5a2f959a68b1ab75f19ed62248e
 
 #### M42 - Verify real collection during source-store deletion
 
 - Origin: 38560eb / M42
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: [#47](https://github.com/jeonghanlee/ansible-provision/issues/47)
+- GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #47 is closed not_planned at 2026-10-17T01:12:57Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
 - Status: Deferred
 
 ##### Summary
@@ -7367,25 +7493,33 @@ Out of scope: New ETL storage-failure product tests, forcing data loss in accept
 
 ##### GitHub Projection
 
-- Title: `Verify real collection during source-store deletion`
+- Title: `Track ETL test tooling`
 - Labels: `enhancement`
-- Milestone: `Backlog`
+- GitHub Milestone: `Backlog`
 - Assignee: `jeonghanlee`
-- Observed State: OPEN
+- Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+- Projection Scope: Component contract from historical source #47; current tracking uses its section in the consolidated issue.
+- Observed State: open
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-16T02:45:55Z
-- Last Compared: 2026-10-16T02:46:24.487262+00:00; sequential issue create/readback confirmed exact prepared body and creation metadata. Recheck with `gh issue view 47 --repo jeonghanlee/ansible-provision`.
-- Prepared Body: `work/issue-collection-races.md`
-- Prepared Body SHA256: f330f7e241e52434b11e6b3e1ac6e625235a29d42b1d23ce0feabc5c5ab03f9b
-
+- Observed Updated At: 2026-10-17T01:09:40Z
+- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
+- Prepared Body: `work/issue-tools-etl.md`
+- Published Body SHA256: b6a0ab483695713866a62fe7ccf6cb65a4f04514238fa3adce424715686417f0
+- Historical Source Issue: #47, https://github.com/jeonghanlee/ansible-provision/issues/47
+- Historical Source State: closed
+- Historical Source Reason: not_planned
+- Historical Source Closed At: 2026-10-17T01:12:57Z
+- Historical Original Body SHA256: f330f7e241e52434b11e6b3e1ac6e625235a29d42b1d23ce0feabc5c5ab03f9b
+- Historical Retired Body SHA256: 840a69b06211751b9a83bca9f0d84c8578ac9bc19ca153cb165edc423fce6f0c
 
 #### M43 - Reconcile retained ETL measurements and process identities
 
 - Origin: 38560eb / M43
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: [#48](https://github.com/jeonghanlee/ansible-provision/issues/48)
+- GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #48 is closed not_planned at 2026-10-17T01:13:02Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
 - Status: Deferred
 
 ##### Summary
@@ -7443,25 +7577,33 @@ Out of scope: Changing ETL functionality acceptance, rewriting raw measurements,
 
 ##### GitHub Projection
 
-- Title: `Reconcile retained ETL measurements and process identities`
+- Title: `Track ETL test tooling`
 - Labels: `enhancement`
-- Milestone: `Backlog`
+- GitHub Milestone: `Backlog`
 - Assignee: `jeonghanlee`
-- Observed State: OPEN
+- Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+- Projection Scope: Component contract from historical source #48; current tracking uses its section in the consolidated issue.
+- Observed State: open
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-16T02:46:02Z
-- Last Compared: 2026-10-16T02:46:24.487262+00:00; sequential issue create/readback confirmed exact prepared body and creation metadata. Recheck with `gh issue view 48 --repo jeonghanlee/ansible-provision`.
-- Prepared Body: `work/issue-measurement-report.md`
-- Prepared Body SHA256: e2b7d61eed476c033e4c015e40b0c3be806f6163a70733ee8e8b43afcb73ba6f
-
+- Observed Updated At: 2026-10-17T01:09:40Z
+- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
+- Prepared Body: `work/issue-tools-etl.md`
+- Published Body SHA256: b6a0ab483695713866a62fe7ccf6cb65a4f04514238fa3adce424715686417f0
+- Historical Source Issue: #48, https://github.com/jeonghanlee/ansible-provision/issues/48
+- Historical Source State: closed
+- Historical Source Reason: not_planned
+- Historical Source Closed At: 2026-10-17T01:13:02Z
+- Historical Original Body SHA256: e2b7d61eed476c033e4c015e40b0c3be806f6163a70733ee8e8b43afcb73ba6f
+- Historical Retired Body SHA256: d6d54f47924b44edf42db1f6d17ca50fe4dcc85e7ce640ccd063191f8519629d
 
 #### M44 - Compare ETL busy time and workload with retained earlier results
 
 - Origin: 38560eb / M44
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: [#49](https://github.com/jeonghanlee/ansible-provision/issues/49)
+- GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #49 is closed not_planned at 2026-10-17T01:13:07Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
 - Status: Deferred
 
 ##### Summary
@@ -7517,25 +7659,33 @@ Out of scope: ETL functionality acceptance, host sizing, capacity forecasts, or 
 
 ##### GitHub Projection
 
-- Title: `Compare ETL busy time and workload with retained earlier results`
+- Title: `Track ETL test tooling`
 - Labels: `enhancement`
-- Milestone: `Backlog`
+- GitHub Milestone: `Backlog`
 - Assignee: `jeonghanlee`
-- Observed State: OPEN
+- Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+- Projection Scope: Component contract from historical source #49; current tracking uses its section in the consolidated issue.
+- Observed State: open
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-16T02:46:08Z
-- Last Compared: 2026-10-16T02:46:24.487262+00:00; sequential issue create/readback confirmed exact prepared body and creation metadata. Recheck with `gh issue view 49 --repo jeonghanlee/ansible-provision`.
-- Prepared Body: `work/issue-workload-comparison.md`
-- Prepared Body SHA256: 9896b1e567fe7f077d8ca5322b0b4f927c98c13bbc7b1e3948d76696274678d7
-
+- Observed Updated At: 2026-10-17T01:09:40Z
+- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
+- Prepared Body: `work/issue-tools-etl.md`
+- Published Body SHA256: b6a0ab483695713866a62fe7ccf6cb65a4f04514238fa3adce424715686417f0
+- Historical Source Issue: #49, https://github.com/jeonghanlee/ansible-provision/issues/49
+- Historical Source State: closed
+- Historical Source Reason: not_planned
+- Historical Source Closed At: 2026-10-17T01:13:07Z
+- Historical Original Body SHA256: 9896b1e567fe7f077d8ca5322b0b4f927c98c13bbc7b1e3948d76696274678d7
+- Historical Retired Body SHA256: 3966f8cec6467e18e4cd53129a11879aa0a963e978d5099e8f5312438940cb5e
 
 #### M45 - Reproduce completed ETL observation reports on an independent recipient
 
 - Origin: 38560eb / M45
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: [#50](https://github.com/jeonghanlee/ansible-provision/issues/50)
+- GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #50 is closed not_planned at 2026-10-17T01:13:12Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
 - Status: Deferred
 
 ##### Summary
@@ -7596,25 +7746,33 @@ The comparison baseline consists of the complete evaluator JSON and complete num
 
 ##### GitHub Projection
 
-- Title: `Reproduce completed ETL observation reports on an independent recipient`
+- Title: `Track ETL test tooling`
 - Labels: `enhancement`
-- Milestone: `Backlog`
+- GitHub Milestone: `Backlog`
 - Assignee: `jeonghanlee`
-- Observed State: OPEN
+- Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+- Projection Scope: Component contract from historical source #50; current tracking uses its section in the consolidated issue.
+- Observed State: open
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-16T02:46:15Z
-- Last Compared: 2026-10-16T02:46:24.487262+00:00; sequential issue create/readback confirmed exact prepared body and creation metadata. Recheck with `gh issue view 50 --repo jeonghanlee/ansible-provision`.
-- Prepared Body: `work/issue-etl-recipient-replay.md`
-- Prepared Body SHA256: 35e199b23df1d8ee1ed5e96b60748e8f350d6fd6e4615339c6561b45b64d06d9
-
+- Observed Updated At: 2026-10-17T01:09:40Z
+- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
+- Prepared Body: `work/issue-tools-etl.md`
+- Published Body SHA256: b6a0ab483695713866a62fe7ccf6cb65a4f04514238fa3adce424715686417f0
+- Historical Source Issue: #50, https://github.com/jeonghanlee/ansible-provision/issues/50
+- Historical Source State: closed
+- Historical Source Reason: not_planned
+- Historical Source Closed At: 2026-10-17T01:13:12Z
+- Historical Original Body SHA256: 35e199b23df1d8ee1ed5e96b60748e8f350d6fd6e4615339c6561b45b64d06d9
+- Historical Retired Body SHA256: 2c41158ccbaa2b29033832fd69f3cdc789963fc29c5a73ea73696f5f63633c59
 
 #### M46 - Report actual test phase durations against the agreed allocations
 
 - Origin: 38560eb / M46
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: [#51](https://github.com/jeonghanlee/ansible-provision/issues/51)
+- GitHub Issue: #56, https://github.com/jeonghanlee/ansible-provision/issues/56
+- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #51 is closed not_planned at 2026-10-17T01:13:22Z; unfinished criteria are tracked in #56. Original issue references below are historical and do not create an active source-issue dependency.
 - Status: Deferred
 
 ##### Summary
@@ -7670,18 +7828,779 @@ Out of scope: New runtime tests, ETL or journal functionality reacceptance, and 
 
 ##### GitHub Projection
 
-- Title: `Report actual test phase durations against the agreed allocations`
+- Title: `Track shared test tooling`
 - Labels: `enhancement`
-- Milestone: `Backlog`
+- GitHub Milestone: `Backlog`
 - Assignee: `jeonghanlee`
-- Observed State: OPEN
+- Issue: #56, https://github.com/jeonghanlee/ansible-provision/issues/56
+- Projection Scope: Component contract from historical source #51; current tracking uses its section in the consolidated issue.
+- Observed State: open
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-16T02:46:21Z
-- Last Compared: 2026-10-16T02:46:24.487262+00:00; sequential issue create/readback confirmed exact prepared body and creation metadata. Recheck with `gh issue view 51 --repo jeonghanlee/ansible-provision`.
-- Prepared Body: `work/issue-elapsed-time-report.md`
-- Prepared Body SHA256: 68d2900c8145b4678bfa6a18d0edae84e59146ea7d60b2d90496abc3c5efbc12
+- Observed Updated At: 2026-10-17T01:09:45Z
+- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
+- Prepared Body: `work/issue-tools-shared.md`
+- Published Body SHA256: 991316dabf5a9f3ac639c6550aa1a090cd16b43f0aa719c0e0afa8f477e906c2
+- Historical Source Issue: #51, https://github.com/jeonghanlee/ansible-provision/issues/51
+- Historical Source State: closed
+- Historical Source Reason: not_planned
+- Historical Source Closed At: 2026-10-17T01:13:22Z
+- Historical Original Body SHA256: 68d2900c8145b4678bfa6a18d0edae84e59146ea7d60b2d90496abc3c5efbc12
+- Historical Retired Body SHA256: 9e4f63517f977731df0ca3b9839a07d230b8f38ad92c6a9fbbd9483059d5c6fd
+
+#### M47 - Track journal test tooling
+
+- Origin: 38560eb / M47
+- Identity History: created as a test-type coordination entry on 2026-10-16 (D32); no existing identity is replaced.
+- GitHub Issue: #53, https://github.com/jeonghanlee/ansible-provision/issues/53
+- Status: Deferred
+
+##### Summary
+
+Consolidate the remaining journal test-tool work into one active issue while preserving every original acceptance condition and evidence record.
+
+##### Scope
+
+All remaining component work is tracked directly in this issue. Source issue references identify preserved historical records; retiring those issues does not complete their checks or require their reopening. Every unmet criterion in the transferred contracts remains active here. Journal tooling remains independent of accepted ETL functionality.
+
+Component canonical identities remain independent under this single GitHub projection:
+
+- M27: historical source #32; unfinished work is tracked in #53.
+- M28: historical source #33; unfinished work is tracked in #53.
+
+Source GitHub issues were retired for consolidation at 2026-10-17T01:14:10.675787+00:00. Component work is not Complete; current tracking is #53 and the retired source metadata is recorded in component details.
+
+##### Detailed Work Summary
+
+These summaries preserve the recorded scope. Each linked issue retains its full acceptance criteria and original evidence; a summary or group checkbox does not replace that verification.
+
+###### #32 - Verify collector capture around normal appliance shutdown
+
+- Problem and evidence: Normal-stop final capture and the later live journal read are unexecuted collector checks.
+- Remaining work: Declare source actions and stop/read boundaries; run the shipped collector around one real normal stop.
+- Done when: All required identities/content match the later live query and final archive; overlap is explained, no second stop occurs and missing evidence is distinct from confirmed loss.
+
+###### #33 - Reproduce journal results on an independent recipient
+
+- Problem and evidence: Full-day replay matched on the recording deployment; independent-recipient replay is unexecuted.
+- Remaining work: Privately transfer actual evidence and frozen tools, verify every declared member/hash and execute the frozen replay CLI on another recipient.
+- Done when: Complete JSON, per-path verdicts and comparison digest match exactly; original successful and unsuccessful records remain unchanged.
+
+##### Existing Evidence
+
+The full-day journal result is accepted in #31. Normal-stop/post-stop capture and independent-recipient replay remain unexecuted checks, not demonstrated journal loss. Earlier corrected health-record matching and inventory-processing failures remain historical tool findings.
+
+##### Out Of Scope
+
+ETL or buffer product changes, reopening #31, new full-day recording solely for tool repair, shared checksum ownership, or publishing raw records and deployment identifiers.
+
+##### Completion Criteria
+
+- [ ] Every transferred collector-lifecycle and independent-recipient criterion below is verified through its declared real path. Closing a source issue for consolidation satisfies no test.
+- [ ] Preserve accepted journal/ETL results, immutable original inputs and unsuccessful attempts; keep missing evidence and confirmed record loss distinct.
+- [ ] Record actual per-criterion evidence here without another full-day producer solely for tool repair or reproduction.
+
+##### Transferred Acceptance Criteria
+
+All criteria below remain active in the replacement issue. Source closure is administrative; actual verification is still required. The source scopes, evidence and real-path methods remain in their component canonical details and are copied completely into the prepared public body.
+
+###### Source #32 - Verify collector capture around normal appliance shutdown
+
+- [ ] Declare the real source actions, expected messages, normal-stop boundary and later direct-read condition before execution; retain actual service/process identities and command outcomes.
+- [ ] Run a short independent case through the real appliance, journald and shipped collector. Confirm required records before and around the actual stop; do not replace the logging path with synthetic success markers.
+- [ ] Compare every declared required identity and full content with the later successful direct journal query and combined final archive. Explain overlap explicitly and report missing, changed or repeated identities.
+- [ ] Dispatch the normal stop once, retain the final collector outcome and report delivery, later visibility and terminal collection separately. Missing evidence is Incomplete and confirmed loss remains Failed.
+- [ ] Preserve the completed #31 originals and unsuccessful attempts. No new 24-hour recording is a prerequisite for this lifecycle case.
+
+
+
+###### Source #33 - Reproduce journal results on an independent recipient
+
+- [ ] Select the retained complete actual observation, its explicitly frozen corrected tools, saved result and per-record comparison digest. Preserve the original package and earlier unsuccessful result separately.
+- [ ] Transfer the necessary evidence privately and verify every declared member/hash before replay. Keep runtime configuration and raw journal records out of Git and public issue text.
+- [ ] Execute the real frozen `long.py replay` CLI on a different recipient environment without contacting or operating the original appliance or using substitute records.
+- [ ] Require the complete result JSON, per-path verdicts and per-record comparison digest to match the completed result exactly. Record a transfer/hash or replay error independently; do not reinterpret it as observed journal loss.
+- [ ] Verify the original evidence and saved unsuccessful results remain unchanged. No new producer schedule or 24-hour waiting period is required.
+
+
+
+##### Dependencies And Decisions
+
+- D33; Decision Date: 2026-10-16. Consolidate GitHub tracking into four issues; copy every original contract and retire twenty source issues with reason not planned. This supersedes D32's plan to keep those twenty GitHub issues open. Independent canonical component work and future tool execution remain Deferred.
+- Primary links are coordination relationships, not a new sequential execution dependency. Each existing issue retains its original criteria, source identities and evidence; no original result is rewritten.
+- Accepted M22/#30 ETL and M25/#31 journal results remain complete. The completed buffer acceptance in jeonghanlee/epicsarchiverap-maven#29 remains separate.
+
+##### Implementation Plan
+
+- Plan Status: draft
+- Plan Acceptance: none
+- Implementation Authorization: none
+- Superseded Plan Artifacts: earlier representative-only issue projection under D32.
+
+1. Preserve each component's original scope, criteria, evidence and source identity in this issue; use source issue links as historical provenance.
+2. After separate tool-execution authorization, perform the scoped real-path corrections and checks, retaining explicit scenario/native verdicts and immutable originals.
+3. Update the per-component criteria from actual results. Shared evidence may satisfy overlapping criteria without inventing duplicate campaigns.
+
+##### Test Plan
+
+| Label | Layer | Method | Environment | Expected Result |
+| --- | --- | --- | --- | --- |
+| T1 | Lifecycle | Run the real normal-stop collector and later live-query comparison specified by #32. | Separate dedicated deployment | Exact required-record equality; errors visible and no duplicate stop. |
+| T2 | Recipient replay | Run the exact frozen full-record CLI and private member verification specified by #33. | Independent recipient | Complete result and digest match; original inputs unchanged. |
+
+##### Verification Results
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T1 | Not run | Separate dedicated deployment | Pending | Future scoped verification is not established by grouping or by a historical result outside this check. |
+| T2 | Not run | Independent recipient | Pending | Future scoped verification is not established by grouping or by a historical result outside this check. |
+
+##### Closure Evidence
+
+- Tool work is not complete. GitHub tracking consolidation completed under D33 at 2026-10-17T01:14:10.675787+00:00: replacement #53 is open and all its source issues are closed not_planned with exact body/comment readback. Original criteria and unsuccessful evidence remain active; source closure establishes no tool verification.
+
+##### GitHub Projection
+
+- Title: `Track journal test tooling`
+- Labels: `enhancement`
+- GitHub Milestone: `Backlog`
+- Assignee: `jeonghanlee`
+- Issue: #53, https://github.com/jeonghanlee/ansible-provision/issues/53
+- Projection Scope: Complete consolidated body containing all original source contracts and additional declared tooling work.
+- Observed State: open
+- Observed Labels: `enhancement`
+- Observed Milestone: `Backlog`
+- Observed Assignees: `jeonghanlee`
+- Observed Updated At: 2026-10-17T01:09:36Z
+- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
+- Prepared Body: `work/issue-tools-journal.md`
+- Published Body SHA256: 57226e8a00e7b8aca7c4a5143f1ff5a915bc8b13dea7b1e2f5d99d032d46305d
+- Historical Source Issues: #32, #33
+
+#### M48 - Track ETL test tooling
+
+- Origin: 38560eb / M48
+- Identity History: created as a test-type coordination entry on 2026-10-16 (D32); no existing identity is replaced.
+- GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+- Status: Deferred
+
+##### Summary
+
+Consolidate the remaining ETL test-tool work into one active issue while preserving every original acceptance condition and evidence record.
+
+##### Scope
+
+All remaining component work is tracked directly in this issue. Source issue references identify preserved historical records; retiring those issues does not complete their checks or require their reopening. Every unmet criterion in the transferred contracts remains active here. Shared source checksums and cross-test phase timing are owned by the shared tools issue.
+
+Component canonical identities remain independent under this single GitHub projection:
+
+- M29: historical source #34; unfinished work is tracked in #54.
+- M30: historical source #35; unfinished work is tracked in #54.
+- M31: historical source #36; unfinished work is tracked in #54.
+- M32: historical source #37; unfinished work is tracked in #54.
+- M33: historical source #38; unfinished work is tracked in #54.
+- M34: historical source #39; unfinished work is tracked in #54.
+- M35: historical source #40; unfinished work is tracked in #54.
+- M36: historical source #41; unfinished work is tracked in #54.
+- M38: historical source #43; unfinished work is tracked in #54.
+- M39: historical source #44; unfinished work is tracked in #54.
+- M40: historical source #45; unfinished work is tracked in #54.
+- M41: historical source #46; unfinished work is tracked in #54.
+- M42: historical source #47; unfinished work is tracked in #54.
+- M43: historical source #48; unfinished work is tracked in #54.
+- M44: historical source #49; unfinished work is tracked in #54.
+- M45: historical source #50; unfinished work is tracked in #54.
+
+Source GitHub issues were retired for consolidation at 2026-10-17T01:14:10.675787+00:00. Component work is not Complete; current tracking is #54 and the retired source metadata is recorded in component details.
+
+##### Detailed Work Summary
+
+These summaries preserve the recorded scope. Each linked issue retains its full acceptance criteria and original evidence; a summary or group checkbox does not replace that verification.
+
+###### #34 - Fix kernel journal collection and ETL terminal isolation
+
+- Problem and evidence: Kernel refusal propagated into terminal findings despite accepted ETL processing. This existing issue coordinates collection, source-availability and lifecycle work.
+- Remaining work: Complete its independent collection children and original criteria; retain shared #42/#51 links and original source identities.
+- Done when: Every original criterion has real evidence; kernel diagnostics, required ETL evidence and accepted processing results remain separate.
+
+###### #35 - Fix ETL JFR scope and terminal evaluation order
+
+- Problem and evidence: JFR process scope, terminal ordering and UTC matching caused tool findings; measurement/reporting and recipient work are unfinished.
+- Remaining work: Complete its independent evaluator/reporting children and original criteria, retaining shared #42/#51 links.
+- Done when: Real evaluator/reporting paths satisfy the original criteria; original/candidate identities and independent kernel findings remain explicit.
+
+###### #36 - Preserve kernel cursor refusal evidence and prove interval coverage
+
+- Problem and evidence: Frozen cursor refusals affected 240 shortened and 237 default samples without saved failed-query bytes. Candidate checkpoint-output changes exist but coverage is unverified.
+- Remaining work: Identify original/candidate tools and exercise real refused-query, obsolete-anchor and interval-gap cases.
+- Done when: Outputs, status, arguments and cursor/interval identity persist; required coverage is independently proved where possible and historical unknowns are not declared successful.
+
+###### #37 - Keep kernel diagnostics independent of the ETL terminal verdict
+
+- Problem and evidence: Kernel-only failure produced pass-wait/final-sample/final-journal findings despite complete required ETL passes.
+- Remaining work: Verify actual collection, pass waiting, normal terminal handling and replay using independent configured ETL sources.
+- Done when: Kernel failure stays visible without rejecting complete ETL evidence; real required-evidence loss still prevents acceptance and preserves the abort policy.
+
+###### #38 - Use timestamps accepted by systemd 239 journal queries
+
+- Problem and evidence: Systemd 239 refused the original ISO query argument. V2 formatting exists but exact subsecond interval selection is unverified.
+- Remaining work: Run the real query at independently identified UTC boundaries, retaining original precision and explicit rounding/filtering.
+- Done when: The intended interval is established; refused arguments/output/status persist and query errors remain separate from ETL processing.
+
+###### #39 - Match JFR exports to the recording process and lifetime
+
+- Problem and evidence: CSV counts included prior JVMs while final JFRs belonged to one process. Matching-PID counts reconcile on both chains.
+- Remaining work: Bind real evaluator/aggregator comparisons to component, PID and recording lifetime while preserving earlier-process rows.
+- Done when: Both chains reconcile in scope and real missing, duplicated, conflicting or truncated evidence remains detectable; originals are unchanged.
+
+###### #40 - Persist terminal state before evaluating terminal coherence
+
+- Problem and evidence: Evaluation preceded terminal persistence; unchanged reevaluation afterward removed the coherence finding on both observations.
+- Remaining work: Verify actual normal-terminal, failure/interruption, repeated-request and replay paths.
+- Done when: Runtime/replay evaluate the same persisted terminal, errors stay visible, no second stop occurs and unverified success cannot bypass coherence checks.
+
+###### #41 - Match ETL pass times by UTC instant with nanosecond precision
+
+- Problem and evidence: Literal equivalent-UTC comparison found zero passes; the native nanosecond parser found one successful 903-job pass.
+- Remaining work: Select by UTC instant in real runtime/scenario and replay paths while retaining original timestamp text.
+- Done when: Exactly the correct transition/invocation/time matches; nanosecond differences, wrong identity, duplicates and missing passes are detected without rewriting verdicts.
+
+###### #43 - Finish ETL tool independence checks across both store chains
+
+- Problem and evidence: Two shortened failing/changed-module planned-abort cases have recipient evidence. None of the six required normal-finish cases is established.
+- Remaining work: Prepare separately identified absent-study/normal-finish support and verify two chains times three study states through normal finish/restoration and recipient replay.
+- Done when: All six rows satisfy original assertions; scenario/recipient exit 0 with expectation Passed, native verdict/exit contracts hold and planned-abort originals are not relabeled.
+
+###### #44 - Finish partial-source ETL evidence verification on both chains
+
+- Problem and evidence: The shortened partial-source case retained two fault samples, one successful pass and no automatic abort. Default behavior and completed scenario replay are unverified.
+- Remaining work: Complete actual both-chain fault/recovery, corrected controller verification and exact independent-recipient replay.
+- Done when: Original assertions hold; corrected controller/scenario/recipient commands succeed, short native Incomplete/exit-1 and stop rc 0 remain explicit and historical errors are preserved.
+
+###### #45 - Finish all-source evidence loss and automatic-abort verification
+
+- Problem and evidence: Shortened all-source failure advanced counters one to two and triggered one automatic abort with orderly stop/restoration. Default and completed recipient replay are unverified.
+- Remaining work: Complete actual both-chain counter/abort/restoration evidence, corrected controller verification and recipient replay.
+- Done when: No premature first-failure abort occurs; repeated failure aborts once, all original command/verdict contracts hold and short native Incomplete originals remain unchanged.
+
+###### #46 - Verify ETL collector capture and refusal after normal shutdown
+
+- Problem and evidence: Successful appliance stops do not establish the separate final/post-stop application-file capture and repeat-terminal contract.
+- Remaining work: Run the real collector/source reader and terminal CLI around a bounded normal stop and repeat request.
+- Done when: Required bytes and invocation/PID/inode/prefix identity persist; incomplete/wrong evidence is refused, replay agrees and no second stop or original overwrite occurs.
+
+###### #47 - Verify real collection during source-store deletion
+
+- Problem and evidence: The parser consumed a retained real deletion-race result, but live collection during source-file removal is unexecuted.
+- Remaining work: Run native collection during real source-store deletion and independently record overlap and command results.
+- Done when: Measured surviving sizes/status persist, unrelated errors remain visible and actual collected/replayed results agree without reconstructed output.
+
+###### #48 - Reconcile retained ETL measurements and process identities
+
+- Problem and evidence: Measurements exist but per-component reconciliation is unfinished. Three shortened request/pass overlaps had zero metric failures and zero missing coverage.
+- Remaining work: Reconcile actual process/lifetime-scoped resource/event/retrieval/identity/gap/OOM evidence and declared accumulation/restart/overlap regressions.
+- Done when: Units, intervals, denominators and coverage are explicit; actual counts are used, unknowns are disclosed and normal overlap is not called failed comparison.
+
+###### #49 - Compare ETL busy time and workload with retained earlier results
+
+- Problem and evidence: The retained earlier busy-time/weekly-usage comparison is unfinished.
+- Remaining work: Use pinned metric meanings and comparable actual intervals, stating workload, rate, concurrency, store-age and resource differences.
+- Done when: Supported comparisons reproduce; unavailable historical rates stay explicit and unsupported improvement/regression claims or predictions are excluded.
+
+###### #50 - Reproduce completed ETL observation reports on an independent recipient
+
+- Problem and evidence: Exact independent-recipient reproduction of complete finalized ETL JSON/numerical reports is unfinished on both chains.
+- Remaining work: Freeze actual post-finalization original evaluator/aggregator outputs and identities, privately transfer them and run identical frozen CLIs at declared paths.
+- Done when: Complete bytes/hashes, findings, numbers and exit codes match without normalization; embedded initial evaluations remain historical and corrected candidates use separate baselines.
+
+##### Existing Evidence
+
+Both completed full-day processing observations are accepted in #30: all 312 and 27 required passes were present, physical/HTTP comparisons succeeded and normal stops completed. Original aggregate `Incomplete` records remain unchanged. Confirmed tool defects and incomplete tool matrices are separate work. Completed shortened fault behavior does not prove unexecuted default-chain or normal-finish cases.
+
+##### Out Of Scope
+
+Reopening #30/#31, changing application scheduling/storage, predicting event counts or capacity, calling normal metrics overlap a defect, or a new full-day producer solely for tool repair/reporting.
+
+##### Completion Criteria
+
+- [ ] Every transferred collection, evaluation, lifecycle, scenario and reporting criterion below is verified. Preserve original chain matrices, process identities, scenario/native verdicts and exit-code contracts.
+- [ ] Preserve the accepted ETL/journal results and every immutable original input and unsuccessful finding. Missing historical failed-query output remains unknown.
+- [ ] Close this issue only when actual evidence satisfies its criteria; the closure of source issues and identical failed replays establish no verification.
+
+##### Transferred Acceptance Criteria
+
+All criteria below remain active in the replacement issue. Source closure is administrative; actual verification is still required. The source scopes, evidence and real-path methods remain in their component canonical details and are copied completely into the prepared public body.
+
+###### Source #34 - Fix kernel journal collection and ETL terminal isolation
+
+- [ ] The real failed-query path preserves its original output and enough cursor/interval metadata to diagnose the refusal without exposing credentials or internal identifiers.
+- [ ] Focused real-journald checks distinguish an obsolete anchor with independently proven interval coverage from an actual or unresolved required-interval gap; unproved coverage never becomes `Passed`.
+- [ ] The actual normal-finish and replay paths keep a kernel-only diagnostic failure visible without rejecting a complete required ETL pass set.
+- [ ] Genuine loss of required ETL evidence remains `Incomplete` or `Failed` as applicable, and the declared all-sources-unavailable automatic-abort expectations remain enforced.
+- [ ] Both completed observations are rechecked from retained evidence with their exact original tools and a separately identified candidate; original data, failed records and verdicts remain unchanged.
+- [ ] The follow-up uses retained evidence and bounded real-path checks; no new 24-hour observation is required solely to repair the collector.
+
+- [ ] Complete collector/package independence through actual preparation, start, capture, normal terminal handling and replay on both chains with unrelated journal-study modules absent, failing and separately changed. Preserve completed shortened results; execute the unverified default variants as tool checks.
+- [ ] Complete the remaining collection-source failure and automatic-abort cases using actual configured sources. Distinguish successful ETL processing from unavailable test evidence, and retain first-failure versus repeated-failure behavior.
+- [ ] Verify final and post-stop application-file capture, process identity, repeated terminal refusal and restoration through the actual tools without changing completed ETL observation records.
+- [ ] Exercise real collection during source-store deletion and metrics requests overlapping ETL pass completion; preserve actual request bounds and measured outputs instead of converting collection races into ETL failures.
+- [ ] Preserve actual fixture/input counts, source timing and workload identity for later measurement reports; configured frequency multiplied by duration is not an observed event count.
+- [ ] Keep these tool checks independent of the completed ETL functionality result in #30. Future collector corrections follow the accepted ETL verification and do not require another full-day observation solely for tool repair.
+
+
+
+###### Source #35 - Fix ETL JFR scope and terminal evaluation order
+
+- [ ] The real evaluator and numerical aggregator correctly reconcile retained current-process heap/collection/pause records with complete JFRs on both chains while retaining earlier-process data.
+- [ ] Missing, conflicting or incomplete records in an actual retained-input copy remain detectable; no internal-function stub or reconstructed positive fixture establishes acceptance.
+- [ ] A real normal-terminal invocation and subsequent offline replay agree on terminal coherence, including actual failure, interruption and repeat-terminal handling.
+- [ ] Verification runs the shipped tools and actual retained evidence, with original and candidate tool identities kept separate. Original inputs, terminal bytes and failed verdicts remain unchanged.
+- [ ] Results state which independent kernel diagnostic findings remain; evaluator correction does not claim historical kernel coverage or change the already accepted ETL functionality result in #30.
+- [ ] Use the completed observations for regression and focused real terminal checks for ordering; a new 24-hour observation is not required solely to repair these verifier defects.
+
+- [ ] Compare original UTC instants with the shipped timestamp parser, retaining nanosecond precision and original strings. Verify actual retained source-availability and automatic-abort inputs through the real runtime/scenario and replay paths; do not change an original controller status to satisfy the checker.
+- [ ] Reconcile per-component heap, GC cause/pause, jstat, RSS, observed input/event rates, retrieval freshness/visibility, request bounds and identity/gap/OOM evidence from the already collected observations.
+- [ ] Evaluate retained and focused real-input measurement regressions for source-store shrink, pass-end/request overlap, accumulation and restart. Collection-path corrections are coordinated with #34; no internal mock establishes integration acceptance.
+- [ ] Produce the supplemental workload/performance comparison: last-pass and average busy time, weekly usage and actual load, concurrency, store-age and resource differences. Missing comparable historical rates prohibit an improvement claim but do not reopen ETL functionality acceptance.
+- [ ] Privately transfer the retained evidence and exact frozen tools to an independent recipient, verify declared members/hashes and reproduce complete result JSON and numerical reports. Keep original unsuccessful findings, raw operational data and deployment identifiers out of public Git.
+- [ ] Record actual preparation, processing, waiting, observation and analysis times against the agreed one-hour journal, three-hour ETL, parallel full-day and two-hour overall decision allocations as supplemental reporting; do not impose a new observation to complete the report.
+- [ ] Complete these evaluator/report/reproduction checks after the accepted ETL functionality result. Their completion is not a gate on #30 and no new 24-hour data-production run is required solely for these corrections or analyses.
+
+
+
+###### Source #36 - Preserve kernel cursor refusal evidence and prove interval coverage
+
+- [ ] Historical frozen tools and the current candidate are identified separately by complete manifests/source hashes; the existing checkpoint-output change is distinguished from unverified behavior.
+- [ ] A real refused candidate query preserves stdout/stderr, return code, original arguments and cursor/interval metadata.
+- [ ] An actual obsolete-anchor case with independently proved required coverage is distinguished from a real or unresolved required-interval gap.
+- [ ] Unproved coverage remains `Incomplete` or `Failed`; original full-day records and unsuccessful verdicts stay unchanged.
+
+
+
+###### Source #37 - Keep kernel diagnostics independent of the ETL terminal verdict
+
+- [ ] A real kernel-only diagnostic failure does not invalidate complete required application ETL evidence at pass waiting or normal finish.
+- [ ] Missing required ETL evidence still refuses complete acceptance and preserves the applicable abort policy.
+- [ ] The actual terminal CLI and retained-input replay agree while keeping original diagnostic and unsuccessful aggregate findings.
+
+
+
+###### Source #38 - Use timestamps accepted by systemd 239 journal queries
+
+- [ ] Original and v2 controller hashes are recorded separately, and existing source formatting is distinguished from actual interval verification.
+- [ ] The actual systemd 239 query accepts the candidate argument and establishes the intended interval against independently identified real records, including subsecond boundaries; any query rounding/filtering and the original precise timestamp are explicit.
+- [ ] A rejected query retains its arguments, stdout/stderr and return code and is not reported as successful coverage.
+- [ ] Successful ETL evidence remains separate from a query-argument error; the original failed controller record is unchanged.
+
+
+
+###### Source #39 - Match JFR exports to the recording process and lifetime
+
+- [ ] The real evaluator and aggregator reconcile heap, collection and pause records with both chains' complete recordings using actual process/lifetime identities.
+- [ ] Earlier-process records remain available; missing, conflicting, duplicated or truncated in-scope evidence still fails the real path.
+- [ ] Original recordings, exports, unsuccessful verdicts and independent kernel findings remain unchanged.
+
+
+
+###### Source #40 - Persist terminal state before evaluating terminal coherence
+
+- [ ] A real normal terminal invocation and subsequent replay agree on the exact terminal state being evaluated.
+- [ ] Actual failure/interruption and repeated-terminal cases retain failure visibility and do not dispatch another stop.
+- [ ] No unverified successful terminal is written to bypass coherence checks; original completed observation bytes remain unchanged.
+
+
+
+###### Source #41 - Match ETL pass times by UTC instant with nanosecond precision
+
+- [ ] Actual source-availability and automatic-abort records select exactly the matching transition, invocation and UTC instant.
+- [ ] Nanosecond differences, wrong invocation, duplicate matches and genuinely missing passes remain detectable.
+- [ ] Runtime/scenario and frozen replay paths agree without rewriting an original controller verdict or timestamp.
+
+
+
+###### Source #43 - Finish ETL tool independence checks across both store chains
+
+- [ ] All six chain/study-state normal-finish rows have actual preparation/start/capture/normal-terminal/restoration and exact recipient replay evidence; recorded planned-abort results remain separately identified.
+- [ ] The unrelated subject is actually absent, fails import or remains importable after its declared change as applicable; the complete native ETL dependency bundle and actual runtime identities remain unchanged throughout each case.
+- [ ] Candidate support for absent-study and normal-finish paths is identified separately; no preserved planned-abort payload or result is relabeled normal finish.
+- [ ] Scenario verification and recipient replay each exit 0 with `expectation=Passed` and satisfy the declared assertions; matching failed runs alone never complete a row.
+- [ ] Native terminal/evaluator/aggregator exit codes and saved verdicts follow the explicit short-abort or normal-finish contract, while original bytes and unsuccessful findings remain unchanged.
+
+
+
+###### Source #44 - Finish partial-source ETL evidence verification on both chains
+
+- [ ] Actual journal failure with all required configured application files available preserves ETL pass evidence and does not trigger an evidence-loss abort.
+- [ ] Both chains have declared fault/recovery boundaries, real sampler identity, exact restoration and actual bounded stop evidence.
+- [ ] Corrected candidate runtime/controller execution exits 0 with complete runtime evidence; historical controller errors and their original exit codes remain unchanged.
+- [ ] The scenario verifier and independent recipient replay each exit 0 with `expectation=Passed`, satisfy all declared source-availability assertions and reproduce exact complete results/identities; equality of two failed checks is insufficient.
+- [ ] The deliberately shortened native abort/evaluator/aggregator retains its exact `Incomplete` verdict and expected exit code 1, with actual appliance stop rc 0; no full-day acceptance is claimed.
+
+
+
+###### Source #45 - Finish all-source evidence loss and automatic-abort verification
+
+- [ ] The first actual critical sample does not prematurely abort; the declared consecutive failure triggers exactly one native abort.
+- [ ] Both chains retain real source-access failure, sampler/process identity, counter sequence, actual appliance stop rc 0 and exact restoration evidence.
+- [ ] Corrected candidate runtime/controller execution exits 0 with complete runtime evidence; historical controller errors and their original exit codes remain unchanged.
+- [ ] The scenario verifier and independent recipient replay each exit 0 with `expectation=Passed`, satisfy all declared counter/abort/restoration assertions and reproduce exact complete results/identities; equality of two failed checks is insufficient.
+- [ ] The deliberately shortened native abort/evaluator/aggregator retains its exact `Incomplete` verdict and expected exit code 1; source unavailability and successful automatic abort are not relabeled an ETL data-loss failure or full-day acceptance.
+
+
+
+###### Source #46 - Verify ETL collector capture and refusal after normal shutdown
+
+- [ ] Actual final/post-stop capture retains all required application-file bytes with the original invocation, PID, inode and prefix identity.
+- [ ] A changed invocation, wrong PID, truncation or missing final record refuses complete evidence.
+- [ ] Repeated terminal invocation dispatches no second stop and leaves original evidence unchanged; real replay reproduces the result.
+
+
+
+###### Source #47 - Verify real collection during source-store deletion
+
+- [ ] A real source-file removal overlaps the native collector measurement and the overlap is independently recorded.
+- [ ] Measured surviving sizes and actual command status are preserved; a tolerated disappearing file does not hide unrelated command failures.
+- [ ] The actual collected result and frozen retained-input evaluation agree without reconstructed stdout or internal substitutes.
+
+
+
+###### Source #48 - Reconcile retained ETL measurements and process identities
+
+- [ ] Per-component heap, GC cause and pause, jstat, RSS and observed input/event counts and rates reconcile with actual process/lifetime identities and time ranges; units, provenance and rate denominators are explicit.
+- [ ] Retrieval freshness and visibility are reported with actual query/request/response bounds. Process identity continuity, evidence gaps and OOM or forced-termination findings are reported explicitly; absent evidence is not recorded as zero events or complete coverage.
+- [ ] Actual request/pass overlaps, accumulation and process changes are evaluated from retained records and remain distinct from failed assertions.
+- [ ] Configured rates and array capacity are never used as observed event counts or actual lengths; missing data is stated rather than invented.
+- [ ] Retained-input and bounded real measurement regressions cover accumulation, process restart and pass-end/request overlap; actual coverage and unresolved cases remain explicit.
+
+
+
+###### Source #49 - Compare ETL busy time and workload with retained earlier results
+
+- [ ] The report uses the actual pinned metric meanings and comparable observed intervals; the retired running-sum interpretation is excluded.
+- [ ] Workload and fixture differences are explicit, including absent comparable historical rates.
+- [ ] No improvement/regression claim is made when the retained inputs cannot support it; no missing measurement is replaced by a prediction.
+
+
+
+###### Source #50 - Reproduce completed ETL observation reports on an independent recipient
+
+- [ ] Before transfer, freeze actual post-finalization evaluator and aggregator outputs for each chain, with the exact input/terminal identities, full tool/dependency hashes and versions, CLI arguments, exit codes and complete-output SHA256 values.
+- [ ] Every declared archive member, saved baseline and frozen dependency matches before actual recipient execution.
+- [ ] The recipient executes the same original frozen offline CLIs at the original declared paths and reproduces the complete baseline JSON bytes/hashes, per-check findings, numerical outputs and exit codes without normalization or rewritten inputs/identities.
+- [ ] The initial embedded evaluation and original unsuccessful findings remain unchanged. Any corrected candidate has its own tool identity and post-finalization baseline; it is never compared with the original-tool baseline as if the tools were identical.
+
+
+
+##### Dependencies And Decisions
+
+- D33; Decision Date: 2026-10-16. Consolidate GitHub tracking into four issues; copy every original contract and retire twenty source issues with reason not planned. This supersedes D32's plan to keep those twenty GitHub issues open. Independent canonical component work and future tool execution remain Deferred.
+- Primary links are coordination relationships, not a new sequential execution dependency. Each existing issue retains its original criteria, source identities and evidence; no original result is rewritten.
+- Accepted M22/#30 ETL and M25/#31 journal results remain complete. The completed buffer acceptance in jeonghanlee/epicsarchiverap-maven#29 remains separate.
+
+##### Implementation Plan
+
+- Plan Status: draft
+- Plan Acceptance: none
+- Implementation Authorization: none
+- Superseded Plan Artifacts: earlier representative-only issue projection under D32.
+
+1. Preserve each component's original scope, criteria, evidence and source identity in this issue; use source issue links as historical provenance.
+2. After separate tool-execution authorization, perform the scoped real-path corrections and checks, retaining explicit scenario/native verdicts and immutable originals.
+3. Update the per-component criteria from actual results. Shared evidence may satisfy overlapping criteria without inventing duplicate campaigns.
+
+##### Test Plan
+
+| Label | Layer | Method | Environment | Expected Result |
+| --- | --- | --- | --- | --- |
+| T1 | Detailed coverage | Execute each linked issue's actual collector/controller/terminal/evaluator/reader/replay path with its declared inputs. | Retained evidence and separately authorized bounded deployments | Every original criterion has actual evidence; unexecuted cells remain explicit. |
+| T2 | Scope isolation | Compare immutable originals and accepted #30/#31 records with separately identified candidate results. | Retained original and candidate records | Original bytes preserved; tool findings separate from accepted functionality. |
+
+##### Verification Results
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T1 | Not run | Retained evidence and separately authorized bounded deployments | Pending | Future scoped verification is not established by grouping or by a historical result outside this check. |
+| T2 | Not run | Retained original and candidate records | Pending | Future scoped verification is not established by grouping or by a historical result outside this check. |
+
+##### Closure Evidence
+
+- Tool work is not complete. GitHub tracking consolidation completed under D33 at 2026-10-17T01:14:10.675787+00:00: replacement #54 is open and all its source issues are closed not_planned with exact body/comment readback. Original criteria and unsuccessful evidence remain active; source closure establishes no tool verification.
+
+##### GitHub Projection
+
+- Title: `Track ETL test tooling`
+- Labels: `enhancement`
+- GitHub Milestone: `Backlog`
+- Assignee: `jeonghanlee`
+- Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+- Projection Scope: Complete consolidated body containing all original source contracts and additional declared tooling work.
+- Observed State: open
+- Observed Labels: `enhancement`
+- Observed Milestone: `Backlog`
+- Observed Assignees: `jeonghanlee`
+- Observed Updated At: 2026-10-17T01:09:40Z
+- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
+- Prepared Body: `work/issue-tools-etl.md`
+- Published Body SHA256: b6a0ab483695713866a62fe7ccf6cb65a4f04514238fa3adce424715686417f0
+- Historical Source Issues: #34, #35, #36, #37, #38, #39, #40, #41, #43, #44, #45, #46, #47, #48, #49, #50
+
+#### M49 - Track buffer test tooling
+
+- Origin: 38560eb / M49
+- Identity History: created as a test-type coordination entry on 2026-10-16 (D32); no existing identity is replaced.
+- GitHub Issue: #55, https://github.com/jeonghanlee/ansible-provision/issues/55
+- Status: Deferred
+
+##### Summary
+
+Make the retained sample-buffer delay-injection, replay and progress tools reusable without changing completed product acceptance in jeonghanlee/epicsarchiverap-maven#29.
+
+##### Scope
+
+All remaining component work is tracked directly in this issue. Source issue references identify preserved historical records; retiring those issues does not complete their checks or require their reopening. Every unmet criterion in the transferred contracts remains active here. Installation/source-preservation work belongs to the shared tools issue; Maven code/test implementation remains Maven-owned.
+
+Component canonical identities remain independent under this single GitHub projection:
+
+- Replay, progress and Maven assertion-coverage work retains its declared scope; shared installer/source preservation belongs to M50.
+
+Source GitHub issues were retired for consolidation at 2026-10-17T01:14:10.675787+00:00. Component work is not Complete; current tracking is #55 and the retired source metadata is recorded in component details.
+
+##### Detailed Work Summary
+
+These summaries preserve the recorded scope. Each linked issue retains its full acceptance criteria and original evidence; a summary or group checkbox does not replace that verification.
+
+###### Compact pass replay
+
+- Problem and evidence: Full JSONL passes validate; compact last-position passes were falsely refused after write-list compaction.
+- Remaining work: Define supported full/compact contracts and exercise the real replay with retained valid and inadequate-exposure inputs.
+- Done when: Declared valid input works, inadequate exposure stays detectable and omitted writes are never invented; accepted live results stay unchanged.
+
+###### Observation progress
+
+- Problem and evidence: Actual bounds are saved while progress can remain Starting until the first hourly update.
+- Remaining work: Publish active state with start/cutoff and verify the actual runner path in a bounded case.
+- Done when: Active state is immediate and hourly checkpoints, monotonic bounds and final verdict remain intact.
+
+###### Maven assertion coverage
+
+- Problem and evidence: Pinned sources lack direct absent-property and specified one-second zero-loss assertions; deployment receipts establish separate coverage.
+- Remaining work: Describe actual assertion coverage and record the two gaps as Maven-owned follow-up work.
+- Done when: Coverage and ownership are explicit; receipts are not called execution of absent assertions and no Maven edit or product reacceptance is implied.
+
+##### Existing Evidence
+
+The shipped `validate_pass()` accepts all 25 eligible preflight and 1152 main full JSONL records but rejects 12 preflight and 576 main compact last-position records. It uses `len(writes) - 1`, while compact records keep only first/last writes plus `write_count`. Live validation ran before compaction; this replay defect does not overturn the accepted four-hour result.
+
+The runner records actual start/cutoff before its first hourly status update, leaving an active observation marked `Starting`. Maven sources at jeonghanlee/epicsarchiverap-maven@629533a37ef889ffe3203d97538038eaaec95283 lack a direct absent-property assertion in `SampleBufferMarginPropertyTest` and a one-second zero-loss assertion in the 1500 ms control of `SampleBufferMarginTest`. Deployment receipts independently establish effective margin 1.0 and zero non-fast control loss; narrower assertions do not establish a product defect.
+
+##### Out Of Scope
+
+Reopening jeonghanlee/epicsarchiverap-maven#29, editing Maven code here, a new full campaign solely for replay/reporting repair, publishing raw traces/PB/private configuration, or claiming broader exact equality than originally measured.
+
+##### Completion Criteria
+
+- [ ] Define explicit full and compact replay input contracts. Run the real validator/replay against retained actual records; valid declared inputs are accepted and missing, duplicate or inadequate delay exposure remains detectable. Never invent omitted writes.
+- [ ] Publish active observation state and actual start/cutoff immediately when recording begins, preserving hourly checkpoints, final state and monotonic bounds.
+- [ ] Describe actual Maven assertion coverage and record the two assertion gaps as Maven-owned follow-up work. Keep deployment receipts distinct from unit-test execution; Maven code/tests remain owned by that repository.
+- [ ] Preserve original full JSONL, compact records, source identities, initial unsuccessful preflight and accepted product results. Keep expected control loss separate from the zero-loss positive window.
+- [ ] Document reusable signals, timing, target selection, actual exposure, trace/PB boundaries and verdict interpretation. Exact fast-PV equality and slower-PV activity/counter coverage stay distinct.
+
+##### Dependencies And Decisions
+
+- D33; Decision Date: 2026-10-16. Consolidate GitHub tracking into four issues; copy every original contract and retire twenty source issues with reason not planned. This supersedes D32's plan to keep those twenty GitHub issues open. Independent canonical component work and future tool execution remain Deferred.
+- Primary links are coordination relationships, not a new sequential execution dependency. Each existing issue retains its original criteria, source identities and evidence; no original result is rewritten.
+- Accepted M22/#30 ETL and M25/#31 journal results remain complete. The completed buffer acceptance in jeonghanlee/epicsarchiverap-maven#29 remains separate.
+
+##### Implementation Plan
+
+- Plan Status: draft
+- Plan Acceptance: none
+- Implementation Authorization: none
+- Superseded Plan Artifacts: earlier representative-only issue projection under D32.
+
+1. Preserve each component's original scope, criteria, evidence and source identity in this issue; use source issue links as historical provenance.
+2. After separate tool-execution authorization, perform the scoped real-path corrections and checks, retaining explicit scenario/native verdicts and immutable originals.
+3. Update the per-component criteria from actual results. Shared evidence may satisfy overlapping criteria without inventing duplicate campaigns.
+
+##### Test Plan
+
+| Label | Layer | Method | Environment | Expected Result |
+| --- | --- | --- | --- | --- |
+| T1 | Replay | Execute the shipped validator/replay on retained full/compact preflight/main records and actual missing-delay records. | Retained actual buffer evidence | Explicit schemas prevent false last-position refusals; inadequate exposure detected. |
+| T2 | Progress | Execute the real runner start/progress path and inspect persisted state, bounds, checkpoints and terminal record. | Separately authorized bounded deployment | Active state visible before the first hourly checkpoint; final record intact. |
+| T3 | Coverage accounting | Read pinned Maven assertions and independent deployment receipts and record their separate coverage. | Pinned Maven sources and preserved receipts | No absent assertion is reported as executed. |
+
+##### Verification Results
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T1 | Not run | Retained actual buffer evidence | Pending | Future scoped verification is not established by grouping or by a historical result outside this check. |
+| T2 | Not run | Separately authorized bounded deployment | Pending | Future scoped verification is not established by grouping or by a historical result outside this check. |
+| T3 | Not run | Pinned Maven sources and preserved receipts | Pending | Future scoped verification is not established by grouping or by a historical result outside this check. |
+
+##### Closure Evidence
+
+- Tool work is not complete. GitHub tracking consolidation completed under D33 at 2026-10-17T01:14:10.675787+00:00: replacement #55 is open and all its source issues are closed not_planned with exact body/comment readback. Original criteria and unsuccessful evidence remain active; source closure establishes no tool verification.
+
+##### GitHub Projection
+
+- Title: `Track buffer test tooling`
+- Labels: `enhancement`
+- GitHub Milestone: `Backlog`
+- Assignee: `jeonghanlee`
+- Issue: #55, https://github.com/jeonghanlee/ansible-provision/issues/55
+- Projection Scope: Complete consolidated body containing all original source contracts and additional declared tooling work.
+- Observed State: open
+- Observed Labels: `enhancement`
+- Observed Milestone: `Backlog`
+- Observed Assignees: `jeonghanlee`
+- Observed Updated At: 2026-10-17T01:09:42Z
+- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
+- Prepared Body: `work/issue-tools-buffer.md`
+- Published Body SHA256: 68475d0897f4a062b6984649f43b95503f985c3d16e73e33a1317461468bbe63
+- Historical Source Issues: none; buffer tooling scope is declared directly here.
+
+#### M50 - Track shared test tooling
+
+- Origin: 38560eb / M50
+- Identity History: created as a test-type coordination entry on 2026-10-16 (D32); no existing identity is replaced.
+- GitHub Issue: #56, https://github.com/jeonghanlee/ansible-provision/issues/56
+- Status: Deferred
+
+##### Summary
+
+Consolidate the remaining shared test-tool work into one active issue while preserving every original acceptance condition and evidence record.
+
+##### Scope
+
+All remaining component work is tracked directly in this issue. Source issue references identify preserved historical records; retiring those issues does not complete their checks or require their reopening. Every unmet criterion in the transferred contracts remains active here. Current reusable-source manifests stay separate from immutable observation manifests.
+
+Component canonical identities remain independent under this single GitHub projection:
+
+- M37: historical source #42; unfinished work is tracked in #56.
+- M46: historical source #51; unfinished work is tracked in #56.
+
+Source GitHub issues were retired for consolidation at 2026-10-17T01:14:10.675787+00:00. Component work is not Complete; current tracking is #56 and the retired source metadata is recorded in component details.
+
+##### Detailed Work Summary
+
+These summaries preserve the recorded scope. Each linked issue retains its full acceptance criteria and original evidence; a summary or group checkbox does not replace that verification.
+
+###### #42 - Refresh preserved-tool checksums
+
+- Problem and evidence: The recorded reusable-source manifest check found three missing files and sixteen hash mismatches.
+- Remaining work: Define current source coverage and run actual checksum/coverage checks on the tree and isolated real copies.
+- Done when: Missing, omitted, duplicate, removed and changed files are detected; immutable observation manifests and private runtime data are untouched.
+
+###### #51 - Report actual test phase durations against the agreed allocations
+
+- Problem and evidence: Actual phase durations have not been consolidated against agreed one-hour journal, three-hour ETL, parallel full-day and two-hour decision allocations.
+- Remaining work: Reconcile retained UTC/monotonic boundaries, separating preparation, processing, waiting, observation and analysis.
+- Done when: Measured elapsed/simultaneous work, default scheduling waits and missing boundaries are explicit; original allocations are unchanged.
+
+###### Reusable source and procedure preservation
+
+- Problem and evidence: Reviewed buffer sources/procedures are preserved privately but not yet imported into Git-managed locations.
+- Remaining work: Preserve reusable sources/procedures with original/candidate identity and explicit dependencies, excluding deployment-specific inputs.
+- Done when: Reusable files are trackable; raw captures, PB data, operational logs, credentials and private configuration stay excluded.
+
+###### Installer dependencies
+
+- Problem and evidence: The buffer installer defines ETL commands whose collector/observer dependencies are absent from its bundle; the campaign did not use them.
+- Remaining work: Declare inputs, pins, service effects and prerequisites; verify the real packaged installer separately.
+- Done when: Every installed command has its actual declared dependencies and effects, originals remain intact and no unobserved runtime failure is claimed.
+
+##### Existing Evidence
+
+The current preserved-source manifest check reports three missing source files and sixteen mismatched hashes. Current-source manifests and immutable observation-specific manifests have different ownership. The retained buffer fixture installer writes ETL units referring to `collect.py` and `observe.py`, neither included in its 18-file bundle. That campaign uses its own runner, so no missing-dependency runtime failure is claimed. Setup embeds one-deployment paths/pins and is not a repeatable Ansible role.
+
+##### Out Of Scope
+
+Test-specific repairs owned by other groups, altering original evidence/frozen manifests, public raw-data imports, inherited capacity caps, or repeated long observations solely for preservation/reporting.
+
+##### Completion Criteria
+
+- [ ] Complete the transferred checksum criteria from #42 through the actual checksum CLI and current-source coverage check, detecting missing, omitted, duplicate, removed or changed files without regenerating original observation manifests.
+- [ ] Preserve reusable buffer sources/procedures in Git-managed locations with explicit original/candidate identity and dependencies. Exclude raw captures, PB data, operational logs, credentials and deployment-specific configuration.
+- [ ] Make installation inputs, pins, service effects and prerequisites explicit. Install only commands whose declared dependencies are supplied; validate the real installer in a separate bounded environment and preserve originals.
+- [ ] Complete the transferred phase-report criteria from #51 from actual start/end records against approximately one-hour journal basics, three-hour ETL processing, parallel full-day observations and two-hour result decision allocations. Separate preparation, processing, waiting, observation and analysis; never predict missing times.
+- [ ] Document shared source/evidence selection, privacy, transfer/member verification, original/candidate replay and verdict handling while retaining each test's own signals, timing and acceptance criteria.
+
+##### Transferred Acceptance Criteria
+
+All criteria below remain active in the replacement issue. Source closure is administrative; actual verification is still required. The source scopes, evidence and real-path methods remain in their component canonical details and are copied completely into the prepared public body.
+
+###### Source #42 - Refresh preserved-tool checksums
+
+- [ ] The real checksum CLI verifies every current entry and declared required source.
+- [ ] Missing, omitted, duplicate, removed or deliberately changed actual source files are detected.
+- [ ] Private runtime data and original observation manifests are never regenerated or included.
+
+
+
+###### Source #51 - Report actual test phase durations against the agreed allocations
+
+- [ ] Each reported duration identifies actual start/end evidence and separates simultaneous work from elapsed wall time.
+- [ ] Waiting for default-chain scheduling is recorded explicitly; it is not presented as successful processing time.
+- [ ] Schedule conflicts and missing boundaries are disclosed without changing the agreed allocation, shortening an observation or inventing times.
+
+
+
+##### Dependencies And Decisions
+
+- D33; Decision Date: 2026-10-16. Consolidate GitHub tracking into four issues; copy every original contract and retire twenty source issues with reason not planned. This supersedes D32's plan to keep those twenty GitHub issues open. Independent canonical component work and future tool execution remain Deferred.
+- Primary links are coordination relationships, not a new sequential execution dependency. Each existing issue retains its original criteria, source identities and evidence; no original result is rewritten.
+- Accepted M22/#30 ETL and M25/#31 journal results remain complete. The completed buffer acceptance in jeonghanlee/epicsarchiverap-maven#29 remains separate.
+
+##### Implementation Plan
+
+- Plan Status: draft
+- Plan Acceptance: none
+- Implementation Authorization: none
+- Superseded Plan Artifacts: earlier representative-only issue projection under D32.
+
+1. Preserve each component's original scope, criteria, evidence and source identity in this issue; use source issue links as historical provenance.
+2. After separate tool-execution authorization, perform the scoped real-path corrections and checks, retaining explicit scenario/native verdicts and immutable originals.
+3. Update the per-component criteria from actual results. Shared evidence may satisfy overlapping criteria without inventing duplicate campaigns.
+
+##### Test Plan
+
+| Label | Layer | Method | Environment | Expected Result |
+| --- | --- | --- | --- | --- |
+| T1 | Source preservation | Run the actual checksum CLI and coverage checks specified by #42 on current sources and isolated real copies. | Reusable source tree and isolated copies | All required sources covered; frozen observation manifests unchanged. |
+| T2 | Installation | Run the actual packaged installer/preflight using declared inputs and inspect generated units and dependencies. | Separately authorized bounded deployment | Commands have real dependencies and declared service effects; private inputs excluded. |
+| T3 | Phase reporting | Reconcile retained controller/observation/terminal timestamps and phase receipts as specified by #51. | Retained completed-test records | Measured intervals distinguish overlap/waiting and disclose missing boundaries. |
+
+##### Verification Results
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T1 | Not run | Reusable source tree and isolated copies | Pending | Future scoped verification is not established by grouping or by a historical result outside this check. |
+| T2 | Not run | Separately authorized bounded deployment | Pending | Future scoped verification is not established by grouping or by a historical result outside this check. |
+| T3 | Not run | Retained completed-test records | Pending | Future scoped verification is not established by grouping or by a historical result outside this check. |
+
+##### Closure Evidence
+
+- Tool work is not complete. GitHub tracking consolidation completed under D33 at 2026-10-17T01:14:10.675787+00:00: replacement #56 is open and all its source issues are closed not_planned with exact body/comment readback. Original criteria and unsuccessful evidence remain active; source closure establishes no tool verification.
+
+##### GitHub Projection
+
+- Title: `Track shared test tooling`
+- Labels: `enhancement`
+- GitHub Milestone: `Backlog`
+- Assignee: `jeonghanlee`
+- Issue: #56, https://github.com/jeonghanlee/ansible-provision/issues/56
+- Projection Scope: Complete consolidated body containing all original source contracts and additional declared tooling work.
+- Observed State: open
+- Observed Labels: `enhancement`
+- Observed Milestone: `Backlog`
+- Observed Assignees: `jeonghanlee`
+- Observed Updated At: 2026-10-17T01:09:45Z
+- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
+- Prepared Body: `work/issue-tools-shared.md`
+- Published Body SHA256: 991316dabf5a9f3ac639c6550aa1a090cd16b43f0aa719c0e0afa8f477e906c2
+- Historical Source Issues: #42, #51
 
 ## History
 
