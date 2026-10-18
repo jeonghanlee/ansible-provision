@@ -47,7 +47,7 @@ verification results are in [the work register](../../docs/milestone-38560eb.md)
 | `baseline/sampler.py`, `register.py`, `load_retrieval.py` | Original resource sampler, registration client and concurrent retrieval load client |
 | `baseline/journald_facts.sh`, `step2.sh`, `store-test.yml` | Original journald inspection, second load-step launcher and shortened store configuration |
 | `baseline/pilot/` | Earlier pilot IOC, sampler and installed policy source; independent of the 903-PV fixture |
-| `SHA256SUMS` | Legacy preserved-copy manifest; current source synchronization is separate maintenance work |
+| `SHA256SUMS` | Current source hashes, including both child manifests; checked by the shared test-framework source checker |
 
 The current sources originate from `work/soak-etl-pass-3bdf378c/`; baseline
 sources and fixtures originate from `work/soak-9eed006/`. The registration
@@ -61,6 +61,55 @@ payloads are documented in [`etl-scenarios/README.md`](etl-scenarios/README.md).
 Each directory has its own source manifest. Both are separate from a recorded
 observation's frozen bundle and private evidence hashes. Copying source does
 not establish execution or acceptance of an unverified scenario.
+
+## Current Source Integrity
+
+The parent `SHA256SUMS` covers every Git-selected file under this directory,
+including Journal sources, fixtures, procedures and both child manifests.
+Only the parent manifest itself is excluded. The child manifests cover all
+current files under their own directories except themselves. A child manifest
+change therefore also requires a parent manifest update.
+
+Use the shared [test-framework source checker](https://github.com/jeonghanlee/dev-env/blob/4c633385302cea3dcbc5b1c0f37f6eb8b6104b91/shared/skills/test-framework/scripts/check-sources.py)
+with Python 3.8 or later, Git and GNU Coreutils `sha256sum`. Set `checker` to
+that file in an installed skill or checkout. Run these Bash commands from
+the repository root:
+
+```bash
+checker=/path/to/test-framework/scripts/check-sources.py
+sources=tests/archiver-soak
+manifests=(--manifest SHA256SUMS --manifest diagnostics/SHA256SUMS --manifest etl-scenarios/SHA256SUMS)
+python3 -B "$checker" --inventory-root "$sources" "${manifests[@]}"
+```
+
+The inventory includes tracked and non-ignored new sources. The checker
+requires every selected member exactly once, rejects noncanonical paths and
+symlinks, and runs the native checksum tool for all three manifests. It reads
+files without regenerating manifests, changing the Git index or starting services.
+Status 0 means complete membership and native checksum checks passed; inspect
+diagnostics for status 1 errors or differences. These are source checks, not
+ETL or Journal functional verdicts.
+
+For an isolated copy, retain the owning checkout as the independent inventory:
+
+```bash
+copy=/path/to/isolated-source-copy
+python3 -B "$checker" --inventory-root "$sources" --root "$copy" "${manifests[@]}"
+```
+
+Removing a required file and its manifest entry from the copy still fails
+against that inventory. Candidate-only files outside the Git selection are
+not checked. A source archive without Git can use the native checksum command
+in each manifest directory, but that alone cannot establish complete membership.
+
+The shared skill owns the [source-check contract and generic CLI regressions](https://github.com/jeonghanlee/dev-env/blob/4c633385302cea3dcbc5b1c0f37f6eb8b6104b91/shared/skills/test-framework/references/source-checks.md).
+Project coverage configures this source root and these three manifests; no
+project-local checker or duplicate generic suite is required.
+
+These are current-source manifests. Keep original observation bundles,
+`bundle.json` identities, recorded source manifests and private runtime inputs
+unchanged. Prior source lists remain available in Git history. Private input
+and output files belong outside this source tree.
 
 ## Environment And Fixture
 
