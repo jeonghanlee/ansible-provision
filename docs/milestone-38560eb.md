@@ -31,7 +31,7 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: M37 shared-checker integration and preservation passed locally under #56/D34/D35 (T4). The duplicate local scripts are removed and privately preserved; historical T1-T3 results remain unchanged. Prepare its scoped source commit and checksum-only issue update when requested; obtain actual landing evidence before marking M37 Complete. M50 is active only for this component. All other tool work in #53-#56 remains Deferred and requires its own scoped start. M22/#30, M25/#31 and M24/#52 remain Complete/closed; M14 is Blocked on G2 and M26 on G5. No Milestone row is Ready.
+Next session entry point: M37 checksum work is Complete under D36, with real checks, source landing and the verified #56 checklist update recorded below. Review and commit this closure/readback record when requested. Remaining work in #53-#56 is Deferred and needs its own scoped plan before execution; #56 stays open for its seven unchecked boxes. M22/#30, M25/#31 and M24/#52 remain Complete/closed; M14 is Blocked on G2 and M26 on G5. No Milestone row is Ready.
 
 Both original shortened/default 24-hour ETL processing observations completed on 2026-10-15 UTC and are accepted under D29. They ran for 86416.387 and 86415.088 monotonic seconds before normal finish across UTC midnight. The unchanged native scheduler evaluator Passed with all 312 and 27 required passes present exactly once. Read-only initial, both-transition and final physical/HTTP comparisons Passed on each chain. Whole-unit normal stops returned 0 in 12.516 and 13.770 seconds, below the installed 300-second timeout. Each observation retained 290 in-window full samples and its original frozen bundle.
 
@@ -390,7 +390,7 @@ full mode carries every OS tree, second apply `failed=0`). Delivered in
 
 </details>
 
-Status tally: 24 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 5 external gates (3 Complete, 2 Open). Backlog excluded: 22 Deferred and 2 In progress carry-forward items; only the M37 checksum component is authorized.
+Status tally: 24 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 5 external gates (3 Complete, 2 Open). Backlog excluded: 1 Complete and 23 Deferred carry-forward items; M37 checksum work is complete and no other tool component is active.
 
 ## Milestone
 
@@ -469,6 +469,7 @@ Status tally: 24 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 
 | D33 | Consolidate GitHub tool tracking into four Journal, ETL, Buffer and Shared issues. Copy every original scope, acceptance criterion, verification method and evidence statement from #32-#51 before retiring those twenty issues with reason not planned and replacement links. Preserve unmet criteria directly in the replacements; source issue closure is not tool completion. Canonical component identities and unfinished verification remain independent and Deferred. Supersedes D32's plan to retain twenty open source issues. Actual GitHub mutation requires separate Issue delegation. | 2026-10-16 |
 | D34 | Reactivate M37 checksum maintenance only within Shared #56. Refresh the existing parent source manifest for all current Git-managed sources, retain prior lists in Git, and add read-only membership/native checksum verification with real-copy negative checks. Exclude only the parent manifest itself from its digest list; retain both child manifests and frozen observation inputs unchanged. M50 reflects this active component only; all other components remain deferred and unauthorized. This tool work stays outside the release tally and does not reopen accepted product results. | 2026-10-16 |
 | D35 | Remove the uncommitted archiver-specific checksum checker and regression suite in favor of the committed common test-framework checker with explicit project source and all three manifest declarations. Preserve their source and historical test receipts privately; update only current-source hashes, execution documentation and these component records. This accepts and authorizes the scoped deduplication, without other tool repairs, long observations or product-result changes. | 2026-10-18 |
+| D36 | Close M37 checksum work from its completed real-path checks, source commits on the observed upstream branch and the verified four checksum boxes in #56. Keep the consolidated issue open for its seven remaining unchecked boxes; this is a component-only issue-closure exception, not a waiver of verification. D34/D35 authorized only checksum execution, so M50 returns to Deferred for its remaining scope under D31. Preserve historical results and sources; start no other tool repair or observation. | 2026-10-18 |
 
 ### Assignment History
 
@@ -5851,7 +5852,7 @@ The assembly neither writes nor checks these files (`D26`). `M26` depends on the
 | Tools | M34 | Match JFR exports to the recording process and lifetime | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m34---match-jfr-exports-to-the-recording-process-and-lifetime) |
 | Tools | M35 | Persist terminal state before evaluating terminal coherence | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m35---persist-terminal-state-before-evaluating-terminal-coherence) |
 | Tools | M36 | Match ETL pass times by UTC instant with nanosecond precision | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m36---match-etl-pass-times-by-utc-instant-with-nanosecond-precision) |
-| Tools | M37 | Refresh preserved-tool checksums | Carry-forward | In progress | No | D31, D34, D35 | Complete independently scoped tool work from real evidence; [detail](#m37---refresh-preserved-tool-checksums) |
+| Tools | M37 | Refresh preserved-tool checksums | Carry-forward | Complete | No | D31, D34, D35, D36 | Real source/copy checks, source landing and four checksum boxes in #56 verified; [detail](#m37---refresh-preserved-tool-checksums) |
 | Tools | M38 | Finish ETL tool independence checks across both store chains | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m38---finish-etl-tool-independence-checks-across-both-store-chains) |
 | Tools | M39 | Finish partial-source ETL evidence verification on both chains | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m39---finish-partial-source-etl-evidence-verification-on-both-chains) |
 | Tools | M40 | Finish all-source evidence loss and automatic-abort verification | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m40---finish-all-source-evidence-loss-and-automatic-abort-verification) |
@@ -5864,7 +5865,7 @@ The assembly neither writes nor checks these files (`D26`). `M26` depends on the
 | Tools | M47 | Track journal test tooling | Carry-forward | Deferred | No | D32, D33 | Track consolidated journal criteria directly; source issue closure is not test completion; [detail](#m47---track-journal-test-tooling) |
 | Tools | M48 | Track ETL test tooling | Carry-forward | Deferred | No | D32, D33 | Track consolidated etl criteria directly; source issue closure is not test completion; [detail](#m48---track-etl-test-tooling) |
 | Tools | M49 | Track buffer test tooling | Carry-forward | Deferred | No | D32, D33 | Track consolidated buffer criteria directly; source issue closure is not test completion; [detail](#m49---track-buffer-test-tooling) |
-| Tools | M50 | Track shared test tooling | Carry-forward | In progress | No | D32, D33, D34, D35 | Track consolidated shared criteria directly; source issue closure is not test completion; [detail](#m50---track-shared-test-tooling) |
+| Tools | M50 | Track shared test tooling | Carry-forward | Deferred | No | D32, D33, D34, D35, D36 | Checksum component complete; remaining shared criteria stay deferred and unchecked; [detail](#m50---track-shared-test-tooling) |
 
 Unassigned work is excluded from the release tally.
 
@@ -6933,7 +6934,7 @@ The runtime/scenario checker compares timestamp text instead of its UTC instant.
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
 - GitHub Issue: #56, https://github.com/jeonghanlee/ansible-provision/issues/56
 - Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #42 is closed not_planned at 2026-10-17T01:13:17Z; unfinished criteria are tracked in #56. Original issue references below are historical and do not create an active source-issue dependency.
-- Status: In progress
+- Status: Complete
 
 ##### Summary
 
@@ -6959,6 +6960,7 @@ The prior manifest retained journal modules removed by ETL/Journal separation an
 
 ##### Dependencies And Decisions
 
+- D36; Decision Date: 2026-10-18. Close this completed checksum component from the recorded real checks, named-branch source landing and exact #56 readback. The consolidated issue remains open for unrelated work.
 - D35; Decision Date: 2026-10-18. Reuse the committed common checker directly; remove the two uncommitted local implementations after verified private backup. Historical local results remain distinct from current shared-checker integration.
 - D34; Decision Date: 2026-10-16. Reactivate checksum work only. Replace the parent repository source manifest with current-source hashes; retain its prior state in Git. Keep this independent tool work outside the release tally. Other tool components remain deferred.
 - D31; Decision Date: 2026-10-15. Independent Backlog work is excluded from current execution; accepted M22/#30 ETL functionality and M25/#31 journal results remain complete.
@@ -6999,8 +7001,11 @@ Historical T1-T3 below describe the pre-deduplication local implementation and r
 
 ##### Closure Evidence
 
+- Complete; Decision Date: 2026-10-18 (D36). All three completion criteria are satisfied by the recorded T1-T4 results, source commits 8028c4d and 21dc11e on the observed upstream branch, and the applied checksum-only #56 update. No new producer run, tool repair or test is required for this component.
+- Issue-closure exception; Decision Date: 2026-10-18. Under D33/D36, #56 is the consolidated Shared issue: its checksum summary box and three transferred checksum boxes are checked, while seven boxes for other work remain unchecked. M37 closes independently; the whole issue stays open. No verification criterion is waived.
 - Historical local T1-T3 checks passed under D34; current shared-checker integration and preservation passed as T4 under D35; completion criteria above describe those observed checks. Original runtime observations and accepted ETL/Journal/Buffer conclusions are unchanged.
-- Status remains In progress pending a separately authorized source commit/landing and checksum-only issue update. No GitHub checkbox, issue closure or other shared-tool completion is claimed.
+- Source landing verified at 2026-10-18T20:55:25.554346+00:00: commits `8028c4d6ea9800b7d2896173e3057b6b9a11d739` (source manifest/instructions) and `21dc11ed7f8eb42f71653ebb4530e34d24812d9f` (reuse summary) are ancestors of the observed remote tip on `origin/m14-middleware-reconcile`. Local HEAD, fetched upstream and direct remote ref agree. Recheck with `git ls-remote --exit-code --heads origin refs/heads/m14-middleware-reconcile`. Receipt: `work/issue-shared-checks-yh2b0_ok/landing.json`. This records the named upstream branch only.
+- The checksum-only #56 body update was applied and read back at 2026-10-18T21:25:36.301871+00:00. Its body exactly matches the prepared SHA256 6f6c6d060d64d7ca35d211ee6c7bcf4495306a2e5a9a24ee97aa9c1112fd1321; four checksum boxes are checked and seven unrelated boxes remain unchecked. Title, labels, milestone, assignee and open state are unchanged. Receipt: `work/issue-56-apply-2sxck42w/verification.json`. All checksum implementation, test, named-branch landing and projection evidence is present; the consolidated issue remains open for other components.
 
 ##### GitHub Projection
 
@@ -7014,11 +7019,11 @@ Historical T1-T3 below describe the pre-deduplication local implementation and r
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-17T01:09:45Z
-- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
-- Projection Difference: local checksum implementation/criteria are verified; the published issue body remains unchanged pending separate Issue authorization.
-- Prepared Body: `work/issue-tools-shared.md`
-- Published Body SHA256: 991316dabf5a9f3ac639c6550aa1a090cd16b43f0aa719c0e0afa8f477e906c2
+- Observed Updated At: 2026-10-18T21:25:35Z
+- Last Compared: 2026-10-18T21:25:36.301871+00:00; the prepared checksum body matches the live #56 body exactly, with four checked and seven unchecked boxes. Title/metadata/open state and the complete phase-report contract are unchanged.
+- Projection Difference: none for the checksum component; the prepared body was applied and verified. Other shared criteria remain unchecked.
+- Prepared Body: `work/issue-shared-checks-body.md`
+- Published Body SHA256: 6f6c6d060d64d7ca35d211ee6c7bcf4495306a2e5a9a24ee97aa9c1112fd1321
 - Historical Source Issue: #42, https://github.com/jeonghanlee/ansible-provision/issues/42
 - Historical Source State: closed
 - Historical Source Reason: not_planned
@@ -8481,7 +8486,7 @@ Reopening jeonghanlee/epicsarchiverap-maven#29, editing Maven code here, a new f
 - Origin: 38560eb / M50
 - Identity History: created as a test-type coordination entry on 2026-10-16 (D32); no existing identity is replaced.
 - GitHub Issue: #56, https://github.com/jeonghanlee/ansible-provision/issues/56
-- Status: In progress
+- Status: Deferred
 
 ##### Summary
 
@@ -8493,10 +8498,10 @@ All remaining component work is tracked directly in this issue. Source issue ref
 
 Component canonical identities remain independent under this single GitHub projection:
 
-- M37: historical source #42; unfinished work is tracked in #56.
+- M37: historical source #42; checksum work is Complete under D36, with its four related boxes checked in #56.
 - M46: historical source #51; unfinished work is tracked in #56.
 
-Source GitHub issues were retired for consolidation at 2026-10-17T01:14:10.675787+00:00. Component work is not Complete; current tracking is #56 and the retired source metadata is recorded in component details.
+Source GitHub issues were retired for consolidation at 2026-10-17T01:14:10.675787+00:00. M37 is now Complete; M46 and the other remaining shared criteria are Deferred and incomplete. Current tracking is #56; retired source metadata remains in component details.
 
 ##### Detailed Work Summary
 
@@ -8505,7 +8510,7 @@ These summaries preserve the recorded scope. Each linked issue retains its full 
 ###### #42 - Refresh preserved-tool checksums
 
 - Problem and evidence: The recorded reusable-source manifest check found three missing files and sixteen hash mismatches.
-- Remaining work: Historical local source correction and real CLI/copy checks passed under M37. D35 replaces duplicate local scripts with the committed common checker; all 19 bounded project integration cases and preservation checks passed as M37/T4. Commit/landing remain outstanding. The scoped GitHub update remains outstanding.
+- Result: M37 is Complete under D36. Current shared-checker integration passed all 19 declared project cases and preservation checks; source commits 8028c4d and 21dc11e are verified on origin/m14-middleware-reconcile. The applied #56 checksum summary and three detailed boxes match this evidence. No checksum implementation or verification remains.
 - Done when: Missing, omitted, duplicate, removed and changed files are detected; immutable observation manifests and private runtime data are untouched.
 
 ###### #51 - Report actual test phase durations against the agreed allocations
@@ -8528,7 +8533,7 @@ These summaries preserve the recorded scope. Each linked issue retains its full 
 
 ##### Existing Evidence
 
-The baseline source manifest check reported three missing source files and sixteen mismatched hashes. M37 retains the original local correction evidence: 98-file parent coverage, passing 5/17-file child checks and twelve local real-copy regression tests before D35. Current shared-checker integration passed 19 declared cases with 96 parent and 5/17 child members; original sources and historical results remain intact. Source landing remains outstanding. Current-source manifests and immutable observation-specific manifests have different ownership. The retained buffer fixture installer writes ETL units referring to `collect.py` and `observe.py`, neither included in its 18-file bundle. That campaign uses its own runner, so no missing-dependency runtime failure is claimed. Setup embeds one-deployment paths/pins and is not a repeatable Ansible role.
+The baseline source manifest check reported three missing source files and sixteen mismatched hashes. M37 retains the original local correction evidence: 98-file parent coverage, passing 5/17-file child checks and twelve local real-copy regression tests before D35. Current shared-checker integration passed 19 declared cases with 96 parent and 5/17 child members; original sources and historical results remain intact. Source commits 8028c4d and 21dc11e are verified on origin/m14-middleware-reconcile; the checksum-only GitHub body update is applied and verified. Current-source manifests and immutable observation-specific manifests have different ownership. The retained buffer fixture installer writes ETL units referring to `collect.py` and `observe.py`, neither included in its 18-file bundle. That campaign uses its own runner, so no missing-dependency runtime failure is claimed. Setup embeds one-deployment paths/pins and is not a repeatable Ansible role.
 
 ##### Out Of Scope
 
@@ -8564,6 +8569,7 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 ##### Dependencies And Decisions
 
+- D36; Decision Date: 2026-10-18. M37 is Complete. Its checksum-only activation under D34/D35 has ended; this group returns to Deferred for the remaining scope already excluded by D31. No other component is started or authorized by the closure record.
 - D35; Decision Date: 2026-10-18. M37 uses the committed common checker instead of duplicate local scripts. Only this source-check component is active; other shared work remains unauthorized.
 - D34; Decision Date: 2026-10-16. M37 checksum work is active within this group. All other shared component plans remain draft and unauthorized; group completion is not implied.
 - D33; Decision Date: 2026-10-16. Consolidate GitHub tracking into four issues; copy every original contract and retire twenty source issues with reason not planned. This supersedes D32's plan to keep those twenty GitHub issues open. Independent canonical component work and future tool execution remain Deferred.
@@ -8600,8 +8606,10 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 ##### Closure Evidence
 
+- Not complete; Decision Date: 2026-10-18 (D36). The checksum component M37 is Complete, with four checked boxes in #56. The remaining seven boxes stay unchecked and the issue stays open. The remaining group scope returns to Deferred because D34/D35 authorized only checksum execution; other plans remain draft and unauthorized.
+- Source landing for the checksum component is verified at 2026-10-18T20:55:25.554346+00:00 on `origin/m14-middleware-reconcile`; see M37 and `work/issue-shared-checks-yh2b0_ok/landing.json`. Four checksum boxes are checked in #56 after exact body/metadata readback at 2026-10-18T21:25:36.301871+00:00; the remaining seven boxes and the overall issue stay open. Receipt: `work/issue-56-apply-2sxck42w/verification.json`.
 - Checksum-only checks passed under M37/D34; shared-checker integration and duplicate removal passed under D35/M37/T4. All other shared criteria remain unchecked and unauthorized; overall tool work is not complete.
-- Tool work is not complete. GitHub tracking consolidation completed under D33 at 2026-10-17T01:14:10.675787+00:00: replacement #56 is open and all its source issues are closed not_planned with exact body/comment readback. Original criteria and unsuccessful evidence remain active; source closure establishes no tool verification.
+- Tool work is not complete. GitHub tracking consolidation completed under D33 at 2026-10-17T01:14:10.675787+00:00: replacement #56 is open and all its source issues are closed not_planned with exact body/comment readback. Remaining unmet criteria and original unsuccessful evidence remain preserved; administrative source closure establishes no tool verification.
 
 ##### GitHub Projection
 
@@ -8615,10 +8623,11 @@ All criteria below remain active in the replacement issue. Source closure is adm
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-17T01:09:45Z
-- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
-- Prepared Body: `work/issue-tools-shared.md`
-- Published Body SHA256: 991316dabf5a9f3ac639c6550aa1a090cd16b43f0aa719c0e0afa8f477e906c2
+- Observed Updated At: 2026-10-18T21:25:35Z
+- Last Compared: 2026-10-18T21:25:36.301871+00:00; exact body readback verifies the checksum-only revision, four checked boxes, seven unchecked boxes and unchanged metadata/open state.
+- Projection Difference: none for the checksum component; all other criteria remain unchanged and unchecked.
+- Prepared Body: `work/issue-shared-checks-body.md`
+- Published Body SHA256: 6f6c6d060d64d7ca35d211ee6c7bcf4495306a2e5a9a24ee97aa9c1112fd1321
 - Historical Source Issues: #42, #51
 
 ## History
