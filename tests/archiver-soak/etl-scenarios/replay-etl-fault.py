@@ -27,14 +27,29 @@ def journal(path):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--case', type=Path, required=True)
+    parser.add_argument('--case', type=Path)
+    parser.add_argument('--check-retained-pass', action='store_true')
+    parser.add_argument('--contract', type=Path)
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
+    if args.check_retained_pass:
+        try:
+            context = json.loads(args.contract.read_text())
+            sys.path.insert(0, str(Path(context['candidate']['root']).resolve()))
+            import evidence
+            return evidence.retained_pass_main(args.contract, args.output, __file__)
+        except Exception as error:
+            print(json.dumps({'verdict': 'Incomplete', 'reason': 'invocation',
+                              'native_exit_status': 2, 'error_type': type(error).__name__}, sort_keys=True))
+            return 2
+    if args.case is None or args.contract is not None:
+        parser.error('Full scenario replay requires --case and no retained-input contract')
     args.output.mkdir(mode=0o700)
     sys.path.insert(0, str(TOOLS))
     import collect
     import contract
     import evaluate
+    import evidence
     import focused
     hashes = contract.verify_bundle(TOOLS)
     runtime = json.loads((args.case / 'runtime.json').read_text())
@@ -102,12 +117,11 @@ def main():
         samples.append(sample)
     assert len(samples) >= declaration['minimum_fault_full_samples'] == 2
     outside = evaluate.pass_records(args.case / 'outside-native-passes.jsonl')
-    witness = runtime['actual_native_pass']
-    assert witness in outside and witness['transition'] == 0
-    assert witness['plannedAt'] == declaration['target_native_sts_pass']['planned_at']
-    focused.successful_pass(witness)
-    assert evaluate.epoch(runtime['fault_begin']) <= evaluate.epoch(witness['startedAt'])
-    assert evaluate.epoch(witness['endedAt']) <= evaluate.epoch(runtime['fault_end'])
+    identity = json.loads((args.case / 'actual-fault-begin.json').read_text())['identity']
+    witness = evidence.checked_pass(args.case / 'outside-native-passes.jsonl',
+                                    declaration['target_native_sts_pass'], identity,
+                                    runtime['fault_begin'], runtime['fault_end'])
+    assert witness == runtime['actual_native_pass'] and witness in outside
     if case == 'E3':
         assert not (OUT / 'abort-request.json').exists() and not runtime['actual_abort_invocations']
         assert witness in evaluate.pass_records(OUT / 'passes.jsonl')
@@ -148,4 +162,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    raise SystemExit(main())

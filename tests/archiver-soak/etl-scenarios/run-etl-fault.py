@@ -9,6 +9,25 @@ import subprocess
 import sys
 import time
 
+
+def retained_mode():
+    try:
+        if (PAYLOAD.get('mode') != 'check-retained-pass' or ROLE != 'etl'
+                or PAYLOAD['chain'] not in ('shortened', 'default') or PAYLOAD['case'] not in ('E3', 'E4')):
+            raise ValueError('Invalid retained-pass role or case')
+        context = json.loads(Path(PAYLOAD['contract']).read_text())
+        sys.path.insert(0, str(Path(context['candidate']['root']).resolve()))
+        import evidence
+        return evidence.retained_pass_main(PAYLOAD['contract'], PAYLOAD['output'], __file__)
+    except Exception as error:
+        print(json.dumps({'verdict': 'Incomplete', 'reason': 'invocation',
+                          'native_exit_status': 2, 'error_type': type(error).__name__}, sort_keys=True))
+        return 2
+
+
+if PAYLOAD.get('mode') is not None:
+    raise SystemExit(retained_mode())
+
 TOOLS = Path('/usr/local/share/etl-soak')
 CHAIN, CASE = PAYLOAD['chain'], PAYLOAD['case']
 assert ROLE == 'etl' and CHAIN in ('shortened', 'default') and CASE in ('E3', 'E4')
@@ -21,6 +40,7 @@ sys.path.insert(0, str(TOOLS))
 import collect
 import contract
 import evaluate
+import evidence
 import focused
 import observe
 import pass_source
@@ -228,12 +248,7 @@ try:
     outside = ROOT / 'outside-native-passes.jsonl'
     events = pass_source.read('etl', ROOT / 'outside-after-etl.jsonl', ROOT / 'outside-before-etl.jsonl')
     outside.write_text(''.join(json.dumps(row) + '\n' for row in events if evaluate.PASS.search(row['MESSAGE'])))
-    witnesses = [row for row in evaluate.pass_records(outside) if row['transition'] == 0 and
-        row['invocation_id'] == identity['invocation_id'] and row['plannedAt'] == target['planned_at']]
-    assert len(witnesses) == 1
-    witness = witnesses[0]
-    focused.successful_pass(witness)
-    assert evaluate.epoch(began) <= evaluate.epoch(witness['startedAt']) <= evaluate.epoch(witness['endedAt']) <= evaluate.epoch(fault_end)
+    witness = evidence.checked_pass(outside, target, identity, began, fault_end)
     if CASE == 'E3':
         assert witness in evaluate.pass_records(observe.OUT / 'passes.jsonl')
     assert contract.verify_bundle(TOOLS) == hashes
