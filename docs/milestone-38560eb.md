@@ -31,7 +31,7 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: M36 UTC pass-matching implementation and local T1-T6 checks are finished under D37. Review the changed sources, regression runner, scenario README, current-source manifests and this result record for separately requested commit/push preparation. M36 remains In progress pending source landing and authorized #54 component synchronization/closure handling; no external mutation is authorized. Private evidence is under work/m36-utc-pass-20261019-msm_5y02/, especially candidate-003/results/ and final-checks-004/. M37 remains Complete; other tool components remain Deferred. M22/#30, M25/#31 and M24/#52 remain Complete/closed; M14 is Blocked on G2 and M26 on G5. No Milestone row is Ready.
+Next session entry point: M36 UTC pass matching is Complete under D38: T1-T6 Passed, source commit 982733fe732bc237100c428a31e6a86f33528427 is verified on origin/m14-middleware-reconcile, and the four UTC boxes in #54 are checked. Review and commit this closure/readback record when requested. M37 remains Complete; the other 22 tool components remain Deferred and require their own scoped plan before execution. #54 stays open for its 77 remaining unchecked boxes. M22/#30, M25/#31 and M24/#52 remain Complete/closed; M14 is Blocked on G2 and M26 on G5. No Milestone row is Ready.
 
 Both original shortened/default 24-hour ETL processing observations completed on 2026-10-15 UTC and are accepted under D29. They ran for 86416.387 and 86415.088 monotonic seconds before normal finish across UTC midnight. The unchanged native scheduler evaluator Passed with all 312 and 27 required passes present exactly once. Read-only initial, both-transition and final physical/HTTP comparisons Passed on each chain. Whole-unit normal stops returned 0 in 12.516 and 13.770 seconds, below the installed 300-second timeout. Each observation retained 290 in-window full samples and its original frozen bundle.
 
@@ -390,7 +390,7 @@ full mode carries every OS tree, second apply `failed=0`). Delivered in
 
 </details>
 
-Status tally: 24 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 5 external gates (3 Complete, 2 Open). Backlog excluded: 1 Complete, 1 In progress and 22 Deferred carry-forward items; only M36 is active under D37 and M37 checksum work is complete.
+Status tally: 24 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 5 external gates (3 Complete, 2 Open). Backlog excluded: 2 Complete and 22 Deferred carry-forward items; M36 UTC matching and M37 checksum work are complete, with no active tool component.
 
 ## Milestone
 
@@ -471,6 +471,7 @@ Status tally: 24 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 
 | D35 | Remove the uncommitted archiver-specific checksum checker and regression suite in favor of the committed common test-framework checker with explicit project source and all three manifest declarations. Preserve their source and historical test receipts privately; update only current-source hashes, execution documentation and these component records. This accepts and authorizes the scoped deduplication, without other tool repairs, long observations or product-result changes. | 2026-10-18 |
 | D36 | Close M37 checksum work from its completed real-path checks, source commits on the observed upstream branch and the verified four checksum boxes in #56. Keep the consolidated issue open for its seven remaining unchecked boxes; this is a component-only issue-closure exception, not a waiver of verification. D34/D35 authorized only checksum execution, so M50 returns to Deferred for its remaining scope under D31. Preserve historical results and sources; start no other tool repair or observation. | 2026-10-18 |
 | D37 | Accept and authorize the revised M36 plan identified by detail SHA256 eb148a7a7ac8ca117ad906cb5a60acb08523dda6e523b8e841b400d37ff24766. Return this component from Deferred to Not started, then In progress as retained-input verification begins. Scope is UTC pass matching, strict pass timestamp inputs, real retained-input caller paths and their regression/source checks. Other tool work stays Deferred; accepted Ansible/ETL/journal results and original evidence remain unchanged. No new target fault, full-day observation, commit, push or GitHub mutation is authorized. | 2026-10-19 |
+| D38 | Close M36 UTC pass matching from its completed real-path checks, source commit 982733fe732bc237100c428a31e6a86f33528427 on the observed upstream branch and the verified four UTC boxes in #54. Keep the consolidated issue open for its 77 remaining unchecked boxes, as accepted in the prepared and authorized issue update; this is a component-only issue-closure exception, not a waiver of verification. Other tool components stay Deferred under D31, with no new tool repair or observation authorized. | 2026-10-19 |
 
 ### Assignment History
 
@@ -5852,7 +5853,7 @@ The assembly neither writes nor checks these files (`D26`). `M26` depends on the
 | Tools | M33 | Use timestamps accepted by systemd 239 journal queries | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m33---use-timestamps-accepted-by-systemd-239-journal-queries) |
 | Tools | M34 | Match JFR exports to the recording process and lifetime | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m34---match-jfr-exports-to-the-recording-process-and-lifetime) |
 | Tools | M35 | Persist terminal state before evaluating terminal coherence | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m35---persist-terminal-state-before-evaluating-terminal-coherence) |
-| Tools | M36 | Match ETL pass times by UTC instant with nanosecond precision | Carry-forward | In progress | No | D31, D37 | Local T1-T6 Passed; source landing and #54 component synchronization remain; [detail](#m36---match-etl-pass-times-by-utc-instant-with-nanosecond-precision) |
+| Tools | M36 | Match ETL pass times by UTC instant with nanosecond precision | Carry-forward | Complete | No | D31, D37, D38 | T1-T6 Passed; source landing and four UTC boxes in #54 verified; [detail](#m36---match-etl-pass-times-by-utc-instant-with-nanosecond-precision) |
 | Tools | M37 | Refresh preserved-tool checksums | Carry-forward | Complete | No | D31, D34, D35, D36 | Real source/copy checks, source landing and four checksum boxes in #56 verified; [detail](#m37---refresh-preserved-tool-checksums) |
 | Tools | M38 | Finish ETL tool independence checks across both store chains | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m38---finish-etl-tool-independence-checks-across-both-store-chains) |
 | Tools | M39 | Finish partial-source ETL evidence verification on both chains | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m39---finish-partial-source-etl-evidence-verification-on-both-chains) |
@@ -6284,7 +6285,7 @@ Retained transferred technical coverage follows; record each result in its ownin
 - [ ] Results state which independent kernel diagnostic findings remain; evaluator correction does not claim historical kernel coverage or change the already accepted ETL functionality result in #30.
 - [ ] Use the completed observations for regression and focused real terminal checks for ordering; a new 24-hour observation is not required solely to repair these verifier defects.
 
-- [ ] Compare original UTC instants with the shipped timestamp parser, retaining nanosecond precision and original strings. Verify actual retained source-availability and automatic-abort inputs through the real runtime/scenario and replay paths; do not change an original controller status to satisfy the checker.
+- [x] Compare original UTC instants with the shipped timestamp parser, retaining nanosecond precision and original strings. Verify actual retained source-availability and automatic-abort inputs through the real runtime/scenario and replay paths; do not change an original controller status to satisfy the checker. Result: M36 / T1-T6 Passed through all three actual callers on both retained fault kinds; source 982733f and the matching #54 checkbox are verified.
 - [ ] Reconcile per-component heap, GC cause/pause, jstat, RSS, observed input/event rates, retrieval freshness/visibility, request bounds and identity/gap/OOM evidence from the already collected observations.
 - [ ] Evaluate retained and focused real-input measurement regressions for source-store shrink, pass-end/request overlap, accumulation and restart. Collection-path corrections are coordinated with #34; no internal mock establishes integration acceptance.
 - [ ] Produce the supplemental workload/performance comparison: last-pass and average busy time, weekly usage and actual load, concurrency, store-age and resource differences. Missing comparable historical rates prohibit an improvement claim but do not reopen ETL functionality acceptance.
@@ -6365,7 +6366,7 @@ Independent membership and transferred coverage:
 | T4 | Not run | Retained real-input or bounded future runtime verification | Pending | Candidate corrective verification is not established by the original accepted ETL result. |
 | T5 | Not run | Retained real-input or bounded future runtime verification | Pending | Candidate corrective verification is not established by the original accepted ETL result. |
 | T6 | Not run | Retained real-input or bounded future runtime verification | Pending | Candidate corrective verification is not established by the original accepted ETL result. |
-| T7 | Not run | Retained real-input or bounded future runtime verification | Pending | Candidate corrective verification is not established by the original accepted ETL result. |
+| T7 | 2026-10-19T19:36:33Z | Debian 13/Python 3.13.5; actual retained E3/E4 inputs and three real CLIs | Passed | M36 / T1-T6 establishes UTC matching only: 228 native commands, strict nanosecond controls and preserved originals; source 982733f and the matching #54 criterion are verified. Other evaluator/reporting checks remain separate. |
 | T8 | Not run | Retained real-input or bounded future runtime verification | Pending | Candidate corrective verification is not established by the original accepted ETL result. |
 | T9 | Not run | Retained real-input or bounded future runtime verification | Pending | Candidate corrective verification is not established by the original accepted ETL result. |
 | T10 | Not run | Retained real-input or bounded future runtime verification | Pending | Candidate corrective verification is not established by the original accepted ETL result. |
@@ -6378,7 +6379,7 @@ Independent membership and transferred coverage:
 
 ##### Closure Evidence
 
-- Not complete. D29 defers corrective implementation/verification. Accepted ETL processing does not establish a Passed tool correction.
+- Coordination remains Deferred under D31. M36 UTC matching is Complete under D38 from its actual checks, source landing and #54 readback; the corresponding transferred criterion and T7 above are satisfied. Other evaluation/reporting work is not complete. Accepted ETL processing alone does not establish a Passed tool correction.
 
 ##### GitHub Projection
 
@@ -6392,10 +6393,10 @@ Independent membership and transferred coverage:
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-17T01:09:40Z
-- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
-- Prepared Body: `work/issue-tools-etl.md`
-- Published Body SHA256: b6a0ab483695713866a62fe7ccf6cb65a4f04514238fa3adce424715686417f0
+- Observed Updated At: 2026-10-19T22:49:29Z
+- Last Compared: 2026-10-19T23:01:41.312239+00:00; exact reviewed body and metadata read back after the authorized UTC-only update; four boxes checked, 77 remain unchecked, issue open.
+- Prepared Body: `work/issue-etl-utc-body.md`
+- Published Body SHA256: c3ad1344323d6f6c1f6ef6dcbbdf7dbd4f78fd63319fe3b7ad77840f3b9c9585
 - Historical Source Issue: #35, https://github.com/jeonghanlee/ansible-provision/issues/35
 - Historical Source State: closed
 - Historical Source Reason: not_planned
@@ -6849,7 +6850,7 @@ Out of scope: JFR process selection, source-access fault production, and reopeni
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
 - GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
 - Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #41 is closed not_planned at 2026-10-17T01:12:30Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
-- Status: In progress
+- Status: Complete
 
 ##### Summary
 
@@ -6865,7 +6866,7 @@ Out of scope: Formatting `journalctl` arguments, repairing JFR scope, or claimin
 
 ##### Root Cause
 
-The runtime/scenario checker compares timestamp text instead of its UTC instant. This produced unsuccessful controller findings independently of actual ETL processing.
+The original runtime/scenario checker compared timestamp text instead of its UTC instant. This produced unsuccessful controller findings independently of actual ETL processing.
 
 ##### Completion Criteria
 
@@ -6879,6 +6880,7 @@ The runtime/scenario checker compares timestamp text instead of its UTC instant.
 - Coordination: M30/#35. This is a tracking relationship, not an invented sequential execution dependency.
 - Preserve original inputs, frozen tool identities and unsuccessful outcomes. Reuse retained evidence and bounded real-path checks; no new full-day producer run solely for tool correction or reporting.
 - D37; Decision Date: 2026-10-19. The revised plan is accepted and implementation is authorized. Deferred -> Not started -> In progress as retained-input verification starts; other components remain Deferred.
+- D38; Decision Date: 2026-10-19. Close this component after real-path verification, source landing and authorized #54 readback. The consolidated issue remains open for unrelated criteria; no verification requirement is waived.
 
 ##### Implementation Plan
 
@@ -6963,7 +6965,10 @@ Additional review-helper outcomes remain separate: attempt 001 stopped on a repo
 
 ##### Closure Evidence
 
-- Local implementation and T1-T6 are finished within D37. All three domain completion criteria above are established on the declared retained-input component. Keep Status In progress: source commit/landing and authorized #54 component synchronization/closure handling remain outstanding. No commit, push or GitHub mutation was performed for M36.
+- Complete under D38; Decision Date: 2026-10-19. All three domain completion criteria are established by T1-T6 on the declared retained-input component. Commit/add, push and the UTC-only #54 body update were separately authorized and completed.
+- Source landing observed at 2026-10-19T23:01:41.312239+00:00: after a successful fetch, HEAD and origin/m14-middleware-reconcile both resolve to 982733fe732bc237100c428a31e6a86f33528427. The nine authored paths have no difference from that fetched upstream; all 98 source member hashes match the verified candidate. This records the observed branch landing, with no unexecuted default-chain or whole-scenario claim.
+- Authorized #54 readback at 2026-10-19T23:01:41.312239+00:00 matches the complete prepared body, SHA256 c3ad1344323d6f6c1f6ef6dcbbdf7dbd4f78fd63319fe3b7ad77840f3b9c9585. The three source-#41 criteria and overlapping source-#35 UTC criterion are checked; all 77 other boxes and metadata remain unchanged. GitHub updated time is 2026-10-19T22:49:29Z; issue state remains open. Recheck with `gh issue view 54 --repo jeonghanlee/ansible-provision --json body,state,labels,milestone,assignees,updatedAt`.
+- Component-only issue-closure exception; Decision Date: 2026-10-19. The accepted and authorized issue update keeps #54 open for unrelated tool criteria while completing these four UTC boxes. This exception closes M36 only and waives no required check. Exact before/draft/readback files remain privately under `work/issue-etl-utc-before.json`, `work/issue-etl-utc-body.md` and `work/issue-etl-utc-after.json`.
 - Actual read-only execution contacted no service for the regression. Only the separately approved E4 retrieval read the original guest; its files/services were not changed. No new fault or full-day producer was started. Accepted M22/#30 ETL, M25/#31 journal and M24/#52 Ansible results and original native Incomplete outcomes remain unchanged.
 - Local implementation review: three standalone self-review passes, distinct from the two prior plan reviews. Pass 1 (third-person) identified a C4 coverage defect: the fixture keys alone did not prevent both entries from referring to the same case. The accepted plan's required E3/E4 coverage now has an enforced one-case-per-context check; four real runner configuration controls verify rejection before launch. Pass 2 (third-person) found no further in-scope issue against C1 actual caller consumption, C2 identity/preservation, C3 exact time/outcome handling and C4 coverage/documentation. Pass 3 (second-person) found no further reader-action issue after following the complete changed README and canonical detail. `record-check-002/` verifies all 12 repeated check payloads, documented CLI help/config/command forms, six recorded results, unchanged other work details and the derived status tally. Independent external review is not claimed.
 
@@ -6979,10 +6984,10 @@ Additional review-helper outcomes remain separate: attempt 001 stopped on a repo
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-17T01:09:40Z
-- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
-- Prepared Body: `work/issue-tools-etl.md`
-- Published Body SHA256: b6a0ab483695713866a62fe7ccf6cb65a4f04514238fa3adce424715686417f0
+- Observed Updated At: 2026-10-19T22:49:29Z
+- Last Compared: 2026-10-19T23:01:41.312239+00:00; exact reviewed body and metadata read back after the authorized UTC-only update; four boxes checked, 77 remain unchecked, issue open.
+- Prepared Body: `work/issue-etl-utc-body.md`
+- Published Body SHA256: c3ad1344323d6f6c1f6ef6dcbbdf7dbd4f78fd63319fe3b7ad77840f3b9c9585
 - Historical Source Issue: #41, https://github.com/jeonghanlee/ansible-provision/issues/41
 - Historical Source State: closed
 - Historical Source Reason: not_planned
@@ -8145,7 +8150,7 @@ These summaries preserve the recorded scope. Each linked issue retains its full 
 ###### #41 - Match ETL pass times by UTC instant with nanosecond precision
 
 - Problem and evidence: Literal equivalent-UTC comparison found zero passes; the native nanosecond parser found one successful 903-job pass.
-- Remaining work: Select by UTC instant in real runtime/scenario and replay paths while retaining original timestamp text.
+- Result: M36 / T1-T6 Passed; shared runtime/replay UTC matching is implemented in 982733f, and all three component criteria plus the overlapping source-#35 UTC box are verified in #54. Original timestamp text and controller outcomes remain unchanged.
 - Done when: Exactly the correct transition/invocation/time matches; nanosecond differences, wrong identity, duplicates and missing passes are detected without rewriting verdicts.
 
 ###### #43 - Finish ETL tool independence checks across both store chains
@@ -8241,7 +8246,7 @@ All criteria below remain active in the replacement issue. Source closure is adm
 - [ ] Results state which independent kernel diagnostic findings remain; evaluator correction does not claim historical kernel coverage or change the already accepted ETL functionality result in #30.
 - [ ] Use the completed observations for regression and focused real terminal checks for ordering; a new 24-hour observation is not required solely to repair these verifier defects.
 
-- [ ] Compare original UTC instants with the shipped timestamp parser, retaining nanosecond precision and original strings. Verify actual retained source-availability and automatic-abort inputs through the real runtime/scenario and replay paths; do not change an original controller status to satisfy the checker.
+- [x] Compare original UTC instants with the shipped timestamp parser, retaining nanosecond precision and original strings. Verify actual retained source-availability and automatic-abort inputs through the real runtime/scenario and replay paths; do not change an original controller status to satisfy the checker. Result: M36 / T1-T6 Passed through all three actual callers on both retained fault kinds; source 982733f and the matching #54 checkbox are verified.
 - [ ] Reconcile per-component heap, GC cause/pause, jstat, RSS, observed input/event rates, retrieval freshness/visibility, request bounds and identity/gap/OOM evidence from the already collected observations.
 - [ ] Evaluate retained and focused real-input measurement regressions for source-store shrink, pass-end/request overlap, accumulation and restart. Collection-path corrections are coordinated with #34; no internal mock establishes integration acceptance.
 - [ ] Produce the supplemental workload/performance comparison: last-pass and average busy time, weekly usage and actual load, concurrency, store-age and resource differences. Missing comparable historical rates prohibit an improvement claim but do not reopen ETL functionality acceptance.
@@ -8295,9 +8300,9 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 ###### Source #41 - Match ETL pass times by UTC instant with nanosecond precision
 
-- [ ] Actual source-availability and automatic-abort records select exactly the matching transition, invocation and UTC instant.
-- [ ] Nanosecond differences, wrong invocation, duplicate matches and genuinely missing passes remain detectable.
-- [ ] Runtime/scenario and frozen replay paths agree without rewriting an original controller verdict or timestamp.
+- [x] Actual source-availability and automatic-abort records select exactly the matching transition, invocation and UTC instant.
+- [x] Nanosecond differences, wrong invocation, duplicate matches and genuinely missing passes remain detectable.
+- [x] Runtime/scenario and frozen replay paths agree without rewriting an original controller verdict or timestamp.
 
 
 
@@ -8402,12 +8407,13 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
-| T1 | Not run | Retained evidence and separately authorized bounded deployments | Pending | Future scoped verification is not established by grouping or by a historical result outside this check. |
-| T2 | Not run | Retained original and candidate records | Pending | Future scoped verification is not established by grouping or by a historical result outside this check. |
+| T1 | 2026-10-19T19:36:33Z | Actual retained E3/E4 inputs; three shipped post-capture CLIs | Pending | Partial coverage from M36 / T1-T6: the four UTC criteria are verified and reflected in #54. All 77 remaining issue boxes are unchecked; this aggregate check is not complete. |
+| T2 | 2026-10-19T19:36:33Z | Separate original and candidate UTC-check packages | Pending | M36 / T6 verifies original preservation for the UTC component only. Scope isolation across the other collection/evaluation/reporting paths remains unverified; no aggregate Passed claim. |
 
 ##### Closure Evidence
 
 - Tool work is not complete. GitHub tracking consolidation completed under D33 at 2026-10-17T01:14:10.675787+00:00: replacement #54 is open and all its source issues are closed not_planned with exact body/comment readback. Original criteria and unsuccessful evidence remain active; source closure establishes no tool verification.
+- UTC component update observed at 2026-10-19T23:01:41.312239+00:00: M36 is Complete under D38, with four checked boxes and 77 unchecked boxes in #54. Source landing and exact body/metadata readback are recorded in M36. This aggregate remains Deferred; no other component is completed or activated by the UTC correction.
 
 ##### GitHub Projection
 
@@ -8421,10 +8427,10 @@ All criteria below remain active in the replacement issue. Source closure is adm
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-17T01:09:40Z
-- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
-- Prepared Body: `work/issue-tools-etl.md`
-- Published Body SHA256: b6a0ab483695713866a62fe7ccf6cb65a4f04514238fa3adce424715686417f0
+- Observed Updated At: 2026-10-19T22:49:29Z
+- Last Compared: 2026-10-19T23:01:41.312239+00:00; exact reviewed body and metadata read back after the authorized UTC-only update; four boxes checked, 77 remain unchecked, issue open.
+- Prepared Body: `work/issue-etl-utc-body.md`
+- Published Body SHA256: c3ad1344323d6f6c1f6ef6dcbbdf7dbd4f78fd63319fe3b7ad77840f3b9c9585
 - Historical Source Issues: #34, #35, #36, #37, #38, #39, #40, #41, #43, #44, #45, #46, #47, #48, #49, #50
 
 #### M49 - Track buffer test tooling
