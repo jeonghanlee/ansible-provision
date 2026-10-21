@@ -31,7 +31,7 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: M33 implementation and local T1-T6 verification are complete. Prepare its scoped commit when requested, then record separately authorized source landing and component projection before closure. Private work/m33-journal-query-20261019-zu2v8x6q/finalization-003.json binds 60 case IDs/228 cells, actual boundary/process-fault checks, retained E3/E4 regression, source checks and verified exports. M33 remains In progress pending landing; G6 is Complete. No commit, push or GitHub mutation ran in this execution. M36/M37 remain Complete and the other 21 tool components remain Deferred under D31. M22/#30, M25/#31 and M24/#52 remain Complete/closed. M14 remains Blocked on G2 and M26 on G5. No Milestone row is Ready.
+Next session entry point: M33 query/capture work is Complete under D41: T1-T6 Passed, source commit f6339736f87ed0c95eb3321385b5db73c8d6fe25 is verified on origin/m14-middleware-reconcile, and all four query criteria are checked in #54. Exact issue readback verifies eight checked boxes, 73 unchecked boxes and unchanged open state/metadata. Review and commit this closure/readback record when requested. M36/M37 remain Complete; the other 21 tool components remain Deferred under D31 with no active tool component. M22/#30, M25/#31 and M24/#52 remain Complete/closed. M14 is Blocked on G2 and M26 on G5. No Milestone row is Ready.
 
 Both original shortened/default 24-hour ETL processing observations completed on 2026-10-15 UTC and are accepted under D29. They ran for 86416.387 and 86415.088 monotonic seconds before normal finish across UTC midnight. The unchanged native scheduler evaluator Passed with all 312 and 27 required passes present exactly once. Read-only initial, both-transition and final physical/HTTP comparisons Passed on each chain. Whole-unit normal stops returned 0 in 12.516 and 13.770 seconds, below the installed 300-second timeout. Each observation retained 290 in-window full samples and its original frozen bundle.
 
@@ -390,7 +390,7 @@ full mode carries every OS tree, second apply `failed=0`). Delivered in
 
 </details>
 
-Status tally: 24 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 5 external gates (3 Complete, 2 Open). Backlog excluded: 2 Complete, 1 In progress and 21 Deferred carry-forward items, plus 1 Complete external gate. M36 UTC matching and M37 checksum work are complete; M33 resumes under D39/D40 after its dedicated environment passed G6.
+Status tally: 24 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 5 external gates (3 Complete, 2 Open). Backlog excluded: 3 Complete and 21 Deferred carry-forward items, plus 1 Complete external gate. M33 query/capture, M36 UTC matching and M37 checksum work are complete; no tool component is active.
 
 ## Milestone
 
@@ -474,6 +474,7 @@ Status tally: 24 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 
 | D38 | Close M36 UTC pass matching from its completed real-path checks, source commit 982733fe732bc237100c428a31e6a86f33528427 on the observed upstream branch and the verified four UTC boxes in #54. Keep the consolidated issue open for its 77 remaining unchecked boxes, as accepted in the prepared and authorized issue update; this is a component-only issue-closure exception, not a waiver of verification. Other tool components stay Deferred under D31, with no new tool repair or observation authorized. | 2026-10-19 |
 | D39 | Accept and authorize the reviewed M33 query-component plan identified by detail SHA256 5b25d449fc54e4b050563a18505f8352ecdb8a093dbfec8176e07b4e8a4969b3. Return M33 from Deferred to Not started, then In progress as local input discovery begins. Scope is the reviewed shared journal-query/capture operation, exact time selection and its bounded real-path verification. Environment selection and provisioning, external messages, commit, push and GitHub mutations require separate authorization. Other tool components remain Deferred; accepted Ansible/ETL/journal results and original evidence remain unchanged. | 2026-10-19 |
 | D40 | Authorize delivery of the prepared M33 request for one fresh dedicated Rocky 8.10/systemd 239 guest with 2 vCPU, 4096 MiB RAM and 48 GiB disk after provider capacity/address checks. This supplies the isolated environment for D39's bounded query/capture verification. Verify the actual private handoff before use; guest resources are not evidence limits or acceptance thresholds. Keep all retained deployments and original evidence unchanged. No full-day observation, commit, push or GitHub mutation is authorized. | 2026-10-19 |
+| D41 | Close M33 query/capture work from its completed real-path T1-T6 checks, source commit f6339736f87ed0c95eb3321385b5db73c8d6fe25 on the fetched upstream branch and the four query criteria verified by exact #54 body readback. Keep the consolidated issue open for its 73 remaining unchecked boxes, as accepted in the prepared and delegated query-only update. This is a component-only issue-closure exception, not a waiver of verification. Other tool components remain Deferred under D31; no additional correction or observation is authorized. | 2026-10-21 |
 
 ### Assignment History
 
@@ -5852,7 +5853,7 @@ The assembly neither writes nor checks these files (`D26`). `M26` depends on the
 | Tools | M30 | Track ETL evaluation and reporting follow-ups | Carry-forward | Deferred | No | D29, D30, D31 | Coordinate independent child completion and retain original evidence; no combined implementation or repeat full-day run solely for tool repair; [detail](#m30---track-etl-evaluation-and-reporting-follow-ups) |
 | Tools | M31 | Preserve kernel cursor refusal evidence and prove interval coverage | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m31---preserve-kernel-cursor-refusal-evidence-and-prove-interval-coverage) |
 | Tools | M32 | Keep kernel diagnostics independent of the ETL terminal verdict | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m32---keep-kernel-diagnostics-independent-of-the-etl-terminal-verdict) |
-| Tools | M33 | Use timestamps accepted by systemd 239 journal queries | Carry-forward | In progress | No | D31, D39, D40, G6 | Complete independently scoped tool work from real evidence; [detail](#m33---use-timestamps-accepted-by-systemd-239-journal-queries) |
+| Tools | M33 | Use timestamps accepted by systemd 239 journal queries | Carry-forward | Complete | No | D31, D39, D40, D41, G6 | T1-T6 Passed; source f633973 and four checked query criteria in #54 verified; [detail](#m33---use-timestamps-accepted-by-systemd-239-journal-queries) |
 | Tools | M34 | Match JFR exports to the recording process and lifetime | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m34---match-jfr-exports-to-the-recording-process-and-lifetime) |
 | Tools | M35 | Persist terminal state before evaluating terminal coherence | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m35---persist-terminal-state-before-evaluating-terminal-coherence) |
 | Tools | M36 | Match ETL pass times by UTC instant with nanosecond precision | Carry-forward | Complete | No | D31, D37, D38 | T1-T6 Passed; source landing and four UTC boxes in #54 verified; [detail](#m36---match-etl-pass-times-by-utc-instant-with-nanosecond-precision) |
@@ -6590,7 +6591,7 @@ Out of scope: Repairing kernel cursor coverage or changing ETL application sched
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
 - GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
 - Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #38 is closed not_planned at 2026-10-17T01:12:13Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
-- Status: In progress
+- Status: Complete
 
 ##### Summary
 
@@ -6662,6 +6663,7 @@ The first complete guest export verifies 34683 files; the final suite's addition
 - D31; Decision Date: 2026-10-15. Independent Backlog work is excluded from current execution; accepted M22/#30 ETL functionality and M25/#31 journal results remain complete.
 - D39; Decision Date: 2026-10-19. The reviewed M33 plan is accepted and scoped implementation/preparation is authorized. M33 returned from Deferred to Not started, then In progress when local input discovery began. Other components remain excluded under D31; target selection/provisioning and external actions remain separately authorized.
 - D40; Decision Date: 2026-10-19. Request one fresh dedicated Rocky 8.10/systemd 239 guest for this plan, leaving retained guests unchanged. Provider delivery and direct identity/version/access verification are complete under G6. Other external mutations remain outside this authorization.
+- D41; Decision Date: 2026-10-21. Complete this query component after exact readback of its delegated four-criterion update in #54. The consolidated issue remains open for independent unfinished work; this explicitly excepts component closure from whole-issue closure, without waiving any query check.
 - G6; blocked on 2026-10-19 after the provider's capacity refusal, observed at 2026-10-20T00:26:51.234176+00:00; resume as In progress after its dedicated environment is available and verified. G6 completed on 2026-10-19 after direct verification at 2026-10-20T01:17:51.410657+00:00 and Python preparation at 01:20:56.630537 UTC; M33 resumes as In progress. The accepted plan and D39/D40 authority remain unchanged.
 - Coordination: M29/#34. This is a tracking relationship, not an invented sequential execution dependency.
 - Preserve original inputs, frozen tool identities and unsuccessful outcomes. Reuse retained evidence and bounded real-path checks; no new full-day producer run solely for tool correction or reporting.
@@ -6783,7 +6785,9 @@ Execution safeguards and evidence locations: volume/limits belong in the fixture
 
 ##### Closure Evidence
 
-- Implementation and local T1-T6 verification are complete on 2026-10-20; all four technical criteria are established by actual execution and preserved evidence. M33 remains In progress pending separately authorized source landing and component projection. No commit, push or GitHub mutation ran in this execution. The dedicated guest and disks are retained; accepted M22/#30 and M25/#31 results remain unchanged.
+- Implementation and local T1-T6 verification completed on 2026-10-20; all four technical criteria are established by actual execution and preserved evidence. Source commit f6339736f87ed0c95eb3321385b5db73c8d6fe25 was committed and pushed under separate authority. At 2026-10-21T07:35:32.426896+00:00, an actual upstream fetch, ancestry check and exact comparison of the nine committed paths established landing on origin/m14-middleware-reconcile at the same commit. All 99 upstream source members match the frozen verified candidate. Private work/m33-source-landing-20261021.json records that check.
+- Complete on 2026-10-21 under D41: all four technical criteria, T1-T6, source landing and the delegated query-only #54 update are verified. Exact readback at 2026-10-21T08:34:55+00:00 matches the prepared body SHA256 223c962881b0c363fb9ec469a2df7753826c897b4741d985f253ee613f375443 and confirms four newly checked query criteria, eight checked boxes overall, 73 unchecked boxes and unchanged title/labels/milestone/assignee/open state. Private work/issue-etl-query-applied-20261021.json preserves the full before/after records and comparisons.
+- D41 is the dated component-only exception to closing the linked consolidated issue: #54 remains open for its independent 73 unchecked criteria. No other tool component is activated or completed by this result. Dedicated guest/disk retention was recorded at local-verification completion; accepted M22/#30 and M25/#31 results remain unchanged.
 
 ##### GitHub Projection
 
@@ -6797,10 +6801,13 @@ Execution safeguards and evidence locations: volume/limits belong in the fixture
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-17T01:09:40Z
-- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
-- Prepared Body: `work/issue-tools-etl.md`
-- Published Body SHA256: b6a0ab483695713866a62fe7ccf6cb65a4f04514238fa3adce424715686417f0
+- Observed Updated At: 2026-10-21T08:34:02Z
+- Last Compared: 2026-10-21T08:34:55+00:00; exact prepared-body readback, four newly checked query criteria, eight checked and 73 unchecked boxes, unchanged metadata and open state verified.
+- Projection Difference: none for the query component; all other criteria remain unchanged.
+- Prepared Body: `work/issue-etl-query-body.md`
+- Prepared Body SHA256: 223c962881b0c363fb9ec469a2df7753826c897b4741d985f253ee613f375443
+- Applied Readback: `work/issue-etl-query-applied-20261021.json`
+- Published Body SHA256: 223c962881b0c363fb9ec469a2df7753826c897b4741d985f253ee613f375443
 - Historical Source Issue: #38, https://github.com/jeonghanlee/ansible-provision/issues/38
 - Historical Source State: closed
 - Historical Source Reason: not_planned
@@ -8222,7 +8229,7 @@ Component canonical identities remain independent under this single GitHub proje
 - M30: historical source #35; unfinished work is tracked in #54.
 - M31: historical source #36; unfinished work is tracked in #54.
 - M32: historical source #37; unfinished work is tracked in #54.
-- M33: historical source #38; unfinished work is tracked in #54.
+- M33: historical source #38; query component Complete under D41, with its verified criteria retained in #54.
 - M34: historical source #39; unfinished work is tracked in #54.
 - M35: historical source #40; unfinished work is tracked in #54.
 - M36: historical source #41; unfinished work is tracked in #54.
@@ -8267,8 +8274,8 @@ These summaries preserve the recorded scope. Each linked issue retains its full 
 
 ###### #38 - Use timestamps accepted by systemd 239 journal queries
 
-- Problem and evidence: Systemd 239 refused the original ISO query argument. V2 formatting exists but exact subsecond interval selection is unverified.
-- Remaining work: Run the real query at independently identified UTC boundaries, retaining original precision and explicit rounding/filtering.
+- Problem and evidence: Systemd 239 refused the original ISO query argument; the pre-fix v2 query included records before the precise boundary.
+- Result: M33 is Complete under D41. T1-T6 Passed, source f633973 matches all 99 verified source members on upstream, and the four query boxes are checked in #54 with exact body/metadata readback. Original records remain unchanged.
 - Done when: The intended interval is established; refused arguments/output/status persist and query errors remain separate from ETL processing.
 
 ###### #39 - Match JFR exports to the recording process and lifetime
@@ -8411,10 +8418,10 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 ###### Source #38 - Use timestamps accepted by systemd 239 journal queries
 
-- [ ] Original and v2 controller hashes are recorded separately, and existing source formatting is distinguished from actual interval verification.
-- [ ] The actual systemd 239 query accepts the candidate argument and establishes the intended interval against independently identified real records, including subsecond boundaries; any query rounding/filtering and the original precise timestamp are explicit.
-- [ ] A rejected query retains its arguments, stdout/stderr and return code and is not reported as successful coverage.
-- [ ] Successful ETL evidence remains separate from a query-argument error; the original failed controller record is unchanged.
+- [x] Original and v2 controller hashes are recorded separately, and existing source formatting is distinguished from actual interval verification. Result: historical sources remain unchanged; identified pre-fix extraction and corrected candidate have separate manifests.
+- [x] The actual systemd 239 query accepts the candidate argument and establishes the intended interval against independently identified real records, including subsecond boundaries; any query rounding/filtering and the original precise timestamp are explicit. Result: real native queries and sixteen caller/role boundary cells establish whole-second UTC query plus exact integer selection.
+- [x] A rejected query retains its arguments, stdout/stderr and return code and is not reported as successful coverage. Result: parser refusal, native errors, timeout and interruption retain native outcomes and available bytes; missing evidence remains Incomplete.
+- [x] Successful ETL evidence remains separate from a query-argument error; the original failed controller record is unchanged. Result: shared query/capture diagnostics remain separate from ETL pass evidence; historical sources, receipts and accepted ETL/journal results are unchanged.
 
 
 
@@ -8545,11 +8552,17 @@ All criteria below remain active in the replacement issue. Source closure is adm
 | --- | --- | --- | --- | --- |
 | T1 | 2026-10-19T19:36:33Z | Actual retained E3/E4 inputs; three shipped post-capture CLIs | Pending | Partial coverage from M36 / T1-T6: the four UTC criteria are verified and reflected in #54. All 77 remaining issue boxes are unchecked; this aggregate check is not complete. |
 | T2 | 2026-10-19T19:36:33Z | Separate original and candidate UTC-check packages | Pending | M36 / T6 verifies original preservation for the UTC component only. Scope isolation across the other collection/evaluation/reporting paths remains unverified; no aggregate Passed claim. |
+| T1 | 2026-10-21T07:35:32.426896+00:00 | Actual systemd 239 query suite and fetched upstream source | Pending | Additional partial coverage from M33 / T1-T6: all four query criteria are technically verified and source f633973 is landed. The query-only #54 projection remains pending; the live issue still has four checked and 77 unchecked boxes. No aggregate completion is claimed. |
+| T2 | 2026-10-21T07:35:32.426896+00:00 | Separate historical, pre-fix and corrected query packages | Pending | M33 verifies query-component source/input preservation and separation from ETL evidence. Other component isolation remains unverified; original accepted functionality is unchanged. |
+| T1 | 2026-10-21T08:34:55+00:00 | Actual query suite, fetched upstream source and live #54 readback | Pending | M33 is Complete under D41; its four query criteria are now reflected in #54 alongside the four completed UTC criteria. Eight boxes are checked and 73 remain unchecked; this aggregate is not complete. |
+| T2 | 2026-10-21T08:34:55+00:00 | Separate query source/input records and exact issue before/after comparison | Pending | Query-component preservation and issue scope isolation are verified. The other collection/evaluation/reporting components retain their original state and unmet criteria; no aggregate Passed claim. |
 
 ##### Closure Evidence
 
 - Tool work is not complete. GitHub tracking consolidation completed under D33 at 2026-10-17T01:14:10.675787+00:00: replacement #54 is open and all its source issues are closed not_planned with exact body/comment readback. Original criteria and unsuccessful evidence remain active; source closure establishes no tool verification.
 - UTC component update observed at 2026-10-19T23:01:41.312239+00:00: M36 is Complete under D38, with four checked boxes and 77 unchecked boxes in #54. Source landing and exact body/metadata readback are recorded in M36. This aggregate remains Deferred; no other component is completed or activated by the UTC correction.
+- Query source landing observed at 2026-10-21T07:35:32.426896+00:00: M33 / T1-T6 and source f633973 are verified. Its four canonical criteria are checked from real results; the prepared query-only body would bring #54 to eight checked and 73 unchecked boxes. No query issue update or component closure is claimed before authorized publication and live readback. This aggregate remains Deferred.
+- Query component update observed at 2026-10-21T08:34:55+00:00: M33 is Complete under D41 after its four query criteria and full prepared body were read back exactly from #54. The issue remains open with eight checked and 73 unchecked boxes; title, labels, milestone and assignee are unchanged. This aggregate remains Deferred.
 
 ##### GitHub Projection
 
@@ -8563,10 +8576,12 @@ All criteria below remain active in the replacement issue. Source closure is adm
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-19T22:49:29Z
-- Last Compared: 2026-10-19T23:01:41.312239+00:00; exact reviewed body and metadata read back after the authorized UTC-only update; four boxes checked, 77 remain unchecked, issue open.
-- Prepared Body: `work/issue-etl-utc-body.md`
-- Published Body SHA256: c3ad1344323d6f6c1f6ef6dcbbdf7dbd4f78fd63319fe3b7ad77840f3b9c9585
+- Observed Updated At: 2026-10-21T08:34:02Z
+- Last Compared: 2026-10-21T08:34:55+00:00; exact query-only prepared body and unchanged metadata read back; eight boxes checked, 73 unchecked, issue open.
+- Query Update Readback: 2026-10-21T08:34:55+00:00; four query criteria newly checked and all other source sections/criteria preserved. Full comparison retained at `work/issue-etl-query-applied-20261021.json`.
+- Prepared Body: `work/issue-etl-query-body.md`
+- Prepared Body SHA256: 223c962881b0c363fb9ec469a2df7753826c897b4741d985f253ee613f375443
+- Published Body SHA256: 223c962881b0c363fb9ec469a2df7753826c897b4741d985f253ee613f375443
 - Historical Source Issues: #34, #35, #36, #37, #38, #39, #40, #41, #43, #44, #45, #46, #47, #48, #49, #50
 
 #### M49 - Track buffer test tooling
