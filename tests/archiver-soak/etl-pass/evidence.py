@@ -7,9 +7,14 @@ import datetime
 from decimal import Decimal
 import hashlib
 import json
+import math
+import os
 from pathlib import Path
 import re
+import signal
+import subprocess
 import sys
+import time
 
 COMPONENTS = ('mgmt', 'engine', 'etl', 'retrieval')
 STAMP = re.compile(r'^(.*T\d{2}:\d{2}:\d{2})(?:\.(\d+))?(Z|[+-]\d{2}:\d{2})$')
@@ -18,6 +23,358 @@ PASS_STAMP = re.compile(r'^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}
 SPAN = re.compile(r'^PT(?:(\d+(?:\.\d+)?)H)?(?:(\d+(?:\.\d+)?)M)?(?:(\d+(?:\.\d+)?)S)?$')
 EPOCH = datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)
 JITTER_NS = 2000
+JOURNAL_BINARY = '/usr/bin/journalctl'
+JOURNAL_TIMEOUT = 60
+JOURNAL_ROLES = ('sampler', 'abort')
+
+
+class JournalInterrupted(BaseException):
+    """Preserve an actual collector signal and any completed unit captures."""
+
+    def __init__(self, number):
+        self.number = number
+        self.groups = []
+
+
+def _journal_identity(process):
+    root = Path('/proc') / str(process.pid)
+    try:
+        stat = (root / 'stat').read_text().rsplit(')', 1)[1].split()
+        return {'pid': process.pid, 'start_ticks': stat[19], 'state': stat[0],
+                'exe': os.readlink(root / 'exe'),
+                'uid': root.stat().st_uid,
+                'boot_id': Path('/proc/sys/kernel/random/boot_id').read_text().strip()}
+    except FileNotFoundError:
+        return {'pid': process.pid, 'ended': True}
+
+
+def _write_json(path, value):
+    Path(path).write_text(json.dumps(value, indent=2, sort_keys=True) + '\n')
+
+
+def _now():
+    return datetime.datetime.now(datetime.timezone.utc).isoformat()
+
+
+def case_journal_units():
+    import collect
+    import observe
+
+    return {'sampler': observe.SAMPLER + '.service', 'abort': collect.ABORT_UNIT}
+
+
+def select_case_journal(raw, lower):
+    """Validate complete native JSON records without changing their occurrences."""
+    records = []
+    cursors = {}
+
+    def unique(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError('Duplicate JSON field')
+            result[key] = value
+        return result
+
+    def invalid_constant(value):
+        raise ValueError('Non-finite JSON value')
+
+    lower_ns = pass_instant(lower)
+    for line in raw.decode('utf-8').splitlines():
+        if not line.strip():
+            continue
+        row = json.loads(line, object_pairs_hook=unique, parse_constant=invalid_constant)
+        if not isinstance(row, dict):
+            raise ValueError('Journal record must be an object')
+        for field in ('__CURSOR', '_BOOT_ID'):
+            if not isinstance(row.get(field), str) or not row[field]:
+                raise ValueError('Missing journal identity: ' + field)
+        stamp = row.get('__REALTIME_TIMESTAMP')
+        if not isinstance(stamp, str) or not re.fullmatch(r'[0-9]+', stamp):
+            raise ValueError('Invalid native microsecond timestamp')
+        cursor = row['__CURSOR']
+        if cursor in cursors and cursors[cursor] != row:
+            raise ValueError('Conflicting journal cursor payload')
+        cursors[cursor] = row
+        if int(stamp) * 1000 >= lower_ns:
+            records.append(row)
+    return records
+
+
+def _select_journal_capture(receipt, raw, errors, lower, destination, label):
+    if receipt['returncode'] == 0 and not errors and receipt.get('capture_complete'):
+        try:
+            rows = select_case_journal(raw, lower)
+            (destination / (label + '.selected.jsonl')).write_text(
+                ''.join(json.dumps(row, sort_keys=True) + '\n' for row in rows))
+            receipt.update(verdict='Passed', reason='usable_capture', selected_records=len(rows))
+        except (UnicodeError, ValueError, TypeError) as error:
+            receipt.update(reason='unusable_capture', error_type=type(error).__name__, error=str(error))
+    _write_json(destination / (label + '.json'), receipt)
+    return receipt
+
+
+def capture_case_journals(observation, output, variant, native_files=(),
+                          binary=JOURNAL_BINARY, timeout=JOURNAL_TIMEOUT, captures=None, query_uid=None):
+    """Read the observation and capture both production unit queries separately."""
+    destination = Path(output)
+    if variant not in ('run-etl-fault.py', 'run-etl-fault-v2.py'):
+        raise ValueError('Unknown journal caller')
+    try:
+        manifest = _json(observation)
+        lower = manifest['started_at']
+        lower_ns = pass_instant(lower)
+        since = (EPOCH + datetime.timedelta(seconds=lower_ns // 1000000000)).strftime(
+            '%Y-%m-%d %H:%M:%S UTC')
+    except (OSError, KeyError, TypeError, ValueError, RuntimeError) as error:
+        groups = [{'role': role, 'unit': unit, 'verdict': 'Incomplete', 'reason': 'unusable_bound',
+                   'launched': False, 'returncode': None, 'error_type': type(error).__name__,
+                   'error': str(error)} for role, unit in case_journal_units().items()]
+        _write_json(destination / 'case-journals.json', groups)
+        return groups
+    groups = []
+    for role, unit in case_journal_units().items():
+        label = 'actual-' + ('sampler' if role == 'sampler' else 'abort-unit') + '-journal'
+        arguments = [str(binary)]
+        for path in native_files:
+            arguments += ['--file', str(path)]
+        arguments += ['-u', unit, '--since', since, '--no-pager', '--all', '-o', 'json']
+        receipt = {'role': role, 'unit': unit, 'actual_arguments': arguments,
+                   'precise_lower_bound': lower, 'query_lower_bound': since,
+                   'observation_sha256': file_digest(observation),
+                   'started_at': _now(), 'started_monotonic_ns': time.monotonic_ns(),
+                   'timeout_seconds': timeout, 'returncode': None, 'launched': False,
+                   'verdict': 'Incomplete', 'reason': 'capture', 'capture_complete': False,
+                   'source_files': {str(path): file_digest(path) for path in native_files}}
+        receipt.update(source_sha256=file_digest(__file__), effective_uid=os.geteuid(),
+                       python=sys.version, boot_id=Path('/proc/sys/kernel/random/boot_id').read_text().strip())
+        try:
+            receipt['native_binary_sha256'] = file_digest(binary)
+        except OSError as error:
+            receipt['binary_identity_error'] = type(error).__name__
+        if captures is not None:
+            saved = captures[role]
+            receipt.update(saved['receipt'])
+            receipt.update(role=role, unit=unit, precise_lower_bound=lower, launched=False,
+                           capture_only=True, verdict='Incomplete', reason='capture',
+                           actual_capture_provenance=saved['provenance'])
+            raw, errors = saved['stdout'].read_bytes(), saved['stderr'].read_bytes()
+            (destination / (label + '.stdout')).write_bytes(raw)
+            (destination / (label + '.stderr')).write_bytes(errors)
+            groups.append(_select_journal_capture(receipt, raw, errors, lower, destination, label))
+            continue
+        raw, errors = b'', b''
+        child = None
+        interrupted = None
+        previous = {}
+
+        def interrupt(number, frame):
+            raise JournalInterrupted(number)
+
+        try:
+            for number in (signal.SIGINT, signal.SIGTERM):
+                previous[number] = signal.signal(number, interrupt)
+            child = subprocess.Popen(arguments, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                     user=query_uid)
+            receipt.update(launched=True, process=_journal_identity(child))
+            _write_json(destination / (label + '.running.json'), receipt)
+            receipt['communicate_started_monotonic_ns'] = time.monotonic_ns()
+            receipt['deadline_monotonic_ns'] = receipt['communicate_started_monotonic_ns'] + int(timeout * 1000000000)
+            raw, errors = child.communicate(timeout=timeout)
+            receipt.update(returncode=child.returncode, capture_complete=True)
+        except subprocess.TimeoutExpired as error:
+            raw, errors = error.stdout or b'', error.stderr or b''
+            receipt.update(launched=True, timed_out=True, error_type=type(error).__name__)
+            receipt['timeout_observed_monotonic_ns'] = time.monotonic_ns()
+        except JournalInterrupted as error:
+            interrupted = error
+            receipt.update(collector_signal=error.number)
+        except OSError as error:
+            receipt.update(error_type=type(error).__name__, error=str(error))
+        finally:
+            if child is not None:
+                try:
+                    if child.poll() is None:
+                        current = _journal_identity(child)
+                        receipt['finalization_identity'] = current
+                        receipt['finalization_monotonic_ns'] = time.monotonic_ns()
+                        original = receipt.get('process', {})
+                        if current.get('start_ticks') != original.get('start_ticks'):
+                            raise RuntimeError('Query process identity is not confirmed')
+                        if current.get('state') in ('T', 't'):
+                            child.send_signal(signal.SIGCONT)
+                        child.terminate()
+                    try:
+                        raw, errors = child.communicate(timeout=5)
+                    except subprocess.TimeoutExpired:
+                        child.kill()
+                        raw, errors = child.communicate()
+                    receipt.update(returncode=child.returncode, child_ended=True,
+                                   capture_complete=not (receipt.get('timed_out') or interrupted))
+                except (OSError, RuntimeError) as error:
+                    receipt.update(child_ended=False, finalization_error=str(error))
+            (destination / (label + '.stdout')).write_bytes(raw)
+            (destination / (label + '.stderr')).write_bytes(errors)
+            receipt.update(finished_at=_now(), finished_monotonic_ns=time.monotonic_ns(),
+                           stdout_bytes=len(raw), stderr_bytes=len(errors))
+            _write_json(destination / (label + '.json'), receipt)
+            for number, handler in previous.items():
+                signal.signal(number, handler)
+        groups.append(_select_journal_capture(receipt, raw, errors, lower, destination, label))
+        _write_json(destination / 'case-journals.json', groups)
+        if interrupted is not None:
+            interrupted.groups = groups
+            raise interrupted
+        if receipt.get('child_ended') is False:
+            break
+    return groups
+
+
+def journal_component_main(contract_path, output, caller, payload):
+    """Verify frozen inputs and compare each independently usable unit capture."""
+    destination = Path(output)
+    result = {'verdict': 'Incomplete', 'reason': 'invocation', 'groups': []}
+    status = 2
+    created = False
+    try:
+        if not Path(contract_path).is_absolute() or not destination.is_absolute():
+            raise ValueError('Absolute contract and output paths are required')
+        context = _json(contract_path)
+        keys = ('candidate', 'inputs', 'native', 'comparison')
+        if payload['mode'] == 'check-journal-capture':
+            keys += ('captures',)
+        roots = [Path(context[key]['root']).resolve() for key in keys]
+        destination = destination.resolve()
+        if any(destination == root or root in destination.parents or destination in root.parents
+               for root in roots):
+            raise ValueError('Output overlaps protected inputs or tools')
+        destination.mkdir(mode=0o700)
+        created = True
+        result['reason'] = 'integrity'
+        verified = {}
+        for key in keys:
+            if not Path(context[key]['root']).is_absolute() or not Path(context[key]['manifest']).is_absolute():
+                raise ValueError('Absolute member roots and manifests are required')
+            verified[key] = _verified_members(context[key])
+        candidate = verified['candidate']
+        inputs = verified['inputs']
+        if (context['schema'] != 1 or payload['chain'] != context['chain']
+                or payload['case'] != context['case']
+                or Path(__file__).resolve() != candidate / 'etl-pass/evidence.py'
+                or Path(caller).resolve() != candidate / 'etl-scenarios' / Path(caller).name):
+            raise ValueError('Actual caller or context differs from the candidate')
+        units = case_journal_units()
+        if context['unit_roles'] != units:
+            raise ValueError('Declared roles differ from production units')
+        expected = _json(_member(inputs, context['expectation']))
+        if expected['unit_roles'] != units:
+            raise ValueError('Expected roles differ from production units')
+        command = context['native_command']
+        if (file_digest(command['path']) != command['sha256'] or os.geteuid() != command['uid']):
+            raise ValueError('Native command identity or effective UID differs')
+        timeout = context.get('timeout_seconds', JOURNAL_TIMEOUT)
+        if (isinstance(timeout, bool) or not isinstance(timeout, (int, float))
+                or not math.isfinite(timeout) or timeout <= 0):
+            raise ValueError('A finite positive query deadline is required')
+        native_files = sorted(path for path in verified['native'].rglob('*') if path.is_file())
+        if not native_files:
+            raise ValueError('No native source members')
+        result['identities'] = {'contract_sha256': file_digest(contract_path), 'python': sys.version,
+                                'source': file_digest(__file__), 'caller': file_digest(caller),
+                                'native_command': command, 'boot_id': Path(
+                                    '/proc/sys/kernel/random/boot_id').read_text().strip()}
+        observation = _member(inputs, context['observation'])
+        captures = None
+        if payload['mode'] == 'check-journal-capture':
+            captures = {}
+            capture_root = verified['captures']
+            for role in JOURNAL_ROLES:
+                source = context['capture_roles'][role]
+                receipt = _json(_member(capture_root, source['receipt']))
+                provenance = _json(_member(capture_root, source['provenance']))
+                if (receipt['returncode'] != provenance['original_returncode']
+                        or receipt['unit'] != units[role]
+                        or file_digest(_member(capture_root, source['receipt']))
+                        != provenance['native_receipt_sha256']
+                        or file_digest(_member(capture_root, source['native_stdout']))
+                        != provenance['native_stdout_sha256']
+                        or file_digest(_member(capture_root, source['native_stderr']))
+                        != provenance['native_stderr_sha256']):
+                    raise ValueError('Unusable native capture provenance')
+                captures[role] = {'receipt': receipt, 'provenance': provenance,
+                                  'stdout': _member(capture_root, source['stdout']),
+                                  'stderr': _member(capture_root, source['stderr'])}
+        groups = capture_case_journals(observation, destination, Path(caller).name, native_files,
+                                      command['path'], timeout, captures,
+                                      command.get('query_uid'))
+        for group in groups:
+            result['groups'].append(group)
+            role = group['role']
+            if group['verdict'] != 'Passed':
+                _write_json(destination / 'result.json', result)
+                continue
+            label = 'actual-' + ('sampler' if role == 'sampler' else 'abort-unit') + '-journal'
+            config = {'format': 'jsonl', 'keys': ['__CURSOR', '_BOOT_ID'], 'timestamps': [],
+                      'numbers': {'__REALTIME_TIMESTAMP': 'epoch microseconds'},
+                      'required': [], 'optional': [], 'fields': None,
+                      'allow_empty': expected['allow_empty'][role]}
+            config_path = destination / (role + '-comparison-config.json')
+            _write_json(config_path, config)
+            arguments = [sys.executable, '-B', str(_member(verified['comparison'], context['comparator'])),
+                         '--config', str(config_path), '--expected',
+                         str(_member(inputs, expected['records'][role])), '--actual',
+                         str(destination / (label + '.selected.jsonl'))]
+            started = _now()
+            comparison = {'actual_arguments': arguments, 'started_at': started, 'returncode': None}
+            raw, errors = b'', b''
+            try:
+                compared = subprocess.run(arguments, capture_output=True, timeout=JOURNAL_TIMEOUT)
+                raw, errors = compared.stdout, compared.stderr
+                comparison['returncode'] = compared.returncode
+            except (OSError, subprocess.TimeoutExpired) as error:
+                raw, errors = getattr(error, 'stdout', None) or b'', getattr(error, 'stderr', None) or b''
+                comparison.update(error_type=type(error).__name__, error=str(error))
+            finally:
+                (destination / (role + '-comparison.stdout')).write_bytes(raw)
+                (destination / (role + '-comparison.stderr')).write_bytes(errors)
+                comparison['finished_at'] = _now()
+                _write_json(destination / (role + '-comparison.json'), comparison)
+                group['comparison'] = comparison
+            try:
+                parsed = json.loads(raw)
+                if (comparison['returncode'] not in (0, 1, 2) or errors
+                        or parsed['verdict'] != {0: 'Passed', 1: 'Failed', 2: 'Incomplete'}[
+                            comparison['returncode']]):
+                    raise ValueError('Unusable comparison command result')
+                group['verdict'] = parsed['verdict']
+                group['reason'] = 'selection_comparison'
+            except (KeyError, TypeError, ValueError) as error:
+                group.update(verdict='Incomplete', reason='unusable_comparison', error_type=type(error).__name__)
+            if (group['precise_lower_bound'] != expected['lower_bound']
+                    or group['unit'] != expected['unit_roles'][role]
+                    or group['query_lower_bound'] != expected['query_lower_bound']):
+                group.update(verdict='Failed', reason='production_arguments')
+            _write_json(destination / 'result.json', result)
+        for key in keys:
+            _verified_members(context[key])
+        verdicts = {group['verdict'] for group in result['groups']}
+        result.update(verdict='Failed' if 'Failed' in verdicts else
+                      'Incomplete' if 'Incomplete' in verdicts else 'Passed', reason='completed_checks')
+        status = {'Passed': 0, 'Failed': 1, 'Incomplete': 2}[result['verdict']]
+    except JournalInterrupted as error:
+        result['groups'] = error.groups
+        result.update(verdict='Incomplete', reason='collector_interrupted', signal=error.number)
+        status = 128 + error.number
+    except Exception as error:
+        result.update(error_type=type(error).__name__, error=str(error))
+        if any(group['verdict'] == 'Failed' for group in result['groups']):
+            result['verdict'], status = 'Failed', 1
+    result['native_exit_status'] = status
+    if created:
+        _write_json(destination / 'result.json', result)
+    print(json.dumps({key: result[key] for key in ('verdict', 'reason', 'native_exit_status')},
+                     sort_keys=True))
+    return status
 
 
 def timestamp_ns(value):

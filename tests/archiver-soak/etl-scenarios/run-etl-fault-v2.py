@@ -12,12 +12,17 @@ import time
 
 def retained_mode():
     try:
-        if (PAYLOAD.get('mode') != 'check-retained-pass' or ROLE != 'etl'
+        if (PAYLOAD.get('mode') not in ('check-retained-pass', 'check-journal-query', 'check-journal-capture') or ROLE != 'etl'
                 or PAYLOAD['chain'] not in ('shortened', 'default') or PAYLOAD['case'] not in ('E3', 'E4')):
             raise ValueError('Invalid retained-pass role or case')
         context = json.loads(Path(PAYLOAD['contract']).read_text())
-        sys.path.insert(0, str(Path(context['candidate']['root']).resolve()))
+        native = Path(context['candidate']['root']).resolve()
+        if PAYLOAD['mode'] in ('check-journal-query', 'check-journal-capture'):
+            native /= 'etl-pass'
+        sys.path.insert(0, str(native))
         import evidence
+        if PAYLOAD['mode'] in ('check-journal-query', 'check-journal-capture'):
+            return evidence.journal_component_main(PAYLOAD['contract'], PAYLOAD['output'], __file__, PAYLOAD)
         return evidence.retained_pass_main(PAYLOAD['contract'], PAYLOAD['output'], __file__)
     except Exception as error:
         print(json.dumps({'verdict': 'Incomplete', 'reason': 'invocation',
@@ -240,13 +245,10 @@ try:
     for component in ('mgmt', 'engine', 'retrieval'):
         assert pass_source.read(component, ROOT / ('outside-after-' + component + '.jsonl'),
             ROOT / ('outside-before-' + component + '.jsonl'))
-    for label, unit in (('actual-sampler-journal', observe.SAMPLER + '.service'),
-                        ('actual-abort-unit-journal', collect.ABORT_UNIT)):
-        since = datetime.datetime.fromisoformat(manifest['started_at']).astimezone(
-            datetime.timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')
-        run(label, ['/usr/bin/journalctl', '-u', unit, '--since', since,
-            '--no-pager', '--all', '-o', 'json'], 60)
-        assert (ROOT / (label + '.stderr')).stat().st_size == 0
+    journals = evidence.capture_case_journals(observe.OUT / 'observation.json', ROOT, Path(__file__).name)
+    state['case_journals'] = journals
+    save()
+    state['journal_verdict'] = 'Passed' if all(row['verdict'] == 'Passed' for row in journals) else 'Incomplete'
     outside = ROOT / 'outside-native-passes.jsonl'
     events = pass_source.read('etl', ROOT / 'outside-after-etl.jsonl', ROOT / 'outside-before-etl.jsonl')
     outside.write_text(''.join(json.dumps(row) + '\n' for row in events if evaluate.PASS.search(row['MESSAGE'])))
