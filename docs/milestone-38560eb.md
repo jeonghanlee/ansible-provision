@@ -31,7 +31,7 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: Land the locally verified M34 implementation under separate commit/push authority, then reconcile only its #54 criteria with live readback under separate issue authority. G7 is Complete and T1-T6 Passed using preserved originals in work/m34-resume-93iqsrhy and final receipts in work/m34-recordings-20261022. The shared production JFR comparison and reusable retained-input regression are complete locally; source landing and issue update remain pending, so M34 stays In progress. M33/M36/M37 remain Complete; 20 other tool components remain Deferred. M14 is limited to Archiver Appliance under D42 and remains Blocked on G2; M26 remains Blocked on G5. No Milestone row is Ready.
+Next session entry point: Commit the M34 closure record under separate commit/push authority. M34 is Complete under D44 after verified source e48083d, T1-T6 and exact readback of the five JFR-related #54 criteria. The consolidated issue remains open with thirteen checked and 68 unchecked boxes. M33/M36/M37 remain Complete; 20 other tool components remain Deferred. M14 is limited to Archiver Appliance under D42 and remains Blocked on G2; M26 remains Blocked on G5. No Milestone row is Ready.
 
 Both original shortened/default 24-hour ETL processing observations completed on 2026-10-15 UTC and are accepted under D29. They ran for 86416.387 and 86415.088 monotonic seconds before normal finish across UTC midnight. The unchanged native scheduler evaluator Passed with all 312 and 27 required passes present exactly once. Read-only initial, both-transition and final physical/HTTP comparisons Passed on each chain. Whole-unit normal stops returned 0 in 12.516 and 13.770 seconds, below the installed 300-second timeout. Each observation retained 290 in-window full samples and its original frozen bundle.
 
@@ -390,7 +390,7 @@ full mode carries every OS tree, second apply `failed=0`). Delivered in
 
 </details>
 
-Status tally: 24 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 5 external gates (3 Complete, 2 Open). Backlog excluded: 3 Complete, 1 In progress and 20 Deferred carry-forward items, plus 2 Complete external gates. M33 query/capture, M36 UTC matching and M37 checksum work are complete; M34 has resumed after verified original-input delivery through G7.
+Status tally: 24 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 5 external gates (3 Complete, 2 Open). Backlog excluded: 4 Complete, 0 In progress and 20 Deferred carry-forward items, plus 2 Complete external gates. M33 query/capture, M34 JFR recording comparison, M36 UTC matching and M37 checksum work are complete.
 
 ## Milestone
 
@@ -477,6 +477,7 @@ Status tally: 24 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 
 | D41 | Close M33 query/capture work from its completed real-path T1-T6 checks, source commit f6339736f87ed0c95eb3321385b5db73c8d6fe25 on the fetched upstream branch and the four query criteria verified by exact #54 body readback. Keep the consolidated issue open for its 73 remaining unchecked boxes, as accepted in the prepared and delegated query-only update. This is a component-only issue-closure exception, not a waiver of verification. Other tool components remain Deferred under D31; no additional correction or observation is authorized. | 2026-10-21 |
 | D42 | Limit M14 to Archiver Appliance and its prerequisites, retaining both distribution installation and source build. Remove Phoebus operators/species and the combined `middleware` species from its current plan and completion criteria. This supersedes those portions of D15/D16 only. Retain G2/G3, historical authorizations and all verification records. The revised document does not establish a new installation result or authorize additional deployment. | 2026-10-21 |
 | D43 | Accept and authorize the bounded M34 plan after source/input confirmation and the directed plan update. Return M34 from Deferred to Not started, then In progress for actual input verification. Original input verification is required through G7 before corrective source changes and replay. Scope is JFR process/lifetime comparison and its retained-input real-consumer checks. Preserve original observations and accepted product results. Source changes wait for required input integrity and the applicable design review; peer delivery, guest lifecycle, commit, push and GitHub mutations remain separately authorized. | 2026-10-21 |
+| D44 | Close M34 JFR recording comparison from its completed real-path T1-T6 checks, source e48083d0fb21641777aa85749e34167e7ef43d7d on the observed upstream branch and five JFR-related criteria verified by exact #54 body readback. Keep the consolidated issue open for its 68 remaining unchecked boxes, as accepted in the prepared and delegated JFR-only update. This is a component-only issue-closure exception, not a waiver of verification. Other tool components remain Deferred under D31; accepted product results and original evidence remain unchanged. | 2026-10-22 |
 
 ### Assignment History
 
@@ -5861,7 +5862,7 @@ The assembly neither writes nor checks these files (`D26`). `M26` depends on the
 | Tools | M31 | Preserve kernel cursor refusal evidence and prove interval coverage | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m31---preserve-kernel-cursor-refusal-evidence-and-prove-interval-coverage) |
 | Tools | M32 | Keep kernel diagnostics independent of the ETL terminal verdict | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m32---keep-kernel-diagnostics-independent-of-the-etl-terminal-verdict) |
 | Tools | M33 | Use timestamps accepted by systemd 239 journal queries | Carry-forward | Complete | No | D31, D39, D40, D41, G6 | T1-T6 Passed; source f633973 and four checked query criteria in #54 verified; [detail](#m33---use-timestamps-accepted-by-systemd-239-journal-queries) |
-| Tools | M34 | Match JFR exports to the recording process and lifetime | Carry-forward | In progress | No | D31, D43, G7 | G7 Complete; local implementation and T1-T6 Passed; source landing and #54 criteria update/readback pending; [detail](#m34---match-jfr-exports-to-the-recording-process-and-lifetime) |
+| Tools | M34 | Match JFR exports to the recording process and lifetime | Carry-forward | Complete | No | D31, D43, D44, G7 | T1-T6 Passed; source e48083d and five JFR-related #54 criteria verified; [detail](#m34---match-jfr-exports-to-the-recording-process-and-lifetime) |
 | Tools | M35 | Persist terminal state before evaluating terminal coherence | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m35---persist-terminal-state-before-evaluating-terminal-coherence) |
 | Tools | M36 | Match ETL pass times by UTC instant with nanosecond precision | Carry-forward | Complete | No | D31, D37, D38 | T1-T6 Passed; source landing and four UTC boxes in #54 verified; [detail](#m36---match-etl-pass-times-by-utc-instant-with-nanosecond-precision) |
 | Tools | M37 | Refresh preserved-tool checksums | Carry-forward | Complete | No | D31, D34, D35, D36 | Real source/copy checks, source landing and four checksum boxes in #56 verified; [detail](#m37---refresh-preserved-tool-checksums) |
@@ -6290,8 +6291,8 @@ Execute the actual frozen evaluator against each complete retained observation. 
 
 Retained transferred technical coverage follows; record each result in its owning child detail rather than treating this list as one implementation.
 
-- [ ] The real evaluator and numerical aggregator correctly reconcile retained current-process heap/collection/pause records with complete JFRs on both chains while retaining earlier-process data.
-- [ ] Missing, conflicting or incomplete records in an actual retained-input copy remain detectable; no internal-function stub or reconstructed positive fixture establishes acceptance.
+- [x] The real evaluator and numerical aggregator correctly reconcile retained current-process heap/collection/pause records with complete JFRs on both chains while retaining earlier-process data. Result: e48083d reconciles all 24 recording populations through the actual evaluator and aggregator; earlier-process rows remain available.
+- [x] Missing, conflicting or incomplete records in an actual retained-input copy remain detectable; no internal-function stub or reconstructed positive fixture establishes acceptance. Result: real retained-input derivatives expose missing/extra events, conflicting payloads, wrong process identities and unusable recordings through the shipped readers.
 - [ ] A real normal-terminal invocation and subsequent offline replay agree on terminal coherence, including actual failure, interruption and repeat-terminal handling.
 - [ ] Verification runs the shipped tools and actual retained evidence, with original and candidate tool identities kept separate. Original inputs, terminal bytes and failed verdicts remain unchanged.
 - [ ] Results state which independent kernel diagnostic findings remain; evaluator correction does not claim historical kernel coverage or change the already accepted ETL functionality result in #30.
@@ -6829,7 +6830,7 @@ Execution safeguards and evidence locations: volume/limits belong in the fixture
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
 - GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
 - Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #39 is closed not_planned at 2026-10-17T01:12:18Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
-- Status: In progress
+- Status: Complete
 
 ##### Summary
 
@@ -6858,6 +6859,7 @@ The complete-recording comparison selects the component without selecting the re
 - D31; Decision Date: 2026-10-15. Independent Backlog work is excluded from current execution; accepted M22/#30 ETL functionality and M25/#31 journal results remain complete.
 - D43; Decision Date: 2026-10-21. The owner directed confirmation, plan updates and continuation of M34. This component alone returns to execution; the revised bounded plan is accepted and authorized. Original delivery through G7 is now required before corrective source changes and replay.
 - G7; initially Blocked on 2026-10-21, resume as In progress. Original exports are now received and independently verified at 2026-10-22T01:19:27.527336+00:00. The local intake, all-member verification, historical anchor checks, frozen-bundle checks and eight native JFR decodes are retained under work/m34-resume-93iqsrhy. G7 is Complete; M34 resumes as In progress. The earlier missing-input inventory remains historical evidence.
+- D44; Decision Date: 2026-10-22. Close this component after exact readback of its delegated five-criterion update in #54. The consolidated issue remains open for independent unfinished work; this explicitly excepts component closure from whole-issue closure without waiving any JFR check.
 - Coordination: M30/#35. This is a tracking relationship, not an invented sequential execution dependency.
 - Preserve original inputs, frozen tool identities and unsuccessful outcomes. Reuse retained evidence and bounded real-path checks; no new full-day producer run solely for tool correction or reporting.
 
@@ -6909,7 +6911,9 @@ Current input evidence (2026-10-22T01:19:27.527336+00:00): 32 delivered files pa
 
 ##### Closure Evidence
 
-- Local implementation and T1-T6 verification are complete under D43; M34 remains In progress pending source landing and the separately authorized #54 criteria update/readback. The shared native JFR comparison, evaluator/aggregator/diagnostic consumers and reusable retained-input regression meet the bounded local criteria. Original exports, frozen manifests and unsuccessful historical outcomes remain unchanged. Final evidence is work/m34-recordings-20261022/final-summary.json with per-command receipts, selected coverage, preservation and timing. Earlier interrupted or unsuccessful attempts remain distinct from final acceptance. Pre-edit and candidate reviews plus the corrected operator-documentation pass are retained under work/review_sessions/20261022_075556_m34-jfr. Live service-state verification, a new producer run, source landing and GitHub mutation are not claimed.
+- Complete on 2026-10-22 under D44: implementation and T1-T6 verification are complete under D43, source landing is verified and the delegated #54 update matches its prepared body exactly. The shared native JFR comparison, evaluator/aggregator/diagnostic consumers and reusable retained-input regression meet the bounded criteria. Original exports, frozen manifests and unsuccessful historical outcomes remain unchanged. Final evidence is work/m34-recordings-20261022/final-summary.json with per-command receipts, selected coverage, preservation and timing. Earlier interrupted or unsuccessful attempts remain distinct from final acceptance. Pre-edit and candidate reviews plus the corrected operator-documentation pass are retained under work/review_sessions/20261022_075556_m34-jfr. Live service-state verification and a new producer run are not claimed.
+- Source landing observed at 2026-10-22T10:30:08Z: GitHub branch API `repos/jeonghanlee/ansible-provision/branches/m14-middleware-reconcile` reports e48083d0fb21641777aa85749e34167e7ef43d7d, matching local HEAD. All six source hashes recorded in final-summary.json match the committed bytes. Recheck with the branch API and compare its `commit.sha`; this records the source identity used by the completed checks, not a new test run.
+- Issue update verified at 2026-10-22T10:49:17Z: exact prepared-body SHA256 ebd55a80f7cb224507e8605a676dbb27ce436f1b46c33edad77fadc1d3c6bc79 matches live #54. Three source-#39 criteria and two overlapping source-#35 criteria are newly checked; thirteen boxes are checked and 68 remain unchecked. Title, labels, milestone, assignee and open state are unchanged. Broader terminal, reporting and recipient criteria remain unchecked. D44 records the dated component-only closure exception; no other component is activated or completed. Receipt: `work/issue-etl-jfr-applied-20261022.json`.
 
 ##### GitHub Projection
 
@@ -6923,10 +6927,12 @@ Current input evidence (2026-10-22T01:19:27.527336+00:00): 32 delivered files pa
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-17T01:09:40Z
-- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
-- Prepared Body: `work/issue-tools-etl.md`
-- Published Body SHA256: b6a0ab483695713866a62fe7ccf6cb65a4f04514238fa3adce424715686417f0
+- Observed Updated At: 2026-10-22T10:49:06Z
+- Last Compared: 2026-10-22T10:49:17Z; exact JFR-only prepared body and unchanged title/labels/milestone/assignee/open state verified. Thirteen boxes checked, 68 unchecked.
+- JFR Update Readback: 2026-10-22T10:49:17Z; the three source-#39 criteria and two overlapping source-#35 criteria are newly checked; all other sections and criteria are preserved. Receipt: `work/issue-etl-jfr-applied-20261022.json`.
+- Prepared Body: `work/issue-etl-jfr-body.md`
+- Prepared Body SHA256: ebd55a80f7cb224507e8605a676dbb27ce436f1b46c33edad77fadc1d3c6bc79
+- Published Body SHA256: ebd55a80f7cb224507e8605a676dbb27ce436f1b46c33edad77fadc1d3c6bc79
 - Historical Source Issue: #39, https://github.com/jeonghanlee/ansible-provision/issues/39
 - Historical Source State: closed
 - Historical Source Reason: not_planned
@@ -8264,7 +8270,7 @@ Component canonical identities remain independent under this single GitHub proje
 - M31: historical source #36; unfinished work is tracked in #54.
 - M32: historical source #37; unfinished work is tracked in #54.
 - M33: historical source #38; query component Complete under D41, with its verified criteria retained in #54.
-- M34: historical source #39; unfinished work is tracked in #54.
+- M34: historical source #39; JFR recording component Complete under D44, with its verified criteria retained in #54.
 - M35: historical source #40; unfinished work is tracked in #54.
 - M36: historical source #41; unfinished work is tracked in #54.
 - M38: historical source #43; unfinished work is tracked in #54.
@@ -8315,7 +8321,7 @@ These summaries preserve the recorded scope. Each linked issue retains its full 
 ###### #39 - Match JFR exports to the recording process and lifetime
 
 - Problem and evidence: CSV counts included prior JVMs while final JFRs belonged to one process. Matching-PID counts reconcile on both chains.
-- Remaining work: Bind real evaluator/aggregator comparisons to component, PID and recording lifetime while preserving earlier-process rows.
+- Result: M34 is Complete under D44. T1-T6 Passed; shared native recording comparison and retained-input regression are committed in e48083d and verified on the remote branch. The three component criteria and two overlapping evaluator criteria are checked in #54 with exact body/metadata readback.
 - Done when: Both chains reconcile in scope and real missing, duplicated, conflicting or truncated evidence remains detectable; originals are unchanged.
 
 ###### #40 - Persist terminal state before evaluating terminal coherence
@@ -8416,8 +8422,8 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 ###### Source #35 - Fix ETL JFR scope and terminal evaluation order
 
-- [ ] The real evaluator and numerical aggregator correctly reconcile retained current-process heap/collection/pause records with complete JFRs on both chains while retaining earlier-process data.
-- [ ] Missing, conflicting or incomplete records in an actual retained-input copy remain detectable; no internal-function stub or reconstructed positive fixture establishes acceptance.
+- [x] The real evaluator and numerical aggregator correctly reconcile retained current-process heap/collection/pause records with complete JFRs on both chains while retaining earlier-process data. Result: e48083d reconciles all 24 recording populations through the actual evaluator and aggregator; earlier-process rows remain available.
+- [x] Missing, conflicting or incomplete records in an actual retained-input copy remain detectable; no internal-function stub or reconstructed positive fixture establishes acceptance. Result: real retained-input derivatives expose missing/extra events, conflicting payloads, wrong process identities and unusable recordings through the shipped readers.
 - [ ] A real normal-terminal invocation and subsequent offline replay agree on terminal coherence, including actual failure, interruption and repeat-terminal handling.
 - [ ] Verification runs the shipped tools and actual retained evidence, with original and candidate tool identities kept separate. Original inputs, terminal bytes and failed verdicts remain unchanged.
 - [ ] Results state which independent kernel diagnostic findings remain; evaluator correction does not claim historical kernel coverage or change the already accepted ETL functionality result in #30.
@@ -8461,9 +8467,9 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 ###### Source #39 - Match JFR exports to the recording process and lifetime
 
-- [ ] The real evaluator and aggregator reconcile heap, collection and pause records with both chains' complete recordings using actual process/lifetime identities.
-- [ ] Earlier-process records remain available; missing, conflicting, duplicated or truncated in-scope evidence still fails the real path.
-- [ ] Original recordings, exports, unsuccessful verdicts and independent kernel findings remain unchanged.
+- [x] The real evaluator and aggregator reconcile heap, collection and pause records with both chains' complete recordings using actual process/lifetime identities. Result: e48083d reconciles all 24 component/event-kind populations with native JFR records using component, boot, PID and process-start identity.
+- [x] Earlier-process records remain available; missing, conflicting, duplicated or truncated in-scope evidence still fails the real path. Result: 87,870 earlier-process occurrences remain preserved; actual-record negative controls retain Failed or Incomplete outcomes as applicable.
+- [x] Original recordings, exports, unsuccessful verdicts and independent kernel findings remain unchanged. Result: complete membership/hash checks preserve 24,227 original regular files; default evaluator/aggregator results retain overall Incomplete and independent kernel findings.
 
 
 
@@ -8598,6 +8604,10 @@ All criteria below remain active in the replacement issue. Source closure is adm
 - Query source landing observed at 2026-10-21T07:35:32.426896+00:00: M33 / T1-T6 and source f633973 are verified. Its four canonical criteria are checked from real results; the prepared query-only body would bring #54 to eight checked and 73 unchecked boxes. No query issue update or component closure is claimed before authorized publication and live readback. This aggregate remains Deferred.
 - Query component update observed at 2026-10-21T08:34:55+00:00: M33 is Complete under D41 after its four query criteria and full prepared body were read back exactly from #54. The issue remains open with eight checked and 73 unchecked boxes; title, labels, milestone and assignee are unchanged. This aggregate remains Deferred.
 
+- JFR source landing observed at 2026-10-22T10:30:08Z: M34 / T1-T6 and source e48083d are verified; the three recording criteria and two overlapping evaluator criteria are satisfied in this canonical document. The prepared #54 body would have thirteen checked and 68 unchecked boxes. The live issue still has eight checked and 73 unchecked boxes; publication/readback is pending. This aggregate remains Deferred.
+
+- JFR component update observed at 2026-10-22T10:49:17Z: M34 is Complete under D44 after its three JFR criteria, two overlapping evaluator criteria and full prepared body were read back exactly from #54. The issue remains open with thirteen checked and 68 unchecked boxes; title, labels, milestone and assignee are unchanged. This aggregate remains Deferred.
+
 ##### GitHub Projection
 
 - Title: `Track ETL test tooling`
@@ -8610,12 +8620,13 @@ All criteria below remain active in the replacement issue. Source closure is adm
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-21T08:34:02Z
-- Last Compared: 2026-10-21T08:34:55+00:00; exact query-only prepared body and unchanged metadata read back; eight boxes checked, 73 unchecked, issue open.
+- Observed Updated At: 2026-10-22T10:49:06Z
+- Last Compared: 2026-10-22T10:49:17Z; exact JFR-only prepared body and unchanged title/labels/milestone/assignee/open state verified. Thirteen boxes checked, 68 unchecked.
 - Query Update Readback: 2026-10-21T08:34:55+00:00; four query criteria newly checked and all other source sections/criteria preserved. Full comparison retained at `work/issue-etl-query-applied-20261021.json`.
-- Prepared Body: `work/issue-etl-query-body.md`
-- Prepared Body SHA256: 223c962881b0c363fb9ec469a2df7753826c897b4741d985f253ee613f375443
-- Published Body SHA256: 223c962881b0c363fb9ec469a2df7753826c897b4741d985f253ee613f375443
+- JFR Update Readback: 2026-10-22T10:49:17Z; the three source-#39 criteria and two overlapping source-#35 criteria are newly checked; all other sections and criteria are preserved. Receipt: `work/issue-etl-jfr-applied-20261022.json`.
+- Prepared Body: `work/issue-etl-jfr-body.md`
+- Prepared Body SHA256: ebd55a80f7cb224507e8605a676dbb27ce436f1b46c33edad77fadc1d3c6bc79
+- Published Body SHA256: ebd55a80f7cb224507e8605a676dbb27ce436f1b46c33edad77fadc1d3c6bc79
 - Historical Source Issues: #34, #35, #36, #37, #38, #39, #40, #41, #43, #44, #45, #46, #47, #48, #49, #50
 
 #### M49 - Track buffer test tooling
