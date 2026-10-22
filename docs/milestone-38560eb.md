@@ -31,7 +31,7 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: M33 query/capture work is Complete under D41: T1-T6 Passed, source commit f6339736f87ed0c95eb3321385b5db73c8d6fe25 is verified on origin/m14-middleware-reconcile, and all four query criteria are checked in #54. Exact issue readback verifies eight checked boxes, 73 unchecked boxes and unchanged open state/metadata. Review and commit this closure/readback record when requested. M36/M37 remain Complete; the other 21 tool components remain Deferred under D31 with no active tool component. M22/#30, M25/#31 and M24/#52 remain Complete/closed. M14 is Blocked on G2 and M26 on G5. No Milestone row is Ready.
+Next session entry point: M33 query/capture work is Complete under D41: T1-T6 Passed, source commit f6339736f87ed0c95eb3321385b5db73c8d6fe25 is verified on origin/m14-middleware-reconcile, and all four query criteria are checked in #54. Exact issue readback verifies eight checked boxes, 73 unchecked boxes and unchanged open state/metadata. Review and commit this closure/readback record when requested. M36/M37 remain Complete; the other 21 tool components remain Deferred under D31 with no active tool component. M22/#30, M25/#31 and M24/#52 remain Complete/closed. M14 is limited to Archiver Appliance under D42 and remains Blocked on G2; M26 remains Blocked on G5. No Milestone row is Ready.
 
 Both original shortened/default 24-hour ETL processing observations completed on 2026-10-15 UTC and are accepted under D29. They ran for 86416.387 and 86415.088 monotonic seconds before normal finish across UTC midnight. The unchanged native scheduler evaluator Passed with all 312 and 27 required passes present exactly once. Read-only initial, both-transition and final physical/HTTP comparisons Passed on each chain. Whole-unit normal stops returned 0 in 12.516 and 13.770 seconds, below the installed 300-second timeout. Each observation retained 290 in-window full samples and its original frozen bundle.
 
@@ -411,7 +411,7 @@ Status tally: 24 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 
 | Core | M11 | Install the requested version in the app and EPICS roles | Milestone | Complete | No | D11 | The con/procServ/conserver and EPICS roles drop the install-once guard and install the requested version on every apply (EPICS re-checks out the tag; `epics_clone_mode` picks minimal single-OS or full multi-OS); verified on the production IOC server 2026-09-04 (con 1.1.0 replaced by 1.2.0, full mode carries every OS tree, second apply `failed=0`); delivered in `fd4ff1c`/`13bc8e6`; [detail](#m11---install-the-requested-version-in-the-app-and-epics-roles) |
 | Core | M12 | Keep /run/cloud-init world-readable after the in-build cloud-init upgrade | Milestone | Complete | No | D12 | After `roles/epics_build` runs on a rocky epics-dev guest, `/run/cloud-init` is 0755 and an unprivileged `cloud-init status --long` prints, both immediately and after a later `systemd-tmpfiles --create`; debian/ubuntu unaffected; [detail](#m12---keep-runcloud-init-world-readable-after-the-in-build-cloud-init-upgrade) |
 | Core | M13 | Fix RedHat python provisioning for EPICS source builds | Milestone | Complete | No | D13, D14 | The RedHat python operator installs Python dev headers and makes `python3` resolve to the intended version, so `Python.h` is present and pyDevSup compiles on rocky8/rocky10; debian unaffected; [detail](#m13---fix-redhat-python-provisioning-for-epics-source-builds) |
-| Core | M14 | Middleware server provisioning (Archiver Appliance, Phoebus) | Milestone | Blocked | No | G2, G3 | A middleware species provisions the EPICS Archiver Appliance and Phoebus, each independently selectable, on a middleware host layered on the common+epics base - system Java (distribution OpenJDK 21 with `JAVA_HOME`), Tomcat 9.0.121, MariaDB, the applications from their binary distribution repositories (species `archiver`, `phoebus`) or from source (`archiver-dev`, `phoebus-dev`), combinable as `middleware`, group `mid` / user `mid-srv` - with internal specifics supplied through the site override layer; blocked until the cloud-provision operator/species structure, package baseline, and middleware VM land (G2); [detail](#m14---middleware-server-provisioning-archiver-appliance-phoebus) |
+| Core | M14 | Archiver Appliance server provisioning | Milestone | Blocked | No | G2, G3, D42 | Provision Archiver Appliance through distribution installation (`archiver`) and source build (`archiver-dev`) on the common+epics base, with system OpenJDK 21, Tomcat 9.0.121, MariaDB and service group `mid` / user `mid-srv`. Site values use the override layer. Phoebus and the combined `middleware` species are outside this milestone. G2 must complete and T2 must pass; [detail](#m14---archiver-appliance-server-provisioning) |
 | Core | M15 | Discipline lab-VM clocks from the KVM PTP clock in the common operator | Milestone | Complete | No | D17 | On a KVM guest the `common` operator loads `ptp_kvm`, links `/dev/ptp_kvm` through a udev rule gated on the KVM clock name, and adds a PHC refclock to the chrony configuration it writes, so `timedatectl` reports the clock synchronized with PHC0 selected; where no KVM PTP clock exists the configuration carries no refclock and the site pools serve as before; the first `apt update` on the Debian path retries on a signature-date failure; delivered in `57d9d3f` and `eb9ba56`; [detail](#m15---discipline-lab-vm-clocks-from-the-kvm-ptp-clock-in-the-common-operator) |
 | Core | M16 | Generate the MariaDB application password on the host | Milestone | Complete | No | D18 | The `mariadb` operator creates the application password on the target host, keeps it in a root-only file, and sets the account from that file; `archiver_build` reads the same file for epicsarchiverap-env; no credential travels from the control host, `raw_stdin` and its tests are removed, and the operator works over SSH and over a local connection alike; delivered in `3e89e33`; [detail](#m16---generate-the-mariadb-application-password-on-the-host) |
 | Core | M17 | Move the epicsarchiverap-env pin to the journald and log4j2 service model | Milestone | Complete | No | M16, D19 | `archiver_env_ref` and `archiver_maven_src_tag` move past epicsarchiverap-env `bbe0968` and epicsarchiverap-maven `67be91d7`, where the appliance runs its four Tomcats in the foreground under one journald service with a WAR log4j2 layout; the operator's install check, repair, stamp and documentation fit that unit, the host keeps a persistent, bounded journal, and a fresh `archiver_dev` build serves and persists PV configuration; delivered in `940b63a`; [detail](#m17---move-the-epicsarchiverap-env-pin-to-the-journald-and-log4j2-service-model) |
@@ -475,6 +475,7 @@ Status tally: 24 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 
 | D39 | Accept and authorize the reviewed M33 query-component plan identified by detail SHA256 5b25d449fc54e4b050563a18505f8352ecdb8a093dbfec8176e07b4e8a4969b3. Return M33 from Deferred to Not started, then In progress as local input discovery begins. Scope is the reviewed shared journal-query/capture operation, exact time selection and its bounded real-path verification. Environment selection and provisioning, external messages, commit, push and GitHub mutations require separate authorization. Other tool components remain Deferred; accepted Ansible/ETL/journal results and original evidence remain unchanged. | 2026-10-19 |
 | D40 | Authorize delivery of the prepared M33 request for one fresh dedicated Rocky 8.10/systemd 239 guest with 2 vCPU, 4096 MiB RAM and 48 GiB disk after provider capacity/address checks. This supplies the isolated environment for D39's bounded query/capture verification. Verify the actual private handoff before use; guest resources are not evidence limits or acceptance thresholds. Keep all retained deployments and original evidence unchanged. No full-day observation, commit, push or GitHub mutation is authorized. | 2026-10-19 |
 | D41 | Close M33 query/capture work from its completed real-path T1-T6 checks, source commit f6339736f87ed0c95eb3321385b5db73c8d6fe25 on the fetched upstream branch and the four query criteria verified by exact #54 body readback. Keep the consolidated issue open for its 73 remaining unchecked boxes, as accepted in the prepared and delegated query-only update. This is a component-only issue-closure exception, not a waiver of verification. Other tool components remain Deferred under D31; no additional correction or observation is authorized. | 2026-10-21 |
+| D42 | Limit M14 to Archiver Appliance and its prerequisites, retaining both distribution installation and source build. Remove Phoebus operators/species and the combined `middleware` species from its current plan and completion criteria. This supersedes those portions of D15/D16 only. Retain G2/G3, historical authorizations and all verification records. The revised document does not establish a new installation result or authorize additional deployment. | 2026-10-21 |
 
 ### Assignment History
 
@@ -1521,22 +1522,20 @@ the target python version per OS beyond the current selections.
 - Delivered in af239dd (dev headers), 37829b5 (python3 alternatives), and 54b32c6 (absent-group if-guard).
 - T2 Passed 2026-09-11 (EPICS-env session): rocky8 and rocky10 clean operator runs with no manual override, pyDevSup built on both; full public gz matrix 6/6.
 
-#### M14 - Middleware server provisioning (Archiver Appliance, Phoebus)
+#### M14 - Archiver Appliance server provisioning
 
 - Origin: 38560eb / M14
 - Status: Blocked (on G2)
 
 ##### Summary
 
-A middleware server (the middleware counterpart of the IOC dev host) hosts the
-EPICS Archiver Appliance and Phoebus, each independently selectable, on the
-`common` + `epics` base, provisioned the same way the IOC species are. It runs
-the system Java (the distribution OpenJDK 21 with `JAVA_HOME` exported), Tomcat
-9.0.121 as the shared `CATALINA_HOME`, and MariaDB as the Archiver Appliance
-configuration database; the applications install from their binary distribution
-repositories, each with a source-build alternative. ansible-provision mirrors
-the operator/species structure and the middleware OS package baseline that
-originate in cloud-provision (`G2`) as the normative source and land first.
+Provision a server for the EPICS Archiver Appliance on `common` + `epics`,
+using the existing operator/species model. The application supports binary
+distribution installation and source build. Both paths use the distribution
+OpenJDK 21 with `JAVA_HOME`, Tomcat 9.0.121 as shared `CATALINA_HOME`, MariaDB,
+and service group `mid` / user `mid-srv`. The operator/species definitions and
+middleware package baseline originate in cloud-provision and must land there
+under `G2`. Phoebus and the combined `middleware` species are excluded by `D42`.
 
 ##### Scope
 
@@ -1551,36 +1550,36 @@ originate in cloud-provision (`G2`) as the normative source and land first.
   / `context.xml`, and schema stay with epicsarchiverap-env.
 - A `mariadb` operator: the MariaDB server with the `archappl` database and
   user, kept a separable module because epicsarchiverap-env replaces it with SQLite later.
-- Application operators `archiver` and `phoebus`: install the aa-distribution
-  WARs and the phoebus-distribution binary, each paired with a source-build
-  operator (`archiver-build` builds epicsarchiverap-maven at its freeze tag with `./mvnw`
+- The `archiver` operator installs the aa-distribution WARs. Its source-build
+  alternative, `archiver-build`, builds epicsarchiverap-maven at its freeze tag with `./mvnw`
   and needs `JAVA_HOME`, git with an origin ref, openssh-client, outbound HTTPS,
-  and `-Dsphinx.skip=true`; `phoebus-build` builds Phoebus from source).
-- Species `archiver` and `archiver-dev` (distribution install / source build),
-  `phoebus` and `phoebus-dev`, and `middleware` (the selectable combination)
-  layer those operators on `common` + `epics`, with the service group `mid` and
-  user `mid-srv` parallel to `ioc` / `ioc-srv`, run as `make <species>.<vacuum>`.
+  and `-Dsphinx.skip=true`.
+- Species `archiver` and `archiver-dev` select distribution installation and
+  source build respectively. They layer the application operators on
+  `common` + `epics`, use group `mid` / user `mid-srv`, and run through
+  `make <species>.<vacuum>`.
 - Version values (Tomcat, distribution refs) are override keys with neutral
   public defaults; internal endpoints (proxy, internal git remote, NTP) are
   supplied through the site override layer, not committed here.
 
-Out of scope: the cloud-provision operator/species structure, middleware
+Out of scope: Phoebus installation and source build, the `phoebus` and
+`phoebus-build` operators, the `phoebus` / `phoebus-dev` species, and the
+combined `middleware` species; the cloud-provision operator/species structure, middleware
 package baseline, and middleware VM (`G2`, owned by the cloud-provision
-session); creating and populating the aa-distribution and phoebus-distribution
-repositories (epicsarchiverap-env and phoebus-env); the Archiver Appliance instance layout
+session); creating and populating aa-distribution (epicsarchiverap-env);
+the Archiver Appliance instance layout
 and schema (epicsarchiverap-env); the site override values (the `server-configuration`
 repository); Maven as an installed package.
 
 ##### Completion Criteria
 
-- The middleware species provisions the distribution OpenJDK 21 JDK with
+- The distribution-install species `archiver` provisions OpenJDK 21 with
   `JAVA_HOME` at its path, Tomcat 9.0.121 at the shared `CATALINA_HOME`,
-  MariaDB with the `archappl` database, and the selected applications
-  (Archiver Appliance WARs, Phoebus binary) on a middleware host, layered on
+  MariaDB with the `archappl` database, and the Archiver Appliance WARs on
   `common` + `epics`, under group `mid` / user `mid-srv`.
-- The `archiver-dev` and `phoebus-dev` species provision the same applications
-  through their source-build operators; no non-system Java pin and no Maven
-  package are installed, and the Archiver Appliance build runs through `./mvnw`.
+- The source-build species `archiver-dev` provisions the same application
+  through `archiver-build` and `./mvnw`; no non-system Java pin or separate
+  Maven package is installed.
 - Version values are override keys with neutral public defaults; no internal
   endpoint is committed to this repository.
 - The species runs as `make <species>.<vacuum>` and a re-apply is idempotent.
@@ -1608,6 +1607,12 @@ repository); Maven as an installed package.
   the Archiver Appliance baseline, Archiver Appliance and Phoebus from their
   binary distribution repositories with source-build alternatives, group `mid`
   / user `mid-srv`.
+- `D42` (2026-10-21): retain Archiver distribution installation and source
+  build; exclude Phoebus operators/species and the combined `middleware`
+  species. The corresponding requirements of `D15` and `D16` are superseded.
+  `G2` and `G3` keep their existing meaning and status. Historical observations
+  and verification results are preserved; this scope change does not complete
+  T1 or T2.
 - Sub-decisions resolved (owner, 2026-09-14): increment scope - the
   source-build path first, first increment `archiver-dev` (`java` + `tomcat` +
   `mariadb` + `archiver-build` + the `archiver-dev` species), matching the
@@ -1645,8 +1650,9 @@ repository); Maven as an installed package.
 ##### Implementation Plan
 
 - Plan Status: accepted
-- Plan Acceptance: 2026-09-15 (Java-first increment, followed by standalone Tomcat and MariaDB)
-- Implementation Authorization: 2026-09-15 (standalone `java`, `tomcat`, and `mariadb` additions; develop on branch
+- Plan Acceptance: 2026-10-21 (D42: Archiver Appliance-only scope, both acquisition paths); original increment acceptance 2026-09-15 (Java first, followed by standalone Tomcat and MariaDB)
+- Implementation Authorization: 2026-10-21 for this canonical scope rewrite only; no additional provisioning or verification run
+- Prior increment authorization: 2026-09-15 (standalone `java`, `tomcat`, and `mariadb` additions; develop on branch
   `m14-middleware-reconcile` against the cloud-provision M11 branch definition
   `m11-middleware-operators` d52827c; merge to master after M14 and M11/T2)
 - Security setup authorization: 2026-09-16 (remove anonymous accounts, remote
@@ -1665,7 +1671,9 @@ repository); Maven as an installed package.
   `sql.fill` -> `conf.storage` -> `install` -> `sd_start`; never `make build`
   wholesale, which bundles the root `conf.storage`. Realization per the
   2026-09-18 sub-decision above.)
-- Superseded Plan Artifacts: none
+- Superseded Plan Artifacts: the M14 clauses requiring Phoebus and the combined
+  `middleware` species in this document at `0afcac779b84e0b56863031039b7de384fb61311`;
+  prior increment authorizations and verification records remain historical evidence
 
 Developed before `G2` rather than after: `G2` completes when cloud-provision M11
 merges to master, which follows M11/T2, which needs these M14 roles - so the
@@ -1711,15 +1719,13 @@ definition now (owner and cloud-provision, 2026-09-14).
    before account mutation; package and service configuration precede it.
 3. Extend to debian13; add the distribution path (`archiver` operator and
    `archiver` species).
-4. Add `phoebus` / `phoebus-build` and the `phoebus` / `phoebus-dev` /
-   `middleware` species.
 
 ##### Test Plan
 
 | Label | Layer | Method | Environment | Expected Result |
 | --- | --- | --- | --- | --- |
-| T1 | Structure | Syntax-check the middleware species and confirm they are enumerated in `configure/RELEASE` and `inventory/lab.ini` | control host | The species resolve their operator imports and are registered. |
-| T2 | Integration | Apply the middleware species on a middleware host and inspect `JAVA_HOME`, `$JAVA_HOME/bin/java -version`, the Tomcat `CATALINA_HOME`, the MariaDB service, the `mid` group and `mid-srv` user, and the installed application artifacts | middleware host | `JAVA_HOME` points to the distribution JDK path and its `java -version` reports the distribution OpenJDK 21, no Maven package is installed, Tomcat 9.0.121 and MariaDB are present, the selected applications are installed under `mid` / `mid-srv`; a re-apply is idempotent. |
+| T1 | Structure | Syntax-check `archiver` and `archiver-dev`; confirm their entries in `configure/RELEASE` and `inventory/lab.ini` | control host | Both Archiver species are registered and resolve all required operator imports. |
+| T2 | Integration | Apply each Archiver species on a host and inspect `JAVA_HOME`, `$JAVA_HOME/bin/java -version`, shared `CATALINA_HOME`, MariaDB, the service account and the installed WARs; repeat with identical inputs | Archiver host | Both distribution and source-build paths install OpenJDK 21, Tomcat 9.0.121, MariaDB and Archiver WARs under `mid` / `mid-srv`, with the distribution `JAVA_HOME` and no Maven package; re-apply is idempotent. |
 | T3 | Integration | Apply the real `common` and `java` operators on fresh VMs; inspect the installed JDK and default commands; remove only the installed JDK development package and repeat `op.java` to verify installation change reporting | Rocky 8.10 and Debian 13 | OpenJDK and javac 21 are installed; default commands resolve under `JAVA_HOME`; actual package installation reports `changed=1`, `failed=0` |
 | T4 | Integration | Re-apply `op.java`; run the installed commands in a new login shell; compare the Java profile hash, inode, mtime, ownership and mode before and after | Rocky 8.10 and Debian 13 | Re-apply reports `changed=0`, `failed=0`; login exports the distribution `JAVA_HOME`; the profile remains identical and root:root 0644 |
 | T5 | Integration | Apply `op.provenance`, `op.python`, and `op.epics` after `common`; use the default EPICS version without extra-vars; compare checkout identity with the remote tag and inspect the OS tree and login environment | Rocky 8.10 and Debian 13 archiver-dev VMs | EPICS-env 1.3.0 / Base 7.0.10 installs, the checkout matches the remote tag, 70 module entries have live links, and sampled modules provide headers and DBD files |
