@@ -291,22 +291,6 @@ def _evaluate(out, terminal, failures):
             message = (str(entry.get('MESSAGE', '')) + '\n' + str(entry.get('EXCEPTION', ''))).lower()
             if any(term in message for term in ('outofmemoryerror', 'killing process', 'sigkill', 'stop-sigterm timed out')):
                 failures.append('appliance_oom_or_forced_termination')
-    # The complete recordings must be present independently of periodic snapshots.
-    if set(terminal.get('complete_gc_recordings', {})) != {'mgmt', 'engine', 'etl', 'retrieval'}:
-        missing.append('complete_gc_recordings')
-    for component, recording in terminal.get('complete_gc_recordings', {}).items():
-        if (not isinstance(recording, dict) or not recording.get('recording_bytes') or
-                not recording.get('coverage_complete')):
-            missing.append('jfr_recording_coverage')
-        else:
-            recorded = evidence.path(out, recording['recording_path'])
-            if recorded.stat().st_size != recording['recording_bytes'] or contract.digest(recorded) != recording['recording_sha256']:
-                failures.append('jfr_recording_integrity')
-            for kind, field, events in (('heap', 'heap_events', heap), ('collection', 'collection_events', collections_rows),
-                                        ('pause', 'pause_events', pauses)):
-                count = sum(row['component'] == component for row in events)
-                if count != recording[field]:
-                    missing.append('jfr_export_' + kind + '_coverage')
     for sample in window:
         if not sample.get('kernel_journal', {}).get('coverage_complete'):
             missing.append('kernel_journal_coverage')
@@ -330,7 +314,7 @@ def _evaluate(out, terminal, failures):
             **scheduler_result(failures, missing, checks, terminal_sample_failures(terminal, window, checks))}
 
 
-def evaluate(out, terminal, aggregate_checks=True):
+def _evaluate_observation(out, terminal, aggregate_checks=True):
     schema = terminal.get('observation', {}).get('measurement_schema')
     checks = scheduler_checks(terminal.get('observation', {}))
     if schema != contract.SCHEMA:
@@ -365,13 +349,29 @@ def evaluate(out, terminal, aggregate_checks=True):
                 **scheduler_result(failures, ['unreadable_or_conflicting_evidence'], checks)}
 
 
+def evaluate(out, terminal, aggregate_checks=True, recording_result=None, **recording_options):
+    recordings = (recording_result if recording_result is not None else
+                  evidence.compare_recordings(out, terminal, **recording_options))
+    result = _evaluate_observation(out, terminal, aggregate_checks)
+    result['jfr_recordings'] = recordings
+    result['failed_assertions'] = sorted(set(result['failed_assertions'] + recordings['failed_assertions']))
+    result['missing_coverage'] = sorted(set(result['missing_coverage'] + recordings['missing_coverage']))
+    result['verdict'] = 'Incomplete' if result['missing_coverage'] else 'Failed' if result['failed_assertions'] else 'Passed'
+    return result
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--input', type=Path, required=True)
+    evidence.recording_arguments(parser)
     args = parser.parse_args()
+    options = evidence.recording_options(args, parser)
     paths = [args.input / name for name in ('shutdown.json', 'abort.json') if (args.input / name).is_file()]
     if len(paths) != 1:
         parser.error('Exactly one terminal record is required')
-    result = evaluate(args.input, json.loads(paths[0].read_text()))
+    terminal = json.loads(paths[0].read_text())
+    result = (evidence.compare_recordings(args.input, terminal, **options) if args.recordings_only else
+              evaluate(args.input, terminal, **options))
     print(json.dumps(result, indent=2, sort_keys=True))
-    raise SystemExit(result['verdict'] != 'Passed')
+    raise SystemExit(({'Passed': 0, 'Failed': 1, 'Incomplete': 2}[result['verdict']])
+                     if args.recordings_only else result['verdict'] != 'Passed')

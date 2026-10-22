@@ -21,7 +21,15 @@ The recording tools are under `../etl-pass/` and `../journal-validation/`; addit
 
 Use Python 3.9 or later and the observation's original dependency bundle. Run `--help` to inspect each CLI. The physical checker imports the installed modules from `/usr/local/share/etl-soak`; its `--chain` and `--mode` select the declared running observation and checkpoint.
 
-The other diagnostics accept explicit `--input`, `--tools` and scenario inputs. The source-available checker additionally requires `--case-root`, `--preservation`, `--expected-bundle-sha256` and a new `--output` directory. The automatic-abort checker requires `--case-root`. The full-day checker requires `--chain`.
+The other diagnostics accept explicit `--input`, `--tools` and scenario inputs. The source-available checker additionally requires `--case-root`, `--preservation`, `--expected-bundle-sha256` and a new `--output` directory. The automatic-abort checker requires `--case-root`. The full-day checker requires `--chain`. Its `--recordings-only` entry point
+uses the shared current `evidence.py` comparison on retained inputs before live
+service queries. Supply `--tools` with a verified current candidate bundle,
+`--input` with the preserved state directory, and `--jfr-output` with a new
+private receipt directory. `--jfr-binary` selects the actual compatible JDK
+executable; repeated `--recording-component` restricts this component-only mode.
+It returns 0 Passed, 1 Failed or 2 Incomplete and verifies only the JFR recording
+component. The default full-day mode retains all actual systemctl checks and
+consumes the same JFR result from its native evaluator invocation.
 
 Preserve original absolute paths when replaying a retained archive in an isolated namespace. Explicit CLI paths select inputs; they do not rewrite absolute paths or identity fields inside those inputs. The full-day and automatic-abort entry points query the actual appliance unit, and the source-available entry point reads original application files. An arbitrary archive directory on another host does not supply that runtime state.
 

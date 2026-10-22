@@ -31,7 +31,7 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: M33 query/capture work is Complete under D41: T1-T6 Passed, source commit f6339736f87ed0c95eb3321385b5db73c8d6fe25 is verified on origin/m14-middleware-reconcile, and all four query criteria are checked in #54. Exact issue readback verifies eight checked boxes, 73 unchecked boxes and unchanged open state/metadata. Review and commit this closure/readback record when requested. M36/M37 remain Complete; the other 21 tool components remain Deferred under D31 with no active tool component. M22/#30, M25/#31 and M24/#52 remain Complete/closed. M14 is limited to Archiver Appliance under D42 and remains Blocked on G2; M26 remains Blocked on G5. No Milestone row is Ready.
+Next session entry point: Land the locally verified M34 implementation under separate commit/push authority, then reconcile only its #54 criteria with live readback under separate issue authority. G7 is Complete and T1-T6 Passed using preserved originals in work/m34-resume-93iqsrhy and final receipts in work/m34-recordings-20261022. The shared production JFR comparison and reusable retained-input regression are complete locally; source landing and issue update remain pending, so M34 stays In progress. M33/M36/M37 remain Complete; 20 other tool components remain Deferred. M14 is limited to Archiver Appliance under D42 and remains Blocked on G2; M26 remains Blocked on G5. No Milestone row is Ready.
 
 Both original shortened/default 24-hour ETL processing observations completed on 2026-10-15 UTC and are accepted under D29. They ran for 86416.387 and 86415.088 monotonic seconds before normal finish across UTC midnight. The unchanged native scheduler evaluator Passed with all 312 and 27 required passes present exactly once. Read-only initial, both-transition and final physical/HTTP comparisons Passed on each chain. Whole-unit normal stops returned 0 in 12.516 and 13.770 seconds, below the installed 300-second timeout. Each observation retained 290 in-window full samples and its original frozen bundle.
 
@@ -390,7 +390,7 @@ full mode carries every OS tree, second apply `failed=0`). Delivered in
 
 </details>
 
-Status tally: 24 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 5 external gates (3 Complete, 2 Open). Backlog excluded: 3 Complete and 21 Deferred carry-forward items, plus 1 Complete external gate. M33 query/capture, M36 UTC matching and M37 checksum work are complete; no tool component is active.
+Status tally: 24 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 5 external gates (3 Complete, 2 Open). Backlog excluded: 3 Complete, 1 In progress and 20 Deferred carry-forward items, plus 2 Complete external gates. M33 query/capture, M36 UTC matching and M37 checksum work are complete; M34 has resumed after verified original-input delivery through G7.
 
 ## Milestone
 
@@ -476,6 +476,7 @@ Status tally: 24 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 
 | D40 | Authorize delivery of the prepared M33 request for one fresh dedicated Rocky 8.10/systemd 239 guest with 2 vCPU, 4096 MiB RAM and 48 GiB disk after provider capacity/address checks. This supplies the isolated environment for D39's bounded query/capture verification. Verify the actual private handoff before use; guest resources are not evidence limits or acceptance thresholds. Keep all retained deployments and original evidence unchanged. No full-day observation, commit, push or GitHub mutation is authorized. | 2026-10-19 |
 | D41 | Close M33 query/capture work from its completed real-path T1-T6 checks, source commit f6339736f87ed0c95eb3321385b5db73c8d6fe25 on the fetched upstream branch and the four query criteria verified by exact #54 body readback. Keep the consolidated issue open for its 73 remaining unchecked boxes, as accepted in the prepared and delegated query-only update. This is a component-only issue-closure exception, not a waiver of verification. Other tool components remain Deferred under D31; no additional correction or observation is authorized. | 2026-10-21 |
 | D42 | Limit M14 to Archiver Appliance and its prerequisites, retaining both distribution installation and source build. Remove Phoebus operators/species and the combined `middleware` species from its current plan and completion criteria. This supersedes those portions of D15/D16 only. Retain G2/G3, historical authorizations and all verification records. The revised document does not establish a new installation result or authorize additional deployment. | 2026-10-21 |
+| D43 | Accept and authorize the bounded M34 plan after source/input confirmation and the directed plan update. Return M34 from Deferred to Not started, then In progress for actual input verification. Original input verification is required through G7 before corrective source changes and replay. Scope is JFR process/lifetime comparison and its retained-input real-consumer checks. Preserve original observations and accepted product results. Source changes wait for required input integrity and the applicable design review; peer delivery, guest lifecycle, commit, push and GitHub mutations remain separately authorized. | 2026-10-21 |
 
 ### Assignment History
 
@@ -5860,7 +5861,7 @@ The assembly neither writes nor checks these files (`D26`). `M26` depends on the
 | Tools | M31 | Preserve kernel cursor refusal evidence and prove interval coverage | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m31---preserve-kernel-cursor-refusal-evidence-and-prove-interval-coverage) |
 | Tools | M32 | Keep kernel diagnostics independent of the ETL terminal verdict | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m32---keep-kernel-diagnostics-independent-of-the-etl-terminal-verdict) |
 | Tools | M33 | Use timestamps accepted by systemd 239 journal queries | Carry-forward | Complete | No | D31, D39, D40, D41, G6 | T1-T6 Passed; source f633973 and four checked query criteria in #54 verified; [detail](#m33---use-timestamps-accepted-by-systemd-239-journal-queries) |
-| Tools | M34 | Match JFR exports to the recording process and lifetime | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m34---match-jfr-exports-to-the-recording-process-and-lifetime) |
+| Tools | M34 | Match JFR exports to the recording process and lifetime | Carry-forward | In progress | No | D31, D43, G7 | G7 Complete; local implementation and T1-T6 Passed; source landing and #54 criteria update/readback pending; [detail](#m34---match-jfr-exports-to-the-recording-process-and-lifetime) |
 | Tools | M35 | Persist terminal state before evaluating terminal coherence | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m35---persist-terminal-state-before-evaluating-terminal-coherence) |
 | Tools | M36 | Match ETL pass times by UTC instant with nanosecond precision | Carry-forward | Complete | No | D31, D37, D38 | T1-T6 Passed; source landing and four UTC boxes in #54 verified; [detail](#m36---match-etl-pass-times-by-utc-instant-with-nanosecond-precision) |
 | Tools | M37 | Refresh preserved-tool checksums | Carry-forward | Complete | No | D31, D34, D35, D36 | Real source/copy checks, source landing and four checksum boxes in #56 verified; [detail](#m37---refresh-preserved-tool-checksums) |
@@ -5878,6 +5879,7 @@ The assembly neither writes nor checks these files (`D26`). `M26` depends on the
 | Tools | M49 | Track buffer test tooling | Carry-forward | Deferred | No | D32, D33 | Track consolidated buffer criteria directly; source issue closure is not test completion; [detail](#m49---track-buffer-test-tooling) |
 | Tools | M50 | Track shared test tooling | Carry-forward | Deferred | No | D32, D33, D34, D35, D36 | Checksum component complete; remaining shared criteria stay deferred and unchecked; [detail](#m50---track-shared-test-tooling) |
 | Tools | G6 | Provide M33's dedicated systemd 239 query environment | External gate | Complete | No | D40 | Capacity, private handoff and actual guest access/versions verified; [detail](#g6---provide-m33s-dedicated-systemd-239-query-environment) |
+| Tools | G7 | Provide retained full-day JFR inputs for M34 | External gate | Complete | No | D43 | Both observations and frozen tools delivered; complete member/hash checks, original anchors and native JFR decoding verified locally; [detail](#g7---provide-retained-full-day-jfr-inputs-for-m34) |
 
 Unassigned work is excluded from the release tally.
 
@@ -6827,7 +6829,7 @@ Execution safeguards and evidence locations: volume/limits belong in the fixture
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
 - GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
 - Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #39 is closed not_planned at 2026-10-17T01:12:18Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
-- Status: Deferred
+- Status: In progress
 
 ##### Summary
 
@@ -6837,7 +6839,7 @@ The final JFR belongs to one PID, but the evaluator counts CSV events from earli
 
 Bind comparisons to component, PID and recording lifetime while retaining earlier-process rows and verifying their own declared scope.
 
-Affected source: `tests/archiver-soak/etl-pass/evaluate.py`, `tests/archiver-soak/etl-pass/evidence.py`, `tests/archiver-soak/diagnostics/full-day.py`.
+Affected source: `tests/archiver-soak/etl-pass/evaluate.py`, `tests/archiver-soak/etl-pass/evidence.py`, `tests/archiver-soak/etl-pass/aggregate.py`, `tests/archiver-soak/diagnostics/full-day.py`.
 
 Out of scope: Terminal persistence order, kernel coverage, and new JVM restart fault acceptance.
 
@@ -6847,42 +6849,67 @@ The complete-recording comparison selects the component without selecting the re
 
 ##### Completion Criteria
 
-- [ ] The real evaluator and aggregator reconcile heap, collection and pause records with both chains' complete recordings using actual process/lifetime identities.
-- [ ] Earlier-process records remain available; missing, conflicting, duplicated or truncated in-scope evidence still fails the real path.
-- [ ] Original recordings, exports, unsuccessful verdicts and independent kernel findings remain unchanged.
+- [x] The real evaluator and aggregator reconcile heap, collection and pause records with both chains' complete recordings using actual process/lifetime identities.
+- [x] Earlier-process records remain available; missing, conflicting, duplicated or truncated in-scope evidence still fails the real path.
+- [x] Original recordings, exports, unsuccessful verdicts and independent kernel findings remain unchanged.
 
 ##### Dependencies And Decisions
 
 - D31; Decision Date: 2026-10-15. Independent Backlog work is excluded from current execution; accepted M22/#30 ETL functionality and M25/#31 journal results remain complete.
+- D43; Decision Date: 2026-10-21. The owner directed confirmation, plan updates and continuation of M34. This component alone returns to execution; the revised bounded plan is accepted and authorized. Original delivery through G7 is now required before corrective source changes and replay.
+- G7; initially Blocked on 2026-10-21, resume as In progress. Original exports are now received and independently verified at 2026-10-22T01:19:27.527336+00:00. The local intake, all-member verification, historical anchor checks, frozen-bundle checks and eight native JFR decodes are retained under work/m34-resume-93iqsrhy. G7 is Complete; M34 resumes as In progress. The earlier missing-input inventory remains historical evidence.
 - Coordination: M30/#35. This is a tracking relationship, not an invented sequential execution dependency.
 - Preserve original inputs, frozen tool identities and unsuccessful outcomes. Reuse retained evidence and bounded real-path checks; no new full-day producer run solely for tool correction or reporting.
 
 ##### Implementation Plan
 
-- Plan Status: draft
-- Plan Acceptance: none
-- Implementation Authorization: none
-- Superseded Plan Artifacts: none
+- Plan Status: accepted
+- Plan Acceptance: 2026-10-21; owner direction to confirm the premise, update the plan and proceed. The updated scope retains the original completion criteria; input availability requires verification through G7 and is not assumed.
+- Implementation Authorization: 2026-10-21; bounded M34 correction and retained-input verification only, after required original integrity and applicable pre-edit review. No new full-day producer, original-guest restart, peer delivery or external mutation is included.
+- Superseded Plan Artifacts: private `work/m34-jfr-20261021-9tbh2eeu/draft-before-update.md`; the earlier draft was not accepted or implemented.
 
-1. Preserve and identify actual existing inputs, original outcomes and frozen/candidate source boundaries.
-2. Perform only the scoped correction or follow-up after separate execution authorization.
-3. Execute the declared real path and record actual results without replacing internal path segments or rewriting original observations.
+- Source Basis: 2026-10-21; source commit `0afcac779b84e0b56863031039b7de384fb61311`. D43 authorizes this component; D31 still excludes other tool components.
+- Confirmed finding: `evaluate.py` counts complete-recording CSV events by component alone. `diagnostics/full-day.py` narrows its historical reconciliation by PID, while `aggregate.py` checks observation JVM identity and forms some GC pairs without a process key. These consumers must retain their distinct observation/recording populations.
+- Retained evidence: `work/etl-full-day-analysis-20261015/shortened-inspection-001.json` and `default-inspection-001.json` record matching PID-scoped counts for all 24 chain/component/event-kind combinations, recording hashes/sizes and zero reported data-loss events. These are earlier command receipts, not a new execution, exact event comparison, lifetime proof or a complete local replay inventory.
+- Confirmed input gap at 2026-10-21T09:07:10.556259+00:00: actual hash comparison examined 5,183 loose observation files and 596 archived observation entries across 100 tar/zip archives. Neither required observation hash was found in readable inputs; one existing E4 partial archive produced ReadError and remains unresolved/unchanged. Local Java 21 is present, but decoding the unavailable recordings is unverified. Private inventory.json SHA256 `30ede84f53d3aebea46444ce648d29cc8389bab19fcdb9b956f3ede2d735feb9` and inventory-command.json retain the method, target receipt/source hashes, errors and native status 2. G7 must supply both chains' actual JFR bytes, CSVs, observation/terminal metadata, process/start identities, raw capture metadata, GC logs and frozen tools. Summary counts and one-second JFR summary bounds alone cannot resolve ambiguous event boundaries or PID reuse.
+
+1. Inventory the actual retained inputs and complete original/candidate tool membership. Freeze member lists, hashes and dependency versions before replay; create separate verified copies and retain per-launch argv, cwd, stdout, stderr and native status. Locate complete recording evidence locally first. If a required input is unavailable, record the exact missing member and obtain separately authorized read-only access; do not restart an old guest or synthesize an input. Record confirmed findings, hypotheses and owner decisions separately before source changes.
+2. After plan acceptance and separate implementation authorization, define the recording comparison population from actual component, PID, boot/process-start evidence and recording contents. Preserve original timestamp text and nanosecond event instants. Use the existing `evidence.py` timestamp parser and overlap deduplication; identify recording events from the actual retained JFR export, not a count inferred from CSV. Distinguish legitimate repeated snapshot exports from conflicting or extra in-recording events. Keep earlier-process rows and their observation-scoped checks; do not discard them globally to make final-recording counts agree. Unresolved lifetime/boundary evidence remains Incomplete.
+3. Put the scoped comparison in the existing production evidence path and use it from `evaluate.py`, `aggregate.py` and the diagnostic reader as applicable. Compare event identities and payloads for heap, collection and pause records, as well as counts, recording hashes/sizes, required coverage and data loss. Use the common comparator only for declared complete record comparison; JFR decoding and overlap deduplication remain project responsibilities. The diagnostic script currently requires live systemctl checks; preserve those checks and expose its shared recording comparison through a retained-input entry point rather than substituting fake service state. That entry point verifies only the recording component, not the live diagnostic script. Keep kernel findings, original unsuccessful results and accepted ETL functionality independent.
+4. Add a reusable regression entry point requiring actual retained inputs. Run the original defective comparison and candidate through real production callers on both chains; the original must expose the recorded all-process mismatch and the candidate must reconcile the declared recording population. Exercise real-input negative derivatives, exact boundary controls and fresh verified-copy replay. Do not replace an internal reader, parser, matcher or aggregator with a stub. Preserve historical manifests and bundle checks; report expected unrelated native aggregate findings instead of demanding an overall Passed result or rewriting originals.
+5. Record actual T1-T6 results and coverage before completion. Verify all source manifests with the common source checker and preserve original observation manifests. Document the supported entry points, inputs and component-only claim. Source landing, an accepted update to the relevant #54 criteria and live readback remain separate completion work under their own authority. D43 authorizes bounded implementation after its prerequisites, not a GitHub mutation. No new full-day producer, JVM restart fault or independent-recipient claim is required by this component.
+
+Execution safeguards: use the complete retained full-day event population for volume checks, with observed member/record counts and elapsed time. Derive expected identities/payloads independently from actual JFR exports; declare numeric units and timestamp boundaries before comparison. Fault cases change only separate input copies and must prove that the intended real reader consumed the changed member. Record per-chain/per-component/per-event-kind coverage and native outcomes, including unexecuted cells. Preparation, live production, service stop and new final capture are inapplicable to retained-only replay; verify existing terminal/capture evidence instead. Missing required originals stop that case as Incomplete, without imposing a capacity cap or starting another observation.
+
+Current input evidence (2026-10-22T01:19:27.527336+00:00): 32 delivered files passed the native SHA256SUMS check; the extracted state/tools archives contain 24,984 members and 24,227 regular files. All regular-file hashes and archive metadata match the delivered manifests. Six observation/terminal/bundle anchors match the earlier inspection receipts; both frozen tool bundles verify, all eight complete JFRs decode with local OpenJDK 21.0.12.1, and all 24 component/event-kind counts match terminal declarations with no DataLoss event. Process-start identities and all ten declared GC-log members verify. The existing evaluator returns native 1 / Incomplete on both chains with the three JFR export-coverage findings and unchanged independent kernel/final-capture findings; scheduler verdicts remain Passed. All 24 PID-scoped native/CSV populations have equal event identities, multiplicities and payloads. Existing deduplication chooses timestamps up to 501 ns from native final-recording timestamps, but every native event has an exact timestamp occurrence among the original CSV rows. This is input analysis, not corrected-consumer acceptance. Source manifests and post-replay original membership/hashes also pass; native receipts and comparison JSON are retained under work/m34-resume-93iqsrhy.
 
 ##### Test Plan
 
 | Label | Layer | Method | Environment | Expected Result |
 | --- | --- | --- | --- | --- |
-| T1 | Real-path tool verification | Execute the shipped evaluator/aggregator on retained actual multi-process recordings and real retained-input negative derivatives. | Retained actual inputs and separately authorized bounded environment where required | All completion criteria established with explicit actual coverage; original unsuccessful evidence unchanged. |
+| T1 | Input and source integrity | Inventory both original observations, JFR/CSV/GC-log members, lifetime evidence, frozen tools and actual decoder dependencies; verify separate copies before launch. | Retained actual shortened/default records; no guest restart | Complete inventory and independently identified sources, or explicit missing evidence. Inspection receipts alone cannot satisfy this check. |
+| T2 | Original-defect regression | Run the actual frozen comparison and actual candidate recording comparison on both chains, four components and three event kinds. Compare complete declared identities/payloads against native JFR exports. | Verified separate full-volume copies | All 24 recording populations reconcile in the candidate; original all-process comparisons expose their recorded mismatch. Earlier-process rows remain preserved. |
+| T3 | Real consumer integration | Execute shipped evaluator and aggregator CLIs, plus the diagnostic recording component's retained-input entry point, on the same verified inputs. Preserve live systemctl checks outside that component; retain native statuses and target findings independently of unrelated findings. | Identified candidate package with actual dependencies | Recording consumers agree on populations and JFR findings without suppressing kernel, terminal, bundle-integrity or other independent findings. Overall Incomplete is not misreported as overall Passed; no live service-state verification is claimed by component replay. |
+| T4 | Process and interval boundaries | Use actual-record derivatives for wrong component/PID/start identity, unresolved PID reuse, equivalent UTC text and a distinct nanosecond; check actual recording-edge events without inventing precision from summary bounds. | Separate copies with explicit changed-member records | Proven wrong membership is rejected; unusable or ambiguous identity/interval evidence remains Incomplete. Unchanged known-positive records remain accepted within the declared comparison. |
+| T5 | Evidence refusal | Remove an in-scope event; replace one with a different payload at the same count; inject a conflicting event; damage/truncate a JFR/export; remove required metadata; retain legitimate periodic-export overlap controls. | Actual retained inputs changed only at the filesystem boundary | Real readers detect the intended difference or unusable coverage. Expected deduplication cannot hide a conflicting or extra in-recording event; a confirmed difference remains visible beside missing evidence. |
+| T6 | Replay and preservation | Recheck full membership/hashes before fresh-copy launches; compare declared target results and native statuses, verify originals unchanged, run common source checks and inspect actual coverage/timing receipts. | Both chains and the identified production package | Reproducible declared JFR results with unchanged originals/frozen manifests and complete current-source checks; no whole-observation or independent-recipient acceptance implied. |
 
 ##### Verification Results
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
-| T1 | Not run | Scoped future real-path verification | Pending | Original accepted behavior explains scope only; it does not establish completion of this follow-up. |
+| T1 | 2026-10-21T09:07:10.556259+00:00 | Actual local retained files, tar/zip members and earlier inspection hash receipts | Incomplete | Real inventory.py execution returned native 2 with no stderr: 5,183 loose observations, 100 archives and 596 archived observation entries; neither expected observation hash found. Existing E4 partial-archive ReadError preserved. Exact inventory and command receipt are under work/m34-jfr-20261021-9tbh2eeu; G7 must supply the required originals. No corrected JFR or product result is claimed. |
+| T1 | 2026-10-22T01:19:27.527336+00:00 | Both delivered exports and local OpenJDK 21.0.12.1 / Python 3.13.5 | Passed | Complete member/hash verification, six historical anchors, frozen tools, process/start evidence, ten GC-log members and eight native decodes verified; current source checks and post-replay original preservation passed. Receipts: work/m34-resume-93iqsrhy. |
+| T2 | 2026-10-22T01:19:27.527336+00:00 | Both original evaluator CLIs and independent native JFR/CSV input inspection | Incomplete | Original JFR coverage failure reproduced with native 1; scheduler verdicts remain Passed. Candidate production comparison is not implemented or executed, so the regression is not complete. |
+| T2 | 2026-10-22T09:18:48.848508+00:00 | Python 3.13.5 / OpenJDK 21.0.12.1; both complete retained chains | Passed | Four original evaluator/aggregator executions reproduced native 1 / Incomplete and all three all-process coverage findings. The candidate reconciled all 24 component/event-kind populations: 785,680 raw occurrences and 220,617 final events, including 298 native captures per component/chain. The 87,870 earlier-process occurrences remain in the inputs. Full identities, multiplicities, payloads and exact times agree with independently converted native records. |
+| T3 | 2026-10-22T09:18:48.848508+00:00 | Actual candidate evaluator/aggregator defaults and retained diagnostic CLI | Passed | All six positive consumer executions reported JFR Passed; default evaluator/aggregator retained overall Incomplete, tool_bundle_changed and independent kernel findings. Both chains also retained a confirmed JFR failure beside missing coverage through the default evaluator and aggregator. Retained diagnostics rejected a wrong chain. Live systemctl behavior was not executed; default option forwarding was corrected and inspected in source only. |
+| T4 | 2026-10-22T09:18:48.848508+00:00 | Verified actual-record derivatives on both chains | Passed | Wrong component/PID/start, ambiguous PID reuse, equivalent timezone text, one-nanosecond differences and first/last final-recording events produced their declared outcomes. Sub-nanosecond durations were refused as Incomplete. Coverage is the recorded representative component/event-kind selection per case, not every fault crossed with every component. |
+| T5 | 2026-10-22T09:18:48.848508+00:00 | Separate full-input copies; real native decoder and production readers | Passed | Missing/extra events, changed payload, balanced prefix replacement, damaged JFR, rehashed truncated JFR, malformed CSV and missing boot/recording metadata produced the expected Failed or Incomplete outcomes. Deleting an actual zero-event default ETL snapshot metadata file remained Incomplete. No synthetic empty snapshot substitutes for the unavailable shortened fixture. The 45 control-consumer executions include equivalent-time positives and repeated targeted controls; all expected outcomes matched. |
+| T6 | 2026-10-22T09:18:48.848508+00:00 | Fresh copies of both chains; identified final candidate and common tools | Passed | Both fresh diagnostic replays matched native 0 and all declared result fields except receipt location. All six suite processes exited 0; 51 consumer checks and 88 common comparisons met expected outcomes. Complete membership/hash checks preserved 24,227 original regular files. Current source checker exited 0 for parent/diagnostic/scenario manifests (99/5/19 overlapping members). Actual per-command timing is retained; positive consumer executions took 65.435-216.466 seconds in this concurrent local run, not a performance comparison. Receipts and final-summary.json: work/m34-recordings-20261022. |
 
 ##### Closure Evidence
 
-- Not complete. D31 excludes this independent follow-up from current execution; no candidate correction or follow-up acceptance is claimed.
+- Local implementation and T1-T6 verification are complete under D43; M34 remains In progress pending source landing and the separately authorized #54 criteria update/readback. The shared native JFR comparison, evaluator/aggregator/diagnostic consumers and reusable retained-input regression meet the bounded local criteria. Original exports, frozen manifests and unsuccessful historical outcomes remain unchanged. Final evidence is work/m34-recordings-20261022/final-summary.json with per-command receipts, selected coverage, preservation and timing. Earlier interrupted or unsuccessful attempts remain distinct from final acceptance. Pre-edit and candidate reviews plus the corrected operator-documentation pass are retained under work/review_sessions/20261022_075556_m34-jfr. Live service-state verification, a new producer run, source landing and GitHub mutation are not claimed.
 
 ##### GitHub Projection
 
@@ -6906,6 +6933,7 @@ The complete-recording comparison selects the component without selecting the re
 - Historical Source Closed At: 2026-10-17T01:12:18Z
 - Historical Original Body SHA256: 072fce69a17ef7784b48eaf6ea512d627564c8286098e6edfce2da8bdc2b3d10
 - Historical Retired Body SHA256: fc585144bc7ce08a68a5659e323594714bcc3a8e83fbf27fbfd360a40c808038
+
 
 #### M35 - Persist terminal state before evaluating terminal coherence
 
@@ -8882,6 +8910,39 @@ The cloud-provision owner delivered the fresh dedicated Rocky 8.10/systemd 239 g
 ##### Closure Evidence
 
 - Complete on 2026-10-19: actual provider capacity and private handoff were independently verified against the guest; supported Python preparation is recorded separately. At gate completion, M33 resumed as In progress with T1-T6 Pending; subsequent query verification is recorded in the M33 detail. This closes environment delivery only. Keep the dedicated guest running until bounded M33 work and evidence retrieval finish, then send its provider a finished notice for shutdown and preservation; deletion is not authorized.
+
+#### G7 - Provide retained full-day JFR inputs for M34
+
+- Origin: 38560eb / G7
+- GitHub Issue: none
+- Status: Complete
+- Responsible party: cloud-provision resource owner, with the requester independently verifying received inputs.
+- Affected work: M34; resumed as In progress after verified delivery.
+
+##### Summary
+
+The initial M34 input search did not find the completed full-day observations locally. Both original exports are now copied into the requester workspace and independently verified against the delivered member manifests and earlier observation/terminal/bundle hash receipts. The original frozen tools and all eight final JFRs are readable locally. This gate supplies original evidence only and does not reopen accepted ETL or journal functionality.
+
+##### Completion Criteria
+
+- Both completed shortened/default observations and their frozen tool packages are delivered privately with a complete member/hash manifest and identified export procedure.
+- The requester independently matches observation.json, shutdown.json and bundle.json against the earlier actual inspection receipts, checks referenced JFR/CSV/process/GC-log members and confirms required decoder dependencies before launching a replay.
+- Source disks and original evidence remain preserved. The proposed method is a read-only export while guests remain shut off; if unavailable, obtain an explicit decision before any guest start, clone, host change or alternative method. A request acknowledgement or a matching summary is insufficient.
+
+##### Verification Results
+
+| Observed At | Result | Evidence |
+| --- | --- | --- |
+| 2026-10-21T09:07:10.556259+00:00 | Pending | M34 / T1 found no matching original observation in readable local inputs; inventory native status 2, preserved error and expected source hashes are recorded in private work/m34-jfr-20261021-9tbh2eeu/inventory.json. The two earlier provider handoffs name the expected guests; their current state and retained disk bytes were not checked. The read-only export request is prepared in request-originals.txt, not delivered. |
+| 2026-10-21T16:31:22+00:00 | Pending | Native peer discovery/read confirmed the cloud-provision provider and its earlier VM handoff. The m34-originals-20261021 request was submitted under the owner's explicit agent-collaboration invocation, and the provider is active. Exact prompt and send result are retained privately in peer-request-001.json. No export delivery or input-integrity result is claimed. |
+| 2026-10-21T16:31:52+00:00 | Pending | Provider response m34-originals-20261021 is input-required: both guest identities match the handoffs, both are shut off and disks are readable, but guestfish/virt-tar-out/virt-copy-out and the guestfs Python module are absent. Provider reports no export, original guest start/clone/disk write or whole-disk hash comparison. Private provider-response-001.json retains the exact response. Information-only prerequisite planning is requested separately; source/export hashes are not independently verified. |
+| 2026-10-21T16:37:43+00:00 | Pending | Completed provider prerequisite plan: Debian 13.7, both root partitions have XFSB signatures; minimal direct packages guestfish and libguestfs-xfs, APT candidate 1:1.54.1-2+deb13u1. Native simulation/APT calculation reports 42 new packages, no upgrades/removals, 14,318,664 download bytes and 44,375,040 installed bytes, excluding later appliance cache/export files. Existing 7-Zip cannot read XFS; no existing file/metadata export method was verified without device attachment. Provider reports both originals still off, no installation/export or whole-disk hash comparison. Exact response and prepared command are private in provider-prerequisite-plan-001.json. This establishes the dependency plan only. |
+| 2026-10-21T17:00:14.873263+00:00 | Pending | The owner reported installation complete. Actual local dpkg-query returned 0 and identifies installed guestfish and libguestfs-xfs 1:1.54.1-2+deb13u1; native receipts are installed-tools-001.json/stdout/stderr. The export resume request is submitted; resume-request-001.json retains its exact prompt and result. Current-source preparation separately froze 99 source members and passed all three source manifests (98 parent, 5 diagnostics, 19 scenarios); these overlapping counts do not count as JFR verification. No export is received yet. |
+| 2026-10-22T01:19:27.527336+00:00 | Passed | Actual local copy and sha256sum -c verified 32 delivered files. All 24,984 archive members and 24,227 regular-file hashes match; six historical anchors, both frozen bundles, process/start evidence, ten GC-log members and eight native JFR decodes verify. Original evaluator replay and its subsequent full membership/hash check preserve the copied inputs. Private receipts: work/m34-resume-93iqsrhy. |
+
+##### Closure Evidence
+
+- Complete at 2026-10-22T01:19:27.527336+00:00. Required original inputs and frozen tools were delivered and independently verified by the requester; local decoder execution succeeded. The provider handoff records matching before/after disk hashes and guests remaining off; this requester verified delivered files rather than repeating source-disk access. M34 resumed as In progress. G7 completion does not establish a corrected JFR comparison or M34 completion.
 
 ## History
 

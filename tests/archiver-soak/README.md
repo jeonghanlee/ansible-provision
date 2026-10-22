@@ -697,6 +697,88 @@ a verified new freeze and new runtime proofs. A locally frozen candidate
 qualifies for dedicated testing; it becomes a replacement bundle only after
 the required live scenarios pass.
 
+### Retained JFR Comparison
+
+The evaluator and aggregator decode the retained JFRs with the JDK `jfr`
+command. Use a JDK compatible with the recorded format; `--jfr-binary` selects
+its executable (otherwise PATH, then the collector's Java 21 location). Each
+command disables JVM performance-file creation for the decoder process and
+retains native stdout, stderr, input/decoder hashes, arguments and
+status under `--jfr-output`, which must be a new directory outside the input.
+Without that option a new `etl-jfr-*` temporary directory is retained. The
+evaluator and recording-only results report its location. Default numerical
+aggregates omit private receipt paths.
+
+Recording comparison binds component, boot, PID and process start using the
+observation, terminal, process rows, final state and dump response. Ambiguous
+PID reuse or missing identity remains Incomplete. All declared same-process
+snapshots plus the final recording must match every raw CSV occurrence. The
+final CSV append is compared separately against the native final recording.
+Both comparisons preserve exact nanosecond instants and complete payloads;
+matching timezone representations agree. Durations that cannot be represented
+exactly in integer nanoseconds are Incomplete. Missing snapshot metadata is
+Incomplete even when the original snapshot contained no events.
+Duplicate/removal pairs cannot hide
+behind an unchanged count or observation deduplication. Earlier-process rows
+remain in the original exports and observation checks. Snapshot hashes, sizes,
+declared counts, complete-recording coverage and native DataLoss are checked.
+
+`jfr_recordings` has its own verdict, failures and missing coverage. A known
+difference remains Failed alongside missing evidence. Existing whole-observation
+and scheduler verdicts retain their separate meaning; using corrected candidate
+tools does not rewrite historical tool hashes or remove `tool_bundle_changed`.
+
+For recording-only inspection, append `--recordings-only` to either CLI; optional
+repeated `--recording-component` selects components only in that mode. Exit
+statuses are 0 Passed, 1 Failed and 2 Incomplete. This mode does not verify
+scheduler behavior or live service state. The default interfaces still inspect
+the complete observation. Run this command from
+`tests/archiver-soak/etl-pass`:
+
+```bash
+python3 -B evaluate.py --input=/private/run --recordings-only --jfr-output=/private/jfr-check
+```
+
+`test-recordings.py` requires Python 3.11+, a compatible JDK, GNU `cp`, the
+installed test-framework comparator, and both actual retained chain directories.
+Each chain directory contains `state/` and its original frozen `tools/`.
+Provide a private JSON configuration with `candidate` (current etl-pass directory),
+`diagnostic` (full-day.py), `comparator` (compare-evidence.py), `jfr` (executable),
+`output` (new directory), and `chains` mapping `shortened` and `default` to their
+retained directories. Use absolute paths inside this configuration. No fixture
+paths or captured values are built into the test. Run the following command
+from the repository root:
+
+```bash
+python3 -B tests/archiver-soak/etl-pass/test-recordings.py --config=/private/recordings.json
+```
+
+The suite freezes candidate/common tools and complete input membership, verifies
+separate copies before each launch, preserves native receipts, and independently
+converts native events for the common comparator. Complete records use bytes and
+integer nanoseconds. Positive cases run original and candidate default evaluator
+and aggregator CLIs, the retained diagnostic entry point and fresh-copy replay.
+Negative copies exercise identity, exact time, occurrence, payload, corrupt or
+missing input, and failure preservation through default consumers. `--phase`
+selects positive, negative or all; `--cases`, `--chains` and `--component`
+restrict cases and their reported coverage. The default negative cases include
+sub-nanosecond refusal and diagnostic chain mismatch. The additional
+`missing_empty_snapshot` case requires a real empty snapshot for the selected
+chain/component and must be requested explicitly. For a retained default ETL
+input containing such a snapshot, run that case with a separate configuration
+whose `output` names a new directory. From the repository root:
+
+```bash
+jfr_test=tests/archiver-soak/etl-pass/test-recordings.py
+jfr_cfg=/private/empty.json
+python3 "$jfr_test" --config "$jfr_cfg" --cases missing_empty_snapshot --chains default --component etl --phase negative
+```
+
+A missing actual empty snapshot makes the requested case unavailable; it is never synthesized.
+Retain the complete output directory and its original inputs.
+Live capture, service stop and independent-recipient acceptance are outside this
+retained-input suite.
+
 ### Numerical Replay
 
 `aggregate.py` reads coherent manifest/terminal, raw samples/metrics, pass and

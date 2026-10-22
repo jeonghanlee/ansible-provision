@@ -2,6 +2,7 @@
 """Portable evidence paths, exact event timestamps and overlapping GC exports."""
 
 import collections
+import concurrent.futures
 import csv
 import datetime
 from decimal import Decimal
@@ -12,8 +13,10 @@ import os
 from pathlib import Path
 import re
 import signal
+import shutil
 import subprocess
 import sys
+import tempfile
 import time
 
 COMPONENTS = ('mgmt', 'engine', 'etl', 'retrieval')
@@ -26,6 +29,14 @@ JITTER_NS = 2000
 JOURNAL_BINARY = '/usr/bin/journalctl'
 JOURNAL_TIMEOUT = 60
 JOURNAL_ROLES = ('sampler', 'abort')
+JFR_EVENTS = 'jdk.GCHeapSummary,jdk.GarbageCollection,jdk.GCPhasePause,jdk.DataLoss'
+JFR_TIMEOUT = 120
+JFR_JAVA_OPTIONS = ('-J-XX:-UsePerfData',)
+GC_EXPORTS = {'heap': ('gc-heap.csv', 'heap_events'),
+              'collection': ('gc-collections.csv', 'collection_events'),
+              'pause': ('gc-pauses.csv', 'pause_events')}
+GC_PAYLOADS = {'heap': ('when', 'heap_bytes'), 'pause': ('name', 'duration'),
+               'collection': ('name', 'cause', 'duration', 'sumOfPauses', 'longestPause')}
 
 
 class JournalInterrupted(BaseException):
@@ -589,12 +600,15 @@ def retained_pass_main(contract_path, output, caller):
     return native
 
 
-def duration_ns(value):
+def duration_ns(value, exact=False):
     match = SPAN.fullmatch(value)
     if not match or not any(match.groups()):
         raise RuntimeError('Invalid JFR duration')
-    return int(sum(Decimal(part or '0') * factor for part, factor in
-                   zip(match.groups(), (3600, 60, 1))) * 1000000000)
+    nanos = sum(Decimal(part or '0') * factor for part, factor in
+                zip(match.groups(), (3600, 60, 1))) * 1000000000
+    if exact and nanos != nanos.to_integral_value():
+        raise RuntimeError('JFR duration is not an exact integer nanosecond value')
+    return int(nanos)
 
 
 def path(out, value):
@@ -660,3 +674,261 @@ def deduplicate(rows, kind):
     return result, {'raw_events': len(rows), 'unique_events': len(result),
                     'duplicates': len(rows) - len(result), 'maximum_jitter_ns': max_jitter,
                     'maximum_cluster_span_ns': JITTER_NS}
+
+
+def recording_arguments(parser):
+    parser.add_argument('--recordings-only', action='store_true', help='Verify retained JFR exports only')
+    parser.add_argument('--recording-component', choices=COMPONENTS, action='append')
+    parser.add_argument('--jfr-binary', type=Path, help='Native JDK jfr executable')
+    parser.add_argument('--jfr-output', type=Path, help='New directory for native command evidence')
+
+
+def recording_options(args, parser):
+    if args.recording_component and not args.recordings_only:
+        parser.error('--recording-component requires --recordings-only')
+    return {'components': args.recording_component or COMPONENTS,
+            'jfr_binary': args.jfr_binary, 'destination': args.jfr_output}
+
+
+def recording_terminal(out):
+    terminals = [out / name for name in ('shutdown.json', 'abort.json') if (out / name).is_file()]
+    if len(terminals) != 1:
+        raise ValueError('Exactly one terminal record is required')
+    return _json(terminals[0])
+
+
+def _gc_csv(out, filename):
+    with (out / filename).open(newline='') as stream:
+        reader = csv.DictReader(stream)
+        if not reader.fieldnames or len(set(reader.fieldnames)) != len(reader.fieldnames):
+            raise ValueError('Missing or duplicate CSV header')
+        result = list(reader)
+    if any(None in row or any(value is None for value in row.values()) for row in result):
+        raise ValueError('Invalid CSV row width')
+    return result
+
+
+def _gc_record(row, kind, identity):
+    result = {**identity, 'kind': kind, 'ts': row['ts'], 'gc_id': str(int(row['gc_id']))}
+    pass_instant(row['ts'])
+    for field in GC_PAYLOADS[kind]:
+        value = row[field]
+        if field == 'heap_bytes':
+            value = int(value)
+        elif field in ('duration', 'sumOfPauses', 'longestPause'):
+            value = duration_ns(value, exact=True)
+        elif not isinstance(value, str) or not value:
+            raise ValueError('Missing GC payload')
+        result[field] = value
+    if kind == 'pause':
+        result['phase_identity'] = row.get('phase_identity', 'jdk.GCPhasePause')
+    return result
+
+
+def _gc_counter(records):
+    return collections.Counter(json.dumps({**row, 'ts': pass_instant(row['ts'])}, sort_keys=True)
+                               for row in records)
+
+
+def _gc_jsonl(target, records):
+    with target.open('w') as stream:
+        for row in records:
+            stream.write(json.dumps(row, sort_keys=True) + '\n')
+
+
+def _native_gc(recorded, component, identity, decoder, destination):
+    """Retain the real decoder's bytes and status before interpreting its events."""
+    destination.mkdir()
+    argv = [str(decoder), *JFR_JAVA_OPTIONS, 'print', '--json', '--events', JFR_EVENTS, str(recorded)]
+    began, monotonic = _now(), time.monotonic()
+    receipt = {'argv': argv, 'cwd': str(Path.cwd()), 'started_at': began,
+               'input_sha256': file_digest(recorded), 'decoder_sha256': file_digest(decoder)}
+    with (destination / 'stdout').open('wb') as stdout, (destination / 'stderr').open('wb') as stderr:
+        try:
+            native = subprocess.run(argv, stdout=stdout, stderr=stderr, timeout=JFR_TIMEOUT)
+            receipt['returncode'] = native.returncode
+        except (OSError, subprocess.TimeoutExpired) as error:
+            receipt.update(returncode=None, error=type(error).__name__)
+    receipt.update(finished_at=_now(), elapsed_seconds=time.monotonic() - monotonic)
+    _write_json(destination / 'command.json', receipt)
+    if receipt['returncode'] != 0:
+        raise ValueError('Native JFR decode unavailable')
+    decoded = _json(destination / 'stdout')['recording']['events']
+    result = {kind: [] for kind in GC_EXPORTS}
+    loss = 0
+    for event in decoded:
+        if event['type'] == 'jdk.DataLoss':
+            loss += 1
+            continue
+        kind = {'jdk.GCHeapSummary': 'heap', 'jdk.GarbageCollection': 'collection',
+                'jdk.GCPhasePause': 'pause'}[event['type']]
+        values = event['values']
+        row = {**values, 'ts': values['startTime'], 'gc_id': values['gcId']}
+        if kind == 'heap':
+            row['heap_bytes'] = values['heapUsed']
+        result[kind].append(_gc_record(row, kind, identity))
+    return result, loss
+
+
+def compare_recordings(out, terminal=None, components=COMPONENTS, jfr_binary=None, destination=None):
+    """Compare exact export occurrences within one proven JVM lifetime per component.
+
+    Snapshot overlap belongs to the raw export population. The final append is
+    compared separately with the final recording; observation deduplication has
+    its own population and never removes occurrences from this comparison.
+    """
+    out = Path(out).resolve()
+    result = {'verdict': 'Incomplete', 'failed_assertions': [], 'missing_coverage': [], 'components': {}}
+    failures, missing = result['failed_assertions'], result['missing_coverage']
+    try:
+        if destination is None:
+            destination = Path(tempfile.mkdtemp(prefix='etl-jfr-'))
+        else:
+            destination = Path(destination).resolve()
+            if destination == out or out in destination.parents or destination in out.parents:
+                raise ValueError('JFR output overlaps input')
+            destination.mkdir(parents=True, exist_ok=False)
+        result['evidence_directory'] = str(destination)
+        terminal = recording_terminal(out) if terminal is None else terminal
+        manifest = _json(out / 'observation.json')
+        if terminal['observation'] != manifest:
+            failures.append('jfr_terminal_manifest_mismatch')
+        if not terminal['boot_unchanged']:
+            failures.append('jfr_boot_changed')
+        if not isinstance(manifest.get('boot_id'), str) or not manifest['boot_id']:
+            raise ValueError('Missing boot identity')
+        processes = _gc_csv(out, 'processes.csv')
+        state = _json(out / 'state.json')
+        samples = [_json(source) for source in sorted((out / 'raw').glob('*/sample.json'))]
+        decoder = Path(jfr_binary or shutil.which('jfr') or '/usr/lib/jvm/java-21-openjdk/bin/jfr').resolve()
+        result['decoder_sha256'] = file_digest(decoder)
+        exports, export_errors = {}, {}
+        for kind, (filename, _) in GC_EXPORTS.items():
+            try:
+                exports[kind] = _gc_csv(out, filename)
+                if any(row.get('component') not in COMPONENTS or not row.get('pid') for row in exports[kind]):
+                    failures.append('jfr_export_identity_' + kind)
+            except (OSError, ValueError, csv.Error) as error:
+                export_errors[kind] = type(error).__name__
+
+        def compare_component(component):
+            failed, absent = [], []
+            summary = {'failed_assertions': failed, 'missing_coverage': absent, 'kinds': {}}
+            def fail(label):
+                failed.append('jfr_' + component + '_' + label)
+            def unknown(label):
+                absent.append('jfr_' + component + '_' + label)
+            try:
+                declared = manifest['jvm_identity'][component]
+                pid, start = str(int(declared['pid'])), int(declared['start'])
+                if int(pid) <= 0 or start < 0:
+                    raise ValueError('Invalid process identity')
+                identity = {'component': component, 'boot_id': manifest['boot_id'], 'pid': pid, 'start': start}
+                summary['identity'] = identity
+                same = [row for row in processes if row['name'] == component and row['pid'] == pid]
+                starts = {int(row['start']) for row in same}
+                if len(starts) > 1:
+                    unknown('ambiguous_pid_reuse')
+                    return summary
+                if not starts:
+                    unknown('process_evidence')
+                    return summary
+                if starts != {start}:
+                    fail('process_start')
+                    return summary
+                final_state = state['processes'][component]
+                if str(final_state['pid']) != pid or int(final_state['start']) != start:
+                    fail('final_process_identity')
+                recording = terminal['complete_gc_recordings'][component]
+                if str(recording['pid']) != pid:
+                    fail('recording_pid')
+                    return summary
+                if recording.get('coverage_complete') is not True:
+                    unknown('complete_recording_coverage')
+                expected_times = {pass_instant(row['ts']) for row in same}
+                available_times = {pass_instant(sample['observed_at']) for sample in samples
+                                   if sample.get('sample_kind') == 'full'}
+                if expected_times - available_times:
+                    unknown('snapshot_metadata')
+                captures = []
+                for sample in samples:
+                    entry = sample.get('gc', {}).get(component)
+                    if entry and str(entry['pid']) == pid:
+                        captures.append(entry)
+                    elif pass_instant(sample['observed_at']) in expected_times:
+                        unknown('snapshot_metadata')
+                captures.append(recording)
+                raw_expected = {kind: [] for kind in GC_EXPORTS}
+                native_final = None
+                complete = not absent
+                seen = set()
+                component_out = destination / component
+                component_out.mkdir()
+                for index, capture in enumerate(captures):
+                    try:
+                        recorded = path(out, capture['recording_path'])
+                        if recorded in seen:
+                            fail('duplicate_snapshot')
+                        seen.add(recorded)
+                        if recorded.stat().st_size != capture['recording_bytes'] or file_digest(recorded) != capture['recording_sha256']:
+                            fail('recording_integrity')
+                            complete = False
+                            continue
+                        dump = (recorded.parent / (component + '-jfr-dump.txt')).read_text().splitlines()
+                        if not dump or dump[0].strip() != pid + ':':
+                            fail('dump_identity')
+                        native, loss = _native_gc(recorded, component, identity, decoder,
+                                                  component_out / ('capture-' + str(index)))
+                        if loss or capture['data_loss_events'] != loss:
+                            fail('data_loss')
+                        for kind, (_, field) in GC_EXPORTS.items():
+                            if capture[field] != len(native[kind]):
+                                fail('declared_' + kind + '_count')
+                            raw_expected[kind].extend(native[kind])
+                        if index == len(captures) - 1:
+                            native_final = native
+                    except (OSError, ValueError, TypeError, KeyError, RuntimeError) as error:
+                        unknown('capture_' + str(index) + '_' + type(error).__name__)
+                        complete = False
+                summary['captures'] = len(captures)
+                for kind in GC_EXPORTS:
+                    try:
+                        if kind in export_errors:
+                            raise ValueError(export_errors[kind])
+                        own = [row for row in exports[kind] if row['component'] == component]
+                        selected = [_gc_record(row, kind, identity) for row in own if row['pid'] == pid]
+                        summary['kinds'][kind] = {'raw_events': len(selected),
+                            'earlier_process_events': sum(row['pid'] != pid for row in own),
+                            'native_raw_events': len(raw_expected[kind]),
+                            'native_final_events': len(native_final[kind]) if native_final else None}
+                        _gc_jsonl(component_out / (kind + '-raw-actual.jsonl'), selected)
+                        _gc_jsonl(component_out / (kind + '-raw-expected.jsonl'), raw_expected[kind])
+                        if complete and _gc_counter(selected) != _gc_counter(raw_expected[kind]):
+                            fail(kind + '_raw_occurrences')
+                        if native_final is not None:
+                            count = len(native_final[kind])
+                            final = selected[-count:] if count else []
+                            _gc_jsonl(component_out / (kind + '-final-actual.jsonl'), final)
+                            _gc_jsonl(component_out / (kind + '-final-expected.jsonl'), native_final[kind])
+                            if _gc_counter(final) != _gc_counter(native_final[kind]):
+                                fail(kind + '_final_events')
+                    except (ValueError, TypeError, KeyError, RuntimeError) as error:
+                        unknown(kind + '_export_' + type(error).__name__)
+            except (OSError, ValueError, TypeError, KeyError, RuntimeError) as error:
+                unknown('identity_' + type(error).__name__)
+            return summary
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=len(COMPONENTS)) as pool:
+            summaries = pool.map(compare_component, components)
+            for component, summary in zip(components, summaries):
+                summary['verdict'] = ('Failed' if summary['failed_assertions'] else
+                                      'Incomplete' if summary['missing_coverage'] else 'Passed')
+                result['components'][component] = summary
+                failures.extend(summary['failed_assertions'])
+                missing.extend(summary['missing_coverage'])
+    except (OSError, ValueError, TypeError, KeyError, RuntimeError) as error:
+        missing.append('jfr_required_input_' + type(error).__name__)
+    result['failed_assertions'] = sorted(set(failures))
+    result['missing_coverage'] = sorted(set(missing))
+    result['verdict'] = 'Failed' if failures else 'Incomplete' if missing else 'Passed'
+    return result

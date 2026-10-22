@@ -14,6 +14,10 @@ parser = argparse.ArgumentParser(description=__doc__)
 parser.add_argument('--chain', required=True, choices=('shortened', 'default'))
 parser.add_argument('--input', type=Path, default=Path('/var/lib/etl-soak'))
 parser.add_argument('--tools', type=Path, default=Path('/usr/local/share/etl-soak'))
+parser.add_argument('--recordings-only', action='store_true')
+parser.add_argument('--recording-component', choices=('mgmt', 'engine', 'etl', 'retrieval'), action='append')
+parser.add_argument('--jfr-binary', type=Path)
+parser.add_argument('--jfr-output', type=Path)
 args = parser.parse_args()
 CHAIN = args.chain
 OUT = args.input.resolve()
@@ -23,7 +27,20 @@ import contract
 import evidence
 import evaluate
 
+options = evidence.recording_options(args, parser)
 hashes = contract.verify_bundle(TOOLS)
+if args.recordings_only:
+    result = evidence.compare_recordings(OUT, **options)
+    try:
+        if evidence.load(OUT / 'observation.json')['configuration']['chain'] != CHAIN:
+            result['failed_assertions'].append('jfr_chain_mismatch')
+            result['verdict'] = 'Failed'
+    except (OSError, ValueError, TypeError, KeyError):
+        result['missing_coverage'].append('jfr_chain_identity')
+        if result['verdict'] != 'Failed':
+            result['verdict'] = 'Incomplete'
+    print(json.dumps(result, indent=2, sort_keys=True))
+    raise SystemExit({'Passed': 0, 'Failed': 1, 'Incomplete': 2}[result['verdict']])
 terminal_hash = contract.digest(OUT / 'shutdown.json')
 manifest_hash = contract.digest(OUT / 'observation.json')
 terminal = json.loads((OUT / 'shutdown.json').read_text())
@@ -40,8 +57,11 @@ for unit in ('etl-soak-sample.timer', 'etl-soak-sample.service', 'etl-soak-finis
     assert values.get('MainPID', '0' if unit.endswith('.timer') else None) == '0'
     assert values['ActiveState'] not in ('active', 'activating', 'deactivating')
 
-actual = subprocess.run(['/usr/bin/python3', '-B', str(TOOLS / 'evaluate.py'), '--input', str(OUT)],
-                        capture_output=True, timeout=180)
+evaluate_argv = ['/usr/bin/python3', '-B', str(TOOLS / 'evaluate.py'), '--input', str(OUT)]
+for flag, value in (('--jfr-binary', args.jfr_binary), ('--jfr-output', args.jfr_output)):
+    if value is not None:
+        evaluate_argv.extend((flag, str(value)))
+actual = subprocess.run(evaluate_argv, capture_output=True)
 assert actual.returncode in (0, 1) and not actual.stderr
 fresh = json.loads(actual.stdout)
 result = {'chain': CHAIN, 'observed_at': datetime.datetime.now(datetime.timezone.utc).isoformat(),
@@ -107,27 +127,7 @@ result['scheduled_passes'] = {'required': len(expected), 'observed': sum(counts.
     'missing': len(expected - counts.keys()), 'duplicates': sum(value != 1 for value in counts.values()),
     'unexpected': len(counts.keys() - expected)}
 
-result['gc_counts'] = {}
-for kind, filename, field in (('heap', 'gc-heap.csv', 'heap_events'),
-                              ('collection', 'gc-collections.csv', 'collection_events'),
-                              ('pause', 'gc-pauses.csv', 'pause_events')):
-    rows, proof = evidence.deduplicate(evidence.rows(OUT, filename), kind)
-    result['gc_counts'][kind] = {}
-    for component, recording in terminal['complete_gc_recordings'].items():
-        own = [row for row in rows if row['component'] == component]
-        current = [row for row in own if str(row['pid']) == str(recording['pid'])]
-        result['gc_counts'][kind][component] = {
-            'final_recording_events': recording[field], 'evaluator_all_processes_events': len(own),
-            'same_process_events': len(current), 'extra_process_events': len(own) - len(current),
-            'same_process_count_matches': len(current) == recording[field],
-            'recording_sha256_matches': contract.digest(evidence.path(OUT, recording['recording_path'])) ==
-                                        recording['recording_sha256'],
-            'recording_bytes_match': evidence.path(OUT, recording['recording_path']).stat().st_size ==
-                                     recording['recording_bytes'],
-            'full_window_recording_coverage': recording['coverage_complete'],
-            'data_loss_events': recording['data_loss_events']}
-result['gc_current_process_all_counts_match'] = all(row['same_process_count_matches']
-    for components in result['gc_counts'].values() for row in components.values())
+result['jfr_recordings'] = fresh['jfr_recordings']
 result['coherent_terminal_missing_only_during_initial_evaluation'] = (
     'coherent_manifest_and_terminal' in terminal['evaluation']['missing_coverage'] and
     'coherent_manifest_and_terminal' not in fresh['missing_coverage'])

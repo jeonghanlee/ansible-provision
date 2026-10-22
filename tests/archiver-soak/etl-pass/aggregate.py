@@ -54,12 +54,19 @@ def weekly_usage(records, observed_ns):
             'counted_utc_days': sorted(days)}
 
 
-def aggregate(out, result=None, evaluate_run=True):
+def aggregate(out, result=None, evaluate_run=True, recording_result=None):
     missing, failures, source_hashes = [], [], {}
     result = {} if result is None else result
     result.update({'schema': SCHEMA, 'numeric_precision_decimal_places': PRECISION,
               'failed_assertions': failures, 'missing_coverage': missing, 'sources_sha256': source_hashes,
               'tool_hashes': {}, 'transitions': {}, 'components': {}, 'event_rates': {}})
+
+    if evaluate_run:
+        recording_result = recording_result if recording_result is not None else evidence.compare_recordings(out)
+        result['jfr_recordings'] = {key: value for key, value in recording_result.items()
+                                    if key != 'evidence_directory'}
+        failures.extend(recording_result['failed_assertions'])
+        missing.extend(recording_result['missing_coverage'])
 
     def remember(path):
         relative = str(path.relative_to(out))
@@ -109,9 +116,10 @@ def aggregate(out, result=None, evaluate_run=True):
             ('override_sha256', 'verified_records', 'original_database_sha256')}
     result['tool_hashes'] = manifest.get('tool_hashes', {})
     result['aggregation_tool_hashes'] = contract.bundle_hashes(Path(__file__).parent)
-    evaluation = capture('evaluation', lambda: evaluate.evaluate(out, terminal, aggregate_checks=False)) if evaluate_run else None
+    evaluation = capture('evaluation', lambda: evaluate.evaluate(out, terminal, aggregate_checks=False, recording_result=recording_result)) if evaluate_run else None
     if evaluation:
         result['evaluation'] = {key: value for key, value in evaluation.items() if key != 'evidence_error'}
+        result['evaluation']['jfr_recordings'] = result['jfr_recordings']
         failures.extend(evaluation['failed_assertions'])
         missing.extend(evaluation['missing_coverage'])
 
@@ -187,8 +195,8 @@ def aggregate(out, result=None, evaluate_run=True):
         pairs = collections.defaultdict(set)
         for row in all_events.get('heap', []):
             if row['component'] == component:
-                pairs[row['gc_id']].add(row['when'])
-        if any(pairs[row['gc_id']] != {'Before GC', 'After GC'} for row in heaps):
+                pairs[(row['pid'], row['gc_id'])].add(row['when'])
+        if any(pairs[(row['pid'], row['gc_id'])] != {'Before GC', 'After GC'} for row in heaps):
             missing.append('gc_pairs_' + component)
         if not heaps or not collections_rows or not pauses or not process or len(stats) < 2:
             missing.append('component_samples_' + component)
@@ -344,7 +352,7 @@ def reconcile_logs(out, manifest, events, result, remember):
                     ids[category].add(match[1])
         expected = collections.defaultdict(set)
         for row in events:
-            if row['component'] == component and row['name'] in GC_CLASSES:
+            if row['component'] == component and row['pid'] == pid and row['name'] in GC_CLASSES:
                 expected[GC_CLASSES[row['name']]].add(row['gc_id'])
         result['gc_reconciliation'][component + '_logs'] = {category: {'jfr_ids': len(expected[category]),
             'covered_ids': len(expected[category] & ids[category])} for category in ('young', 'full', 'concurrent')}
@@ -366,10 +374,13 @@ def main():
     parser.add_argument('--input', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     parser.add_argument('--compare', type=Path)
+    evidence.recording_arguments(parser)
     args = parser.parse_args()
+    options = evidence.recording_options(args, parser)
+    recordings = evidence.compare_recordings(args.input, **options)
     result = {}
     try:
-        result = aggregate(args.input, result)
+        result = recordings if args.recordings_only else aggregate(args.input, result, recording_result=recordings)
     except (OSError, ValueError, TypeError, KeyError, RuntimeError) as error:
         result.setdefault('failed_assertions', [])
         result.setdefault('missing_coverage', []).append('malformed_required_input')
@@ -384,7 +395,7 @@ def main():
         except (OSError, ValueError):
             mismatch = True
     print(json.dumps({'schema': SCHEMA, 'verdict': result['verdict'], 'comparison_mismatch': mismatch}))
-    return mismatch or result['verdict'] != 'Passed'
+    return (int(mismatch) or {'Passed': 0, 'Failed': 1, 'Incomplete': 2}[result['verdict']]) if args.recordings_only else (mismatch or result['verdict'] != 'Passed')
 
 
 if __name__ == '__main__':
