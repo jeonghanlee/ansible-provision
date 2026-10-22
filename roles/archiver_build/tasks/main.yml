@@ -272,7 +272,23 @@
       if [ -n "${stopped_note}" ]; then echo "${stopped_note}" >&2; fi
       exit 1
     fi
+    function render_install_config {
+      local make_database make_status=0
+      make_database=$(make -qp) || make_status=$?
+      case "${make_status}" in
+        0|1) ;;
+        *)
+          printf 'archiver_build: cannot query install prerequisites (make status %s)\n' "${make_status}" >&2
+          return "${make_status}"
+          ;;
+      esac
+      if printf '%s\n' "${make_database}" | grep '^conf\.install:' >/dev/null; then
+        make conf.install
+      fi
+    }
+
     make conf.storage
+    render_install_config
     make install
     make sd_start
 

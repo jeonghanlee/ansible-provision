@@ -31,7 +31,7 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: Commit the M34 closure record under separate commit/push authority. M34 is Complete under D44 after verified source e48083d, T1-T6 and exact readback of the five JFR-related #54 criteria. The consolidated issue remains open with thirteen checked and 68 unchecked boxes. M33/M36/M37 remain Complete; 20 other tool components remain Deferred. M14 is limited to Archiver Appliance under D42 and remains Blocked on G2; M26 remains Blocked on G5. No Milestone row is Ready.
+Next session entry point: Commit the verified M51 role correction, reusable installation checks and canonical record under separate commit/push authority. The fresh-VM retry Passed T1-T7, including real collection/retrieval, restart, identical-input reapply and fresh-copy replay. Both trial guests and their evidence are retained after verified shutdown. M51 remains In progress until repository landing. M14/G2 and M26/G5 remain Blocked. M33/M34/M36/M37 and accepted M22/M25/M24 results remain Complete; 20 other tool components remain Deferred.
 
 Both original shortened/default 24-hour ETL processing observations completed on 2026-10-15 UTC and are accepted under D29. They ran for 86416.387 and 86415.088 monotonic seconds before normal finish across UTC midnight. The unchanged native scheduler evaluator Passed with all 312 and 27 required passes present exactly once. Read-only initial, both-transition and final physical/HTTP comparisons Passed on each chain. Whole-unit normal stops returned 0 in 12.516 and 13.770 seconds, below the installed 300-second timeout. Each observation retained 290 in-window full samples and its original frozen bundle.
 
@@ -390,7 +390,7 @@ full mode carries every OS tree, second apply `failed=0`). Delivered in
 
 </details>
 
-Status tally: 24 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 5 external gates (3 Complete, 2 Open). Backlog excluded: 4 Complete, 0 In progress and 20 Deferred carry-forward items, plus 2 Complete external gates. M33 query/capture, M34 JFR recording comparison, M36 UTC matching and M37 checksum work are complete.
+Status tally: 24 Complete, 1 In progress, 0 Not started, 0 Deferred, 2 Blocked. 6 external gates (4 Complete, 2 Open). Backlog excluded: 4 Complete, 0 In progress and 20 Deferred carry-forward items, plus 2 Complete external gates. M51 implementation and T1-T7 verification passed on 2026-10-22; separately authorized repository landing remains pending. Other completed results remain unchanged.
 
 ## Milestone
 
@@ -424,11 +424,13 @@ Status tally: 24 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 
 | Core | M24 | Split the archiver MariaDB operator into socket and TCP operators and rename the archiver-dev species | Milestone | Complete | No | D21 | Operators `mariadb_uds` and `mariadb_tcp` and species `archiver-dev-uds`, `archiver-dev-tcp` and `archiver-dev-sqlite` exist with the group variables `archiver_dev_uds.yml`, `archiver_dev_tcp.yml` and `archiver_dev_sqlite.yml`; each species deploys on a fresh guest with its database reachable exactly as the cloud-provision definition states; the old `archiver-dev` name still resolves for a limited period; delivered in `3b697e1`, with recorded T1/T2 Passed; #52 closed completed at 2026-10-16T06:42:05Z; [detail](#m24---split-the-archiver-mariadb-operator-into-socket-and-tcp-operators-and-rename-the-archiver-dev-species) |
 | Core | M25 | Verify independent journal recording, retention and collection | Milestone | Complete | No | D27, D28 | Accepted 24-hour recording, live retention and exact archive comparison Passed with zero violations/unresolved records; #31 closed completed on 2026-10-15. Two unexecuted tool checks are independent M27/M28 Backlog work; [detail](#m25---verify-independent-journal-recording-retention-and-collection) |
 | Core | M26 | Provision the SQLite Archiver Appliance on an existing general Rocky Linux 8.10 server | Milestone | Blocked | No | M18, G5, D26 | The `archiver_server_sqlite` assembly applies on the existing server without a proxy readiness gate, installs the appliance on the SQLite backend at the pinned sources, and passes the install checks on that server; the optional `proxy_check` role and its suite exist but are not part of the assembly; [detail](#m26---provision-the-sqlite-archiver-appliance-on-an-existing-general-rocky-linux-810-server) |
+| Core | M51 | Verify current Archiver sources through a complete general-server SQLite VM installation | Milestone | In progress | No | M18, G8, D45 | A fresh Rocky 8.10 VM builds the exact candidate commits through the real assembly and passes SQLite, JVM, health, PV retrieval, restart and same-input reapply checks; [detail](#m51---verify-current-archiver-sources-through-a-complete-general-server-sqlite-vm-installation) |
 | Gate | G1 | the production IOC server reaches the internal git host | External gate | Complete | No | | Reachability achieved through the site HTTP proxy's CONNECT tunnel (an ssh `ProxyCommand` over the proxy), not a firewall whitelist: the owner's key authenticates and `git ls-remote` returns the refs; confirmed 2026-09-03 by the successful iocserver clone (M4/T2) |
 | Gate | G2 | cloud-provision ships the middleware package baseline and the middleware VM | External gate | Open | No | | The middleware operator/species structure and OS package baseline (system OpenJDK 21, Tomcat 9.0.121, MariaDB; no Maven package) originate in cloud-provision (`docs/milestone-e260630.md` M11) as the normative source and a middleware VM is provisionable there, before ansible-provision mirrors the set and layers its roles; owned by the cloud-provision session |
 | Gate | G3 | epicsarchiverap-env ships a `sql.fill` that loads the configuration schema when the database and application account are provisioned externally | External gate | Complete | No | | Complete when the jeonghanlee/epicsarchiverap-env#47 fix commit is on `modernize` and epicsarchiverap-env records #47's acceptance as met: with only the application account, `make sql.fill` loads the schema, `make sql.show` lists `PVTypeInfo`, `PVAliases`, `ArchivePVRequests` and `ExternalDataServers`, and an absent database exits non-zero. Observing it on an archiver-dev host is M14/T17, not this gate; owned by the epicsarchiverap-env session; met 2026-09-23: the fix is `1fc20a8` on `modernize`, and #47 closed with epicsarchiverap-env's acceptance recorded |
 | Gate | G4 | Prepare two independent ETL soak environments | External gate | Complete | No | | Two fresh archiver-dev VM inventories are available; the owner selected the same existing 903-PV fixture for both chains, and initial disk and host capacity were assessed on 2026-09-28; [detail](#g4---prepare-two-independent-etl-soak-environments) |
 | Gate | G5 | The server owner prepares the proxy settings and approves the installation on the existing server | External gate | Open | No | | The server owner has set the proxy configuration directly (environment, DNF, and the Maven settings file) and has approved the installation; [detail](#g5---the-server-owner-prepares-the-proxy-settings-and-approves-the-installation-on-the-existing-server) |
+| Gate | G8 | Prepare a fresh dedicated Rocky 8.10 installation guest | External gate | Complete | No | | The VM provider supplies a capacity-checked fresh guest and a private access handoff, verified before use; [detail](#g8---prepare-a-fresh-dedicated-rocky-810-installation-guest) |
 
 ### Decisions
 
@@ -478,6 +480,7 @@ Status tally: 24 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 
 | D42 | Limit M14 to Archiver Appliance and its prerequisites, retaining both distribution installation and source build. Remove Phoebus operators/species and the combined `middleware` species from its current plan and completion criteria. This supersedes those portions of D15/D16 only. Retain G2/G3, historical authorizations and all verification records. The revised document does not establish a new installation result or authorize additional deployment. | 2026-10-21 |
 | D43 | Accept and authorize the bounded M34 plan after source/input confirmation and the directed plan update. Return M34 from Deferred to Not started, then In progress for actual input verification. Original input verification is required through G7 before corrective source changes and replay. Scope is JFR process/lifetime comparison and its retained-input real-consumer checks. Preserve original observations and accepted product results. Source changes wait for required input integrity and the applicable design review; peer delivery, guest lifecycle, commit, push and GitHub mutations remain separately authorized. | 2026-10-21 |
 | D44 | Close M34 JFR recording comparison from its completed real-path T1-T6 checks, source e48083d0fb21641777aa85749e34167e7ef43d7d on the observed upstream branch and five JFR-related criteria verified by exact #54 body readback. Keep the consolidated issue open for its 68 remaining unchecked boxes, as accepted in the prepared and delegated JFR-only update. This is a component-only issue-closure exception, not a waiver of verification. Other tool components remain Deferred under D31; accepted product results and original evidence remain unchanged. | 2026-10-22 |
+| D45 | Execute the outlined fresh Rocky 8.10 VM trial using current Archiver source commits, SQLite, real PV acquisition/retrieval, normal service restart and identical-input reapply. Keep tracked deployment pins and physical-server deployment unchanged. This bounded installation trial does not complete M14/M26 or establish long-duration, load or memory stability. | 2026-10-22 |
 
 ### Assignment History
 
@@ -5698,6 +5701,110 @@ pins `archiver_env_ref` and `archiver_maven_src_tag`, and any change to the clou
 - Not complete. Commits `2831187` and `e89002d` carry the code and documentation on `origin/m14-middleware-reconcile`;
   the wiring removal follows them. The row stays open until T4 and T5 pass on the server.
 
+#### M51 - Verify current Archiver sources through a complete general-server SQLite VM installation
+
+- Origin: 38560eb / M51
+- Identity History: none
+- GitHub Issue: none
+- Status: In progress
+
+##### Summary
+
+A fresh Rocky 8.10 VM exercises the shipped general-server SQLite assembly with a fixed pair of current Archiver source commits. The result covers actual compilation, installation and basic data persistence through a normal restart and identical-input reapply. The corrected fresh-VM retry Passed T1-T7 on 2026-10-22; repository landing remains pending.
+
+##### Scope
+
+The real `make archiver_server_sqlite.rocky8` target, private runtime inventory and source overrides, bounded reusable checks under `tests/`, and private command receipts and final evidence. Initial preparation used Ansible commit `c75dd5ef84af4a745ba5c66e9eb9d3467b48da87`; the first installation ran at synchronized commit `dc27ebbf4117d77b6eea260c0c9a2bf583b88156`. The owner-approved retry includes the bounded `roles/archiver_build/tasks/main.yml` correction for aa-env's optional conf.install prerequisite. Each attempt records its complete source membership and hashes before execution.
+
+Out of scope: physical-server installation, deployment-pin promotion, Phoebus, MariaDB variants, distribution archives, proxy implementation, new soak runs, intentional resource faults, performance comparisons, merge, commit and push.
+
+##### Completion Criteria
+
+- The full Make assembly builds and installs aa-env `a60244dea418e2b0c8d6dc6cc19cd899c9bc3371` (release-2.0.1) and aa-maven `e5bc67ffff41d2d8320e926c17a98a86076b645f` (modernize); effective checked-out commits match. Private extra-vars override both pins without changing tracked defaults.
+- SQLite lists `PVTypeInfo`, `PVAliases`, `ArchivePVRequests` and `ExternalDataServers`; the service account has access; all four JVMs and appliance readiness are observed. A health service execution from the current installation completes successfully.
+- Three numeric PVs from the unmodified real IOC fixture produce at least 60 independently observed updates each in a bounded acquisition window. Retrieval matches those captured values and timestamps in a closed interval, before and after normal restart.
+- Restart preserves archived configuration and old samples, starts four new JVM lifetimes and collects new samples. Native systemd results and remaining process identities establish the actual stop/start outcome.
+- Reapplying the same inputs reports `ARCHIVER_BUILD_SKIPPED`; built WAR hashes, deployed webapp file hashes, install stamp and service/JVM identities remain unchanged. The actual installation expands WARs, so an empty installed-WAR list alone is insufficient. Final capture, saved-data evaluation and replay cover every required check.
+- Required repository changes have separately authorized commit and upstream landing evidence before milestone closure.
+
+##### Dependencies And Decisions
+
+- `M18`: the shipped SQLite operator and assembly behavior.
+- `G8` (Complete): a provider-owned fresh guest with verified capacity and private access handoff. Restored as Not started, then In progress as the authorized target preflight completed.
+- `D45`: the bounded latest-source VM trial. M26's existing physical-server scope and G5 remain unchanged.
+
+##### Implementation Plan
+
+- Plan Status: accepted
+- Plan Acceptance: 2026-10-22; the owner accepted the current-source fresh Rocky 8.10 VM installation, SQLite, real PV acquisition/retrieval, restart and reapply. After the observed installation failure, the owner selected the proposed compatible role correction and fresh full retest. The fixed aa-env/aa-maven pair and functional completion criteria remain unchanged.
+- Implementation Authorization: 2026-10-22; the owner's selection of option 1 authorizes the bounded conf.install compatibility correction, its necessary real-source checks and a new full VM trial. It does not authorize physical-server deployment or git/GitHub mutations.
+- Superseded Plan Artifacts: none
+
+1. In `roles/archiver_build/tasks/main.yml`, query the real selected aa-env Make database, accept native query statuses 0/1, and stop on a real query error. Render conf.install before install only when that source defines the target. Exercise the shipped rendering function with the actual current and two existing source trees, including real query/render failures. Keep checks on extracted production functions explicitly scoped as unit checks; the full VM run must execute the complete shipped role. Review privileged shell changes for static safety, execution environment, and failure/persistence behavior.
+2. Verify the real source refs, Make argument interface and provider handoff. Request one new Rocky 8.10 guest with 2 vCPU, 4096 MiB RAM and 48 GiB disk for up to four hours; retain the failed first guest and all VM files after shutdown. The provider owns capacity/address checks and guest lifecycle. The requester owns application installation.
+3. Record the actual OS, access, existing checkout owner, network/proxy prerequisites, disk headroom and source/tool membership for the new guest. G8 records the original preparation only; every retry independently verifies its fresh handoff. Use `proxy_scope=general-server`, SQLite, `common_manage_sudo=false` and `chrony_ptp_kvm=false`. Refuse an incorrect target or unresolved required input before installation.
+4. Run the real Make assembly with the private runtime inventory, one-host limit and full source overrides. Retain stdout, stderr, native status, UTC bounds and monotonic elapsed time. The shipped `build.mvn` uses `-DskipTests`; this trial does not claim that the aa-maven test suite ran.
+5. Check actual schema, account access, four JVMs, readiness and a newly completed health invocation. Load all 110 records of `tests/archiver-soak/fixtures/aasoak.db` unchanged (SHA256 `c0a70bbd3b4e9bf9b37df6ad3cb6fb5b78889c5dc1bac172ce738b5619d2e1b5`); archive only `AASOAK:S1:CH01` through `CH03`. Capture real CA monitor events independently and compare retrieval for closed intervals.
+6. Restart the appliance normally and repeat persistence/new-data checks. Read installed systemd timeouts and actual native result fields; aa-env's error-ignoring `sd_stop` exit alone is insufficient. Reapply identical inputs and compare built WARs, the real expanded webapp files, install stamp and process lifetimes.
+7. Capture terminal state before evaluation; freeze evidence membership/hashes and evaluate fresh verified copies. Preserve failed commands and partial outputs. Record claim-specific outcomes without replacing the original failed attempt, send the provider a finished notice as soon as use ends, and verify shutdown with all state retained.
+
+##### Test Plan
+
+| Label | Layer | Method | Environment | Expected Result |
+| --- | --- | --- | --- | --- |
+| T1 | Controller/preflight | Real general-server contract suite, resolved inventory and Make selection; actual source hashes, target prerequisites and rendering-function unit checks against real old/current sources | Controller and dedicated guest | Intended single Rocky 8.10 host and eight-operator assembly; all required inputs available; old sources skip the absent target, current sources render it and actual query/render failures stop |
+| T2 | Full installation | Real `make archiver_server_sqlite.rocky8`, without check mode, using fixed full commit overrides | Fresh dedicated guest | Native success; real build/install logs and effective commits match |
+| T3 | Installed service | SQLite schema and account access, four JVM identities, readiness, current health worker completion | Installed guest | Four required tables/JVMs and actual successful health execution |
+| T4 | Data path | Unmodified 110-record soft IOC; archive three selected PVs; independent CA capture and HTTP retrieval for a closed interval | Installed guest | At least 60 actual updates per PV within a 120-second input window; every captured sample in the interval matches retrieved value/time |
+| T5 | Restart | Native normal restart, old-interval query, new JVM identities and another 60 real updates per PV | Same guest | Actual normal stop/start success, old data retained and new data retrieved |
+| T6 | Reapply | Same Make target and exact private inputs; compare built WARs, deployed webapp files, stamp and service/JVM lifetimes | Same guest | Build skipped; nonempty artifact populations and process lifetimes unchanged; data path still responds |
+| T7 | Evidence | Final capture, frozen membership/hash verification, fresh-copy evaluation replay; exercise required-input/partial-input refusals using retained real inputs | Controller | Repeatable saved-data result; missing evidence is Incomplete; confirmed violations remain Failed |
+
+T4/T5 preserve raw timestamp text and integer seconds/nanoseconds. CA/retrieval comparison allows only the actual CA tool's demonstrated timestamp precision (at most one microsecond), with interval edges checked independently. Missing independent CA input is Incomplete, not an inferred appliance failure. Retrieval availability is bounded at 120 seconds after input capture; a confirmed absent captured sample at that deadline is Failed.
+
+The seven execution safeguards apply as follows: retain and replay the complete actual receipt/sample population (volume); derive expected values from independent CA events (expectations); preserve timestamps and closed bounds (time); apply only normal restart and reapply, with no injected fault claim (exposure); report functional observations without performance or long-duration claims (meaning); record full source membership, effective commits and installed consumers (source/proof); account for all three PVs before/after restart and every T1-T7 result (coverage). VM deletion and a long-observation rehearsal are inapplicable to this bounded installation contract.
+
+##### Verification Results
+
+The first table records the original failed attempt only. The final fresh-guest results are in Retry Verification Results below.
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T1 | 2026-10-22T21:20:42.535880+00:00 | Controller and fresh dedicated guest | Passed | Local contract 10/10; actual pinned SSH guest identity, Rocky 8.10, 2 vCPU, 48 GiB disk, existing checkout owner and root execution verified; exact inventory/source overrides, single-host Make selection and shipped syntax passed. Native receipts are retained privately. |
+| T2 | 2026-10-22T21:36:38.423548+00:00 | Fresh dedicated guest | Failed | Actual full Make assembly ran from 21:27:05.607079 UTC for 572.816469237 seconds and returned native status 2. Effective aa-env and aa-maven commits match the fixed candidates. Maven reported BUILD SUCCESS and the service account read all four required SQLite tables. Installation then refused the unrendered systemd override and explicitly required `make conf.install`. No success sentinel or JVM remained. Full Make streams, build journal, terminal facts and source membership are retained privately. |
+| T3 | Not run | Partially installed guest | Incomplete | T2 failed before service startup. Schema/account observations above do not establish four JVMs, readiness or a current successful health invocation. |
+| T4 | Not run | Partially installed guest | Incomplete | T2 failed before service startup; no IOC, independent CA capture or retrieval comparison ran. |
+| T5 | Not run | Same guest | Incomplete | No running appliance or data baseline existed; restart and persistence checks did not run. |
+| T6 | Not run | Same guest | Incomplete | A successful initial installation is absent; identical-input reapply did not run. |
+| T7 | 2026-10-22 | Controller | Incomplete | The capture CLI ran the actual controller suite and five real command checks: native failure with both streams, existing-receipt refusal without overwriting, missing executable, required-input refusal and real child SIGTERM (native -15, CLI 143). Failed installation and terminal/shutdown receipts are preserved privately. The new target-check CLI has only syntax validation; it was not deployed or run against the guest. Installed-data capture, matcher verification and final replay remain unexecuted. |
+
+The actual source Make database defines `conf.install` for candidate aa-env `a60244dea418e2b0c8d6dc6cc19cd899c9bc3371`; the role's existing `d09dca7` default and the general-server `e2ade5a184098379424ed87972ff308490eeedec` pin do not define it. These are real Make queries on the original checked-out sources, not installation results for the older pins. The first-attempt role called `conf.storage`, `install` and `sd_start`, omitting the new prerequisite.
+
+The owner approved the compatible role correction and fresh full retest on 2026-10-22. The first-attempt results above remain preserved; new observations will identify the retry separately. A manual continuation on the failed guest cannot establish a fresh full-install pass.
+
+##### Retry Verification Results
+
+The retry uses a separate new Rocky 8.10 guest. The role now queries the selected aa-env Make database, accepts native query statuses 0/1 and renders conf.install only when defined. The original failed guest and observations remain unchanged.
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T1 | 2026-10-22T22:07:08.203595+00:00 | Controller and new dedicated guest | Passed | Real general-server suite 10/10. Pre-install source checking covered the four then-present tool members; final T7 covers all five. The unchanged production function ran on actual exported old/current sources: both old pins skip, current source generates five artifacts, and actual missing-include/template cases each stop with native status 2 (5/5). Function Bash/ShellCheck checks pass; the complete template retains the same pre-existing proxy-source warning. Exact resolved source pins, runtime inventory, Make selection, playbook syntax, new UUID, Rocky 8.10, 2 vCPU, 48 GiB disk, root execution and all 19 provider evidence hashes were verified. |
+| T2 | 2026-10-22T22:13:23.801821+00:00 | New dedicated guest | Passed | The complete actual Make/Ansible installation returned native status 0 in 244.986767172 seconds. The build journal records Maven BUILD SUCCESS and actual systemd configuration generation. Effective checked-out commits match the fixed aa-env/aa-maven pair. The shipped build skips the aa-maven unit suite; no such suite result is claimed. |
+| T3 | 2026-10-22T22:15:31.813032+00:00 | New dedicated guest | Passed | Four required SQLite tables are readable and the file is writable as the service account. Exactly one JVM per component runs with that account. The real readiness endpoint returns HTTP 200 and the expected appliance/version. A new health invocation has native worker status 0 and its own matching journal reports all four processes verified; application readiness is established separately by HTTP. |
+| T4 | 2026-10-22T22:35:31.742718+00:00 | New dedicated guest | Passed | The unchanged fixture hash is confirmed; all 110 record names respond through actual CA. Only the three selected PVs are archived. Before restart each PV produced 61 independently captured samples and 60 value changes; all 183 samples match actual retrieval value/timestamp within the declared 1000 ns tolerance. Raw CA/HTTP inputs and closed UTC query bounds are retained. |
+| T5 | 2026-10-22T22:27:44.175295+00:00 | Same new guest | Passed | Actual stop returned 0 in 1.526035492 seconds against the installed 300-second limit; stopped-unit result/status is success/0 and no component JVM remains. Start returned 0 and all four JVM lifetimes and the service invocation changed. Requerying the original interval still matches all 183 old reference samples. A guest UTC boundary after startup excludes old samples from readiness; the new window again matches 61 samples and 60 changes per PV (183 new samples). No PV registration is repeated. |
+| T6 | 2026-10-22T22:35:31.391446+00:00 | Same new guest | Passed | Both identical-input reapplications returned 0. The recorded verbose callback's actual launch stdout is `ARCHIVER_BUILD_SKIPPED: already installed, all four instances live`, with launch rc 0 and changed false. Make argv and application inputs are identical; only controller verbosity differs for that observation. Four built WAR hashes, 3345 deployed file hashes, install stamp, boot ID, service invocation and all JVM lifetimes remain unchanged. Fresh retrieval samples after the final application are observed for all three PVs. |
+| T7 | 2026-10-22T22:49:23.310278+00:00 | Controller | Passed | All 263 VM collector files (4023158 bytes) were copied with exact membership/mode/size/hash verification. Three fresh-copy comparisons of both captured windows and the old-interval requery reproduce the live Passed result byte for byte. There are two unique capture windows and 366 unique reference samples. Ten saved-data checks exercise valid, missing, partial, malformed, changed-value/time and mixed evidence, including the earlier incorrect Incomplete verdict. Confirmed differences remain Failed when another PV's evidence is unusable. Originals are unchanged; all five current tool members pass source checks. Private command receipts, frozen inputs and `assessment.json` remain under `work/aa-install-r2-<date>.<id>/`. |
+
+The post-trial documentation check completed at 2026-10-22T23:23:38.614298+00:00. The current manifest verifies five members; the README's three saved-data comparison commands each return Passed/0 on fresh verified copies of the actual captures. Its config example matches the actual trial inputs after supplying the private guest UUID. D45 renders inside the decision table. The role and all four Python tools remain byte-identical to the final trial source; documentation and its current checksum changed. All 1945 frozen trial evidence members remain unchanged. Separate receipts remain under private `work/aa-install-review-<date>.<id>/`.
+
+##### Closure Evidence
+
+- Implementation and retry T1-T7 verified on 2026-10-22. M51 remains In progress because the role correction, reusable checks and canonical record are uncommitted and have no upstream landing evidence. Commit and push require separate owner authority.
+- The original T2 Failed result, first guest and 70 frozen evidence members are preserved unchanged. The fresh retry used the complete actual assembly and fixed source pair; no manual continuation of the failed guest establishes its Passed result.
+- The test IOC was stopped normally. At 2026-10-22T22:47:38.277931+00:00 the requester independently rechecked the retry guest's original UUID and `shut off` state after the provider's normal shutdown. Both guests retain their definition, disk, seed, reservation, creation/access records and evidence. The private retry closure-record SHA256 is `bc48273bf4214c4f854fd750cc45e1e5bd8a64b174956216c1fac4a376dc3dbf`.
+- This is a bounded three-PV SQLite functional result. It does not establish long-duration, load, memory stability or performance improvement and does not close M14/M26 or their external gates.
+
 #### G1 - the production IOC server reaches the internal git host
 
 - Origin: 38560eb / G1
@@ -5848,6 +5955,33 @@ The assembly neither writes nor checks these files (`D26`). `M26` depends on the
 ##### Closure Evidence
 
 - Not complete.
+
+#### G8 - Prepare a fresh dedicated Rocky 8.10 installation guest
+
+- Origin: 38560eb / G8
+- GitHub Issue: none
+- Status: Complete
+
+##### Summary
+
+The VM provider supplies M51's fresh dedicated Rocky 8.10 guest through its normal capacity-checked creation path. Private access, target identity, actual resources, prerequisite deviations and the retention/shutdown procedure must be verified before installation.
+
+##### Completion Criteria
+
+- The provider records a successful creation capacity/address preflight and supplies a private handoff for the requested 2 vCPU, 4096 MiB RAM, 48 GiB guest.
+- The requester verifies the actual guest identity, Rocky 8.10 release, key-only access, become access and existing checkout owner; required package/source access prerequisites are available.
+
+##### Verification Results
+
+| Observed At | Result | Evidence |
+| --- | --- | --- |
+| 2026-10-22 08:14:54 UTC | Not met | Provider reported and requester independently re-ran the shared capacity checker for one 4096 MiB / 48 GiB guest: native status 1, `capacity=NOFIT reason=disk`, running guests 0. Observed image-store availability 36.9 GiB, demand 48.0 GiB and required remaining margin 22.1 GiB imply about 34 GiB additional space. The alternate filesystem also has only about 21 GiB free. No VM, handoff or runtime inventory was created. Actual command/streams/timing remain in private `work/aa-install-<date>.<id>/capacity/`. |
+| 2026-10-22 | Not met | The owner selected space recovery on this host. Read-only investigation identified five completed-use snmp3 test guests totaling 35.7 GiB, all with explicit retention. The requester reverified its exported load-test records but reports the earlier `matrix-10` evidence remains on the guest disks. Its follow-up requires direct owner approval in that session before complete evidence copies and member/mode/hash verification. No guest restart, evidence export or removal was performed for this recovery request. Exact identities, original selectors and preconditions remain in private `work/aa-install-<date>.<id>/storage-proposal.json`; this is an unapproved proposal. |
+| 2026-10-22T21:17:53.886309+00:00 | Passed | Provider supplied a fresh dedicated Rocky 8.10 guest on the owner-approved temporary volume: 2 vCPU, 4096 MiB allocation and 48 GiB disk. Creation capacity returned `FIT` with 117.0 GiB available and 69.0 GiB remaining against a 5.8 GiB margin. Requester verified all 15 handoff evidence hashes, pinned SSH, original UUID, OS, CPU/disk, root execution, existing checkout owner, fresh appliance state and Maven proxy prerequisites. Private handoff SHA256: `e12de2d7e616ebc6d1a8bb6eb0b1fea1aef9a8efa54e5a7e770b14df0af37c60`. Existing-guest cleanup is unnecessary for this trial and remains unauthorized. |
+
+##### Closure Evidence
+
+- Complete at 2026-10-22T21:17:53.886309+00:00. Provider creation/access evidence and requester actual SSH/resource checks agree; all original guests remain preserved.
 
 ## Backlog
 
