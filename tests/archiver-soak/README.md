@@ -38,6 +38,7 @@ verification results are in [the work register](../../docs/milestone-38560eb.md)
 | `diagnostics/` | Retained full-day/fault-record analysis and actual fixed-interval physical/HTTP checkpoints |
 | `etl-scenarios/` | Preserved preparation, module challenge, actual source-fault and replay payloads with explicit private configuration |
 | `etl-pass/test_contract.py` | Contract, bundle, fixture-preservation and retained-export replay checks |
+| `etl-pass/test-terminal.py` | Explicit-path lifecycle CLI receipts and complete retained terminal replay; separate replay assertions from live acceptance |
 | `etl-pass/focused.py`, `PBFixture.java`, `test_focused.py` | Installed configuration inventory, real writer/decoder, automatic two-hop physical/HTTP checks and subsequent regular-pass evidence |
 | `etl-pass/replace-bundle.py` | Replace an installed bundle by a frozen bundle while carrying every other file and keeping a preserved sibling and rollback; not a bundle member |
 | `etl-pass/restart-observation.py` | Preserve a previous observation and restart its appliance with bounded GC/JFR settings and persistent ETL pass logging |
@@ -579,6 +580,25 @@ every started health invocation to have its completion record.
 Final collection errors and skipped JFR captures remain visible in the terminal
 record. An aborted observation cannot later receive a normal finish.
 
+Both terminal modes atomically save their completed stop/capture facts to
+`shutdown.json` or `abort.json` before evaluation. This first record contains
+the actual errors and a non-successful Failed/Incomplete verdict, with no
+invented evaluation. The evaluator and aggregate reader then consume those
+persisted facts. A second atomic replacement adds the actual evaluation and
+resulting verdict; CLI success is reported only after that replacement succeeds.
+An initial write error prevents evaluation. An evaluation exception retains its
+diagnostic error. Interruption or failed final replacement leaves the first
+valid terminal available; a diagnostic `.tmp` file is not a committed terminal.
+This is process-interruption protection, not power-loss durability.
+
+The lifecycle lock and terminal/started-marker guards prevent another stop
+after a completed or interrupted terminal operation. Recover analysis by running
+offline readers on preserved copies; do not rerun finish/abort or overwrite the
+original terminal. Compare observation identity, mode, timestamps, stop/capture
+facts and original errors exactly. Embedded evaluation and verdict are derived
+fields; an actual evaluation exception may add its error. The terminal's source
+digest can change between first and final saves and remains distinct provenance.
+
 `evaluate.py` derives the half-open schedule independently of the manifest's
 list. A 24-hour shortened window normally has 288/24 firings; default has 24/3.
 It reconciles
@@ -696,6 +716,215 @@ must remain intact. Changed tools need
 a verified new freeze and new runtime proofs. A locally frozen candidate
 qualifies for dedicated testing; it becomes a replacement bundle only after
 the required live scenarios pass.
+
+### Terminal Command Receipts And Replay
+
+`test-terminal.py` requires Python 3.11+, GNU `cp` and, for retained replay, a
+JDK compatible with the actual recordings. Supply explicit, non-overlapping
+`--input`, `--tools` and new `--output` directories. The runner preserves complete
+input/tool membership, modes, sizes and SHA256 values, makes a separate verified
+copy for each real evaluator/aggregate invocation, and retains argv, cwd, UTC,
+elapsed time, stdout, stderr and native status. Original inputs are rechecked
+afterward. Evidence is never cleaned automatically. From the repository root:
+
+```bash
+terminal_test=tests/archiver-soak/etl-pass/test-terminal.py
+terminal_input=/private/completed/state
+terminal_tools=/private/candidate-tools
+terminal_output=/private/new-terminal-replay
+terminal_jfr=/path/to/jdk/bin/jfr
+terminal_args=(--input "$terminal_input" --tools "$terminal_tools")
+terminal_args+=(--output "$terminal_output" --jfr-binary "$terminal_jfr")
+python3 -B "$terminal_test" --action replay "${terminal_args[@]}"
+```
+
+The summary's replay verdict covers preservation, readable persisted terminal
+facts, retained original errors and native-status consistency. Native consumer
+verdicts remain separate; successful replay of an Incomplete observation does
+not accept the observation. Embedded runtime and offline findings are compared
+only across declared verdict/failure/missing-coverage and scheduler fields, plus
+the corresponding JFR fields. Aggregate comparison uses overall findings and
+its nested scheduler fields. Source hashes and decoder receipt paths remain in
+the native outputs rather than being represented as identical inputs.
+Historical runtime/offline differences are reported without assuming the
+corrected terminal path ran. Add `--expect-runtime-agreement` only when checking
+agreement for an actual newly generated terminal; a mismatch then fails the
+replay assertions.
+
+The `start`, `finish` and `abort` actions call the actual installed `observe.py`
+CLI. They require `--input /var/lib/etl-soak` and
+`--tools /usr/local/share/etl-soak`; each invocation needs a new output directory
+outside those roots. Start additionally requires `--duration-seconds` (7200 or
+86400) and `--chain`; abort requires `--reason`. Use these actions only on the
+assigned isolated appliance after real preparation. They retain the child PID,
+native result, tool identity and before/after observation/terminal records, and
+do not alter clocks, manufacture a manifest, inject a fault or retry a stop.
+
+Command receipts alone do not prove first-save bytes at evaluation entry,
+actual fault exposure, one service stop, concurrency or offline agreement.
+Those claims remain Incomplete until their actual independent evidence exists.
+Retained replay does not execute start/finish/abort; normal finish still requires
+the actual supported two-hour window. A locally frozen candidate does not
+replace the accepted installed bundle or satisfy preparation-proof consumption.
+
+### Evaluator Entry Observation
+
+`etl-pass/trace-terminal-entry.py` runs an unchanged Python CLI under Linux
+CPython 3.9 or newer. Explicit script and evaluator hashes bind the observed
+source; script arguments, working directory, import search path, process
+lifetime, boot, UTC and monotonic bounds are retained. The launcher replaces
+its script search directory with the target script directory, as direct Python
+script execution does. Existing environment search paths remain visible in the
+command receipt.
+Function locations are selected from that exact source, and a repeated selected
+evaluator entry is a tool error rather than another accepted terminal attempt.
+
+The observer records calls, exceptions and returns only for the exact
+`evaluate.py` functions `evaluate` and `_evaluate_observation`. At each call it
+saves the actual terminal argument and the on-disk terminal bytes or absence.
+Completed dictionary results are distinguished from exception unwind returns.
+The observer never changes function bodies, frame values, results or clocks.
+Its own failures are tool errors with native status 125.
+
+An optional explicit Unix socket holds one entry, nested entry or completed
+return for at most 60 seconds. The external controller receives the actual
+PID/start ticks and must send the exact `release` line, or independently signal
+that process. A configured hold is not evidence that the boundary was reached.
+Outputs must be absent and disjoint from source and terminal inputs. Native
+CLI exits and signals remain separate from observer and supervisor outcomes.
+
+`etl-pass/test-terminal-entry.py` requires complete actual retained `--input`
+and `--tools`, a distinct actual terminal record through `--second-input`, and
+an absent `--output`. It inventories originals, verifies fresh copies before
+each launch, executes real reader and writer CLIs, and retains native streams
+and boundary events. Its 12 cases cover reader agreement, argument/file
+identity, input refusals, hold/release, evaluator interruption, real dependency
+unavailability, native exits/signals and four syscall-supervisor compositions.
+Unavailable sockets or tracing remain Incomplete. These checks establish local
+reader/observer and writer mechanics only; live lifecycle, actual service stop,
+installed proof consumption and full-duration acceptance need their own evidence.
+
+### External Terminal Replacement Boundaries
+
+`etl-pass/terminal-boundary.py` runs a declared command under Linux x86_64
+ptrace using Python 3.9 or later. It observes only replacements whose source is
+the selected terminal's `.tmp` sibling and whose destination is the exact
+`--terminal` path. The terminal and temporary paths must initially be absent;
+their parent must exist. `--output` must be a new directory outside that parent.
+Existing terminal, temporary and output entries, including dangling symlinks,
+are rejected before output creation or command launch. Destination paths cannot
+contain symlink components.
+The supervisor does not install tools, prepare an observation or start a service
+on its own. The supplied command retains its actual service effects.
+
+| Mode | Boundary operation |
+| --- | --- |
+| `observe` | Capture the first successful replacement while the writer is stopped; observe the second replacement |
+| `kill-after-first` | Save the first terminal bytes, then send SIGKILL to the dedicated writer |
+| `eio-first` | Suppress the first matching replacement and return simulated syscall errno EIO |
+| `eio-final` | Preserve the first terminal, then return simulated syscall errno EIO at the second matching replacement |
+
+The fault is a simulated syscall errno, not a physical disk-failure experiment.
+The helper records command argv/cwd, process identities, ordered selected
+syscall events, first/last terminal bytes, a remaining temporary file, raw command
+streams and native status. Descendant fork/exec/exit receipts distinguish exec
+attempts from confirmed execution. They do not cover unrelated workers started
+by systemd, or independently establish an appliance stop count. File activity
+does not establish evaluator entry.
+
+Complete coverage requires retained first and last terminal snapshots for
+`observe`, `kill-after-first` and `eio-final`. Both EIO modes also require the
+remaining temporary snapshot. `eio-first` expects no terminal. At completion,
+required snapshot files must still match their recorded sizes and hashes;
+`missing_evidence` names absent or changed required records. Successful syscall
+counts without those records produce Incomplete coverage.
+
+The summary separates `coverage_verdict` from `native_returncode`, whose negative
+values identify signals. An expected EIO or SIGKILL can satisfy a boundary check
+while the command fails. `lifecycle_verdict` remains Incomplete. Missing expected
+replacements, ptrace permission failures, unsupported ABI/events and incomplete
+capture produce Incomplete coverage. Python GETREGS/SETREGS handling does not
+require the Linux 5.3 GET_SYSCALL_INFO API; actual kernel compatibility still needs
+execution on the selected host. Native x86_64 `rt_sigreturn` (syscall 15) may
+restore `orig_rax` to -1; that exact exit transition is recorded as `signal-return`
+without treating the restored `rax` as a syscall result. Other syscall identity
+mismatches retain the expected number, actual registers and tracked task state
+before producing Incomplete coverage. Ptrace errors retain the operation, PID,
+raw wait status and tracked syscall state. A GETREGS or SYSCALL ESRCH after a
+known task's observed stop defers that task until an actual terminal wait confirms
+its native exit. An unresolved selected replacement, unknown task, unexpected
+operation or another stop after deferral remains an error. Pending exits cannot
+supply a native status or missing replacement evidence; the deadline and cleanup
+still apply. `ptrace-unavailable` and `tracee-exit-confirmed` preserve the failure
+and subsequent actual exit separately. Nonleader thread exec and external group
+stops are unsupported. An unknown newborn SIGSTOP remains stopped until the real
+parent creation event identifies that child. The supervisor validates PID/start
+identity before registration, records the parent association, and resumes a held
+child exactly once. `newborn-held`, `process-created`, `newborn-resumed` and the
+actual terminal wait preserve this ordering. An unassociated exit or conflicting
+lifetime remains Incomplete; a consumed exit is never registered again as an
+outstanding task. EXITKILL protects against a supervisor disappearing; failure
+cleanup kills/reaps only its own tracees and preserves output files.
+
+On an assigned isolated appliance, after actual preparation/start and with the
+normal time guards satisfied, an authorized terminal invocation has this shape:
+
+```bash
+tools=/usr/local/share/etl-soak
+state=/var/lib/etl-soak
+boundary=(python3 -B "$tools/terminal-boundary.py" --terminal "$state/shutdown.json")
+boundary+=(--output /private/new-boundary-receipt --mode observe)
+"${boundary[@]}" -- python3 -B "$tools/observe.py" finish
+```
+
+The `--timeout-seconds` deadline defaults to 3600 seconds and reports Incomplete
+if reached; it is a supervisor limit, not a product acceptance threshold.
+Automatic finish scheduling and any live fault must be explicitly controlled
+by the declared case. Do not run a second terminal operation as recovery.
+
+`test-terminal-boundary.py` accepts two distinct actual retained JSON records via
+`--input` and `--second-input`, shipped `--tools`, an explicit executable
+`--java-binary` and `--jstat-binary` from JDK 21, an executable C compiler via
+`--cc-binary` with pthread support, and new `--output`. It freezes
+both inputs and the complete tools tree, verifies them before launch, and checks
+the originals afterward. Its narrow checks call the real `collect.write_json`
+with each unchanged retained record on new case paths. Distinct payloads identify
+the first terminal, final terminal and failed temporary bytes independently.
+The checks exercise replacement faults, missing first/final/temporary evidence,
+dangling destination refusal,
+snapshot/kill, exact-path selection, descendant exec and preflight refusal.
+Actual handled SIGUSR1 delivery before and between writes covers all four modes;
+handler counts and native signal-return events establish exposure. A real JDK
+startup subprocess supplies confirmed exec/exit, thread creation and retained
+version output before the shipped writer runs. Real joined threads, thread-group
+exit and child SIGKILL cases retain actual child outcomes before the parent writes.
+A local child JVM announces readiness; the real `jstat -gc` command reads that
+JVM before both children exit and the parent writes. Both JDK executable identities
+are checked before each case and after the suite. Twenty group-exit cases record
+actual ESRCH exposure; no observed ESRCH leaves that recovery coverage Incomplete.
+Every deferred exit must match its retained failure context and an actual terminal
+wait. A compiled native workload creates and joins 128 promptly returning
+threads before the real writer runs. Up to 32 attempts stop once actual early
+newborn exposure has complete identity, parent association, one resume and native
+terminal evidence. Missing exposure remains Incomplete even when both writes
+succeed. Compiler/source/binary identities, compilation output and actual attempt
+counts are retained. Missing dependencies or unavailable tracing cannot establish
+successful coverage.
+These are writer/supervisor checks; they never construct an observation fixture,
+invoke a live lifecycle or establish two-hour finish, evaluation or stop behavior.
+
+```bash
+suite=tests/archiver-soak/etl-pass/test-terminal-boundary.py
+writer_input=/private/retained/shutdown.json
+writer_second=/private/second-retained/shutdown.json
+writer_tools=tests/archiver-soak/etl-pass
+writer_java=/usr/lib/jvm/java-21-openjdk/bin/java
+writer_jstat=/usr/lib/jvm/java-21-openjdk/bin/jstat
+writer_cc=/usr/bin/cc
+writer_args=(--input "$writer_input" --second-input "$writer_second" --tools "$writer_tools")
+writer_args+=(--java-binary "$writer_java" --jstat-binary "$writer_jstat" --cc-binary "$writer_cc")
+python3 -B "$suite" "${writer_args[@]}" --output /private/new-writer-check
+```
 
 ### Retained JFR Comparison
 

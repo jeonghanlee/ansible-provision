@@ -366,10 +366,12 @@ def terminal(aborted=False, reason=None):
     result['finished_at'] = datetime.datetime.now(datetime.timezone.utc).isoformat()
     result['verdict'] = 'Incomplete' if aborted else 'Failed' if result['errors'] else 'Incomplete'
     result['analysis_required'] = 'Evaluate every sample, scheduled pass, metrics and GC pair before Passed'
+    terminal_path = OUT / ('abort.json' if aborted else 'shutdown.json')
+    collect.write_json(terminal_path, result)
     capture('evaluation', lambda: evaluate.evaluate(OUT, result))
     if 'evaluation' not in result['errors']:
         result['verdict'] = result['evaluation']['verdict']
-    collect.write_json(OUT / ('abort.json' if aborted else 'shutdown.json'), result)
+    collect.write_json(terminal_path, result)
     print(json.dumps({'finished_at': result['finished_at'], 'stop_elapsed_seconds': result['stop_elapsed_seconds'],
                       'stop_rc': result['stop']['rc'], 'verdict': result['verdict']}))
     return result['verdict'] != 'Passed'
