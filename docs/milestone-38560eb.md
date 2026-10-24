@@ -31,7 +31,9 @@ was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 - Git upstream: `origin/master`
 - Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: Commit the M51 closure record under separate commit/push authority. M51 is Complete after T1-T7 Passed and exact verification of source commit 82ef88a on origin/m14-middleware-reconcile at 2026-10-23T00:47:17.558041+00:00. Both trial guests and their evidence are retained after verified shutdown. M14/G2 and M26/G5 remain Blocked; no Milestone row is Ready. M33/M34/M36/M37 and accepted M22/M25/M24 results remain Complete; 20 other tool components remain Deferred.
+Next session entry point: Finish source publication and scoped issue reconciliation for the verified M35 correction, then complete the four tool groups M47-M50 under D49. First map retained actual evidence to each remaining criterion; run only a necessary short real case for a missing behavior, with its claim, exposure, time/resource bounds and stop condition declared before execution. Do not repeat completed long observations or launch the historical broad matrix by default. The four group plans are accepted and Not started; new test execution is not claimed. M35 verification is complete within D48, with its excluded comparisons/proof campaign explicitly not passed. Current source changes and the issue-body revisions remain local.
+
+Four-group completion uses retained evidence and offline replay/reporting before any necessary live case. Journal covers stop-boundary capture and recipient replay; ETL covers evidence/diagnostic behavior and retained reports; buffer covers compact replay, progress and assertion ownership; shared tooling covers reusable sources, installation dependencies and measured phase durations. Each group ends when its required claims have evidence and its source/issue record agrees; missing evidence remains explicit.
 
 Both original shortened/default 24-hour ETL processing observations completed on 2026-10-15 UTC and are accepted under D29. They ran for 86416.387 and 86415.088 monotonic seconds before normal finish across UTC midnight. The unchanged native scheduler evaluator Passed with all 312 and 27 required passes present exactly once. Read-only initial, both-transition and final physical/HTTP comparisons Passed on each chain. Whole-unit normal stops returned 0 in 12.516 and 13.770 seconds, below the installed 300-second timeout. Each observation retained 290 in-window full samples and its original frozen bundle.
 
@@ -390,7 +392,7 @@ full mode carries every OS tree, second apply `failed=0`). Delivered in
 
 </details>
 
-Status tally: 25 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 6 external gates (4 Complete, 2 Open). Backlog excluded: 4 Complete, 0 In progress and 20 Deferred carry-forward items, plus 2 Complete external gates. M51 is Complete after T1-T7 Passed and verified repository landing at 82ef88a; closure recorded on 2026-10-23 UTC. Other completed results remain unchanged.
+Status tally: 25 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 6 external gates (4 Complete, 2 Open). Backlog excluded: 4 Complete, 1 In progress, 4 Not started and 15 Deferred carry-forward items, plus 2 Complete external gates. M51 is Complete after T1-T7 Passed and verified repository landing at 82ef88a; closure recorded on 2026-10-23 UTC. M35 verification is complete within D48; source publication and issue reconciliation remain. The four group plans are ready for D49 evidence accounting.
 
 ## Milestone
 
@@ -481,6 +483,10 @@ Status tally: 25 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 
 | D43 | Accept and authorize the bounded M34 plan after source/input confirmation and the directed plan update. Return M34 from Deferred to Not started, then In progress for actual input verification. Original input verification is required through G7 before corrective source changes and replay. Scope is JFR process/lifetime comparison and its retained-input real-consumer checks. Preserve original observations and accepted product results. Source changes wait for required input integrity and the applicable design review; peer delivery, guest lifecycle, commit, push and GitHub mutations remain separately authorized. | 2026-10-21 |
 | D44 | Close M34 JFR recording comparison from its completed real-path T1-T6 checks, source e48083d0fb21641777aa85749e34167e7ef43d7d on the observed upstream branch and five JFR-related criteria verified by exact #54 body readback. Keep the consolidated issue open for its 68 remaining unchecked boxes, as accepted in the prepared and delegated JFR-only update. This is a component-only issue-closure exception, not a waiver of verification. Other tool components remain Deferred under D31; accepted product results and original evidence remain unchanged. | 2026-10-22 |
 | D45 | Execute the outlined fresh Rocky 8.10 VM trial using current Archiver source commits, SQLite, real PV acquisition/retrieval, normal service restart and identical-input reapply. Keep tracked deployment pins and physical-server deployment unchanged. This bounded installation trial does not complete M14/M26 or establish long-duration, load or memory stability. | 2026-10-22 |
+| D46 | Accept the detailed M35 existing-file persistence plan and authorize its local implementation and retained-input verification. Lift D31 deferral for that scope only. Preserve the selected contract and original evidence; separately assigned live execution, source landing and issue reconciliation remain required and are not authorized or waived by this local instruction. | 2026-10-22 |
+| D47 | Select existing-file persistence for the M35 draft: save actual terminal facts before evaluation, then atomically update the same shutdown.json or abort.json with the evaluation result. Keep started-marker/repeated-stop protections and a non-successful record if evaluation or final persistence is interrupted. Authorize source/original inspection and detailed plan preparation only; plan acceptance, implementation, live environment execution and external mutations remain separate. | 2026-10-22 |
+| D48 | Narrow remaining M35 verification to a real evaluator exception and overlapping lifecycle requests. Accept and authorize that bounded continuation using existing corrected tools and preserved evidence. Exclude fresh-installed original/candidate comparison and full installed preparation-proof production/consumption from completion; neither is passed. Do not repeat two-hour observations, expand metric coverage or reopen accepted ETL functionality. Preserve all prior outcomes and resources. Necessary case preparation and exact resource binding remain; no commit, push, issue mutation or deletion is authorized. | 2026-10-24 |
+| D49 | Adopt one bounded completion approach for the four tool groups M47-M50: use retained actual evidence first, run only necessary short real cases for missing claims, and stop at the declared evidence or limit. Do not repeat accepted long observations, launch a broad matrix by default or perfect a general framework. Preserve original and unsuccessful results; exclusions require an explicit dated decision and are not Passed. Return the four group plans from Deferred to Not started for this approach; child components remain individually scoped. Record source changes and reconcile #53-#56 without claiming unexecuted work complete. | 2026-10-24 |
 
 ### Assignment History
 
@@ -5998,7 +6004,7 @@ The VM provider supplies M51's fresh dedicated Rocky 8.10 guest through its norm
 | Tools | M32 | Keep kernel diagnostics independent of the ETL terminal verdict | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m32---keep-kernel-diagnostics-independent-of-the-etl-terminal-verdict) |
 | Tools | M33 | Use timestamps accepted by systemd 239 journal queries | Carry-forward | Complete | No | D31, D39, D40, D41, G6 | T1-T6 Passed; source f633973 and four checked query criteria in #54 verified; [detail](#m33---use-timestamps-accepted-by-systemd-239-journal-queries) |
 | Tools | M34 | Match JFR exports to the recording process and lifetime | Carry-forward | Complete | No | D31, D43, D44, G7 | T1-T6 Passed; source e48083d and five JFR-related #54 criteria verified; [detail](#m34---match-jfr-exports-to-the-recording-process-and-lifetime) |
-| Tools | M35 | Persist terminal state before evaluating terminal coherence | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m35---persist-terminal-state-before-evaluating-terminal-coherence) |
+| Tools | M35 | Persist terminal state before evaluating terminal coherence | Carry-forward | In progress | No | D31, D47, D46, D48 | D48 verification complete: actual exception and overlapping requests Passed; prior normal/fault/replay evidence retained. All guests off with evidence preserved. Source landing and scoped issue reconciliation remain; [detail](#m35---persist-terminal-state-before-evaluating-terminal-coherence) |
 | Tools | M36 | Match ETL pass times by UTC instant with nanosecond precision | Carry-forward | Complete | No | D31, D37, D38 | T1-T6 Passed; source landing and four UTC boxes in #54 verified; [detail](#m36---match-etl-pass-times-by-utc-instant-with-nanosecond-precision) |
 | Tools | M37 | Refresh preserved-tool checksums | Carry-forward | Complete | No | D31, D34, D35, D36 | Real source/copy checks, source landing and four checksum boxes in #56 verified; [detail](#m37---refresh-preserved-tool-checksums) |
 | Tools | M38 | Finish ETL tool independence checks across both store chains | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m38---finish-etl-tool-independence-checks-across-both-store-chains) |
@@ -6010,10 +6016,10 @@ The VM provider supplies M51's fresh dedicated Rocky 8.10 guest through its norm
 | Tools | M44 | Compare ETL busy time and workload with retained earlier results | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m44---compare-etl-busy-time-and-workload-with-retained-earlier-results) |
 | Tools | M45 | Reproduce completed ETL observation reports on an independent recipient | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m45---reproduce-completed-etl-observation-reports-on-an-independent-recipient) |
 | Tools | M46 | Report actual test phase durations against the agreed allocations | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m46---report-actual-test-phase-durations-against-the-agreed-allocations) |
-| Tools | M47 | Track journal test tooling | Carry-forward | Deferred | No | D32, D33 | Track consolidated journal criteria directly; source issue closure is not test completion; [detail](#m47---track-journal-test-tooling) |
-| Tools | M48 | Track ETL test tooling | Carry-forward | Deferred | No | D32, D33 | Track consolidated etl criteria directly; source issue closure is not test completion; [detail](#m48---track-etl-test-tooling) |
-| Tools | M49 | Track buffer test tooling | Carry-forward | Deferred | No | D32, D33 | Track consolidated buffer criteria directly; source issue closure is not test completion; [detail](#m49---track-buffer-test-tooling) |
-| Tools | M50 | Track shared test tooling | Carry-forward | Deferred | No | D32, D33, D34, D35, D36 | Checksum component complete; remaining shared criteria stay deferred and unchecked; [detail](#m50---track-shared-test-tooling) |
+| Tools | M47 | Track journal test tooling | Carry-forward | Not started | Yes | D32, D33, D49 | Retained evidence first; only necessary bounded real cases, then source/issue reconciliation under D49; [detail](#m47---track-journal-test-tooling) |
+| Tools | M48 | Track ETL test tooling | Carry-forward | Not started | Yes | D32, D33, D49 | Retained evidence first; only necessary bounded real cases, then source/issue reconciliation under D49; [detail](#m48---track-etl-test-tooling) |
+| Tools | M49 | Track buffer test tooling | Carry-forward | Not started | Yes | D32, D33, D49 | Retained evidence first; only necessary bounded real cases, then source/issue reconciliation under D49; [detail](#m49---track-buffer-test-tooling) |
+| Tools | M50 | Track shared test tooling | Carry-forward | Not started | Yes | D32, D33, D34, D35, D36, D49 | Retained evidence first; only necessary bounded real cases, then source/issue reconciliation under D49; [detail](#m50---track-shared-test-tooling) |
 | Tools | G6 | Provide M33's dedicated systemd 239 query environment | External gate | Complete | No | D40 | Capacity, private handoff and actual guest access/versions verified; [detail](#g6---provide-m33s-dedicated-systemd-239-query-environment) |
 | Tools | G7 | Provide retained full-day JFR inputs for M34 | External gate | Complete | No | D43 | Both observations and frozen tools delivered; complete member/hash checks, original anchors and native JFR decoding verified locally; [detail](#g7---provide-retained-full-day-jfr-inputs-for-m34) |
 
@@ -7082,11 +7088,11 @@ Current input evidence (2026-10-22T01:19:27.527336+00:00): 32 delivered files pa
 - Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
 - GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
 - Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #40 is closed not_planned at 2026-10-17T01:12:25Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
-- Status: Deferred
+- Status: In progress
 
 ##### Summary
 
-The initial terminal evaluation reports `coherent_manifest_and_terminal`, but executing the unchanged native evaluator after final persistence removes that finding on both completed observations.
+At source basis dc27ebb, the initial terminal evaluation reports `coherent_manifest_and_terminal`, but executing the unchanged native evaluator after final persistence removes that finding on both completed observations. The correction saves terminal facts before evaluation; both default and corrected shortened normal terminals agree with fresh-copy replays. All four normal/abort chain cells have executed within their stated scope. First-save ordering, persistence faults, evaluator interruption, sequential refusals and the abort-request guard have actual evidence. XC01 now verifies the final two D48 claims: actual evaluator exception capture and overlapping lifecycle requests refused by the lock without another stop. Verification of the selected correction is complete; source landing and scoped issue reconciliation remain. Broader original/candidate installation comparison and full installed proof production/consumption are excluded, not passed. Independent metric coverage remains Incomplete and does not reopen accepted full-day ETL functionality.
 
 ##### Scope
 
@@ -7094,50 +7100,327 @@ Make terminal persistence and evaluation consistent while preserving crash visib
 
 Affected source: `tests/archiver-soak/etl-pass/observe.py`, `tests/archiver-soak/etl-pass/evaluate.py`, `tests/archiver-soak/etl-pass/aggregate.py`.
 
-Out of scope: JFR process selection, source-access fault production, and reopening accepted ETL functionality.
+Out of scope: JFR process selection, source-access fault production, power-loss durability, automatic terminal recovery, a separate evaluation-file format, another full-day producer run, and reopening accepted ETL functionality. D48 also excludes fresh-installed original/candidate comparison, full installed preparation-proof production/consumption, a new metric-coverage campaign and repeated two-hour observations. Required source identity and actual case prerequisites still apply.
 
 ##### Root Cause
 
-`observe.py` calls the evaluator before writing `shutdown.json` or `abort.json`; the aggregate reader sees only the started marker.
+At source basis dc27ebb, `observe.py` calls the evaluator before writing `shutdown.json` or `abort.json`; the aggregate reader sees only the started marker. The current local correction adds the first atomic terminal write before that evaluator call and retains the final replacement afterward.
 
 ##### Completion Criteria
 
-- [ ] A real normal terminal invocation and subsequent replay agree on the exact terminal state being evaluated.
-- [ ] Actual failure/interruption and repeated-terminal cases retain failure visibility and do not dispatch another stop.
-- [ ] No unverified successful terminal is written to bypass coherence checks; original completed observation bytes remain unchanged.
+- [x] A real normal terminal invocation and subsequent replay agree on the exact terminal state being evaluated.
+- [x] Actual failure/interruption and repeated-terminal cases retain failure visibility and do not dispatch another stop.
+- [x] No unverified successful terminal is written to bypass coherence checks; original completed observation bytes remain unchanged.
 
 ##### Dependencies And Decisions
 
-- D31; Decision Date: 2026-10-15. Independent Backlog work is excluded from current execution; accepted M22/#30 ETL functionality and M25/#31 journal results remain complete.
+- D31; Decision Date: 2026-10-15. Independent Backlog work requires separate execution authority; D46 authorizes this M35 local scope. Accepted M22/#30 ETL functionality and M25/#31 journal results remain complete.
+- D47; Decision Date: 2026-10-22. Existing-file persistence was selected for plan preparation; this historical decision remains unchanged.
+- D46; Decision Date: 2026-10-22. The detailed plan is accepted and local implementation/retained-input verification is authorized. M35 transitions from Deferred to In progress for that scope. This decision originally authorized local work only; subsequent live execution has separate plan and exact-resource authorization records. External mutations remain separate.
+- D48; Decision Date: 2026-10-24. Complete only the remaining evaluator-exception and overlapping-request checks. Exclude the broader original/candidate installation comparison and full preparation-proof campaign from M35 completion; retain their historical unexecuted outcomes. Reuse existing successful evidence rather than repeat long observations. This scope decision supersedes conflicting broader requirements below and in historical execution plans.
 - Coordination: M30/#35. This is a tracking relationship, not an invented sequential execution dependency.
 - Preserve original inputs, frozen tool identities and unsuccessful outcomes. Reuse retained evidence and bounded real-path checks; no new full-day producer run solely for tool correction or reporting.
 
 ##### Implementation Plan
 
-- Plan Status: draft
-- Plan Acceptance: none
-- Implementation Authorization: none
-- Superseded Plan Artifacts: none
+- Plan Status: accepted
+- Plan Acceptance: 2026-10-24, D48; the owner accepted the remaining two checks and excluded broader verification. The existing-file persistence contract accepted under D46 remains unchanged.
+- Implementation Authorization: 2026-10-24, direct owner continuation of D48. Prepare and execute only the evaluator-exception and overlapping-request cases, with exact resource binding and evidence retention. Earlier D46 and private plan/auth records retain their historical scopes; this does not authorize product changes, a full proof campaign or external mutations.
+- Final Bounded Execution: `plan20261024_185756`, `auth20261024_185900` and exact assignment `auth20261024_190500`; S001-S003 completed on 2026-10-24. One additional fresh guest, one genuine shortened abort, two overlapping contenders, one dependency fault and full retention. No source correction, second capability batch, repeat two-hour run or fallback guest was needed.
+- Local Tool Correction Authorization: 2026-10-23, direct owner correction instruction; `plan20261023_150600` and `auth20261023_151309`, C001-C003, cover the demonstrated supervisor ordering defect, real-process regression and matching source documentation/manifests. No live retry or product behavior change is included.
+- Local Prerequisite Criterion Authorization: 2026-10-24, owner option 1; accepted plan `plan20261024_034700`, execution authorization `auth20261024_035709`, H001-H003. Count complete actual same-batch CLONE lifetimes across all workloads, preserve C-specific exposure separately, and correct the actual producer/consumer and dependencies. Retained-input and bounded host verification only; no VM or live lifecycle. Historical outcomes remain unchanged.
+- Corrected Default Abort Authorization: 2026-10-24, current owner start direction; accepted `plan20261024_044600` and `auth20261024_044805`, A001-A003. One fresh pinned installation, current guards-v3 prerequisite, conditional real default start/abort, sequential refusals and full export/replay. Exact assignment and observed readiness remain required; prior results and frozen source are preserved.
+- Remaining Terminal Coverage Authorization: 2026-10-24, owner continuation; accepted `plan20261024_054623` and `auth20261024_054900`, P001-P004. New read-only evaluator instrumentation and bounded external persistence/evaluation fault, interrupted/concurrent and installed-proof checks. Pre-edit review, actual local mechanism verification and exact fresh assignments are required. At most ten fresh guests and two running concurrently; both normal-finish fault cells retain the actual7200-second contract. No full focused/metric campaign or product/proof-schema change is included. No new execution result is claimed by this authorization.
+- Superseded Plan Artifacts: generic three-step draft retained in Git at dc27ebbf4117d77b6eea260c0c9a2bf583b88156.
+- Source Basis: dc27ebbf4117d77b6eea260c0c9a2bf583b88156; confirmed by source and original-input inspection on 2026-10-22.
 
-1. Preserve and identify actual existing inputs, original outcomes and frozen/candidate source boundaries.
-2. Perform only the scoped correction or follow-up after separate execution authorization.
-3. Execute the declared real path and record actual results without replacing internal path segments or rewriting original observations.
+Confirmed findings:
+
+- At source basis dc27ebb, `observe.py:terminal()` assembles final collection and stop facts before `capture('evaluation', ...)`, but writes the final `shutdown.json` or `abort.json` only afterward. `evaluate._evaluate_observation()` invokes `aggregate.aggregate(..., evaluate_run=False)`, which independently loads the terminal from disk and reports `coherent_manifest_and_terminal` when it is absent. The local correction preserves these real readers and supplies their terminal file before evaluation.
+- Both inspected full-day `shutdown.json` files contain that missing-coverage finding in their initial embedded evaluation, with actual stop rc 0 and original `required_pass_wait`, `final_sample` and `final_journal` errors. Their SHA256 values are `4d2f6ae67694fc0ababd8f710fabcb784f0d3c52fab50f8386db7ea24b0eb914` (shortened) and `b56b63bfc0de9b288e889a596a3f7367c5a8cef3a2042b8890e1115fd5cb3618` (default). The historical inspection used `work/m34-resume-93iqsrhy/verification-h3bw649o/originals`; that extracted tree and the M34 intake archives were removed by owner-directed cleanup on 2026-10-23. Historical inspection is not execution of the corrected path; M35 execution records were outside that cleanup.
+- The existing `collect.write_json()` writes a temporary sibling and replaces the destination. It does not call `fsync`; atomic replacement during a process interruption is distinct from power-loss durability.
+- The lifecycle CLI holds `collect.locked()`; existing terminal or started-marker files refuse another stop. The correction must preserve both protections.
+- `test_retest.py:terminal_boundary()` constructs an observation and substitutes subprocess results. `verify-runtime.py:abort_probe()` exercises real services but constructs its own observation. These narrower checks cannot establish the required real start-to-normal-finish path.
+- `contract.DURATIONS` permits 7200 and 86400 seconds. A genuine normal-finish case using the existing CLI requires the supported two-hour window and its actual UTC/monotonic guards; no shorter duration, backdated observation or simulated elapsed window is approved.
+
+Selected persistence contract:
+
+1. Keep the existing terminal filenames, JSON layout and `*-started.json` protection. Complete the existing stop, final capture and terminal facts before evaluation. Do not introduce a separate evaluation file or an alternative in-memory-only aggregate path.
+2. Persist those terminal facts through the existing atomic replacement helper before calling the real evaluator. The pre-evaluation record must never contain a successful verdict: preserve actual errors and the existing Failed/Incomplete meaning, with no fabricated evaluation result. A failed initial write stops evaluation and leaves the started marker available.
+3. Evaluate against that persisted terminal and the actual captured inputs. Retain evaluation exceptions as errors. After successful evaluation, update the same terminal file with the actual evaluation and resulting verdict using atomic replacement. Report the final CLI result only after this write succeeds.
+4. If interrupted after the first save, retain the readable non-successful terminal facts. If the final replacement fails, retain the prior valid file and any diagnostic temporary file; do not publish success. Repeated finish/abort remains a refusal, including after interruption. Recovery is separate offline evaluation of preserved evidence, not another appliance stop or automatic overwrite of the original.
+5. The evaluator and aggregator must use the same terminal facts. Existing readers should continue accepting completed historical records without requiring new fields. Compare observation identity, terminal kind, time/stop/capture facts and errors exactly. Compare runtime and offline findings semantically; do not require recursive embedded evaluation data or source-file digests to remain identical after the terminal itself is updated.
+
+Current ordered work under D48 (completed implementation and historical plans remain evidence):
+
+1. Preserve existing source identities, original outcomes and successful normal/fault/replay evidence. Bind the remaining bounded case to its exact isolated resource; do not use old R01 retry authority.
+2. Reuse the corrected observer, supervisor and cache checks. Prepare only the private controller necessary to coordinate actual overlapping requests and an outer-filesystem dependency fault; do not replace internal functions or fabricate an observation.
+3. Execute a genuine start and short planned abort. While the real evaluator entry is held after the first terminal save, invoke actual competing finish/abort CLIs and retain overlapping intervals, lock refusal and independent stop/persistence evidence.
+4. Expose the actual evaluator exception through the declared external dependency fault. Verify capture of the exception, preservation of stop facts, a non-successful final terminal and no second stop. Restore the dependency and preserve its exact identity.
+5. Preserve complete evidence and native outcomes, perform only the required fresh-copy reader checks, verify originals, and end guest access before retained shutdown. Missing evidence remains Incomplete.
+6. Record the two results and D48 exclusions against T1-T7 without rewriting historical failures. Source landing and scoped issue reconciliation remain separate final steps requiring their own authority; no additional test campaign is implied.
 
 ##### Test Plan
 
 | Label | Layer | Method | Environment | Expected Result |
 | --- | --- | --- | --- | --- |
-| T1 | Real-path tool verification | Exercise the shipped terminal CLI in bounded real normal/failure/repeat cases and replay each actual retained terminal. | Retained actual inputs and separately authorized bounded environment where required | All completion criteria established with explicit actual coverage; original unsuccessful evidence unchanged. |
+| T1 | Original integrity and premise | Verify complete original/copy membership and tool hashes; read the original embedded findings and run original offline readers on separate verified copies. | Both retained shortened/default full-day inputs and frozen tools | Original ordering discrepancy is identifiable without rewriting evidence; all original inputs and failed outcomes remain preserved. |
+| T2 | Corrected real callers and retained premise | Use retained original discrepancy evidence and actual corrected lifecycle/evaluator/aggregate records; compare persisted terminal facts with actual evaluator entry and fresh-copy readers. | Existing normal terminals and independently observed evaluator entries | Corrected readers consume the same actual facts without the ordering-only coherence failure. D48 excludes a new original/candidate installation comparison; that unexecuted comparison is not a pass. |
+| T3 | Normal finish and abort | Execute the actual start and lifecycle CLI for each chain; normal finish obeys the two-hour UTC/monotonic window, while abort uses a distinct real-start observation. Retain final capture and actual service-stop results. | Shortened/default x normal finish/abort; actual appliance and configured sources | One stop per case, complete terminal facts saved before evaluation, and actual final result saved afterward. Abort remains non-successful; this proves terminal behavior, not full-day ETL acceptance. |
+| T4 | Persistence and evaluation faults | Expose initial terminal write failure, interruption after initial replacement, evaluator failure/interruption and final replacement failure on actual generated case inputs; preserve native statuses, reached boundaries and disk contents. | Shared writer faults on the shortened case; finish and abort both cover the pre-evaluation-save interruption and final-save failure | No false Passed record or output; initial write failure prevents evaluation; later faults preserve the prior valid terminal and errors. Missing exposure is Incomplete. No power-loss durability claim. |
+| T5 | Refusal and lifecycle serialization | Reuse completed/interrupted repeat-refusal and guard evidence. Send actual finish/abort contenders while the new primary abort holds its lifecycle lock; retain actual exec/wait overlap and flock refusal. | Existing repeats/guards plus one shortened-chain active terminal with two contenders | No second stop or changed terminal facts from refused requests. Real process intervals and lock errors prove overlap with the primary; sequential post-terminal refusals alone cannot establish concurrency. Native statuses remain visible. |
+| T6 | Full-volume replay and historical compatibility | Run real current evaluator/aggregator CLIs on fresh verified copies of both full-day originals and new runtime terminals. Compare declared facts/findings and native statuses; independently recheck originals. | Retained 24-hour volume plus newly generated bounded-case records | Historical layouts remain readable; original failures, JFR results and independent diagnostics remain visible. Runtime/offline coherence agrees within the declared semantic fields; repeated failure is not reported as product success. |
+| T7 | Source/package and required case prerequisites | Verify current source membership/checksums, selected installed tools and actual prerequisites consumed by the bounded case. Reuse established capability checks without a new full proof campaign. | Frozen candidate and the exact assigned case environment | Case source and required dependencies verify. Full installed preparation-proof production/consumption is excluded by D48, not passed; synthetic observations cannot establish lifecycle results. |
+
+Execution safeguards and evidence:
+
+- Volume: use both complete retained input trees and actual generated terminal records. Record member counts, serialized sizes, per-command elapsed time and native status; do not impose a new evidence-size cap or infer volume from a short live trial.
+- Expected results: derive the first-save facts from actual manifest/stop/capture receipts, separately from the evaluator output being judged. Compare immutable facts exactly and list the evaluation-derived fields allowed to change on the second save. A missing evaluation after interruption remains incomplete analysis.
+- Time: preserve original UTC strings and monotonic elapsed values. Real normal finish must satisfy both existing guards; a substituted clock can support a separately labeled unit check only, not the lifecycle acceptance claim.
+- Fault exposure: retain the observed boundary, signal or filesystem error and the last valid terminal bytes. Interrupt only the dedicated case process, verify actual stop completion independently and preserve all failed attempts. No sleep-only proof of boundary timing.
+- Measurement: this work makes no throughput, event-rate or improvement claim. An aggregate source digest may change when the same terminal file acquires its evaluation; keep that provenance distinction instead of normalizing an input identity away.
+- Installation/proofs: record exact selected source members, Python/JDK dependencies, installed CLI/service identities and the actual prerequisites used by this case. D48 excludes the wider preparation-proof campaign. Source preparation, actual installation, start, collection, stop, persistence, evaluation and required replay remain applicable; retained-only cases omit service start/stop because their originals are finalized.
+- Coverage: enumerate every T3 chain/mode cell and every T4/T5 fault/boundary cell before execution. Shared-writer faults are not a full chain-by-fault Cartesian claim; extend coverage only if observed branch/configuration differences require it. Independent recipient execution and a new 24-hour producer are outside this component.
+- Retention: place original/candidate manifests, per-command argv/cwd/stdout/stderr/status, UTC/elapsed times, observed transition snapshots and comparison reports under one private `work/m35-terminal-<run>/` directory. Verify complete copies before each replay launch and original membership/hashes afterward. Do not clean successful or failed evidence automatically.
 
 ##### Verification Results
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
-| T1 | Not run | Scoped future real-path verification | Pending | Original accepted behavior explains scope only; it does not establish completion of this follow-up. |
+| T1 | 2026-10-22T19:35:14Z | Both complete retained original chains; independent verified copies and frozen tools | Passed for original integrity and premise | `work/m35-terminal-20261022/original-replay/summary.json`: 24,227 files preserved with complete membership/modes/SHA256; four real original evaluator/aggregate CLIs returned native 1/Incomplete. Both embedded coherence findings disappear in offline readers while terminal errors remain. Original inputs are unchanged; this is not corrected lifecycle acceptance. |
+| T2 | 2026-10-24T18:09:32Z | Actual corrected normal terminals, F04/F05/F07/G01 evaluator observers and fresh-copy readers | Partial; candidate evaluator entry verified | Actual evaluate arguments match first persisted facts. F04/F05 final-save EIO retains evaluated temporary bytes; F07 nested interruption retains first facts; G01 completes both saves and fresh-reader semantic agreement. Earlier normal-chain agreement remains valid. R00 original-versus-candidate live regression remains unexecuted. Evidence: fault-normal-pair-v1 and fault-remaining-v3/v4 under work/m35-terminal-faults-20261024. |
+| T3 | 2026-10-24T11:22:07Z | Both normal chains and both planned-abort chains; separate normal fault guests | Partial; all four lifecycle cells executed | Earlier four lifecycle cells retain two successful saves and one confirmed stop each, with native1/Incomplete coverage disclosed. Additional F03/F05 actual normal guards measured7202.585329341/7202.549093355 seconds. Their intentional faults preserve first facts but do not establish successful final persistence. F05 independently proves actual evaluator entry. Product metric coverage and original/candidate regression remain unresolved. |
+| T4 | 2026-10-24T19:22:07Z | Prior six exposed fault cases plus fresh shortened abort XC01 | Passed for selected persistence/evaluation fault claims | Prior F01/F02/F03/F04/F05/F07 assertions remain valid. XC01 externally removed the actual aggregate dependency after first persistence; ModuleNotFoundError escaped the real evaluator and was captured into the final non-successful record. All17 exception assertions Passed, with two successful saves, unchanged stop facts, one stop0 and exact dependency restoration. Historical F06 remains unexposed/Incomplete; XC01 supplies new evidence rather than rewriting that attempt. |
+| T5 | 2026-10-24T19:22:07Z | Retained repeats/guards and real XC01 finish/abort contenders | Passed for selected refusal/serialization claims | Existing completed/interrupted refusals and G01 explicit request guard remain valid. Both XC01 contenders executed inside the actual primary hold and also overlapped each other; both reached collect.locked and returned native1/BlockingIOError. All18 concurrency assertions Passed; state/tools unchanged, no additional stop, primary terminal facts preserved. Absent-watch counters alone are not actual-terminal write evidence. No automatic failed-sample request-production claim. |
+| T6 | 2026-10-24T18:11:35Z | Retained full-day records, completed terminals and first-only fault records | Partial; reader agreement and separate recovery verified | Earlier completed terminals and G01 preserve actual runtime/offline semantic agreement. F02/F03/F04/F05/F06/F07 first-only terminals support separate recovery without embedded agreement. Real evaluator/aggregate commands retain native1/Incomplete; replay assertions pass and original inputs stay unchanged. F04/F06/F07/G01 retain observation_duration failed assertions and missing observation/metric coverage. All fault exports and both final1512/1145-member exports independently verify; all ten assigned guests are shut off with evidence retained. |
+| T7 | 2026-10-24T07:04:47Z | Actual R00/R01 installations, capability consumers and candidate preparation | Partial; new proof producers unexecuted | Both single installations and capability batches returned0; actual capability consumers accepted each current proof. R00 original fixture preparation failed. R01 private helper omitted two approved generated files from its exact inventory and stopped before any health/runtime producer. This is a helper defect, not a product terminal result. Full installed proof consumption remains unexecuted; prior source and capability checks retain their narrower claims. |
+
+
+Current live evidence checkpoint (2026-10-23 UTC):
+
+- T6: default replay completed at 09:13:23 UTC using the real evaluator and aggregator on separate fully verified copies. Both returned native 1/Incomplete with only `metric_counter_coverage` missing, no failed assertions, and scheduler/JFR Passed. Runtime semantic agreement and replay assertions Passed; original exported input/tool trees and consumer copies remained unchanged. This is agreement for an Incomplete observation, not whole-product acceptance. Evidence: `work/m35-live-remaining-20261023/default-finish/replay/summary.json`. Earlier retained-input rows above keep their original observation dates.
+- Complete exports were independently verified: shortened 2738 members, 2525 files and 325143979 file bytes; default 2842 members, 2624 files and 369801013 file bytes. Both frozen stages and tool trees matched after transfer. Default live state also matched. Shortened state matched before/copy/after snapshot, but its four still-running JVM GC logs grew before the later transfer recheck; that native 1 result and differences remain preserved. The frozen export is intact; the later live state is not claimed unchanged.
+- Shortened trace records the child's native 0 exit before the parent's delayed creation event attempts to read the absent child identity. The supervisor then terminates the observed process and reports the already-exited child as unreaped. A later actual process check found both recorded PIDs absent. The original error and cleanup report are retained, not rewritten as success. This tool failure leaves the shortened normal cell Incomplete and requires investigation before a new attempt.
+- Both guests were normally shut down by their provider with definitions, disks, seeds, reservations and evidence retained. Independent UUID/state queries confirmed both shut off at 09:14:54 UTC. That VM shutdown is resource closure, not a successful shortened lifecycle stop. Private closure evidence: `work/m35-live-remaining-20261023/root-provider-shutdown.json`.
+
+Local supervisor correction checkpoint (2026-10-23T15:21:26Z):
+
+- The unchanged supervisor reproduced the same premature child resume, actual child exit, delayed parent event and missing identity failure on host attempt 31 of the bounded 32-attempt workload. The corrected supervisor holds an unknown newborn until the real parent creation event confirms its PID/start identity, then resumes it once. The real shipped writer and two distinct retained records verify persistence without constructing a lifecycle fixture. Final host suite: 49 Passed/native 0, 106 observed held-newborn lifetimes in one native workload and four group-exit ESRCH events across 20 cases. Sandbox: 5 Passed/75 Incomplete/native 2 due unavailable tracing; this is not a product failure. Evidence: `work/m35-early-child-20261023/`, `suite-host-02/summary.json`, `suite-sandbox-02/summary.json` and `freeze-summary.json`.
+- Current source manifests verified 102 parent, 5 diagnostics and 19 scenario members; the separate full candidate has 56 members. The original 2738-member shortened export, both retained inputs and prior candidates remain unchanged. This verifies the local supervisor correction only: the failed live shortened attempt remains preserved, and no new live finish or complete M35 acceptance is claimed.
+
+Corrected shortened retry preparation (2026-10-23 UTC):
+
+- The owner requested one genuine two-hour test with the corrected frozen candidate. `plan20261023_154400` and `auth20261023_154657` authorize fresh installation, actual guest capability and child-ordering rehearsal, the original normal timer, full evidence export and real replay. Candidate56 manifest SHA256 `0ad808b4c9cee15d611d24b7737876da25f0a7f379807a0692f973a9f7c4c861` is fixed. Private execution root: `work/m35-live-shortened-finish-corrected-20261023`. The exact fresh assignment, pinned install and real guest prerequisites completed. Actual 24 standard capability probes passed; the native early-child workload observed one fully associated/resumed/terminated held lifetime on attempt6. Twenty group probes exposed eight recovered ESRCH events. These are guest capability claims, not lifecycle completion. Observation started at 2026-10-23T16:16:17.712508Z with the unchanged7200s guard and original normal timer; earliest finish is 18:16:17.712508Z. First sample errors were empty and abort counter was0. Ten genuine start findings and pre-start health/completion diagnostics remain retained; no complete product or terminal verdict is claimed. Controller monitoring and post-terminal processing resumed under `work/m35-live-shortened-finish-corrected-relocated-20261023` after the repository path moved. The original controller stopped with retained path errors after checkpoint40 at17:35:04Z; its scripts, logs and results remain unchanged. The same guest observation and original timer continued. The recovery checkpoint at17:41:38Z measured5120.958 seconds with the same start/boot identity, no sample errors and abort counter0. New controller outputs and checkpoint labels are separate; original terminal/export/replay completion remains pending. Remaining lifecycle/fault/proof cells stay outside this bounded attempt.
+
+Corrected shortened final result (2026-10-23T18:18:10Z; preservation rechecked on 2026-10-23):
+
+- Final execution mapping: L001-L003 completed under `plan20261023_154400`, `auth20261023_154657` and exact assignment `auth20261023_155134`. Final handoff: `work/review_sessions/20261022_193200_m35-terminal/handoff/hand20261023_210700_codex_gpt6_implementation_supersedes_hand20261023_174300.md`, SHA256 `f13d28d5dbf4ef12a0b2f020f7fa20e60c3c04c4b7899d0a3920b0fa28504214`. Earlier active/recovery handoffs remain historical evidence.
+- The original normal timer completed the unchanged UTC and monotonic guards. Actual finish began at 18:16:18.111410Z after 7200.399097752001 monotonic seconds on the same boot. The trace retained two successful terminal replacements, no supervisor error and no unreaped task. First/final records differ only in `evaluation`; final terminal SHA256 is `09571334ad088b5367ecfcd54febaffcbc7500ad9e4ae5dd5bbdb37f42ab3ea9`. One confirmed appliance-stop exec returned 0; failed executable-path probes are not additional stops. Actual observe returned native 1/Incomplete.
+- T6: both actual frozen offline consumers returned native 1/Incomplete and matched runtime semantics. Replay assertions Passed, failed assertions were empty, and scheduler/JFR verdicts were Passed. Missing coverage remains `metric_counter_coverage` and `metric_pass_record_coverage`. Replay used 1183 input files and 266125579 bytes. This verifies persistence and reader agreement, not whole-product acceptance or independent evaluator-entry timing. Evidence: `work/m35-live-shortened-finish-corrected-relocated-20261023/shortened-finish/replay/summary.json` and its command receipts.
+- The complete archive is 369582080 bytes, SHA256 `e0c82f3604b38ab04a682f38bc18a97f9e7b7e910fcd22e22d32cb7128529544`; its independent manifest SHA256 is `fe243f1a528629f809b481b9e63d7a9e616bcf983b9d190b0d8b224a4bdbbf0b`. Root independently verified all 2831 archive members, including modes, types, sizes and every regular-file hash. The current extracted tree has 30 missing empty runtime-probe directories; all 2605 regular files and remaining member metadata match. The archive retains those directories. Historical post-transfer and post-replay preservation results remain dated observations, not claims that the relocated extracted tree is still identical.
+- Guest access ended at 18:17:56Z after actual state/tools/stage rechecks returned native 0 with no differences. The provider completed normal retained shutdown at 21:03:34Z; Root separately queried the assigned UUID and observed `shut off`. Definition, disk, seed, reservation and evidence remain retained. The controller interruption and separate recovery records remain preserved; no observation restart, duplicate terminal or intentional fault was introduced.
+
+Default abort execution preparation (2026-10-24T00:03:00Z):
+
+- The owner continued the remaining default-chain abort. `plan20261023_235930`, SHA256 `66ee9db930c5e5af7ce685e9ef737cfd482c47eafba2f880e50274fc385cf7a1`, maps N003 and applicable N001/N004 to the corrected frozen candidate. `auth20261024_000202` and `auth20261024_000300` authorize D001-D003 on one independently verified fresh guest. Scope is actual installation/start/abort, independent persistence and single-stop evidence, sequential refusal checks, full export and fresh-copy replay. No source edit or additional fault campaign is included. Candidate56 membership/modes/hashes match the frozen manifest with no differences. Installation and observation results remain pending; M35 stays In progress.
+
+Default abort prerequisite result (2026-10-24T00:14:41Z):
+
+- Final pre-start handoff: `work/review_sessions/20261022_193200_m35-terminal/handoff/hand20261024_001503_codex_gpt6_implementation.md`, SHA256 `fed8edcdf9c126f46e1429e435a5c096f002db20a68d6ff36d618661af8938b5`. D001 prerequisite is Incomplete; D002 lifecycle and D003 refusals/replay remain unexecuted.
+- The real pinned installation returned native0 after 413.337874 seconds. Installed source/runtime readback and complete transferred candidate/fixture verification passed. Runtime-probe command returned native2: all 24 standard cases and 32 early-child attempts individually completed with child0, no supervisor error and no unreaped task, but the required held-child schedule had zero exposures in 32 attempts. Twenty group-exit cases exposed nine ESRCH events matched to actual confirmed exits. This is missing prerequisite exposure, not an observed product failure.
+- Plan V001 blocks dependent execution when that required exposure is absent. Fixture preparation, actual observation start, abort, repeat refusals and terminal replay were not executed. No observation or terminal was fabricated; actual state path remains absent. The owner was asked to choose one additional bounded 32-attempt batch with unchanged tools and separate output, or to end this case Incomplete with retained shutdown. No choice or retry is presumed.
+- Complete pre-start evidence is retained under `work/m35-live-default-abort-corrected-20261024/default-abort/`. Root independently verified all 914 archive and extracted members, modes, sizes and regular-file hashes against the separate manifest, with zero differences or duplicate archive names. Archive: 24483840 bytes, SHA256 `6675df0c576cdcd92a681a6fd95bba6eea8562f5f287dc6329cc5ae9028fd527`; manifest SHA256 `3b4c5a2b40a379a8f64e79c27b022541b713ab948c8734d8cc30c79590d2f8c5`. Actual guest recheck returned native0, unchanged stage914/tools60 and absent state. The guest remains assigned and running pending the owner's decision; no finished notice has been sent. M35 remains In progress.
+
+Default abort disposition (2026-10-24T00:34:31Z):
+
+- The owner selected retention of the current Incomplete result and normal guest shutdown. No extra32-attempt batch, preparation/start, abort or terminal replay is authorized for this attempt. Full pre-start evidence and the immutable handoff remain preserved. All guest access has finished; the provider received the finished notice with explicit retention of definition, disk, seed, creation/requester records, reservation and evidence. Shutdown confirmation remains pending. This is the end of this bounded attempt, not completion of M35 or verification of default abort.
+
+Default abort retained shutdown (2026-10-24T00:34:37Z):
+
+- Provider normal ACPI shutdown returned0. Root independently queried the exact assigned UUID and observed shut off. Definition, disk, seed, creation/requester records, reservations and evidence remain retained; provider checks report unchanged other guests. Root rehashed the original archive and manifest after shutdown and both match the verified pre-start values. Private closure receipt: `work/m35-live-default-abort-corrected-20261024/default-abort/root-provider-shutdown.json`. The bounded attempt ends as Incomplete with no lifecycle start/abort/replay, no additional probes and no deletion. M35 remains In progress; resource closure is not default-abort acceptance.
+
+Default abort retry preparation (2026-10-24T00:43:45Z):
+
+- Prepared plan: `work/review_sessions/20261022_193200_m35-terminal/plan/plan20261024_004200_codex_gpt6_implementation.md`, SHA256 `fd18ef38987077a0efa18ae5cf83a5ac1d01ee7a8f4727b7ea805b598a0c559e`. Retry Plan Status: accepted; Plan Acceptance: 2026-10-24, owner direction after presentation; Implementation Authorization: auth20261024_022021, R001-R003, exact assignment and observed prerequisites required. Earlier implementation and ended-attempt authorizations remain limited to their recorded scopes.
+- R001-R003 propose one fresh Rocky8.10 guest with 2 vCPU, 4096 MiB RAM and 48 GiB disk, unchanged frozen tools, 24 standard probes and at most 32 early-child attempts. A complete actual held/created/resumed/exited lifetime is required before fixture preparation/start. Missing exposure ends the case as Incomplete with complete pre-start preservation; no cap reset or exposure waiver. A fresh guest does not guarantee that ordering. Conditional scope is one default start/abort, sequential refusals and complete transfer/fresh-copy replay. New private root: `work/m35-live-default-abort-retry-20261024`; it has not been created. No new VM request, guest command, probe, lifecycle execution or source change occurred during preparation. The prior closed attempt and its 914-member evidence remain preserved.
+
+Default abort retry result (2026-10-24T02:33:25Z; retained shutdown verified at 02:35:59Z):
+
+- Final handoff: `work/review_sessions/20261022_193200_m35-terminal/handoff/hand20261024_023500_codex_gpt6_implementation.md`, SHA256 `e8e864f0a3282d42930440f1b5cd7e22bec1283ec91cb09986670310b41ce47a`. R001 executed under `plan20261024_004200`, `auth20261024_022021` and exact assignment `auth20261024_022403`; its required coverage remains Incomplete. R002 and the R003 refusal/replay branch did not execute. R003 pre-start preservation completed.
+- The fresh pinned installation returned native 0 in 375.365834936 seconds, with actual successful build/pin verification. The sole runtime batch returned native 2: all 24 standard and 32 early-child checks individually completed with child 0, no supervisor error and no unreaped task, but required early held exposure was 0/32. Twenty group-exit checks separately exposed 11 actual ESRCH events with matched exits. Missing early-workload coverage is not an observed product failure. The configured cap was respected; no fixture preparation, observation start, abort, refusal or terminal replay ran.
+- Complete evidence is under `work/m35-live-default-abort-retry-20261024/default-abort/`. Root independently compared all 909 archive and extracted members, types, modes, sizes and hashes to the independent manifest: zero differences and no duplicate archive names. Archive: 24,217,600 bytes, SHA256 `693d57b6854b1862f00c60801faff76ba4a9f07913c5985e323a0e453e868b09`; manifest SHA256 `f97051254a149f5e276184ce8166b086c466463f0f2d7bf6dae2c941154c4c80`. Actual post-transfer guest check confirmed stage909/tools60 unchanged and absent observation state. Last guest read ended 02:33:25.343565 UTC. Final local raw/member/source readback: `final-readback.json`, SHA256 `31807f97ee5c394914552f949209b7267b7e912c5f702cd2ea338ea8ff729f4d`.
+- Provider normal shutdown completed at 02:35:17.072647 UTC with all retention checks true. Root independently confirmed the exact UUID shut off at 02:35:59 UTC and rehashed the archive/manifest unchanged. Private record: `root-provider-shutdown.json` in this case. Definition, disk, seed, creation/requester records, reservations and evidence remain retained. The previous attempt remains separate and intact. No source change, additional probe batch, restart, deletion or git/GitHub mutation occurred. This bounded attempt ends Incomplete and does not complete M35.
+
+Workload-independent prerequisite correction (2026-10-24T04:24:30Z):
+
+- Owner option1 is implemented under `plan20261024_034700` and `auth20261024_035709`, H001-H003. A complete actual held CLONE lifetime from any workload in the same batch supplies the prerequisite; C-specific exposure remains separate. The original24 standard plus maximum32 C schedule remains. This changes private rehearsal/checker/consumer code, not product `observe.py` or the shipped supervisor.
+- Current package: `work/m35-held-lifetime-criterion-20261024/`; final source inventory `source-members-guards-v3.json`,26 files, SHA256 `e91f3c5664aecb65eeb0e27829e17ac1cb9a1abfef7461518737ca2430f2a866`. Final handoff: `work/review_sessions/20261022_193200_m35-terminal/handoff/hand20261024_042400_codex_gpt6_implementation_supersedes_hand20261024_041400.md`, SHA256 `caf0c0a35c5da4b6b187e4805476b04954b9b5ad31ff0c91055db5ef7c18f1b6`.
+- The common checker validates every held lifetime, per-case supervisor/command source, root/created child terminal records and confirmed exec/native agreement. Missing required evidence remains Incomplete; contradictory evidence is rejected. Actual runtime production and retained inspection use the same record guards. The real start consumer requires actual native0, supported current proof and exact environment/boot/source bindings before dispatch. Packaged dependencies use the same copier and actual entry points.
+- Final actual retained checker suite:27 Passed,0 Failed, native0 (`verification/retained-guards-02/summary.json`). Both historical56-case batches contain valid totals8 and9 outside C, while C stays0/32 and original native2/Incomplete stays unchanged. A supervisor-hash mismatch and a non-held child's native1/raw256 exit were independently found to be falsely accepted in the first implementation; accepted pass15 corrections now reject both through actual CLI regressions. The first handoff, failed checks and before-source snapshots remain preserved.
+- Changed-source regression was authorized by `auth20261024_042102`. Actual corrected host run started04:21:42.818711Z and returned native0 after6.654948114184663 seconds:24 standard+C27 workloads, complete CLONE total33 (JDK6,jstat26,C1), group ESRCH11 across20 group cases, no tracing error/unreaped task. C stopped on its own exposure. The earlier host batch remains separate at34 workloads/held32. Total host workload batches:2, of which1 is the corrected-source regression; preparation failures ran no workload. This is actual host Python3.13 verification, not guest Python3.9 runtime verification.
+- Current proof consumption/staging suite:20 Passed,0 Failed, native0 (`verification/consumer-guards-current-01/summary.json`;17 actual CLI invocations plus3 direct evidence checks). Current and staged consumers accepted the actual corrected host proof and rejected host-as-guest, historical native2 and mismatched source/boot/criterion/lifetime/error evidence. Separate old-source suite20 Passed verifies that the prior producer proof remains refused after dependency change. No successful guest proof was fabricated.
+- Final integrity record: `verification/final-integrity-guards-v3.json`. Original contexts, both host traces, frozen source snapshots, candidate56 and four shipped source hashes remain unchanged. Root independently rechecked final26 source members and native command output hashes. Independent pass16 verified both guard fixes through11 actual CLI invocations with no new findings, including independent stream-hash and missing-consumer-guard refusals. Report: `work/review_sessions/20261022_193200_m35-terminal/reviews/fup20261024_042517_codex_gpt6_process_on_hand20261024_042400.md`, SHA256 `75632a0f5f36bf6e9cd5976f7f47635c626a75a4d82a11c97704483141ebf0c0`. The bounded local correction and reader documentation are accepted. Second-person pass17 found no issue in current package/CLI/result/coverage statements; report `work/review_sessions/20261022_193200_m35-terminal/reviews/fup20261024_043054_codex_gpt6_consumers_on_hand20261024_042400.md`, SHA256 `6e08adb96808cd4b448a2a8607e90ce747ffc1aac0b3ac3d52e1c4f88eb40882`. No VM allocation/restart/access, guest install/preparation, observation/start/abort/finish or terminal replay occurred. M35 remains In progress; this local prerequisite correction does not complete T3-T7 or authorize a live retry.
+
+Corrected default abort active checkpoint (2026-10-24T05:06:28.544401Z):
+
+- Actual pinned installation returned native0 in401.229 seconds; Ansible failed0/unreachable0. Current guest batch returned native0:24 standard plus32 C cases, complete same-batch CLONE11 (JDK3,jstat8), C0/32 and group ESRCH10. Current source/identity/boot guards and the real start consumer accepted that proof; no additional batch ran. Actual903-PV population and preparation/chain gates passed. Pre-start collect native1 health-completion diagnostics and ten real start findings remain preserved.
+- The actual default start returned native0 at05:06:28.544401Z on the same boot, with original7200-second cutoff07:06:28.544401Z. Initial active sample has no errors and abort failures0. Private evidence: `work/m35-live-default-abort-any-held-20261024/default-abort/active-observation.json` and receipt030-start. The bounded planned abort, terminal preservation, refusals and replay are in progress; no completion or two-hour claim is made.
+
+Corrected default abort final result (2026-10-24T05:07:40Z; shutdown independently verified05:09:18Z):
+
+- A001-A003 executed under plan20261024_044600 and auth20261024_044805/auth20261024_044849. Final handoff: `work/review_sessions/20261022_193200_m35-terminal/handoff/hand20261024_051038_codex_gpt6_implementation.md`, SHA256 `8f71f556ebbdae5e32b6f7bdadadc555f81c2d7a960dae02f64f58e7f75bdbb8`. Actual start at05:06:28.544401Z, planned abort at05:06:51.104151Z after22.560259639 monotonic seconds, launcher completion05:07:24.272841Z/native1. The original7200-second configuration remained intact; this is a short abort test, not a two-hour observation. No trace error or unreaped task occurred.
+- Two real successful replacements saved first and final abort records; only evaluation changed. Final abort SHA256 `5d50ca54552d2c480898a0f511a43a349f364411e4731b8bae728f24789e7794`. Exactly one confirmed appliance-stop exec returned0 in10.972235142 seconds; independent unit/journal and all four former JVM lifetimes confirm shutdown. Actual terminal errors are empty. The original non-successful verdict is preserved.
+- Actual subsequent finish and abort refused with native1,20 assertions Passed, zero additional stops/replacements and unchanged state/tools/unit/journal. Both fresh-copy readers returned native1/Incomplete and agreed with actual runtime semantics; replay assertions Passed. The observed observation_duration assertion and missing aborted-observation, metric, sample, scheduled-pass and JFR coverage remain visible. This agreement establishes consistent interpretation, not whole-product success or independent evaluator-entry timing.
+- Root independently verified all1501 archive and extracted members, modes, sizes and hashes against the independent manifest: zero differences/duplicates. Archive71,004,160 bytes SHA256 `190022b2e1f7fb17332d4856dda651f0cf8fcbc8bbd5bfd6f03089a57ae9b06f`; manifest SHA256 `0937d692ca2a5b666c939e5fec9cc9c97bb27da4c61aabe2de9eac44e8f25914`. Actual guest originals matched after transfer; last guest access05:07:38.772508Z. Evidence: `work/m35-live-default-abort-any-held-20261024/default-abort/`, `export-verification.json`, `replay/summary.json`, and `root-provider-shutdown.json`.
+- Provider normal retained shutdown completed05:09:02.629611Z; Root independently verified the exact assigned UUID and shut-off state05:09:18.876542Z. Definition, disk, seed, requester/creation records, reservation and evidence remain retained. No frozen product/helper source change, extra probe batch, observation retry, intentional fault, deletion or git/GitHub mutation occurred. M35 remains In progress for the unresolved evaluator-entry, fault/concurrency/proof and landing requirements.
+
+Local evaluator instrumentation result (2026-10-24T06:25:31Z):
+
+- Actual final retained-input suite completed12 Passed/native0 on CPython3.13.5, with complete input preservation; restricted-environment execution completed5 Passed/7 Incomplete/native2. Two actual hold checks and four launcher/writer modes preserved their expected native outcomes. These checks establish interpreter observation, actual dependency-error exposure and writer mechanics only, not live evaluator-entry or fault acceptance. Final handoff `hand20261024_062732` SHA256 `ba0519ca4bc39a0e2bb974183b0f8a13e16c4ec5d982454a7b0a3dcea7de4258`; private evidence `work/m35-terminal-faults-20261024/`, final `local-host-05`, `hold-contract-host-01`, `launcher-host-02` and `final-audit-v3.json`.
+- Current source manifests verify104/5/19 members. Original candidate56, private26 and actual retained inputs remain unchanged; the separate candidate58 manifest is `66dd748c7d6cbf103cfff20f3a70869eba7e71c539a089cadbab6824b2e5a879`. Root independently rehashed all69 entries in `source-freeze-v3.json` with zero differences. New implementation review is pending. R00/R01 guest preparation is underway; no new lifecycle has started. Installed T7 procedures, post-terminal concurrency and remaining fault cells are not complete. All existing T2-T7 limitations remain.
+
+Entry launcher review and fresh assignment (2026-10-24T06:41:04Z):
+
+- Independent pass19 re-executed all12 local observer cases and four real writer modes, then demonstrated two private launcher defects: an overlapping output added9 files to a separate tools copy before refusal, and actual signal64/child-64 became outer error125. Both corrections are accepted within P001/P004 in `cmt20261024_064104`; the reviewed v3 source and failed receipts remain immutable. Source acceptance remains pending. Root rehashed all69 frozen members without differences after disposition.
+- The first fresh R00/R01 pair is independently identified and assigned by `auth20261024_063348`; both are in use, with no installation or observation result claimed here. Corrected deployment helpers and actual guest prerequisites remain required. The targeted changed-launcher check has a separate10-minute bound and does not reset the completed original rehearsal. Current review loop has2 open findings; cumulative reviews19, Direct0/Delegated19. M35 remains In progress.
+
+Corrected launcher verification (2026-10-24T06:52:38Z):
+
+- Final corrected handoff `hand20261024_064751` and independent pass20 establish both accepted launcher corrections. Actual host6-case runs Passed; overlap refusal preserves the entire input tree, real SIGRTMAX64 retains child/launcher/outer -64, and four real writer paths retain0/1/1/-9 with expected first/final/tmp payloads and errno. The independent extra argv mismatch refuses before writes. Restricted-runtime1Passed/5Incomplete is retained separately. No whole-product or guest acceptance follows from these mechanics.
+- Root accepts report `fup20261024_065238`, SHA256 `380861cc35f572d180b4cb68ac239c66ca839a571e14a48f24d590380f02887f`; two-pass correction loop ends with0 open findings, cumulative20/Direct0/Delegated20. Original v3 all69 and new v4 all203 frozen source files are exact. Selected execution is case-controller-v4 with cases-v4/R00,R01; product candidate and original package remain unchanged.
+- Both exact assigned guests passed actual preflight and each single installation began at06:48UTC. Installation completion, guest capability, T7, actual entry/concurrency and all F/G cells remain unverified at this checkpoint. Prepared P003 syntax/help checks alone establish no installed proof behavior. M35 remains In progress.
+
+Entry pair preparation outcome (2026-10-24T07:08:29Z; retained shutdown independently verified):
+
+- Both single pinned installations and capability batches completed with native0; actual capability consumers accepted the source/guest/boot bindings. R00 had13 complete held lifetimes across24 standard+C10 cases; R01 had5 across24 standard+C32. Neither genuine observation started. No evaluator-entry, terminal persistence, lifecycle stop, concurrency or replay claim follows.
+- R00 retained-original preparation refused its already existing override before changing it. The preserved tools directory also prevented the configured IOC user from opening the database. R00 remains pre-start Incomplete; no original source, permission or fixture was changed to force execution.
+- R01 actual preparation succeeded, but the private P003 helper expected only static tools and four fixtures. Its guard rejected the approved generated `retest-deadband.db` and `log4j2-soak.xml` before invoking any shipped proof producer. Existing expected members matched. This confirmed helper defect leaves T7 producer/consumer execution and the entry case Incomplete.
+- Root independently verified all635 R00 and1204 R01 archive/extracted members, modes, sizes and hashes with zero differences or duplicate names. R00 archive SHA256 `0909ece74e55f8cc55465c8dfb8d401c3751dfd7052d8242ac4ca1e99c4f2ca4`; R01 archive SHA256 `949de6956ea5ac0edff45eeebd3fd050d76aa0a3129be62c65ab39e7bf2bce2b`. R01 four active GC logs grew after the exact snapshot; the later native1 recheck is preserved and live-state equality is not claimed. Evidence: `work/m35-terminal-faults-20261024/cases-v4/`, per-case `root-export-verification.json`, `guest-access-finished.json` and `root-provider-shutdown.json`.
+- Both guests were normally shut down with definitions, disks, seeds, records, reservations and evidence retained. Root independently read exact assigned UUID states as shut off. Full handoff `hand20261024_071237` records these pre-start outcomes; the accepted local launcher correction remains valid and unchanged.
+- The separate local-only plan071047/auth071354 corrects P003 expected membership from approved source and actual preparation receipts while retaining strict equality. Actual retained-input regression completed24 Passed/native0 in2.507262 seconds, preserving all original inputs: the old comparison rejects the two generated files, the new64-member positive and current/shared/staged checks pass, and19 expected native1 refusals remain distinct from product failure. Frozen v2 has14 code/document/diff members, manifest SHA256 `cd4f3ca69881fc7bf7abf778deae67f2672767822a895aab50c40821d5443689`. Evidence: `work/m35-terminal-faults-20261024/inventory-suite-v2-01/summary.json` and final handoff `hand20261024_072240`. Independent pass21 completed30 actual local CLI assertions with no findings; report `fup20261024_073009` SHA256 `5645a8b745eddbba9700eb2036589273152eb3762d79b790e2469ca97f33e094` and its full preservation audit are accepted. This local correction loop is closed. v2 has not run on a guest. Two of the original maximum10 fresh guests are consumed; all eight F01-F07/G01 cells remain. No standalone retry, extra guest, original R00 repair or historical outcome change is authorized by that correction. M35 remains In progress.
+
+First fault pair assignment and normal-pair preparation (2026-10-24T07:56:57Z):
+
+- Actual retained-input first-pair analyzer/archive checks8 and helper staging2 met their declared expectations; writer-only evidence correctly remains lifecycle Incomplete. Root read hand074500 and independently verified all192 source records against manifest SHA256 `1a9c0d4d32a329489025a9b8fde3ea87538837974416078ba0dbaea402b7eda1`. Accepted product, observer, supervisor, launcher and installed-inventory helpers remain unchanged.
+- Provider created two fresh guests after actual capacity FIT. Root independently checked exact assigned UUID/boot, running state, strict-key SSH, Rocky8.10, cloud-init done and absent observation/stage paths. F01 first-save EIO and F02 kill-after-first are bound by auth075657; all actual installation, capability, genuine start and terminal results remain pending at this checkpoint. Allocation is4 of maximum10, with2 assigned running. Private identity evidence remains in `work/m35-terminal-faults-20261024/root-fault-pair-assignment-readback.json`.
+- Separate F03/F05 preparation is frozen in hand075221; source manifest SHA256 `b8443e3a6aa60a0135590c00a5a121f31a402e1431832cab09e56e33cf92f7da` has190 members, independently verified by Root. Four actual retained-input CLI checks met expected native statuses2/2/2/1 and retain their narrow mechanics claims. The original7200-second timers and actual normal finish remain unexecuted. No additional guest or shorter substitute was used.
+- An owner allocation question is pending for one extra fresh R01 retry, increasing maximum total from10 to11. No answer or extra allocation is inferred; existing F01-F07/G01 work remains authorized. Original R00 and failed R01 records remain Incomplete and preserved. M35 stays In progress.
+
+First fault pair actual start (2026-10-24T08:17:30Z):
+
+- Each single pinned installation returned0 in435.869/431.017 seconds with Ansible failed0/unreachable0. Both actual capability batches returned0, retaining24 standard+32 C cases,11 validated held lifetimes and C0/32. All source/native/boot guards and actual downstream consumers accepted the declared capability. No extra batch ran.
+- Actual903-PV preparation and required fixtures/chain checks completed. The installed-inventory v2 builder/readback returned0 on both actual guests. Pre-start collection returned1 with only the already declared health_coverage/health_completion diagnostics; these receipts remain unchanged. Unexecuted later preparation steps proceeded without repeating collection or editing frozen source.
+- Genuine F01 start returned0 at08:17:30.230117Z with original normal cutoff10:17:30.230117Z; F02 returned0 at08:17:29.773840Z with cutoff10:17:29.773840Z. Root read both active records and native start receipts. Both retain10 actual start findings including missing health/runtime/focused proofs; no full product readiness claim follows. Planned single abort faults, stop/evaluator assertions, F02 refusals/recovery analysis and complete retention remain pending. Evidence: fault-pair-v1 per-case active-observation.json and receipts029f/030.
+
+First fault pair retained outcome (2026-10-24T08:23:23Z):
+
+- Final hand082323 SHA256 `6827ecb6e31b5a6822a257a2c88d2491a43d1b278b0699328b7b2f8aa55dfa08` records F01 simulated first-replacement EIO and F02 actual kill-after-first. Root read raw replacement/errno/signal/wait, observer events, actual stop exec/native status and independent prior-JVM records. Actual31 selected boundary assertions Passed. No second stop or false successful terminal was recorded; this is not full product or two-hour acceptance.
+- F01 native1 retained32769 temporary bytes, zero successful saves and a complete zero-entry observer lifetime. F02 native-9 retained32779 identical first/last/durable bytes with no evaluation. Each actual appliance stop returned0, corroborated by its journal interval and four absent prior JVMs. Actual live ESRCH events1/2 are distinct from capability events7/13.
+- F02 concurrent helper returned1 before output creation or either competitor because five actual generated Python bytecode files were absent from its pre-start expected inventory. Sequential calls did not run. The failed receipt and all files remain unchanged. Normal-pair applicability and bounded local correction are being examined before another allocation; no cache deletion, live edit or retry occurred.
+- F02 real evaluate/aggregate on fresh verified copies each returned1/Incomplete; recovery replay Passed with no embedded-evaluation agreement claim. F01 had no terminal and was not replayed. Existing short-duration and missing sample/pass/metric/GC/JFR findings remain visible.
+- Root independently verified all1464/1480 full archive and extracted members, types, modes, sizes and hashes with no differences or duplicates. Archive hashes are `ad619456c4a18f8afcf773fd97f63a614634cfefb3149c857207b0b9db58ba0d` and `e410ac198d2f23e92a172741c5ba59435fc120073893272a44e7fdb14036ca3d`. Actual guest post-transfer checks returned0/unchanged. Per-case root-export-verification.json and root-provider-shutdown.json retain independent checks.
+- Guest access ended08:20:07.094724Z/08:20:05.400835Z. Provider normal retained shutdown completed08:21:21.818173Z/08:21:28.867088Z; Root independently confirmed both exact UUIDs shut off and unchanged archive/manifest hashes. All resources and evidence remain. Four of maximum10 allocations are consumed, none currently running for this plan; six untouched fault/guard assignments remain. M35 stays In progress.
+
+Normal fault pair applicability (2026-10-24T08:43:13.478622Z):
+
+- Actual supervised finish/abort refusals on complete retained F02 copies ran under host Python3.13, with and without child -B. All four standard cases retained native1, zero stop/replacement and unchanged complete state/tools. The real supervisor explicitly sets PYTHONDONTWRITEBYTECODE=1 for the child. This establishes the selected inner refusal path only, not full guest journal/service verification or Python3.9 cache validation.
+- A separate cache-prefix batch also produced no cache in all four cases. Two no-B assertions incorrectly expected generation and remain Failed; their actual refusal and preservation checks were true. No source change is needed for the selected normal-pair path. F03/F05 do not consume the new runtime-cache guard, and Root independently verified all190 normal and192 first-pair frozen records unchanged.
+- Final hand084313 SHA256 `cec67fb2deddb0cbd6a2dbd91667ebf02f6964b6f7ee9b7fbc45396e93113a61` and runtime-cache-v1/refusals-host-01, refusals-prefix-host-01 retain the actual evidence and limitations. Earlier sandbox driver/ptrace errors remain preserved. No guest or new observation ran in this local check.
+- Provider request m35-fault-normal-pair-20261024 is pending for the next two fresh guests. Ordinary installation/capability/readiness and actual7200s gates remain. Separate B001-B003 runtime-cache correction is authorized under existing P002/P004, bounded to its original rehearsal interval; no original source, guest or unsuccessful result may be rewritten.
+
+Normal fault pair installation active (2026-10-24T08:56:06.056110Z):
+
+- Provider completed fresh F03/F05 readiness after FIT checks. Root independently confirmed both exact running UUIDs, strict-key SSH/DMI/boot, Rocky8.10, cloud-init done and absent state/stage; four native queries returned0. Exact binding auth085323 references root-normal-pair-assignment-readback.json SHA256 `be9f7aef9f0ed9c6757e29394d3abb033c752e58998fbf5b86f125738ca1aea5`.
+- Actual frozen controller preflight002-008 returned0 per case. Single installation workers began08:56:05.201487Z and08:56:06.056110Z; Root read both actual009-install command receipts. Completion is pending and no observation has started. Source190 remains unchanged, allocation6/10 and2 running; prior guests stay preserved.
+- Separate runtime-cache hand085448 records final host15/current-staged17 matching native expectations and exact0600 correction from the actual retained metadata. Foreign3.9 remains Incomplete. Original failures and source192/190/exports remain preserved. Its independent pass22 is active; the normal pair does not consume that new helper.
+
+Normal final-save fault observation active (2026-10-24T09:15:59.300549Z):
+
+- Both actual single installations completed native0: F05 at09:05:18.680515Z/552.624319s and F03 at09:12:25.121821Z/979.920251s. Each real capability batch returned0. F03 continues independent903-PV readiness and has not started at this checkpoint.
+- F05 genuine start returned0 at09:15:59.300549Z, original7200-second cutoff11:15:59.300549Z, monotonic1760.19841075 on the assigned boot. Root read active-observation.json. Actual903 preparation, installed inventory and pre-start guards completed; the original timer alone will dispatch normal finish with the selected final-save EIO.
+- Actual pre-start collect native1 health_coverage/health_completion diagnostics and ten start findings remain preserved. Missing full sample/pass, health/runtime/focused proofs do not establish product acceptance; this run is the independent terminal-persistence fault contract. No clock, source or timer change and no manual terminal is authorized.
+- Evidence is under fault-normal-pair-v1/F05/shortened-finish. Its normal monitoring and final stop/entry/return/save/raw-evidence/export checks remain in progress. Separate F221 cache correction source17 passed43 declared author checks and independent pass23 is active; this new helper is not deployed to either normal case.
+
+Normal fault pair active and cache correction verified (2026-10-24):
+
+- F03 genuine start returned0 at09:18:44.079620Z; its original cutoff is11:18:44.079620Z and monotonic start2047.961893661. Root read the actual active record and complete hand092056, SHA256 `5a24dc8fe2f2b08e81872279e21e36d8f5b5ee8c459ceab3c03b729e125285fb`. Both cases retain their original timers and independent monitors. F03 first checkpoint elapsed42.475s and F05 checkpoint elapsed275.934s had errors[]/abort0. Neither terminal had completed at this checkpoint.
+- Independent pass23 verified accepted F221 using38 actual executions: native0=4, native1=18, native2=16, all matching their declared outcomes. It separately audited43 author receipts, not43 additional executions. Root read the full report, inspected actual raw negative outcomes and reconciled native counts; new findings0. Report SHA256 `cf4fcee9e07d293a52cb7b6ec4076b45a962a4d32518f62f484f28311c5a21a9`; summary SHA256 `ab121c92030b5ba47094d30f5650aade439ea8d4245173a7f9fc2bb0d7052b1a`.
+- Root independently rehashed all17 corrected helper records and190 normal-source records with zero differences. The bounded helper correction loop ends with0 open findings. Actual guest Python3.9 cache acceptance and remaining fault procedures are not established by these local checks. No helper change was applied to the active normal observations; prior failed and Incomplete outcomes remain preserved.
+
+Remaining four fault procedures prepared (2026-10-24T09:29:21.835523Z):
+
+- Root read full hand092921 and remaining-v3/README.md, independently verified all351 file hashes/sizes/modes against source-fault-remaining-v3.json SHA256 `ce47d1ec50a49e21ade62fa4b0a569d09429c652a2f7b4fd693476023f257af4`, and inspected actual local native/raw outcomes. This establishes prepared procedures only; no new guest was allocated.
+- Thirteen actual local commands retain12 matching expectations and one Failed expectation mismatch: F04 analyzer rejected the actual F02 trace with native1, while the driver expected2. Three helper invocations stopped at host DMI PermissionError before UUID comparison or any fault. Four staging inventories are exact and original/frozen sources unchanged. These failures and limits remain visible; no unchanged rerun was used to revise the result.
+- F04/F06/F07/G01 actual guest identity, Python3.9 cache validation, selected faults, final retention and replay remain unexecuted. After current normal-pair retention and shutdown, the four remaining assignments fit the original total10 cap. No extra R01 or T7 coverage follows from this preparation.
+
+
+F03 normal interruption verified (2026-10-24T11:23:17Z):
+
+Actual monotonic duration7202.585329341s in the original boot preceded first-save SIGKILL/native-9. Complete observer activation has zero evaluator entries; first and last durable32938-byte terminals share SHA2568427c9de60887569afbac80f2b25db40500229ecebb3ac0c92b719f36c7a7cd2. One actual service stop returned0 in11.794841543s and all four prior JVM lifetimes are absent. Boundary16/16 and sequential finish/abort refusal20/20 assertions Passed; originals, units and journal remained unchanged by refusals. Actual fresh-copy evaluate/aggregate each returned1/Incomplete; recovery replay Passed without embedded agreement. Missing metric counter/pass coverage remains explicit.
+
+Root independently verified all3304 archive/extracted members, modes, bytes and hashes with no differences or duplicates. Archive385587200 bytes has SHA2568711447f1f97e41feb0e1758fdb5550eeaae53bdc6e785e1a2c7379c4c3cbdc9; independent manifest SHA2567d8554e56b632e223d3281b0b3f0365b48b791511a3557009de9dce15d6c7b20. Guest-original recheck returned0; access ended11:21:15.528948Z. Provider normal retained shutdown completed11:22:48.519090Z; Root independently confirmed exact UUID shut off and unchanged archive/manifest at11:23:17Z. Evidence: `work/m35-terminal-faults-20261024/fault-normal-pair-v1/F03/shortened-finish/`, including `root-export-verification.json` and `root-provider-shutdown.json`. F05 remains the same original active job; no completion claim or new allocation follows this checkpoint.
+
+
+F05 normal final-save fault verified (2026-10-24T11:26:08Z):
+
+Actual monotonic duration7202.549093355s preceded the original timer terminal. First replacement succeeded11:17:07.039955Z; actual evaluate call11:17:07.043791Z consumed matching first facts, completed a dictionary return11:22:03.027682Z, then second replacement returned simulated EIO(-5)11:22:07.135203Z and actual child native1. The32937-byte durable first record stayed unchanged; the37909-byte temporary evaluation matches the actual return. One confirmed stop0 took11.432811655s; four original JVMs are absent. All25 selected boundary assertions Passed. Fresh evaluate/aggregate each returned1/Incomplete with metric_counter_coverage unavailable; recovery replay Passed without embedded agreement.
+
+Root independently verified all3280 archive/extracted members, modes, bytes and hashes without differences/duplicates. Archive384450560 bytes SHA25639e2a4dfa09d19e28b01946ab6ca3fe36b2c44a4ec3bbd8c9bc6702508f17118; manifest SHA2568f9b2a844d0a6578fe296ea0096434b26f03324d18050811ad3f3217422c03f5. Original guest recheck0 and access-finished11:24:23.933424Z preceded retained shutdown11:25:49.867749Z. Root directly confirmed exact UUID shut off and unchanged archive/manifest11:26:08Z. Evidence is the corresponding F05/shortened-finish root under fault-normal-pair-v1.
+
+Full hand112700 SHA25645bcf531b88aebd614ec906c258ad9ff28f0ff2dd61f700b382a6ad96bbe17d4 is read with correction hand112952 SHA25699aafe35d2c84cde26e585725861224673a9e29aa3424db873d5609845fced34. Original readback incorrectly searched event-kind text for ESRCH. Actual ptrace-unavailable errno3 counts are F03=1/F05=13; all14 have subsequent matched pending/confirmed/process-exit records, F03 native-9/wait9 and F05 traced children native0/wait0. Root independently read these raw sequences; no rerun or changed boundary conclusion. Original reports remain preserved. Source190/17/351 are unchanged. Remaining four cases and T7/concurrent limitations remain unresolved; no complete product or M35 claim.
+
+F04/F06 retained outcome (2026-10-24T17:07:31Z):
+
+F04 genuine planned abort reached actual evaluate after first persistence, completed its dictionary return and encountered simulated EIO on final replacement. All25 selected boundary assertions Passed; native child1, one stop0 and four prior JVMs absent are retained. Durable32969-byte first facts are unchanged; temporary39069-byte evaluation matches the actual return. F06 saved first facts, but its actual Python3.9 cache guard rejected a payload before dependency mutation. The observer then timed out at its60-second hold/native125; intended evaluator exception remains unexposed. Its32799-byte first facts are unchanged, with one stop0 and four prior JVMs absent. Both terminal traces contain two actual errno3 records. Neither planned abort establishes two-hour acceptance.
+
+Both fresh-copy readers returned1/Incomplete with observation_duration failed assertions and missing required coverage; recovery replay Passed without embedded agreement. Root independently verified all2107/1548 archive and extracted members with no differences or duplicates; both original guest rechecks returned0. Exact UUIDs were confirmed shut off at17:07:31Z/16:57:56Z with resources and evidence retained. Evidence: `work/m35-terminal-faults-20261024/fault-remaining-v3/F04/shortened-abort/` and corresponding F06 path, including root-export-verification.json and root-provider-shutdown.json; final hand170741 retains its publication-time closure status.
+
+Owner selected retained-input cache correction before F07/G01. Plan170217/auth170453 binds matching Python3.9.25 diagnosis, conditional strict comparison and real current/staged consumers. Fresh F07 allocation9 is assigned under auth171318 for one pinned installation and isolated retained-input checks. Cause, consumer verification and independent review remain pending. F07 lifecycle and G01 allocation remain unexecuted. Original F06 evidence and old helper sources remain immutable; no additional F06/R01 retry is authorized.
+
+Matching runtime cache correction verified and final cases assigned (2026-10-24T17:51:49Z):
+
+The unchanged old checker reproduced its false refusal on complete retained F06 tools under Python3.9.25. Actual pinned-source compilation and all five retained cache payloads agree across16 supported code fields and161 recursively inspected code objects, despite different marshal serialization bytes. The private correction compares those exact typed fields and rejects malformed/trailing/wrong code while preserving source, membership,0600 mode, header, filename, optimization and unsupported-prefix checks. Product sources remain unchanged by this correction.
+
+Both actual current/staged source consumers accepted the complete retained positive inputs. The32 selected CLI outcomes matched their declared expectations: three native0, twenty-seven native1 and two native2; these are checker outcomes, not32 product passes. The original20-minute phase ended after four minutes, without an additional batch. Independent pass24 executed two new negative controls and audited the full native/stream records with no findings. Root independently verified all2739 archive/extracted members with no differences or duplicates. Candidate4 manifest SHA2561b6498f8f27532bc58d1c4163d90217de9d277d24f5f9a34bc9374cb549acdb0 and full evidence are under `work/m35-terminal-faults-20261024/runtime-cache-payload-v1/`.
+
+Root separately checked complete remaining-v4 source356,140 inherited F07 preparation/receipt files and18 staged extras members. Source manifest SHA2567855835cbc925cfd8e21a7bd0da374eacddc71166cdaab2638268079256f8551 is selected by auth20261024_175149. F07 retains its one completed installation and resumes upload; G01 has its exact fresh READY assignment. Both actual identities and absent initial observation paths were verified. Allocation10/10 and maximum2 running remain; all prior guests and failed outcomes are preserved. F07/G01 lifecycle results remain pending. Retained F06 verification is checker evidence only and does not repair its unexposed exception, original/candidate regression, concurrency or T7 coverage.
+
+F07 actual observation started (2026-10-24T18:01:04.523294Z):
+
+The single installed F07 case passed its24-standard/max32-early capability batch with16 complete held-thread lifetimes; C-specific exposure remains0/32. The real preparation, exact installed inventory and pre-start guards completed. Actual028 collection retained native1 for health_coverage/health_completion only; independent hard checks passed and the not-yet-executed029 pre-start returned0. No producer was repeated. Genuine start returned0 at18:01:04.523294Z, monotonic3295.24210158, original cutoff20:01:04.523294Z. Ten start findings remain visible; no product acceptance is inferred. The original planned nested-evaluator interruption and final retention remain in progress. G01 single installation completed17:58:53.586653Z/native0/344.131314352s; its preparation continues separately.
+
+F07 nested interruption retained and G01 active (2026-10-24T18:09:00Z):
+
+F07 first32771-byte terminal was durable before actual evaluate entry18:02:38.091938Z; the argument matched persisted facts. Actual nested _evaluate_observation entry18:02:44.763246Z preceded externally applied SIGKILL18:02:44.768992Z to the same PID/start_ticks. Native-9 and no completed top-level return are retained. First/last terminal SHA2569607dd9f8760528267055451cd1992721733a870e09771fea871f00500094527 is unchanged. One actual appliance stop returned0; all four prior JVM lifetimes are absent and the independent journal has one stop interval. Boundary16/16 and subsequent finish/abort refusal20/20 assertions Passed, with no second stop or evidence change.
+
+Fresh-copy evaluate/aggregate each returned1/Incomplete, retaining observation_duration failed assertions and missing coverage. Recovery replay Passed without embedded agreement; planned early abort does not satisfy two-hour acceptance. Root independently checked all1512 archive/extracted members with no differences or duplicates. Archive71720960bytes SHA256f42770903a2c7c2d4fc573d477a863c71c991341fb01ee6388775d5f0aefd898; manifest SHA2561a4c6bf99f66cffbf09fccf3f5bdd1352d4fbdf6869a99a70aaf6b64fb727a5a. Original recheck0 and access-finished18:03:42.854234Z preceded retained shutdown18:05:10.908357Z. Root confirmed exact resource shut off and unchanged hashes18:05:24.453871Z. Evidence: `work/m35-terminal-faults-20261024/fault-remaining-v4/F07/shortened-abort/`.
+
+G01 genuine start18:07:43.727862Z/cutoff20:07:43.727862Z, monotonic1448.71495862, returned0 after actual prerequisites. Ten start findings are retained. Actual explicit abort-request finish guard returned0, then the single planned no-reason abort started. Original evaluator/final persistence and full retention remain in progress; no final G01 result is claimed here. Source356 is unchanged; nine cases are now closed and retained and only G01 remains active within the original10-allocation cap.
+
+G01 abort-request and final persistence verified (2026-10-24T18:11:35Z):
+
+The shipped writer created the explicit abort-request control input under the real lifecycle lock at18:08:09.297504Z. The real finish command returned1 specifically because an abort was requested, before the time guard; all8 guard assertions Passed with zero stop/replacement and unchanged request/observation/service identity. This is explicit control input, not automatic failed-sample production. The single subsequent abort omitted --reason and consumed the recorded request reason.
+
+Genuine evaluate entry18:09:04.037195Z matched the first32803-byte persisted terminal; actual nested/top-level dictionary returns18:09:27.802426Z/18:09:27.803198Z preceded the second successful save. Final38868-byte terminal SHA256aaa4b1a8e7130291d2a33bdc06601f514364bba0525f50c0e2a0d075b75292ec preserves facts and contains the actual evaluation. Child native1/Incomplete remains; helper0 is not product success. Boundary16/16 Passed, one actual stop0 and four prior JVMs absent. Both fresh-copy readers returned1/Incomplete with runtime semantic agreement; observation_duration failed assertions and missing sample/metric/GC/JFR/pass coverage remain visible.
+
+Root independently verified all1145 archive/extracted members with no differences or duplicates. Archive66324480bytes SHA2566de827fb5c0ab25ef29238d1d3e2573b7af47d3a2a33d1e68a3f7b58bf4af348; manifest SHA256fe57240ae7d568a6d7a34f68f12dafa0b604e934e5c7eacdf8c905bfd94cc29a. Original recheck0 and guest-access-finished18:10:26.156073Z preceded provider retained shutdown18:11:25.116161Z. Root independently confirmed exact resource shut off and unchanged archive/manifest18:11:35.170141Z. Evidence: `work/m35-terminal-faults-20261024/fault-remaining-v4/G01/shortened-abort/`.
+
+All ten original allocations are now shut off and retained. F07/G01 and the bounded cache correction are complete within their declared scope. M35 remains In progress for original/candidate live regression, concurrent requests, the unexposed F06 exception and full installed proof consumption. The unanswered extraR01 request grants no allocation11. No extra production, cleanup or Git/GitHub mutation occurred.
+
+Final D48 scoped result (2026-10-24T19:24:55Z):
+
+- The owner excluded original/candidate fresh-installed comparison and full installed preparation-proof production/consumption, then authorized only evaluator exception handling and overlapping requests. Earlier dated Partial/Incomplete outcomes remain historical evidence; the excluded checks are not Passed. Existing normal/fault/replay results satisfy their terminal-correction claims without repeating long observations or expanding metric coverage.
+- XC01 used one fresh pinned installation (native0, 431.203 seconds), one unchanged capability batch (native0), actual903-PV readiness and a genuine start at19:19:51.474014Z. Its single planned abort ran19:20:22.909919Z through19:21:42.832221Z and retained native1/Incomplete. This short fault case makes no two-hour or full-product acceptance claim.
+- First32807-byte facts were persisted before actual evaluate entry. During the real entry hold19:21:18.527011Z to19:21:18.894203Z, finish ran19:21:18.647339Z to19:21:18.817228Z and abort ran19:21:18.647648Z to19:21:18.796961Z. Both real CLIs failed specifically at nonblocking flock with BlockingIOError/native1; both overlap the primary and each other. Complete state/tools inventories before/after are equal. These are actual contention results, not post-terminal sequential refusals.
+- After aggregate.py was moved at the filesystem boundary, ModuleNotFoundError escaped evaluate at19:21:38.278529Z. The final32931-byte record adds only evaluation/error information and retains every other first-save field. Both saves succeeded; the primary remains Incomplete/native1. One confirmed appliance stop returned0, four prior JVM lifetimes are absent and PID1 journal has one stopping/stopped sequence. The exact dependency was restored. Exception17/17 and concurrency18/18 assertions Passed.
+- Fresh-copy evaluate/aggregate each returned1/Incomplete. Recovery replay Passed with original inputs/tools unchanged; runtime agreement is false because the runtime intentionally captured an import exception and replay used the restored dependency. That difference is expected recovery behavior, not embedded-evaluation agreement or full-product success.
+- Root independently verified all1461 archive and extracted members, types, modes, sizes and hashes, without differences or duplicates. Archive76288000bytes SHA256ef889e7bb4e7a7ad44fac83631697063c739eaaeb2caee36ad844ee628d24763; manifest SHA256c2d0dd717e3c8debbb98b334520129215e8be6f3a98fc6b33e387fe8b1bab9a3. Guest-original recheck0 and access-finished19:22:11.757158Z preceded normal retained shutdown19:24:29.234235Z. Root directly confirmed exact UUID shut off and unchanged archive/manifest at19:24:55.515965Z. Evidence: `work/m35-exception-concurrent-20261024/XC01/shortened-abort/`, including root-export-verification.json, root-provider-shutdown.json, actual raw traces and recovery-replay/summary.json.
+- All selected D48 verification is complete. Frozen product/instrumentation/cache sources are unchanged. All prior resources and this additional guest are shut off and retained. No further test is selected; source landing and scoped issue reconciliation are the remaining separate actions.
 
 ##### Closure Evidence
 
-- Not complete. D31 excludes this independent follow-up from current execution; no candidate correction or follow-up acceptance is claimed.
+- Verification complete within D48 on 2026-10-24; M35 remains In progress pending source landing and scoped issue reconciliation. Existing normal/fault/replay evidence and XC01 actual exception/concurrency results satisfy the three completion criteria. Broader fresh-installed original/candidate comparison and full preparation-proof production/consumption are excluded by the dated D48 decision, not passed. Historical failures and independent missing metric coverage remain visible. No further test campaign or new whole-product acceptance is implied; previously accepted ETL functionality remains complete.
+- Two independent pre-edit reviews found no new design blocker. The subsequent implementation review of `observe.py` SHA256 `e5da14869928bf98acc532ec46f9de5e6ad12adaee078484374ae13eb01e0a92` and `test-terminal.py` SHA256 `5ecf2c45c552f52db4c21a99d410680955a5e39f048d9f4127a3a05b25f4e065` found no additional defect and executed seven actual runner CLI preflight/failure cases. Source-order checks and those narrower cases do not establish live terminal acceptance. Local review evidence: `work/review_sessions/20261022_193200_m35-terminal/reviews/fup20261022_195320_codex_gpt6_process_on_rev20261022_193847_supersedes_fup20261022_195302.md`.
 
 ##### GitHub Projection
 
@@ -8259,11 +8542,25 @@ Out of scope: New runtime tests, ETL or journal functionality reacceptance, and 
 - Origin: 38560eb / M47
 - Identity History: created as a test-type coordination entry on 2026-10-16 (D32); no existing identity is replaced.
 - GitHub Issue: #53, https://github.com/jeonghanlee/ansible-provision/issues/53
-- Status: Deferred
+- Status: Not started
 
 ##### Summary
 
 Consolidate the remaining journal test-tool work into one active issue while preserving every original acceptance condition and evidence record.
+
+##### Completion Approach
+
+Use retained actual evidence first. Run the real reader, evaluator or replay on separately verified copies when existing results do not already establish the required claim. Reuse a verified result for every criterion it actually covers; do not repeat a completed test merely because it appears in another group.
+
+Run a short real experiment only for a necessary behavior that retained evidence cannot establish. Before starting, name the missing claim, real entry point and inputs, required exposure, expected native outcome, time and resource limits, and stop condition. Use the existing shipped tools and fixtures; do not replace internal execution with mocks or reconstructed positive fixtures. Stop when the declared evidence is complete, or preserve Failed/Incomplete when the bound is reached. A short run cannot satisfy an unmet long-duration requirement.
+
+Preserve accepted ETL, journal and buffer functionality, original records and unsuccessful outcomes. No new two-hour or full-day observation, expanded matrix, general framework redesign or additional tool-perfecting campaign is selected. If a required claim cannot be resolved within the bounded approach, record the exact missing evidence for a scope decision instead of automatically extending or repeating the experiment.
+
+Close a component after its required claims have actual evidence, its relevant source changes are committed, and its issue criteria agree with the result. Unexecuted or excluded work is never marked Passed; any retirement or exclusion needs an explicit dated decision. Keep each group issue open until its own remaining criteria are satisfied or explicitly retired.
+
+- Retained evidence first: Verify retained journal evidence and frozen dependencies, then reproduce the complete result and record digest on an independent recipient. No new recording is needed for this replay.
+- Necessary short execution: Use one bounded normal-stop case only if retained evidence does not establish final collection and the later direct journal read. Compare required record identities and full content; retain the stop outcome.
+- Done when: Normal-stop collection and independent-recipient replay have their declared evidence, originals are unchanged, and the issue records the actual result of each criterion.
 
 ##### Scope
 
@@ -8332,20 +8629,22 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 ##### Dependencies And Decisions
 
+- D49; Decision Date: 2026-10-24. The bounded completion approach is accepted. This supersedes blanket group deferral for preparation and evidence accounting, not component results or scope. Component details retain their identities; select only missing claims after accounting for reusable evidence. No new trial has run.
 - D33; Decision Date: 2026-10-16. Consolidate GitHub tracking into four issues; copy every original contract and retire twenty source issues with reason not planned. This supersedes D32's plan to keep those twenty GitHub issues open. Independent canonical component work and future tool execution remain Deferred.
 - Primary links are coordination relationships, not a new sequential execution dependency. Each existing issue retains its original criteria, source identities and evidence; no original result is rewritten.
 - Accepted M22/#30 ETL and M25/#31 journal results remain complete. The completed buffer acceptance in jeonghanlee/epicsarchiverap-maven#29 remains separate.
 
 ##### Implementation Plan
 
-- Plan Status: draft
-- Plan Acceptance: none
-- Implementation Authorization: none
+- Plan Status: accepted
+- Plan Acceptance: 2026-10-24, D49; retained evidence first and necessary short real execution only.
+- Implementation Authorization: 2026-10-24; prepare completion accounting and scoped corrections/checks under D49. Before each necessary live case, record its actual target, missing claim, exposure, time/resource limits and stop condition; no blanket historical matrix is selected.
 - Superseded Plan Artifacts: earlier representative-only issue projection under D32.
 
-1. Preserve each component's original scope, criteria, evidence and source identity in this issue; use source issue links as historical provenance.
-2. After separate tool-execution authorization, perform the scoped real-path corrections and checks, retaining explicit scenario/native verdicts and immutable originals.
-3. Update the per-component criteria from actual results. Shared evidence may satisfy overlapping criteria without inventing duplicate campaigns.
+1. Map remaining criteria to actual existing evidence and identify only the missing claims.
+2. Verify retained journal evidence and frozen dependencies, then reproduce the complete result and record digest on an independent recipient. No new recording is needed for this replay.
+3. Use one bounded normal-stop case only if retained evidence does not establish final collection and the later direct journal read. Compare required record identities and full content; retain the stop outcome.
+4. Normal-stop collection and independent-recipient replay have their declared evidence, originals are unchanged, and the issue records the actual result of each criterion. Preserve native results and original inputs; do not mark an unexecuted or excluded check Passed.
 
 ##### Test Plan
 
@@ -8363,10 +8662,12 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 ##### Closure Evidence
 
+- D49 approach accepted on 2026-10-24; group execution is Not started. Earlier dated Deferred statements below describe their recorded checkpoints. The accepted approach is not a verification result; no new criterion is completed merely by this plan update.
 - Tool work is not complete. GitHub tracking consolidation completed under D33 at 2026-10-17T01:14:10.675787+00:00: replacement #53 is open and all its source issues are closed not_planned with exact body/comment readback. Original criteria and unsuccessful evidence remain active; source closure establishes no tool verification.
 
 ##### GitHub Projection
 
+- Projection Difference: D49 completion approach prepared locally; GitHub publication is not yet observed.
 - Title: `Track journal test tooling`
 - Labels: `enhancement`
 - GitHub Milestone: `Backlog`
@@ -8379,7 +8680,8 @@ All criteria below remain active in the replacement issue. Source closure is adm
 - Observed Assignees: `jeonghanlee`
 - Observed Updated At: 2026-10-17T01:09:36Z
 - Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
-- Prepared Body: `work/issue-tools-journal.md`
+- Prepared Body: `work/issue-journal-bounded-body.md`
+- Prepared Body SHA256: 9251fba14f599573edb7800c67d32a1a26f8ec99f6c951ee11f6d49c027ed1fa
 - Published Body SHA256: 57226e8a00e7b8aca7c4a5143f1ff5a915bc8b13dea7b1e2f5d99d032d46305d
 - Historical Source Issues: #32, #33
 
@@ -8388,11 +8690,25 @@ All criteria below remain active in the replacement issue. Source closure is adm
 - Origin: 38560eb / M48
 - Identity History: created as a test-type coordination entry on 2026-10-16 (D32); no existing identity is replaced.
 - GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
-- Status: Deferred
+- Status: Not started
 
 ##### Summary
 
 Consolidate the remaining ETL test-tool work into one active issue while preserving every original acceptance condition and evidence record.
+
+##### Completion Approach
+
+Use retained actual evidence first. Run the real reader, evaluator or replay on separately verified copies when existing results do not already establish the required claim. Reuse a verified result for every criterion it actually covers; do not repeat a completed test merely because it appears in another group.
+
+Run a short real experiment only for a necessary behavior that retained evidence cannot establish. Before starting, name the missing claim, real entry point and inputs, required exposure, expected native outcome, time and resource limits, and stop condition. Use the existing shipped tools and fixtures; do not replace internal execution with mocks or reconstructed positive fixtures. Stop when the declared evidence is complete, or preserve Failed/Incomplete when the bound is reached. A short run cannot satisfy an unmet long-duration requirement.
+
+Preserve accepted ETL, journal and buffer functionality, original records and unsuccessful outcomes. No new two-hour or full-day observation, expanded matrix, general framework redesign or additional tool-perfecting campaign is selected. If a required claim cannot be resolved within the bounded approach, record the exact missing evidence for a scope decision instead of automatically extending or repeating the experiment.
+
+Close a component after its required claims have actual evidence, its relevant source changes are committed, and its issue criteria agree with the result. Unexecuted or excluded work is never marked Passed; any retirement or exclusion needs an explicit dated decision. Keep each group issue open until its own remaining criteria are satisfied or explicitly retired.
+
+- Retained evidence first: Account for completed query, JFR, UTC and terminal-persistence evidence first. Use retained observations for numerical reconciliation, supported historical comparisons and independent-recipient report reproduction. Unknown historical kernel coverage remains unknown.
+- Necessary short execution: Select only missing kernel-refusal, diagnostic-isolation, source-availability, automatic-abort, post-stop capture or collection/deletion behaviors that are necessary to the declared tool claims. Share a real execution only when its evidence independently satisfies each claim; do not launch the historical broad matrix as a default.
+- Done when: Each retained criterion is supported by reused evidence, a retained-input result or its necessary bounded real case; original native verdicts and remaining coverage are explicit. The verified terminal correction is not a new whole-product Passed verdict.
 
 ##### Scope
 
@@ -8462,8 +8778,8 @@ These summaries preserve the recorded scope. Each linked issue retains its full 
 ###### #40 - Persist terminal state before evaluating terminal coherence
 
 - Problem and evidence: Evaluation preceded terminal persistence; unchanged reevaluation afterward removed the coherence finding on both observations.
-- Remaining work: Verify actual normal-terminal, failure/interruption, repeated-request and replay paths.
-- Done when: Runtime/replay evaluate the same persisted terminal, errors stay visible, no second stop occurs and unverified success cannot bypass coherence checks.
+- Verified result: M35/D48 actual normal, fault, interruption, exception and concurrent-request evidence satisfies the terminal correction criteria. Source publication and issue readback remain outstanding.
+- Done when: The verified source is published and the four terminal-related issue criteria match the recorded evidence. Other ETL tooling criteria remain independent.
 
 ###### #41 - Match ETL pass times by UTC instant with nanosecond precision
 
@@ -8559,7 +8875,7 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 - [x] The real evaluator and numerical aggregator correctly reconcile retained current-process heap/collection/pause records with complete JFRs on both chains while retaining earlier-process data. Result: e48083d reconciles all 24 recording populations through the actual evaluator and aggregator; earlier-process rows remain available.
 - [x] Missing, conflicting or incomplete records in an actual retained-input copy remain detectable; no internal-function stub or reconstructed positive fixture establishes acceptance. Result: real retained-input derivatives expose missing/extra events, conflicting payloads, wrong process identities and unusable recordings through the shipped readers.
-- [ ] A real normal-terminal invocation and subsequent offline replay agree on terminal coherence, including actual failure, interruption and repeat-terminal handling.
+- [x] A real normal-terminal invocation and subsequent offline replay agree on terminal coherence, including actual failure, interruption and repeat-terminal handling. Result: M35/D48 actual normal, persistence-fault, evaluator-exception/interruption and sequential/concurrent refusal evidence verifies this terminal claim; native Incomplete results remain unchanged.
 - [ ] Verification runs the shipped tools and actual retained evidence, with original and candidate tool identities kept separate. Original inputs, terminal bytes and failed verdicts remain unchanged.
 - [ ] Results state which independent kernel diagnostic findings remain; evaluator correction does not claim historical kernel coverage or change the already accepted ETL functionality result in #30.
 - [ ] Use the completed observations for regression and focused real terminal checks for ordering; a new 24-hour observation is not required solely to repair these verifier defects.
@@ -8610,9 +8926,9 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 ###### Source #40 - Persist terminal state before evaluating terminal coherence
 
-- [ ] A real normal terminal invocation and subsequent replay agree on the exact terminal state being evaluated.
-- [ ] Actual failure/interruption and repeated-terminal cases retain failure visibility and do not dispatch another stop.
-- [ ] No unverified successful terminal is written to bypass coherence checks; original completed observation bytes remain unchanged.
+- [x] A real normal terminal invocation and subsequent replay agree on the exact terminal state being evaluated.
+- [x] Actual failure/interruption and repeated-terminal cases retain failure visibility and do not dispatch another stop.
+- [x] No unverified successful terminal is written to bypass coherence checks; original completed observation bytes remain unchanged.
 
 
 
@@ -8699,20 +9015,22 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 ##### Dependencies And Decisions
 
+- D49; Decision Date: 2026-10-24. The bounded completion approach is accepted. This supersedes blanket group deferral for preparation and evidence accounting, not component results or scope. Component details retain their identities; select only missing claims after accounting for reusable evidence. No new trial has run.
 - D33; Decision Date: 2026-10-16. Consolidate GitHub tracking into four issues; copy every original contract and retire twenty source issues with reason not planned. This supersedes D32's plan to keep those twenty GitHub issues open. Independent canonical component work and future tool execution remain Deferred.
 - Primary links are coordination relationships, not a new sequential execution dependency. Each existing issue retains its original criteria, source identities and evidence; no original result is rewritten.
 - Accepted M22/#30 ETL and M25/#31 journal results remain complete. The completed buffer acceptance in jeonghanlee/epicsarchiverap-maven#29 remains separate.
 
 ##### Implementation Plan
 
-- Plan Status: draft
-- Plan Acceptance: none
-- Implementation Authorization: none
+- Plan Status: accepted
+- Plan Acceptance: 2026-10-24, D49; retained evidence first and necessary short real execution only.
+- Implementation Authorization: 2026-10-24; prepare completion accounting and scoped corrections/checks under D49. Before each necessary live case, record its actual target, missing claim, exposure, time/resource limits and stop condition; no blanket historical matrix is selected.
 - Superseded Plan Artifacts: earlier representative-only issue projection under D32.
 
-1. Preserve each component's original scope, criteria, evidence and source identity in this issue; use source issue links as historical provenance.
-2. After separate tool-execution authorization, perform the scoped real-path corrections and checks, retaining explicit scenario/native verdicts and immutable originals.
-3. Update the per-component criteria from actual results. Shared evidence may satisfy overlapping criteria without inventing duplicate campaigns.
+1. Map remaining criteria to actual existing evidence and identify only the missing claims.
+2. Account for completed query, JFR, UTC and terminal-persistence evidence first. Use retained observations for numerical reconciliation, supported historical comparisons and independent-recipient report reproduction. Unknown historical kernel coverage remains unknown.
+3. Select only missing kernel-refusal, diagnostic-isolation, source-availability, automatic-abort, post-stop capture or collection/deletion behaviors that are necessary to the declared tool claims. Share a real execution only when its evidence independently satisfies each claim; do not launch the historical broad matrix as a default.
+4. Each retained criterion is supported by reused evidence, a retained-input result or its necessary bounded real case; original native verdicts and remaining coverage are explicit. The verified terminal correction is not a new whole-product Passed verdict. Preserve native results and original inputs; do not mark an unexecuted or excluded check Passed.
 
 ##### Test Plan
 
@@ -8722,6 +9040,8 @@ All criteria below remain active in the replacement issue. Source closure is adm
 | T2 | Scope isolation | Compare immutable originals and accepted #30/#31 records with separately identified candidate results. | Retained original and candidate records | Original bytes preserved; tool findings separate from accepted functionality. |
 
 ##### Verification Results
+
+M35/D48 terminal criteria are verified from the recorded real normal/fault/replay cases, including exception17/17 and concurrency18/18. This supplies the three source-#40 criteria and the overlapping source-#35 terminal criterion only; broader group results remain incomplete. Source publication and issue readback remain pending.
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
@@ -8734,6 +9054,7 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 ##### Closure Evidence
 
+- D49 approach accepted on 2026-10-24; group execution is Not started. Earlier dated Deferred statements below describe their recorded checkpoints. The accepted approach is not a verification result; no new criterion is completed merely by this plan update.
 - Tool work is not complete. GitHub tracking consolidation completed under D33 at 2026-10-17T01:14:10.675787+00:00: replacement #54 is open and all its source issues are closed not_planned with exact body/comment readback. Original criteria and unsuccessful evidence remain active; source closure establishes no tool verification.
 - UTC component update observed at 2026-10-19T23:01:41.312239+00:00: M36 is Complete under D38, with four checked boxes and 77 unchecked boxes in #54. Source landing and exact body/metadata readback are recorded in M36. This aggregate remains Deferred; no other component is completed or activated by the UTC correction.
 - Query source landing observed at 2026-10-21T07:35:32.426896+00:00: M33 / T1-T6 and source f633973 are verified. Its four canonical criteria are checked from real results; the prepared query-only body would bring #54 to eight checked and 73 unchecked boxes. No query issue update or component closure is claimed before authorized publication and live readback. This aggregate remains Deferred.
@@ -8745,6 +9066,7 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 ##### GitHub Projection
 
+- Projection Difference: D49 completion approach prepared locally; GitHub publication is not yet observed.
 - Title: `Track ETL test tooling`
 - Labels: `enhancement`
 - GitHub Milestone: `Backlog`
@@ -8759,8 +9081,8 @@ All criteria below remain active in the replacement issue. Source closure is adm
 - Last Compared: 2026-10-22T10:49:17Z; exact JFR-only prepared body and unchanged title/labels/milestone/assignee/open state verified. Thirteen boxes checked, 68 unchecked.
 - Query Update Readback: 2026-10-21T08:34:55+00:00; four query criteria newly checked and all other source sections/criteria preserved. Full comparison retained at `work/issue-etl-query-applied-20261021.json`.
 - JFR Update Readback: 2026-10-22T10:49:17Z; the three source-#39 criteria and two overlapping source-#35 criteria are newly checked; all other sections and criteria are preserved. Receipt: `work/issue-etl-jfr-applied-20261022.json`.
-- Prepared Body: `work/issue-etl-jfr-body.md`
-- Prepared Body SHA256: ebd55a80f7cb224507e8605a676dbb27ce436f1b46c33edad77fadc1d3c6bc79
+- Prepared Body: `work/issue-etl-bounded-body.md`
+- Prepared Body SHA256: d9611b6ebbd8d487e7751ec2de331a3a9fb3af71f35cfd3a1c89476e1f29d6c3
 - Published Body SHA256: ebd55a80f7cb224507e8605a676dbb27ce436f1b46c33edad77fadc1d3c6bc79
 - Historical Source Issues: #34, #35, #36, #37, #38, #39, #40, #41, #43, #44, #45, #46, #47, #48, #49, #50
 
@@ -8769,11 +9091,25 @@ All criteria below remain active in the replacement issue. Source closure is adm
 - Origin: 38560eb / M49
 - Identity History: created as a test-type coordination entry on 2026-10-16 (D32); no existing identity is replaced.
 - GitHub Issue: #55, https://github.com/jeonghanlee/ansible-provision/issues/55
-- Status: Deferred
+- Status: Not started
 
 ##### Summary
 
 Make the retained sample-buffer delay-injection, replay and progress tools reusable without changing completed product acceptance in jeonghanlee/epicsarchiverap-maven#29.
+
+##### Completion Approach
+
+Use retained actual evidence first. Run the real reader, evaluator or replay on separately verified copies when existing results do not already establish the required claim. Reuse a verified result for every criterion it actually covers; do not repeat a completed test merely because it appears in another group.
+
+Run a short real experiment only for a necessary behavior that retained evidence cannot establish. Before starting, name the missing claim, real entry point and inputs, required exposure, expected native outcome, time and resource limits, and stop condition. Use the existing shipped tools and fixtures; do not replace internal execution with mocks or reconstructed positive fixtures. Stop when the declared evidence is complete, or preserve Failed/Incomplete when the bound is reached. A short run cannot satisfy an unmet long-duration requirement.
+
+Preserve accepted ETL, journal and buffer functionality, original records and unsuccessful outcomes. No new two-hour or full-day observation, expanded matrix, general framework redesign or additional tool-perfecting campaign is selected. If a required claim cannot be resolved within the bounded approach, record the exact missing evidence for a scope decision instead of automatically extending or repeating the experiment.
+
+Close a component after its required claims have actual evidence, its relevant source changes are committed, and its issue criteria agree with the result. Unexecuted or excluded work is never marked Passed; any retirement or exclusion needs an explicit dated decision. Keep each group issue open until its own remaining criteria are satisfied or explicitly retired.
+
+- Retained evidence first: Correct and verify full/compact replay using retained actual records; account separately for Maven assertions and deployment receipts. Document the two Maven-owned assertion gaps without claiming those assertions ran.
+- Necessary short execution: Exercise the real runner start/progress path only as needed to establish immediate active state, actual time bounds and final-state preservation. Do not repeat the accepted multi-hour buffer campaign.
+- Done when: Declared full/compact records replay correctly, inadequate exposure remains detectable, runner state is accurate, and reusable instructions and Maven ownership are explicit.
 
 ##### Scope
 
@@ -8827,20 +9163,22 @@ Reopening jeonghanlee/epicsarchiverap-maven#29, editing Maven code here, a new f
 
 ##### Dependencies And Decisions
 
+- D49; Decision Date: 2026-10-24. The bounded completion approach is accepted. This supersedes blanket group deferral for preparation and evidence accounting, not component results or scope. Component details retain their identities; select only missing claims after accounting for reusable evidence. No new trial has run.
 - D33; Decision Date: 2026-10-16. Consolidate GitHub tracking into four issues; copy every original contract and retire twenty source issues with reason not planned. This supersedes D32's plan to keep those twenty GitHub issues open. Independent canonical component work and future tool execution remain Deferred.
 - Primary links are coordination relationships, not a new sequential execution dependency. Each existing issue retains its original criteria, source identities and evidence; no original result is rewritten.
 - Accepted M22/#30 ETL and M25/#31 journal results remain complete. The completed buffer acceptance in jeonghanlee/epicsarchiverap-maven#29 remains separate.
 
 ##### Implementation Plan
 
-- Plan Status: draft
-- Plan Acceptance: none
-- Implementation Authorization: none
+- Plan Status: accepted
+- Plan Acceptance: 2026-10-24, D49; retained evidence first and necessary short real execution only.
+- Implementation Authorization: 2026-10-24; prepare completion accounting and scoped corrections/checks under D49. Before each necessary live case, record its actual target, missing claim, exposure, time/resource limits and stop condition; no blanket historical matrix is selected.
 - Superseded Plan Artifacts: earlier representative-only issue projection under D32.
 
-1. Preserve each component's original scope, criteria, evidence and source identity in this issue; use source issue links as historical provenance.
-2. After separate tool-execution authorization, perform the scoped real-path corrections and checks, retaining explicit scenario/native verdicts and immutable originals.
-3. Update the per-component criteria from actual results. Shared evidence may satisfy overlapping criteria without inventing duplicate campaigns.
+1. Map remaining criteria to actual existing evidence and identify only the missing claims.
+2. Correct and verify full/compact replay using retained actual records; account separately for Maven assertions and deployment receipts. Document the two Maven-owned assertion gaps without claiming those assertions ran.
+3. Exercise the real runner start/progress path only as needed to establish immediate active state, actual time bounds and final-state preservation. Do not repeat the accepted multi-hour buffer campaign.
+4. Declared full/compact records replay correctly, inadequate exposure remains detectable, runner state is accurate, and reusable instructions and Maven ownership are explicit. Preserve native results and original inputs; do not mark an unexecuted or excluded check Passed.
 
 ##### Test Plan
 
@@ -8860,10 +9198,12 @@ Reopening jeonghanlee/epicsarchiverap-maven#29, editing Maven code here, a new f
 
 ##### Closure Evidence
 
+- D49 approach accepted on 2026-10-24; group execution is Not started. Earlier dated Deferred statements below describe their recorded checkpoints. The accepted approach is not a verification result; no new criterion is completed merely by this plan update.
 - Tool work is not complete. GitHub tracking consolidation completed under D33 at 2026-10-17T01:14:10.675787+00:00: replacement #55 is open and all its source issues are closed not_planned with exact body/comment readback. Original criteria and unsuccessful evidence remain active; source closure establishes no tool verification.
 
 ##### GitHub Projection
 
+- Projection Difference: D49 completion approach prepared locally; GitHub publication is not yet observed.
 - Title: `Track buffer test tooling`
 - Labels: `enhancement`
 - GitHub Milestone: `Backlog`
@@ -8876,7 +9216,8 @@ Reopening jeonghanlee/epicsarchiverap-maven#29, editing Maven code here, a new f
 - Observed Assignees: `jeonghanlee`
 - Observed Updated At: 2026-10-17T01:09:42Z
 - Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
-- Prepared Body: `work/issue-tools-buffer.md`
+- Prepared Body: `work/issue-buffer-bounded-body.md`
+- Prepared Body SHA256: 87b8a1363cd10c46efa10aadc5f6a3a8f0592a012da7d373ef4ac311a108dfa5
 - Published Body SHA256: 68475d0897f4a062b6984649f43b95503f985c3d16e73e33a1317461468bbe63
 - Historical Source Issues: none; buffer tooling scope is declared directly here.
 
@@ -8885,11 +9226,25 @@ Reopening jeonghanlee/epicsarchiverap-maven#29, editing Maven code here, a new f
 - Origin: 38560eb / M50
 - Identity History: created as a test-type coordination entry on 2026-10-16 (D32); no existing identity is replaced.
 - GitHub Issue: #56, https://github.com/jeonghanlee/ansible-provision/issues/56
-- Status: Deferred
+- Status: Not started
 
 ##### Summary
 
 Consolidate the remaining shared test-tool work into one active issue while preserving every original acceptance condition and evidence record.
+
+##### Completion Approach
+
+Use retained actual evidence first. Run the real reader, evaluator or replay on separately verified copies when existing results do not already establish the required claim. Reuse a verified result for every criterion it actually covers; do not repeat a completed test merely because it appears in another group.
+
+Run a short real experiment only for a necessary behavior that retained evidence cannot establish. Before starting, name the missing claim, real entry point and inputs, required exposure, expected native outcome, time and resource limits, and stop condition. Use the existing shipped tools and fixtures; do not replace internal execution with mocks or reconstructed positive fixtures. Stop when the declared evidence is complete, or preserve Failed/Incomplete when the bound is reached. A short run cannot satisfy an unmet long-duration requirement.
+
+Preserve accepted ETL, journal and buffer functionality, original records and unsuccessful outcomes. No new two-hour or full-day observation, expanded matrix, general framework redesign or additional tool-perfecting campaign is selected. If a required claim cannot be resolved within the bounded approach, record the exact missing evidence for a scope decision instead of automatically extending or repeating the experiment.
+
+Close a component after its required claims have actual evidence, its relevant source changes are committed, and its issue criteria agree with the result. Unexecuted or excluded work is never marked Passed; any retirement or exclusion needs an explicit dated decision. Keep each group issue open until its own remaining criteria are satisfied or explicitly retired.
+
+- Retained evidence first: Preserve reusable buffer code and procedures in Git, identify actual dependencies, and derive phase durations from retained execution records. Reuse completed checksum verification; keep private inputs and immutable observation manifests separate.
+- Necessary short execution: Use a bounded real installation check only for changed packaging or missing dependency evidence. Run each selected installed entry point with its actual dependencies and inspect its declared service effects.
+- Done when: Reusable sources and procedures are tracked, necessary installed commands have verified dependencies, measured phase durations and missing boundaries are recorded, and the issue matches those facts.
 
 ##### Scope
 
@@ -8968,6 +9323,7 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 ##### Dependencies And Decisions
 
+- D49; Decision Date: 2026-10-24. The bounded completion approach is accepted. This supersedes blanket group deferral for preparation and evidence accounting, not component results or scope. Component details retain their identities; select only missing claims after accounting for reusable evidence. No new trial has run.
 - D36; Decision Date: 2026-10-18. M37 is Complete. Its checksum-only activation under D34/D35 has ended; this group returns to Deferred for the remaining scope already excluded by D31. No other component is started or authorized by the closure record.
 - D35; Decision Date: 2026-10-18. M37 uses the committed common checker instead of duplicate local scripts. Only this source-check component is active; other shared work remains unauthorized.
 - D34; Decision Date: 2026-10-16. M37 checksum work is active within this group. All other shared component plans remain draft and unauthorized; group completion is not implied.
@@ -8977,14 +9333,15 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 ##### Implementation Plan
 
-- Plan Status: draft
-- Plan Acceptance: none
-- Implementation Authorization: none
+- Plan Status: accepted
+- Plan Acceptance: 2026-10-24, D49; retained evidence first and necessary short real execution only.
+- Implementation Authorization: 2026-10-24; prepare completion accounting and scoped corrections/checks under D49. Before each necessary live case, record its actual target, missing claim, exposure, time/resource limits and stop condition; no blanket historical matrix is selected.
 - Superseded Plan Artifacts: earlier representative-only issue projection under D32.
 
-1. Preserve each component's original scope, criteria, evidence and source identity in this issue; use source issue links as historical provenance.
-2. After separate tool-execution authorization, perform the scoped real-path corrections and checks, retaining explicit scenario/native verdicts and immutable originals.
-3. Update the per-component criteria from actual results. Shared evidence may satisfy overlapping criteria without inventing duplicate campaigns.
+1. Map remaining criteria to actual existing evidence and identify only the missing claims.
+2. Preserve reusable buffer code and procedures in Git, identify actual dependencies, and derive phase durations from retained execution records. Reuse completed checksum verification; keep private inputs and immutable observation manifests separate.
+3. Use a bounded real installation check only for changed packaging or missing dependency evidence. Run each selected installed entry point with its actual dependencies and inspect its declared service effects.
+4. Reusable sources and procedures are tracked, necessary installed commands have verified dependencies, measured phase durations and missing boundaries are recorded, and the issue matches those facts. Preserve native results and original inputs; do not mark an unexecuted or excluded check Passed.
 
 ##### Test Plan
 
@@ -9005,6 +9362,7 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 ##### Closure Evidence
 
+- D49 approach accepted on 2026-10-24; group execution is Not started. Earlier dated Deferred statements below describe their recorded checkpoints. The accepted approach is not a verification result; no new criterion is completed merely by this plan update.
 - Not complete; Decision Date: 2026-10-18 (D36). The checksum component M37 is Complete, with four checked boxes in #56. The remaining seven boxes stay unchecked and the issue stays open. The remaining group scope returns to Deferred because D34/D35 authorized only checksum execution; other plans remain draft and unauthorized.
 - Source landing for the checksum component is verified at 2026-10-18T20:55:25.554346+00:00 on `origin/m14-middleware-reconcile`; see M37 and `work/issue-shared-checks-yh2b0_ok/landing.json`. Four checksum boxes are checked in #56 after exact body/metadata readback at 2026-10-18T21:25:36.301871+00:00; the remaining seven boxes and the overall issue stay open. Receipt: `work/issue-56-apply-2sxck42w/verification.json`.
 - Checksum-only checks passed under M37/D34; shared-checker integration and duplicate removal passed under D35/M37/T4. All other shared criteria remain unchecked and unauthorized; overall tool work is not complete.
@@ -9012,6 +9370,7 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 ##### GitHub Projection
 
+- Projection Difference: D49 completion approach prepared locally; GitHub publication is not yet observed.
 - Title: `Track shared test tooling`
 - Labels: `enhancement`
 - GitHub Milestone: `Backlog`
@@ -9024,8 +9383,9 @@ All criteria below remain active in the replacement issue. Source closure is adm
 - Observed Assignees: `jeonghanlee`
 - Observed Updated At: 2026-10-18T21:25:35Z
 - Last Compared: 2026-10-18T21:25:36.301871+00:00; exact body readback verifies the checksum-only revision, four checked boxes, seven unchecked boxes and unchanged metadata/open state.
-- Projection Difference: none for the checksum component; all other criteria remain unchanged and unchecked.
-- Prepared Body: `work/issue-shared-checks-body.md`
+- Checksum Projection: unchanged; only the four-group completion approach is newly prepared.
+- Prepared Body: `work/issue-shared-bounded-body.md`
+- Prepared Body SHA256: 59cde8d545dbe6515cc5c77703c4f89c7e95b378adf65320b5dde130771655e3
 - Published Body SHA256: 6f6c6d060d64d7ca35d211ee6c7bcf4495306a2e5a9a24ee97aa9c1112fd1321
 - Historical Source Issues: #42, #51
 
