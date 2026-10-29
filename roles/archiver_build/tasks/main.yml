@@ -55,6 +55,8 @@
     mts_hold="{{ archiver_store_mts_hold }}"
     lts_gran="{{ archiver_store_lts_granularity }}"
     root_level="{{ archiver_root_logger_level }}"
+    ca_addr_list="{{ archiver_ca_addr_list }}"
+    ca_auto="{{ archiver_ca_auto_addr_list }}"
     db_backend="{{ archiver_db_backend }}"
 
     top="${src_parent}/epicsarchiverap-env"
@@ -205,6 +207,20 @@
     # Root log level, written only when set; the launch step has checked it.
     if [ -n "${root_level}" ]; then
       printf 'ARCHAPPL_ROOT_LOGGER_LEVEL:=%s\n' "${root_level}" >> "${src_parent}/CONFIG_SITE.local"
+    fi
+
+    # Channel Access search settings in ../CONFIG_EPICSENV.local, which
+    # epicsarchiverap-env includes after its CONFIG_EPICSENV defaults. This
+    # operator owns the file: it sits outside the checkout removed above, so it is
+    # cleared first and an earlier value cannot outlive its variable. Each value
+    # is written only when set; the launch step has already checked both.
+    ca_file="${src_parent}/CONFIG_EPICSENV.local"
+    rm -f "${ca_file}"
+    if [ -n "${ca_addr_list}" ]; then
+      printf 'EPICS_CA_ADDR_LIST:=%s\n' "${ca_addr_list}" >> "${ca_file}"
+    fi
+    if [ -n "${ca_auto}" ]; then
+      printf 'EPICS_CA_AUTO_ADDR_LIST:=%s\n' "${ca_auto}" >> "${ca_file}"
     fi
 
     # --- Pin the epicsarchiverap-maven source ref (make init clones it at
@@ -457,6 +473,31 @@
         fi
         ;;
     esac
+
+    # The Channel Access search settings reach epicsarchiverap-env only inside the
+    # build, which renders them into archappl.conf with sed; refuse a value that
+    # would break that rendering, or a search that could find nothing, before
+    # anything is torn down.
+    ca_addr_list="{{ archiver_ca_addr_list }}"
+    ca_auto="{{ archiver_ca_auto_addr_list }}"
+    ca_error=""
+    case "${ca_auto}" in
+      ""|YES|NO) ;;
+      *) ca_error="archiver_ca_auto_addr_list must be empty, YES or NO (got [${ca_auto}])" ;;
+    esac
+    case "${ca_addr_list}" in
+      *[!0-9A-Za-z.:_\ -]*)
+        ca_error="${ca_error:-archiver_ca_addr_list may hold only letters, digits, dot, colon, underscore, hyphen and spaces (got [${ca_addr_list}])}"
+        ;;
+    esac
+    if [ "${ca_auto}" = NO ] && [ -z "${ca_addr_list}" ]; then
+      ca_error="${ca_error:-archiver_ca_auto_addr_list NO needs a non-empty archiver_ca_addr_list, or the appliance would search nowhere}"
+    fi
+    if [ "${will_build}" = "yes" ] && [ -n "${ca_error}" ]; then
+      echo "ARCHIVER_BUILD_PRECONDITION: ${ca_error}." >&2
+      echo "Nothing was stopped and no build was started." >&2
+      exit 1
+    fi
 
     # An explicit reinstall was asked for: stop the appliance so
     # epicsarchiverap-env installs over a quiet tree, drop the previous result,

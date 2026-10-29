@@ -70,6 +70,20 @@ archiver_java_heapsize: "256M"
 # `archappl.bash loglevel`.
 archiver_root_logger_level: ""
 
+# Channel Access search settings of the appliance, written to the
+# epicsarchiverap-env EPICS_CA_ADDR_LIST and EPICS_CA_AUTO_ADDR_LIST through
+# ../CONFIG_EPICSENV.local (${path_archiver_env_src}/CONFIG_EPICSENV.local),
+# which epicsarchiverap-env includes after its defaults (localhost and YES).
+# Empty leaves the epicsarchiverap-env default. The address list is space
+# separated and takes IP addresses, subnet broadcast addresses and host names,
+# each with an optional :port; the auto setting is YES or NO, and NO needs a
+# non-empty list. The launch step refuses any other value before a build starts.
+# The operator owns that file: it is rewritten on every build and removed when
+# both values are empty. The values reach the appliance only at install, so a
+# changed value shows as drift and is applied with archiver_force_reinstall.
+archiver_ca_addr_list: ""
+archiver_ca_auto_addr_list: ""
+
 # Host journal settings for the appliance, which logs only to the journal: a
 # journald drop-in this operator writes on archiver hosts only. journald applies
 # it to the whole host journal, not only to the appliance's entries. It is not
@@ -125,7 +139,7 @@ archiver_config_stamp: >-
   install={{ archiver_install_parent }}
   store=sts:{{ archiver_store_sts_granularity or '-' }}/{{ archiver_store_sts_hold or '-' }},mts:{{ archiver_store_mts_granularity or '-' }}/{{ archiver_store_mts_hold or '-' }},lts:{{ archiver_store_lts_granularity or '-' }}
   envref={{ archiver_env_ref }}
-  srctag={{ archiver_maven_src_tag }}
+  srctag={{ archiver_maven_src_tag }}{{ (' ca=' ~ (archiver_ca_addr_list or '-') ~ '/' ~ (archiver_ca_auto_addr_list or '-')) if (archiver_ca_addr_list or archiver_ca_auto_addr_list) else '' }}
 
 # Configuration database backend, written to epicsarchiverap-env as
 # DB_BACKEND (from bbe0968): mariadb, served by the mariadb operator, or sqlite,
