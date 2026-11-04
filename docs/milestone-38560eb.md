@@ -24,14 +24,16 @@ initially outside that matrix, but the C17 bridge shipped under 1.3.0
 was confirmed (`jeonghanlee/EPICS-env#63`), so Ubuntu 26 now passes as well
 (see `M2` and `D4`).
 
-- Release line: master
-- Milestone index: 38560eb
-- Canonical path: `docs/milestone-38560eb.md`
-- Canonical branch or ref: `master`
-- Git upstream: `origin/master`
-- Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
+Release line: master
+Milestone index: 38560eb
+Canonical path: `docs/milestone-38560eb.md`
+Canonical branch or ref: `master`
+Git upstream: `origin/master`
+Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: Finish source publication and scoped issue reconciliation for the verified M35 correction, then complete the four tool groups M47-M50 under D49. First map retained actual evidence to each remaining criterion; run only a necessary short real case for a missing behavior, with its claim, exposure, time/resource bounds and stop condition declared before execution. Do not repeat completed long observations or launch the historical broad matrix by default. The four group plans are accepted and Not started; new test execution is not claimed. M35 verification is complete within D48, with its excluded comparisons/proof campaign explicitly not passed. Current source changes and the issue-body revisions remain local.
+Next session entry point: M14 and M26 remain Blocked on G2 and G5 respectively; confirm those external conditions before resuming either installation. For the independent tool Backlog, resume M47-M50 only when requested, starting with retained evidence mapped to each remaining criterion under D49. Run only a necessary short real case for a missing behavior, with its claim, exposure, time/resource bounds and stop condition declared before execution. Do not repeat completed long observations or launch the historical broad matrix by default. M35 is Complete within D48/D49: source 42e9360 and plan record 230307e are on origin/master, and the applied #53-#56 bodies match the retained publication files. The four group plans remain accepted and Not started; no new test execution is claimed.
+
+Retained results and available inputs are indexed by `work/retained-test-results-20261026/README.md`. Its 2026-10-26 retention policy supersedes historical original-path instructions below: retired raw observations are not complete local replay inputs, and historical hashes do not establish current availability. Check the retained archives and inventories before planning a replay.
 
 Four-group completion uses retained evidence and offline replay/reporting before any necessary live case. Journal covers stop-boundary capture and recipient replay; ETL covers evidence/diagnostic behavior and retained reports; buffer covers compact replay, progress and assertion ownership; shared tooling covers reusable sources, installation dependencies and measured phase durations. Each group ends when its required claims have evidence and its source/issue record agrees; missing evidence remains explicit.
 
@@ -392,7 +394,7 @@ full mode carries every OS tree, second apply `failed=0`). Delivered in
 
 </details>
 
-Status tally: 25 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 6 external gates (4 Complete, 2 Open). Backlog excluded: 4 Complete, 1 In progress, 4 Not started and 15 Deferred carry-forward items, plus 2 Complete external gates. M51 is Complete after T1-T7 Passed and verified repository landing at 82ef88a; closure recorded on 2026-10-23 UTC. M35 verification is complete within D48; source publication and issue reconciliation remain. The four group plans are ready for D49 evidence accounting.
+Status tally: 25 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 6 external gates (4 Complete, 2 Open). Backlog excluded: 5 Complete, 0 In progress, 4 Not started and 15 Deferred carry-forward items, plus 2 Complete external gates. M51 is Complete after T1-T7 Passed and verified repository landing at 82ef88a; closure recorded on 2026-10-23 UTC. M35 is Complete within D48/D49 after source publication and scoped issue reconciliation. The four group plans are ready for D49 evidence accounting when their execution is resumed.
 
 ## Milestone
 
@@ -436,34 +438,34 @@ Status tally: 25 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 
 
 ### Decisions
 
-| ID | Decision | Source |
+| ID | Decision | Decision Date |
 | --- | --- | --- |
-| D1 | Local `T` labels identify verification inside their owning work detail and are not independent work IDs. | Prior canonical register, prior state commit `38560eb` |
-| D2 | Ubuntu 26 is excluded from the current source-build matrix and deferred to EPICS-env 1.3.1 or a later version. The 1.3.0 gate matrix does not include Ubuntu 26, and the `iocStats` GCC 15 fix is owned by EPICS-env. | Owner decision, 2026-08-17 |
-| D3 | The staged old model (`01_base`/`02_apps`/`03_epics`) and its retained roles `base_os` and `app_epics` are retired; the operator/species model supersedes them. Removing the old roles and playbooks is separate follow-up work. | Owner decision, 2026-08-29 |
-| D4 | Ubuntu 26 source-build is no longer deferred. The C17 bridge shipped under milestone 1.3.0 (`jeonghanlee/EPICS-env#29`), and `jeonghanlee/EPICS-env#63` (closed 2026-08-24) confirmed it fires for `iocStats` on the Ubuntu 26 source-build path; the complete `gz` path passed on 2026-08-27. Supersedes `D2`. | Owner decision, 2026-08-30 |
-| D5 | The EPICS OS package regression (`M5`) is fixed across all six vacua, `pkg_automation` is removed from `roles/epics_build` in the same change, ansible-provision drafts the cloud `docs/IMAGE_WORKFLOW.md` change for cloud-provision to land, and the milestone and GitHub issue are recorded before implementation begins. | Owner decision, 2026-08-31 |
-| D6 | `M5` closes on the golden pair (rocky8, debian13), verified on both acquisition paths. The four non-golden vacua (rocky10, debian12, ubuntu24, ubuntu26) have no iocrunner golden pipeline; they carry the same package lists (names dry-run-verified) and move to `M6` for Live-mode verification. The cloud-side golden bake-matrix expansion stays a separate cloud-provision item. | Owner decision, 2026-08-31 |
-| D7 | The `epics_build` source-build fragility surfaced during `M5` verification (cloud-provision Finding B) is hardened as `M7`, not accepted. `M5`'s fix removed the known trigger (the NetworkManager restart); `M7` addresses the underlying structure so a dropped connection cannot leave a half-built tree. | Owner decision, 2026-08-31 |
-| D8 | The chrony per-server `minpoll`/`maxpoll` and `keyfile`/`leapsectz` directives dropped by the operator rewrite (`0012e2d`) are restored into `roles/common`, mirroring the `M5` EPICS-package regression from the same rewrite. Empty defaults keep the baseline render unchanged; site overrides (the production IOC server) render the production directives. | Owner decision, 2026-09-02 |
-| D9 | With `epics_install_group` set, the EPICS install root stays `root:<group>` `2775` (setgid) and gains a default ACL on local disk plus a system-wide git `safe.directory` on the deploy server, so any group member can run git on the single shared repository and write into it. Owner-owned roots (one deployer only), per-user `safe.directory` (per-member setup), a per-member subdirectory layout (the ioc-runner per-engineer model, unsuited to a single distribution tree), and a dedicated deploy account were rejected for the one-server-deploys/many-hosts-read topology. Site prerequisites (consistent group GID, `root_squash` pinning deploy to the filesystem server, NFSv4 idmapping) stay in the site provisioning record. | Owner decision, 2026-09-02 |
-| D11 | The con, procServ, and conserver roles and the EPICS role drop the install-once guard so a re-apply installs the requested version, replacing the installed one; whether the installed version matches the requested one is verified by the separate site verification tool, not by these roles. `con_version` is a git tag on the con repository, while `procserv_version` and `conserver_version` select a wrapper-repo ref whose upstream daemon version is pinned inside the wrapper (`configure/RELEASE` `SRC_TAG`), so the role controls the wrapper ref only. The EPICS distribution checkout adds `epics_clone_mode`: `minimal` (default) is a shallow, blob-filtered, single-OS sparse checkout for a Docker or single-OS host; `full` is a plain clone of every OS tree for a production NFS server. Both modes re-check out the requested tag in place, full disables sparse so a mode switch expands correctly, and an unknown mode value fails loudly. The roles keep `changed_when: false`. | Owner decision, 2026-09-04 |
-| D10 | EPICS firewall ports are opened per service in site-configurable firewalld zones (`epics_ca_zone`, `epics_pva_zone`; empty keeps the default zone for single-homed hosts) because a multi-homed IOC server binds CA and PVA to different interfaces and zones, where the default zone carries no interface. The role validates that a named zone exists and fails loudly rather than silently skipping; it does not create zones (site infrastructure). The port sets follow the protocol constants — CA 5064 TCP+UDP and 5065 UDP, PVA 5075 TCP+UDP and 5076 UDP — dropping the previously opened 5065/TCP, which is not an EPICS port. | Owner decision, 2026-09-03 |
-| D12 | The rocky-family in-place cloud-init upgrade run by `roles/epics_build`'s `dnf update` fires rpm's tmpfiles trigger, which resets `/run/cloud-init` to 0700 until the next boot and breaks an unprivileged `cloud-init status`. The fix lands in the role that causes it, not cloud-provision's cloud-init templates: cloud-provision recorded a Closed Door (2026-09-08, commit `47c1bb5`) because a template runcmd would move the proxy apply out of last position (proxy ADR D018). The role writes an `/etc/tmpfiles.d/cloud-init.conf` override (`d /run/cloud-init 0755 root root - -`) that shadows the vendor rule and applies it immediately with `systemd-tmpfiles --create`, chosen over a one-shot `chmod` because the override also survives a later `systemd-tmpfiles --create`. Rocky family only; debian ships no such rule. Mirrors the 2026-08-17 vmadmin-home 0700 precedent, fixed in ansible-provision. | Owner decision, 2026-09-09 |
-| D13 | The RedHat-family python provisioning gap - no Python dev headers, so a pyDevSup C extension fails with `Python.h` missing on Rocky - is fixed in `roles/python` by mirroring the Debian `python3-dev`: add `python3-devel` to the default `pkg_python_redhat` (reaching rocky10 and any generic RedHat vacuum) and `python39-devel` to the rocky8 override (matching its 3.9 module). The milestone and GitHub issue (#25) are recorded before the code change; implementation status and live rocky verification (T2) are tracked in the M13 detail. | Owner decision, 2026-09-10 |
-| D14 | The rocky8 python operator set only the unversioned `python` alternative, leaving `python3` at the system 3.6, so pyDevSup built against absent 3.6 headers. The operator now sets a `runtime_python_alts` list of name -> path pairs, applying each only when its alternatives group exists and failing loudly when a present group cannot be set (replacing the silent `\|\| true`). rocky8 sets `python3 -> /usr/bin/python3.9` (the versioned target pyDevSup reads) and `python -> /usr/bin/python3` (which then follows python3 to 3.9); setting `python -> python3.9` directly is avoided because the unversioned `python` group does not reliably register `python3.9`. The system python 3.6 is kept, not removed: RHEL8 platform-python depends on it, so the supported switch is alternatives. | Owner decision, 2026-09-11 |
-| D15 | Middleware server provisioning (a middleware server, the middleware counterpart of the IOC dev host) is built in ansible-provision the same way the IOC species are: a new `java` operator role pins a non-system OpenJDK/Maven (dnf module stream + `alternatives`, with override keys `maven_module_version`/`pkg_java`/`java_alternatives_path` and a Maven settings template) and a middleware species layers it on `common`+`epics`, with Phoebus as the middleware application and a middleware group analogous to `ioc`. The internal lineage origin these repos derive from is a substance reference only (OpenJDK 21 + Maven 3.8, Phoebus); internal endpoints stay out of this public repository and are supplied through the site override layer. The cloud-provision package baseline and the middleware VM are the normative source and land first (G2). Sub-decisions left pending: increment scope (Java/Maven runtime first vs with Phoebus), the middleware group name and GID policy, the pinned Java default version, and the species name and target vacuum. | Owner decision, 2026-09-11 |
-| D16 | Middleware server provisioning follows the cloud-provision middleware plan (`docs/milestone-e260630.md` M11, D2, D3): system Java (the distribution OpenJDK 21 with `JAVA_HOME` at the distribution path), no non-system pin and no Maven package (epicsarchiverap-maven supplies Maven 3.9.9 through its Maven Wrapper on the source-build path only), Tomcat 9.0.121 as the shared `CATALINA_HOME` and MariaDB (SQLite later) as the Archiver Appliance baseline, the Archiver Appliance and Phoebus installed from their binary distribution repositories (aa-distribution, phoebus-distribution) with source-build alternatives, and service group `mid` / user `mid-srv` parallel to `ioc` / `ioc-srv`. Supersedes the pinned non-system OpenJDK/Maven and Phoebus-build substance of `D15`; the ansible-provision-way build and the site override layer from `D15` stand. | Owner decision, 2026-09-12 |
-| D17 | The lab-VM time-sync fix handed off by cloud-provision (jeonghanlee/cloud-provision#44: lab VMs never reach NTP sync because the public pools are unreachable behind the site proxy, and one Debian apply failed its first `apt update` on a signature date) is implemented in ansible-provision's `common` operator, the single writer of `chrony.conf`, not in cloud-init. | Owner decision, 2026-09-25 |
-| D18 | The MariaDB application password is generated on the target host by the `mariadb` operator and kept in a root-only file there, read by `archiver_build` for epicsarchiverap-env, replacing the control-host `mariadb_password_hash` carried to the target through the `raw_stdin` action. Carrying the credential was the source of the plugin, its SSH-only constraint and its dedicated tests; a site that wants its own password places the file before the first apply. | Owner decision, 2026-09-25 |
-| D19 | An archiver host gets exactly one configuration-database operator, `mariadb` (as today) or a new `sqlite`, chosen by species (`archiver-dev` or `archiver-dev-sqlite`, later `archiver` or `archiver-sqlite`) with the underscore group carrying `archiver_db_backend`; no new VM selector. Agreed with cloud-provision on 2026-09-25 (its `OPERATOR_MODEL.md` and generator follow this repository's role). The work runs in the order M16, M17, M18, because M16 and M18 both change the database handling in `archiver_build` and M18 needs an epicsarchiverap-env ref at or past `bbe0968`, which M17 brings. Owner decisions 2026-09-28 (M21 and M18 details): M21, the MariaDB socket, ran between M17 and M18, and for M18 cloud-provision landed its generator and definition first (`8c9b6ba`). | Owner decision, 2026-09-26 |
-| D20 | The Perl modules EPICS-env's installed-tree utility uses (`JSON::PP`, `Digest::SHA`, `Test::More`, `Pod::Checker`) are added to `epics_os_packages`: `perl-Digest-SHA`, `perl-JSON-PP`, `perl-Pod-Checker` and `perl-Test-Simple` on rocky8 and rocky10, and `perl` on debian12, debian13, ubuntu24 and ubuntu26, whose `perl-base` alone does not carry them. Each Rocky module package is named even where another package already pulls it in, because the utility uses the modules directly. | Owner decision, 2026-10-02 |
-| D21 | The archiver configuration database follows the cloud-provision definition (`docs/OPERATOR_MODEL.md` at `796682c`, its D8): three separate operators, `mariadb-uds` (the socket-only contract `mariadb` has today), `mariadb-tcp` (IPv4 loopback `127.0.0.1:3306` only, `skip-name-resolve`, the application account at `127.0.0.1`) and `sqlite`, and every archiver species carries exactly one: `archiver-dev-uds`, `archiver-dev-tcp` and `archiver-dev-sqlite`. `archiver-dev` and the group `archiver_dev` are renamed to the `-uds` names and stay as a deprecated alias for a limited period, removed after epicsarchiverap-env confirms it moved. Implementation starts after the two observations of M22 finish, because the soak tools and the next preparation resolve their deploy path through the current names. | Owner decision, 2026-10-05 |
-| D22 | The journal checks of the ETL soak, T22-T28 of `M22`, are a separate work unit `M25` with its own completion criteria, tests and results, so that a journal check cannot decide the ETL scheduler verdict of `M22` and the reverse. `M22` keeps T1-T21 and opens an observation after T27's preparation portion passes; T22-T28 become `M25` T1-T7 and a compressed rehearsal of the full collection path is added as T8. The observations that were running on 2026-10-05 are left as they are. | Owner decision, 2026-10-05 |
-| D23 | A check belongs to the work unit whose purpose it serves: a check whose failure makes the ETL conclusion of `M22` unreliable (record loss, coverage gaps, suppression, the stored-entry count, the kernel journal) stays in `M22`; a check of the journal settings or of the collection method (the retention budget) belongs to `M25`. A failed in-window journal budget is therefore recorded in the sample and reported by the evaluator as `journal_budget_failed_samples`, and it no longer counts toward the abort or the ETL verdict. | Owner decision, 2026-10-06 |
-| D24 | `M3` is retired. The old roles `base_os` and `app_epics` it hardened were superseded by the operator/species model (`D3`), the surface it covered was re-verified through the operator roles, and its Debian 13 re-verification is waived because it targets roles that are no longer used. | Owner decision, 2026-10-06 |
-| D25 | Proxy readiness of a general Rocky 8.10 server is verified read-only by the cloud-provision schema-3 checker, pinned by commit `05cf57398d09882f628d7356316f31576ca840c6` and source SHA-256 `dcf63cb79ecaf6a8dc9c955e5c1cec01cb69e3c92db21b9d0a3fa51f3ea36cff`, through a `proxy_check` role that precedes the group assembly and, for the general-server scope, `archiver_build`. The server owner prepares the six proxy files and the private input; `op.proxy` and the schema-2 runtime lock no longer gate this assembly. Superseded for the assembly wiring by `D26`. | Owner decision, 2026-10-10 |
-| D26 | A general Rocky 8.10 server is provisioned without a proxy readiness gate: its owner sets the proxy configuration directly (environment, DNF, and the Maven settings file `/etc/maven-proxy-settings.xml`), the assembly neither writes nor checks it, and `archiver_build` keeps its precondition that a proxied host carries that file. The `proxy_check` role and its suite stay available and are wired in only when a site needs a gate. | Owner decision, 2026-10-11 |
+| D1 | Local `T` labels identify verification inside their owning work detail and are not independent work IDs. Prior record: `docs/MILESTONES.md` at `38560eb`, D.1. | 2026-07-28 |
+| D2 | Ubuntu 26 is excluded from the current source-build matrix and deferred to EPICS-env 1.3.1 or a later version. The 1.3.0 gate matrix does not include Ubuntu 26, and the `iocStats` GCC 15 fix is owned by EPICS-env. | 2026-08-17 |
+| D3 | The staged old model (`01_base`/`02_apps`/`03_epics`) and its retained roles `base_os` and `app_epics` are retired; the operator/species model supersedes them. Removing the old roles and playbooks is separate follow-up work. | 2026-08-29 |
+| D4 | Ubuntu 26 source-build is no longer deferred. The C17 bridge shipped under milestone 1.3.0 (`jeonghanlee/EPICS-env#29`), and `jeonghanlee/EPICS-env#63` (closed 2026-08-24) confirmed it fires for `iocStats` on the Ubuntu 26 source-build path; the complete `gz` path passed on 2026-08-27. Supersedes `D2`. | 2026-08-30 |
+| D5 | The EPICS OS package regression (`M5`) is fixed across all six vacua, `pkg_automation` is removed from `roles/epics_build` in the same change, ansible-provision drafts the cloud `docs/IMAGE_WORKFLOW.md` change for cloud-provision to land, and the milestone and GitHub issue are recorded before implementation begins. | 2026-08-31 |
+| D6 | `M5` closes on the golden pair (rocky8, debian13), verified on both acquisition paths. The four non-golden vacua (rocky10, debian12, ubuntu24, ubuntu26) have no iocrunner golden pipeline; they carry the same package lists (names dry-run-verified) and move to `M6` for Live-mode verification. The cloud-side golden bake-matrix expansion stays a separate cloud-provision item. | 2026-08-31 |
+| D7 | The `epics_build` source-build fragility surfaced during `M5` verification (cloud-provision Finding B) is hardened as `M7`, not accepted. `M5`'s fix removed the known trigger (the NetworkManager restart); `M7` addresses the underlying structure so a dropped connection cannot leave a half-built tree. | 2026-08-31 |
+| D8 | The chrony per-server `minpoll`/`maxpoll` and `keyfile`/`leapsectz` directives dropped by the operator rewrite (`0012e2d`) are restored into `roles/common`, mirroring the `M5` EPICS-package regression from the same rewrite. Empty defaults keep the baseline render unchanged; site overrides (the production IOC server) render the production directives. | 2026-09-02 |
+| D9 | With `epics_install_group` set, the EPICS install root stays `root:<group>` `2775` (setgid) and gains a default ACL on local disk plus a system-wide git `safe.directory` on the deploy server, so any group member can run git on the single shared repository and write into it. Owner-owned roots (one deployer only), per-user `safe.directory` (per-member setup), a per-member subdirectory layout (the ioc-runner per-engineer model, unsuited to a single distribution tree), and a dedicated deploy account were rejected for the one-server-deploys/many-hosts-read topology. Site prerequisites (consistent group GID, `root_squash` pinning deploy to the filesystem server, NFSv4 idmapping) stay in the site provisioning record. | 2026-09-02 |
+| D11 | The con, procServ, and conserver roles and the EPICS role drop the install-once guard so a re-apply installs the requested version, replacing the installed one; whether the installed version matches the requested one is verified by the separate site verification tool, not by these roles. `con_version` is a git tag on the con repository, while `procserv_version` and `conserver_version` select a wrapper-repo ref whose upstream daemon version is pinned inside the wrapper (`configure/RELEASE` `SRC_TAG`), so the role controls the wrapper ref only. The EPICS distribution checkout adds `epics_clone_mode`: `minimal` (default) is a shallow, blob-filtered, single-OS sparse checkout for a Docker or single-OS host; `full` is a plain clone of every OS tree for a production NFS server. Both modes re-check out the requested tag in place, full disables sparse so a mode switch expands correctly, and an unknown mode value fails loudly. The roles keep `changed_when: false`. | 2026-09-04 |
+| D10 | EPICS firewall ports are opened per service in site-configurable firewalld zones (`epics_ca_zone`, `epics_pva_zone`; empty keeps the default zone for single-homed hosts) because a multi-homed IOC server binds CA and PVA to different interfaces and zones, where the default zone carries no interface. The role validates that a named zone exists and fails loudly rather than silently skipping; it does not create zones (site infrastructure). The port sets follow the protocol constants — CA 5064 TCP+UDP and 5065 UDP, PVA 5075 TCP+UDP and 5076 UDP — dropping the previously opened 5065/TCP, which is not an EPICS port. | 2026-09-03 |
+| D12 | The rocky-family in-place cloud-init upgrade run by `roles/epics_build`'s `dnf update` fires rpm's tmpfiles trigger, which resets `/run/cloud-init` to 0700 until the next boot and breaks an unprivileged `cloud-init status`. The fix lands in the role that causes it, not cloud-provision's cloud-init templates: cloud-provision recorded a Closed Door (2026-09-08, commit `47c1bb5`) because a template runcmd would move the proxy apply out of last position (proxy ADR D018). The role writes an `/etc/tmpfiles.d/cloud-init.conf` override (`d /run/cloud-init 0755 root root - -`) that shadows the vendor rule and applies it immediately with `systemd-tmpfiles --create`, chosen over a one-shot `chmod` because the override also survives a later `systemd-tmpfiles --create`. Rocky family only; debian ships no such rule. Mirrors the 2026-08-17 vmadmin-home 0700 precedent, fixed in ansible-provision. | 2026-09-09 |
+| D13 | The RedHat-family python provisioning gap - no Python dev headers, so a pyDevSup C extension fails with `Python.h` missing on Rocky - is fixed in `roles/python` by mirroring the Debian `python3-dev`: add `python3-devel` to the default `pkg_python_redhat` (reaching rocky10 and any generic RedHat vacuum) and `python39-devel` to the rocky8 override (matching its 3.9 module). The milestone and GitHub issue (#25) are recorded before the code change; implementation status and live rocky verification (T2) are tracked in the M13 detail. | 2026-09-10 |
+| D14 | The rocky8 python operator set only the unversioned `python` alternative, leaving `python3` at the system 3.6, so pyDevSup built against absent 3.6 headers. The operator now sets a `runtime_python_alts` list of name -> path pairs, applying each only when its alternatives group exists and failing loudly when a present group cannot be set (replacing the silent `\|\| true`). rocky8 sets `python3 -> /usr/bin/python3.9` (the versioned target pyDevSup reads) and `python -> /usr/bin/python3` (which then follows python3 to 3.9); setting `python -> python3.9` directly is avoided because the unversioned `python` group does not reliably register `python3.9`. The system python 3.6 is kept, not removed: RHEL8 platform-python depends on it, so the supported switch is alternatives. | 2026-09-11 |
+| D15 | Middleware server provisioning (a middleware server, the middleware counterpart of the IOC dev host) is built in ansible-provision the same way the IOC species are: a new `java` operator role pins a non-system OpenJDK/Maven (dnf module stream + `alternatives`, with override keys `maven_module_version`/`pkg_java`/`java_alternatives_path` and a Maven settings template) and a middleware species layers it on `common`+`epics`, with Phoebus as the middleware application and a middleware group analogous to `ioc`. The internal lineage origin these repos derive from is a substance reference only (OpenJDK 21 + Maven 3.8, Phoebus); internal endpoints stay out of this public repository and are supplied through the site override layer. The cloud-provision package baseline and the middleware VM are the normative source and land first (G2). Sub-decisions left pending: increment scope (Java/Maven runtime first vs with Phoebus), the middleware group name and GID policy, the pinned Java default version, and the species name and target vacuum. | 2026-09-11 |
+| D16 | Middleware server provisioning follows the cloud-provision middleware plan (`docs/milestone-e260630.md` M11, D2, D3): system Java (the distribution OpenJDK 21 with `JAVA_HOME` at the distribution path), no non-system pin and no Maven package (epicsarchiverap-maven supplies Maven 3.9.9 through its Maven Wrapper on the source-build path only), Tomcat 9.0.121 as the shared `CATALINA_HOME` and MariaDB (SQLite later) as the Archiver Appliance baseline, the Archiver Appliance and Phoebus installed from their binary distribution repositories (aa-distribution, phoebus-distribution) with source-build alternatives, and service group `mid` / user `mid-srv` parallel to `ioc` / `ioc-srv`. Supersedes the pinned non-system OpenJDK/Maven and Phoebus-build substance of `D15`; the ansible-provision-way build and the site override layer from `D15` stand. | 2026-09-12 |
+| D17 | The lab-VM time-sync fix handed off by cloud-provision (jeonghanlee/cloud-provision#44: lab VMs never reach NTP sync because the public pools are unreachable behind the site proxy, and one Debian apply failed its first `apt update` on a signature date) is implemented in ansible-provision's `common` operator, the single writer of `chrony.conf`, not in cloud-init. | 2026-09-25 |
+| D18 | The MariaDB application password is generated on the target host by the `mariadb` operator and kept in a root-only file there, read by `archiver_build` for epicsarchiverap-env, replacing the control-host `mariadb_password_hash` carried to the target through the `raw_stdin` action. Carrying the credential was the source of the plugin, its SSH-only constraint and its dedicated tests; a site that wants its own password places the file before the first apply. | 2026-09-25 |
+| D19 | An archiver host gets exactly one configuration-database operator, `mariadb` (as today) or a new `sqlite`, chosen by species (`archiver-dev` or `archiver-dev-sqlite`, later `archiver` or `archiver-sqlite`) with the underscore group carrying `archiver_db_backend`; no new VM selector. Agreed with cloud-provision on 2026-09-25 (its `OPERATOR_MODEL.md` and generator follow this repository's role). The work runs in the order M16, M17, M18, because M16 and M18 both change the database handling in `archiver_build` and M18 needs an epicsarchiverap-env ref at or past `bbe0968`, which M17 brings. Owner decisions 2026-09-28 (M21 and M18 details): M21, the MariaDB socket, ran between M17 and M18, and for M18 cloud-provision landed its generator and definition first (`8c9b6ba`). | 2026-09-26 |
+| D20 | The Perl modules EPICS-env's installed-tree utility uses (`JSON::PP`, `Digest::SHA`, `Test::More`, `Pod::Checker`) are added to `epics_os_packages`: `perl-Digest-SHA`, `perl-JSON-PP`, `perl-Pod-Checker` and `perl-Test-Simple` on rocky8 and rocky10, and `perl` on debian12, debian13, ubuntu24 and ubuntu26, whose `perl-base` alone does not carry them. Each Rocky module package is named even where another package already pulls it in, because the utility uses the modules directly. | 2026-10-02 |
+| D21 | The archiver configuration database follows the cloud-provision definition (`docs/OPERATOR_MODEL.md` at `796682c`, its D8): three separate operators, `mariadb-uds` (the socket-only contract `mariadb` has today), `mariadb-tcp` (IPv4 loopback `127.0.0.1:3306` only, `skip-name-resolve`, the application account at `127.0.0.1`) and `sqlite`, and every archiver species carries exactly one: `archiver-dev-uds`, `archiver-dev-tcp` and `archiver-dev-sqlite`. `archiver-dev` and the group `archiver_dev` are renamed to the `-uds` names and stay as a deprecated alias for a limited period, removed after epicsarchiverap-env confirms it moved. Implementation starts after the two observations of M22 finish, because the soak tools and the next preparation resolve their deploy path through the current names. | 2026-10-05 |
+| D22 | The journal checks of the ETL soak, T22-T28 of `M22`, are a separate work unit `M25` with its own completion criteria, tests and results, so that a journal check cannot decide the ETL scheduler verdict of `M22` and the reverse. `M22` keeps T1-T21 and opens an observation after T27's preparation portion passes; T22-T28 become `M25` T1-T7 and a compressed rehearsal of the full collection path is added as T8. The observations that were running on 2026-10-05 are left as they are. | 2026-10-05 |
+| D23 | A check belongs to the work unit whose purpose it serves: a check whose failure makes the ETL conclusion of `M22` unreliable (record loss, coverage gaps, suppression, the stored-entry count, the kernel journal) stays in `M22`; a check of the journal settings or of the collection method (the retention budget) belongs to `M25`. A failed in-window journal budget is therefore recorded in the sample and reported by the evaluator as `journal_budget_failed_samples`, and it no longer counts toward the abort or the ETL verdict. | 2026-10-06 |
+| D24 | `M3` is retired. The old roles `base_os` and `app_epics` it hardened were superseded by the operator/species model (`D3`), the surface it covered was re-verified through the operator roles, and its Debian 13 re-verification is waived because it targets roles that are no longer used. | 2026-10-06 |
+| D25 | Proxy readiness of a general Rocky 8.10 server is verified read-only by the cloud-provision schema-3 checker, pinned by commit `05cf57398d09882f628d7356316f31576ca840c6` and source SHA-256 `dcf63cb79ecaf6a8dc9c955e5c1cec01cb69e3c92db21b9d0a3fa51f3ea36cff`, through a `proxy_check` role that precedes the group assembly and, for the general-server scope, `archiver_build`. The server owner prepares the six proxy files and the private input; `op.proxy` and the schema-2 runtime lock no longer gate this assembly. Superseded for the assembly wiring by `D26`. | 2026-10-10 |
+| D26 | A general Rocky 8.10 server is provisioned without a proxy readiness gate: its owner sets the proxy configuration directly (environment, DNF, and the Maven settings file `/etc/maven-proxy-settings.xml`), the assembly neither writes nor checks it, and `archiver_build` keeps its precondition that a proxied host carries that file. The `proxy_check` role and its suite stay available and are wired in only when a site needs a gate. | 2026-10-11 |
 | D27 | M22 and M25 have independent packages, preparation, execution, evidence and completion. M22 alone changes the existing ETL integration; M25 extracts its standalone journal workflow from the same immutable baseline. Neither requires the other's merge or result. Journal acceptance measures actual delivery, live retention and collection equality on sufficient disk, without an inherited cap or calculated retention horizon. All required in-window records receive final live reads, and actual retrieval messages must be correlated to requests. Supersedes the coupling and budget prerequisites of D22/D23 and the earlier plans; historical results retain their original meaning. | 2026-10-13 |
 | D28 | Accept completed 24-hour journal recording, live retention and exact collection. Transfer unexecuted normal-stop/post-stop collector verification to M27 and independent-recipient full-day replay to M28 as separate Deferred Backlog work. Neither gates journal acceptance or requires a new full-day producer run. Preserve reusable procedures/source in Git-managed paths, keep operational evidence private, and record the reason/evidence in #31 before closure. | 2026-10-15 |
 | D29 | Accept both completed shortened/default full-day ETL processing observations from retained actual scheduling, physical/HTTP and orderly-stop evidence. Preserve original Incomplete tool verdicts. Transfer kernel collector/ETL terminal isolation to M29 and JFR scope/terminal ordering correction to M30 as independent Deferred Backlog work. Neither gates the accepted ETL results or requires a repeat full-day run solely for tool correction. Other independence, fault/abort, measurement/report and recipient expectations remain unaccepted. | 2026-10-15 |
@@ -498,10 +500,10 @@ Status tally: 25 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 
 
 #### M1 - EPICS-env 4-OS Source-Build Environment
 
-- Origin: 38560eb / M1
-- Identity History: new reset-generation identity; prior scope and evidence are reachable from commit `38560eb`. Ubuntu 26 was split out to `M2` (Deferred) by owner decision `D2` on 2026-08-17, narrowing this row to the four passing OSes.
-- GitHub Issue: #7, https://github.com/jeonghanlee/ansible-provision/issues/7
-- Status: Complete
+Origin: 38560eb / M1
+Identity History: new reset-generation identity; prior scope and evidence are reachable from commit `38560eb`. Ubuntu 26 was split out to `M2` (Deferred) by owner decision `D2` on 2026-08-17, narrowing this row to the four passing OSes.
+GitHub Issue: #7, https://github.com/jeonghanlee/ansible-provision/issues/7
+Status: Complete
 
 ##### Summary
 
@@ -577,10 +579,10 @@ golden-image baking for these source-build hosts.
 
 #### M2 - Ubuntu 26 Source-Build
 
-- Origin: 38560eb / M2
-- Identity History: split from `M1` on 2026-08-17 by owner decision `D2`; carries the former Ubuntu 26 gate scope (prior generation `G2`). Returned to active and completed by owner decision `D4` on 2026-08-30.
-- GitHub Issue: none dedicated. The Ubuntu 26 scope was originally carried in `#7`, which was reconciled to `M1`'s four-OS scope and closed. Upstream: `jeonghanlee/EPICS-env#29` (C17 bridge), `jeonghanlee/EPICS-env#63` (bridge firing confirmed on the Ubuntu 26 source-build path).
-- Status: Complete
+Origin: 38560eb / M2
+Identity History: split from `M1` on 2026-08-17 by owner decision `D2`; carries the former Ubuntu 26 gate scope (prior generation `G2`). Returned to active and completed by owner decision `D4` on 2026-08-30.
+GitHub Issue: none dedicated. The Ubuntu 26 scope was originally carried in `#7`, which was reconciled to `M1`'s four-OS scope and closed. Upstream: `jeonghanlee/EPICS-env#29` (C17 bridge), `jeonghanlee/EPICS-env#63` (bridge firing confirmed on the Ubuntu 26 source-build path).
+Status: Complete
 
 ##### Summary
 
@@ -645,6 +647,8 @@ Out of scope: the `iocStats` GCC 15 fix itself, which EPICS-env owns.
   EPICS-env 1.3.1.
 
 #### M3 - base_os/app role hardening from production deployment
+
+Origin: 38560eb / M3
 
 Deferred 2026-08-29 per D3: the old model is retired, so the pending Debian 13
 re-verification of the old roles is not pursued. The base and app surface is
@@ -780,9 +784,9 @@ Superseded Plan Artifacts: none
 
 #### M5 - Restore the EPICS OS package set into the operator model
 
-- Origin: 38560eb / M5
-- GitHub Issue: #18, https://github.com/jeonghanlee/ansible-provision/issues/18
-- Status: Complete
+Origin: 38560eb / M5
+GitHub Issue: #18, https://github.com/jeonghanlee/ansible-provision/issues/18
+Status: Complete
 
 ##### Summary
 
@@ -859,8 +863,8 @@ repo); the source-build tag pins (`M1`/`M2`).
 
 #### M6 - Convergence-verify EPICS OS build dependencies on the four non-golden vacua
 
-- Origin: 38560eb / M6
-- Status: Complete
+Origin: 38560eb / M6
+Status: Complete
 
 ##### Summary
 
@@ -953,9 +957,9 @@ EPICS-env-distribution publishing of the `debian-12` / `ubuntu-26.04` trees (ups
 
 #### M7 - Harden the epics_build source build against a dropped connection
 
-- Origin: 38560eb / M7
-- GitHub Issue: #19, https://github.com/jeonghanlee/ansible-provision/issues/19
-- Status: Complete
+Origin: 38560eb / M7
+GitHub Issue: #19, https://github.com/jeonghanlee/ansible-provision/issues/19
+Status: Complete
 
 ##### Summary
 
@@ -1039,9 +1043,9 @@ to survive kills during `M5` verification. All six vacua are systemd-based.
 
 #### M8 - Restore chrony poll/key/leap directives dropped by the operator rewrite
 
-- Origin: 38560eb / M8
-- GitHub Issue: #20, https://github.com/jeonghanlee/ansible-provision/issues/20
-- Status: Complete
+Origin: 38560eb / M8
+GitHub Issue: #20, https://github.com/jeonghanlee/ansible-provision/issues/20
+Status: Complete
 
 ##### Summary
 
@@ -1112,9 +1116,9 @@ Out of scope: any other chrony directive; the production IOC server site overrid
 
 #### M9 - Share the EPICS install root safely across group deployers
 
-- Origin: 38560eb / M9
-- GitHub Issue: #21, https://github.com/jeonghanlee/ansible-provision/issues/21
-- Status: Complete
+Origin: 38560eb / M9
+GitHub Issue: #21, https://github.com/jeonghanlee/ansible-provision/issues/21
+Status: Complete
 
 ##### Summary
 
@@ -1195,9 +1199,9 @@ group, firewalld zones, or the NFS export; the site values (group GID,
 
 #### M10 - Route EPICS firewall ports to per-service zones on a multi-homed IOC server
 
-- Origin: 38560eb / M10
-- GitHub Issue: #22, https://github.com/jeonghanlee/ansible-provision/issues/22
-- Status: Complete
+Origin: 38560eb / M10
+GitHub Issue: #22, https://github.com/jeonghanlee/ansible-provision/issues/22
+Status: Complete
 
 ##### Summary
 
@@ -1279,9 +1283,9 @@ default zone as an outbound client.
 
 #### M11 - Install the requested version in the app and EPICS roles
 
-- Origin: 38560eb / M11
-- GitHub Issue: #23, https://github.com/jeonghanlee/ansible-provision/issues/23
-- Status: Complete
+Origin: 38560eb / M11
+GitHub Issue: #23, https://github.com/jeonghanlee/ansible-provision/issues/23
+Status: Complete
 
 ##### Summary
 
@@ -1368,9 +1372,9 @@ minimal-origin clone's shallow history to full.
 
 #### M12 - Keep /run/cloud-init world-readable after the in-build cloud-init upgrade
 
-- Origin: 38560eb / M12
-- GitHub Issue: #24, https://github.com/jeonghanlee/ansible-provision/issues/24
-- Status: Complete
+Origin: 38560eb / M12
+GitHub Issue: #24, https://github.com/jeonghanlee/ansible-provision/issues/24
+Status: Complete
 
 ##### Summary
 
@@ -1442,9 +1446,9 @@ proxy ADR D018); the operator-path mitigation cloud-provision already shipped
 
 #### M13 - Fix RedHat python provisioning for EPICS source builds
 
-- Origin: 38560eb / M13
-- GitHub Issue: #25, https://github.com/jeonghanlee/ansible-provision/issues/25
-- Status: Complete
+Origin: 38560eb / M13
+GitHub Issue: #25, https://github.com/jeonghanlee/ansible-provision/issues/25
+Status: Complete
 
 ##### Summary
 
@@ -1535,8 +1539,8 @@ the target python version per OS beyond the current selections.
 
 #### M14 - Archiver Appliance server provisioning
 
-- Origin: 38560eb / M14
-- Status: Blocked (on G2)
+Origin: 38560eb / M14
+Status: Blocked (on G2)
 
 ##### Summary
 
@@ -2040,8 +2044,8 @@ operator checks.
 
 #### M15 - Discipline lab-VM clocks from the KVM PTP clock in the common operator
 
-- Origin: 38560eb / M15
-- Status: Complete
+Origin: 38560eb / M15
+Status: Complete
 
 ##### Summary
 
@@ -2149,9 +2153,9 @@ KVM guests beyond confirming they are unaffected.
 
 #### M16 - Generate the MariaDB application password on the host
 
-- Origin: 38560eb / M16
-- GitHub Issue: #26, https://github.com/jeonghanlee/ansible-provision/issues/26
-- Status: Complete
+Origin: 38560eb / M16
+GitHub Issue: #26, https://github.com/jeonghanlee/ansible-provision/issues/26
+Status: Complete
 
 ##### Summary
 
@@ -2259,7 +2263,7 @@ the operator does not run; encrypting the file at rest (the installed
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
 | T1 | 2026-09-26T00:48Z | control host | Passed | `--syntax-check` passes for the `mariadb` and `archiver_build` operators and the `archiver_dev` species; the Ansible splitter accepts all 77 `raw` tasks, including the account task that is now plain `raw` (its first draft used the shell length form `${#password}`, whose `{#` opens a Jinja comment and broke parsing; replaced by `wc -c`). No file outside this register names `raw_stdin`, `check-raw-stdin`, `mariadb_password_hash` or `archiver_db_password`. Rendered with the role defaults, the account task, the build script and the launch step pass `bash -n`, carry no password literal, and name the same file, `/etc/ansible-provision/mariadb-archappl.pass`. |
-| T2 | 2026-09-27T03:31Z | Fresh bare Rocky 8.10 and Debian 13 VMs from cloud-provision | Passed | `make op.mariadb.<vacuum>` with no private variables. Rocky, socket-only first: `/etc/ansible-provision` root 0700, `mariadb-archappl.pass` root 0600 holding a generated 32-character password, account at `localhost`; re-apply `changed=0`. With `mariadb_skip_networking: false` from a vars file: the account gained `127.0.0.1` and a TCP login as `archappl` with the file's password returned `archappl@127.0.0.1`; re-apply `changed=0`. Rotation: removing the file and re-applying changed only the account task, the new 32-character password differs from the old, the new one logs in over TCP and the old one gets "Access denied". Debian: a site password (`Site-Pass.2026x`) written beforehand with mode 0644 was used as given and the file set to 0600; the socket-only and TCP applies and their re-applies behaved as on Rocky (TCP login `archappl@127.0.0.1`, re-apply `changed=0`). The validation task still refuses a non-boolean `mariadb_skip_networking` before any change (seen when the first run passed it as a string). After the plan revision, rechecked on the Rocky VM: with the file removed beside the existing account, an apply failed at the account task with the instruction message and changed nothing, and the old password still logged in; `-e mariadb_password_rotate=true` (a string on the command line, accepted through `| bool`; a first draft that demanded a true boolean refused it and was changed) regenerated the file, the stored hash changed, the old password got "Access denied" and the new one logged in; the next plain re-apply reported `changed=0`. |
+| T2 | 2026-09-27T03:31Z | Fresh bare Rocky 8.10 and Debian 13 VMs from cloud-provision | Passed | `make op.mariadb.<vacuum>` with no private variables. Rocky, socket-only first: `/etc/ansible-provision` root 0700, `mariadb-archappl.pass` root 0600 holding a generated 32-character password, account at `localhost`; re-apply `changed=0`. With `mariadb_skip_networking: false` from a vars file: the account gained `127.0.0.1` and a TCP login as `archappl` with the file's password returned `archappl@127.0.0.1`; re-apply `changed=0`. Rotation: removing the file and re-applying changed only the account task, the new 32-character password differs from the old, the new one logs in over TCP and the old one gets "Access denied". Debian: a site password (`Site-Pass.2026x`) written beforehand with mode 0644 was used as given and the file set to 0600; the socket-only and TCP applies and their re-applies behaved as on Rocky (TCP login `archappl@127.0.0.1`, re-apply `changed=0`). The validation task still refuses a non-boolean `mariadb_skip_networking` before any change (seen when the first run passed it as a string). After the plan revision, rechecked on the Rocky VM: with the file removed beside the existing account, an apply failed at the account task with the instruction message and changed nothing, and the old password still logged in; `-e mariadb_password_rotate=true` (a string on the command line, accepted through `\| bool`; a first draft that demanded a true boolean refused it and was changed) regenerated the file, the stored hash changed, the old password got "Access denied" and the new one logged in; the next plain re-apply reported `changed=0`. |
 | T3 | 2026-09-27T03:40Z | A fresh Rocky 8.10 archiver-dev VM from cloud-provision | Passed | `make archiver_dev.rocky8` with no private variables, 03:31:17Z-03:37:10Z, `failed=0`. The password file is root 0600; the generated `CONFIG_SITE.local` is 0600 and its one `DB_USER_PASS` line equals the file; the build log shows `BUILD SUCCESS` and no table-check refusal; the database holds `ArchivePVRequests`, `ExternalDataServers`, `PVAliases` and `PVTypeInfo`; mgmt answers 200. A PV registered through `archivePV` was stored in `ArchivePVRequests`, and once a one-record IOC served it, `PVTypeInfo` held its row within 100 s; mgmt logged no missing-table or access-denied line. |
 | T4 | 2026-09-27T03:32Z | The fresh bare Rocky 8.10 VM | Passed | The uncommitted working tree was copied to the VM (a clone of origin would have carried the old code), `make` and ansible-core 2.16.3 installed, and `make op.mariadb.rocky8` run on the VM against `localhost ansible_connection=local` with become through sudo and no become password given. With the password file removed first, the apply changed only the account task, recreated the file root 0600, and a TCP login with it returned `archappl@127.0.0.1`; the re-apply reported `changed=0`. Sudo is passwordless on this lab VM, unlike the production host with password sudo kept warm; the account task no longer takes any secret from the control host, so the sudo mode does not change its path. |
 
@@ -2301,8 +2305,8 @@ the operator does not run; encrypting the file at rest (the installed
 
 #### M17 - Move the epicsarchiverap-env pin to the journald and log4j2 service model
 
-- Origin: 38560eb / M17
-- Status: Complete
+Origin: 38560eb / M17
+Status: Complete
 
 ##### Summary
 
@@ -2429,9 +2433,9 @@ epicsarchiverap-env's own internals.
 
 #### M18 - Select SQLite as the archiver configuration database through its own operator
 
-- Origin: 38560eb / M18
-- GitHub Issue: #28, https://github.com/jeonghanlee/ansible-provision/issues/28
-- Status: Complete
+Origin: 38560eb / M18
+GitHub Issue: #28, https://github.com/jeonghanlee/ansible-provision/issues/28
+Status: Complete
 
 ##### Summary
 
@@ -2559,9 +2563,9 @@ Out of scope: the distribution-based `archiver-sqlite` species (with the
 
 #### M19 - Add an ioc-group operator fixture account with linger
 
-- Origin: 38560eb / M19
-- GitHub Issue: #27, https://github.com/jeonghanlee/ansible-provision/issues/27
-- Status: Complete
+Origin: 38560eb / M19
+GitHub Issue: #27, https://github.com/jeonghanlee/ansible-provision/issues/27
+Status: Complete
 
 ##### Summary
 
@@ -2656,9 +2660,9 @@ runs; the retired paths elsewhere in `docs/test_users_handoff.md` (M20).
 
 #### M21 - Reach the archiver MariaDB over its Unix socket
 
-- Origin: 38560eb / M21
-- GitHub Issue: none
-- Status: Complete
+Origin: 38560eb / M21
+GitHub Issue: none
+Status: Complete
 
 ##### Summary
 
@@ -2771,9 +2775,9 @@ Out of scope: the SQLite backend (M18); remote database hosts.
 
 #### M20 - Align the test-user handoff document with the operator model
 
-- Origin: 38560eb / M20
-- GitHub Issue: none
-- Status: Complete
+Origin: 38560eb / M20
+GitHub Issue: none
+Status: Complete
 
 ##### Summary
 
@@ -2872,10 +2876,10 @@ accepted 2026-07-05 state own; the cloud-provision bake script.
 
 #### M22 - Verify the ETL pass scheduler on two parallel store chains
 
-- Origin: 38560eb / M22
-- Identity History: none
-- GitHub Issue: #30, https://github.com/jeonghanlee/ansible-provision/issues/30; external request jeonghanlee/epicsarchiverap-maven#12
-- Status: Complete
+Origin: 38560eb / M22
+Identity History: none
+GitHub Issue: #30, https://github.com/jeonghanlee/ansible-provision/issues/30; external request jeonghanlee/epicsarchiverap-maven#12
+Status: Complete
 
 ##### Summary
 
@@ -4746,10 +4750,11 @@ has been evaluated; do not relabel either aborted historical run as Passed.
 
 ##### Verification Results
 
-Rows labelled T22-T28, and rows named for T27, T13 or T15 that concern the
-journal, were recorded in this row before the split of 2026-10-05; they remain
-here as the record of that period. In `M25` the labels read T22 = T1,
-T23 = T2, T24 = T3, T25 = T4, T26 = T5, T27 = T6 and T28 = T7.
+Journal rows recorded before the split of 2026-10-05 remain here as historical
+evidence. Their original M22 labels are retained with the current M25 journal
+check beside them; observations and verdicts are unchanged. The mapping is
+M22 T22 = M25 T1, T23 = T2, T24 = T3, T25 = T4, T26 = T5, T27 = T6 and
+T28 = T7. Mixed T13/T27 or T14/T27 labels retain their original scope.
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
@@ -4939,41 +4944,41 @@ coverage or absence of OOM throughout either interval.
 | T16 | 2026-10-01 21:35:37.251269 UTC terminal; inspected at 21:52:51 UTC | Default; original frozen schema-4 bundle | Incomplete; automatically aborted | Actual abort reason is consecutive_sample_failures after kernel_journal errors at 21:30:00.165243 and 21:35:00.159159 UTC. Duration from manifest start to terminal finish is about 14 h 16 min, below 24 hours and before UTC midnight. Embedded evaluator retains the same failed assertion classes and missing coverage. Both observation timers and the appliance are inactive |
 | T18 | 2026-10-01; post-terminal read-only journal inspection | Both VMs; shipped collect_kernel and actual journalctl | Stale-anchor defect identified; correction unverified | Stored kernel cursors correspond to 2026-09-30 05:56:25.272527 UTC on shortened and 2026-10-01 06:39:45.870859 UTC on default. Their actual kernel lookups return no rows. Earliest retained system records are 2026-09-30 07:55:01.063035 and 2026-10-01 06:49:49.287537 UTC, still before trial starts. The collector retains an old kernel cursor when no new kernel record exists and rejects its later disappearance. No full-window coverage or OOM-absence conclusion follows from these findings |
 | T19 | 2026-10-01; actual abort records inspected at 21:52 UTC | Both aborted observations | Orderly abort stops observed; normal terminal criterion unmet | Actual stop commands return zero in 11.540977/23.008912 seconds with inactive units and Result=success. Final full samples and final journal collection retain kernel-cursor failures; abort.json records final_sample and final_journal errors. Successful early stops do not establish T19's successful full-window final capture |
-| T22 | Not executed for the journal-scenario revision | Dedicated test VM and preserved defective/candidate tools | Pending | Obsolete-anchor reproduction and candidate regression are specified above; no correction or regression execution occurred during this document update |
-| T23 | Not executed for the journal-scenario revision | Dedicated test VM; real quiet system-journal intervals | Pending | Repeated quiet-kernel collection and absence of an initial kernel row require actual execution |
-| T24 | Not executed for the journal-scenario revision | Dedicated test VM; live kernel/journald and terminal paths | Pending | Tagged benign events, rotation, race and final-capture comparisons require actual execution |
-| T25 | Not executed for the journal-scenario revision | Disposable real journal copies and dedicated test VM | Pending | Required-record loss with an older surviving user journal and persistent failed assertions requires actual execution |
-| T26 | Not executed for the journal-scenario revision | Retained actual boundary/midnight/boot inputs and test VM | Pending | Boundary continuity and changed-boot rejection require actual shipped-path execution |
-| T27 | Not executed for the journal-scenario revision | Both stopped soak deployments | Preparation Pending; in-window Pending | Gap arithmetic was checked against shipped limits: 320+240=560 seconds, 320+2700=3020 seconds and factor-two allowance gives 6040 seconds. This verifies the written calculation only. Stream-write measurements, effective-cap inequalities, launch proof validation and complete in-window/terminal checks remain unexecuted; no retention-cap change or passing budget is claimed. The passing dedicated-VM preparation of 2026-10-03, recorded in the supplementary rows below, does not satisfy T27 on these deployments |
-| T28 | Not executed for the journal-scenario revision | Dedicated complete test deployment and retained real abort inputs | Pending | Quiet-case non-abort and loss-case full-sample/dispatch/terminal/evaluator integration remain required |
+| Historical M22 / T22 (journal: M25 / T1) | Not executed for the journal-scenario revision | Dedicated test VM and preserved defective/candidate tools | Pending | Obsolete-anchor reproduction and candidate regression are specified above; no correction or regression execution occurred during this document update |
+| Historical M22 / T23 (journal: M25 / T2) | Not executed for the journal-scenario revision | Dedicated test VM; real quiet system-journal intervals | Pending | Repeated quiet-kernel collection and absence of an initial kernel row require actual execution |
+| Historical M22 / T24 (journal: M25 / T3) | Not executed for the journal-scenario revision | Dedicated test VM; live kernel/journald and terminal paths | Pending | Tagged benign events, rotation, race and final-capture comparisons require actual execution |
+| Historical M22 / T25 (journal: M25 / T4) | Not executed for the journal-scenario revision | Disposable real journal copies and dedicated test VM | Pending | Required-record loss with an older surviving user journal and persistent failed assertions requires actual execution |
+| Historical M22 / T26 (journal: M25 / T5) | Not executed for the journal-scenario revision | Retained actual boundary/midnight/boot inputs and test VM | Pending | Boundary continuity and changed-boot rejection require actual shipped-path execution |
+| Historical M22 / T27 (journal: M25 / T6) | Not executed for the journal-scenario revision | Both stopped soak deployments | Preparation Pending; in-window Pending | Gap arithmetic was checked against shipped limits: 320+240=560 seconds, 320+2700=3020 seconds and factor-two allowance gives 6040 seconds. This verifies the written calculation only. Stream-write measurements, effective-cap inequalities, launch proof validation and complete in-window/terminal checks remain unexecuted; no retention-cap change or passing budget is claimed. The passing dedicated-VM preparation of 2026-10-03, recorded in the supplementary rows below, does not satisfy T27 on these deployments |
+| Historical M22 / T28 (journal: M25 / T7) | Not executed for the journal-scenario revision | Dedicated complete test deployment and retained real abort inputs | Pending | Quiet-case non-abort and loss-case full-sample/dispatch/terminal/evaluator integration remain required |
 
 Local journal-candidate verification supplements the pending live checks:
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
 | T13/T14 | 2026-10-02 02:49:08 UTC | Control host; schema-5 sources and retained real runtime/export/fixture inputs | Local checks Passed; live preparation Pending | The shipped unittest discovery ran 57 checks in 37.944 seconds, rc=0 and no skips. It replays historical real evidence, exercises actual aggregation CLI comparisons, fixture checks and missing-retention-proof rejection without modifying retained inputs. Current preparation requires schema 5 and rejects schema 4. The preceding run's one missing-schema test-input error remains separately preserved; the successful run is `work/soak-etl-pass-3bdf378c/schema5-final-candidate-verification.json`. No successful new preparation or live collection is inferred |
-| T27; T26 cursor-parser unit coverage | 2026-10-02 02:49:08 UTC | Control host; shipped budget arithmetic/parser code and retained actual application journal | Local unit portions Passed; live scenarios Pending | Budget arithmetic derives 560/3020-second gaps and a 6040-second horizon; byte/time/file-count failures refuse the calculation, and retained file allocation/user bytes are reserved. Actual cursor parsing and wrong-boot/missing-sequence rejection execute on preserved rows. The input is a filtered application journal, not a complete system/user sequence. No stale-anchor correction, event delivery, rotation, loss, reboot, OOM detection or final-capture integration claim follows |
+| Historical M22 / T27; T26 cursor-parser unit coverage (journal: M25 / T6; M25 / T5) | 2026-10-02 02:49:08 UTC | Control host; shipped budget arithmetic/parser code and retained actual application journal | Local unit portions Passed; live scenarios Pending | Budget arithmetic derives 560/3020-second gaps and a 6040-second horizon; byte/time/file-count failures refuse the calculation, and retained file allocation/user bytes are reserved. Actual cursor parsing and wrong-boot/missing-sequence rejection execute on preserved rows. The input is a filtered application journal, not a complete system/user sequence. No stale-anchor correction, event delivery, rotation, loss, reboot, OOM detection or final-capture integration claim follows |
 | T13 | 2026-10-02; local candidate integrity check | Control host; frozen schema-5 candidate and private schema-4 preservation | Passed within local scope | `contract.verify_bundle` accepts all 39 candidate dependencies; all bundled Python sources compile. Candidate `bundle.json` SHA256 is `5673fc8cae3e272c2cfb55c07c8d2d637636e13240cbc6e5f57b008438dffd6f`. All nineteen preserved schema-4 files match the original bytes, including original bundle SHA256 `0c646646a5be06c6ea199403df23131ae4ea08aa9c74625b278df161c2a22b5c`. The candidate is not the final replacement bundle; live T22-T26/T28 and actual T27 preparation remain required |
-| T26 cursor-parser unit coverage | 2026-10-02 03:26:10 UTC | Control host; actual retained 20-second all-journal export | Passed within parser-replay scope | All eleven shipped journal tests ran with no failures, errors or skips. The real validator accepts 6,399 actual records with 6,399 unique numeric entries, one sequence stream and no numeric gap. Removing one actual interior entry is rejected as missing records. Source bytes and tool hashes remain unchanged. Private `schema5-real-journal-sequence-verification.json` preserves execution evidence. This does not verify live collection, mixed-stream continuity, rotation, reboot, retention preparation or a full observation |
-| T22-T28 environment input | 2026-10-02 04:31:25 UTC | Separate dedicated Rocky VM; actual libvirt resources, SSH and cloud-init | Baseline verified; deployment in progress | Actual domain has 2 vCPU, 4096 MiB assigned RAM and a 51,539,607,552-byte virtual disk. The guest reports Rocky 8.10, systemd 239, completed cloud-init with zero errors, and 48,784,998,400 root bytes available before species installation. Initial creator readiness returned nonzero because of an older SSH key at the reused address; the global known_hosts file is preserved and actual SSH verification succeeds with a separate per-VM file. The generated inventory contains only the dedicated host; all eight actual species plays select exactly one host and syntax-check returns zero. Private creation, baseline, preflight and environment records retain the evidence. Candidate instrumentation, 903-PV readiness, measured capacity and all live scenarios remain pending |
-| T13/T27 dedicated deployment and prerequisite | 2026-10-02T04:45:20.648809+00:00 | Separate dedicated Rocky 8.10 VM; real species deployment and installed candidate CLI | Source/bundle/JVM checks Passed; measurement preparation Incomplete | Actual archiver-dev apply returns zero. The installed env and Maven HEADs match the two approved full pins; all four JVMs use -Xms256M and -Xmx256M, appliance and MariaDB are active, Python is 3.9.25, and the clock is synchronized. contract.verify_bundle accepts the 39 installed dependencies and candidate SHA256 remains 5673fc8cae3e272c2cfb55c07c8d2d637636e13240cbc6e5f57b008438dffd6f. Running the actual installed journal_retention.py snapshot returns 1 with FileNotFoundError for systemd in the declared PATH; the actual systemctl --version command returns zero and reports systemd 239. No live retention proof, fixture readiness, scenario pass or replacement observation is claimed. Private journal-test-deployment-verification.json and journal-test-tool-prerequisite-check.json preserve the observations |
+| Historical M22 / T26 cursor-parser unit coverage (journal: M25 / T5) | 2026-10-02 03:26:10 UTC | Control host; actual retained 20-second all-journal export | Passed within parser-replay scope | All eleven shipped journal tests ran with no failures, errors or skips. The real validator accepts 6,399 actual records with 6,399 unique numeric entries, one sequence stream and no numeric gap. Removing one actual interior entry is rejected as missing records. Source bytes and tool hashes remain unchanged. Private `schema5-real-journal-sequence-verification.json` preserves execution evidence. This does not verify live collection, mixed-stream continuity, rotation, reboot, retention preparation or a full observation |
+| Historical M22 / T22-T28 environment input (journal: M25 / T1-T7) | 2026-10-02 04:31:25 UTC | Separate dedicated Rocky VM; actual libvirt resources, SSH and cloud-init | Baseline verified; deployment in progress | Actual domain has 2 vCPU, 4096 MiB assigned RAM and a 51,539,607,552-byte virtual disk. The guest reports Rocky 8.10, systemd 239, completed cloud-init with zero errors, and 48,784,998,400 root bytes available before species installation. Initial creator readiness returned nonzero because of an older SSH key at the reused address; the global known_hosts file is preserved and actual SSH verification succeeds with a separate per-VM file. The generated inventory contains only the dedicated host; all eight actual species plays select exactly one host and syntax-check returns zero. Private creation, baseline, preflight and environment records retain the evidence. Candidate instrumentation, 903-PV readiness, measured capacity and all live scenarios remain pending |
+| Historical M22 / T13/T27 dedicated deployment and prerequisite (journal: M25 / T6) | 2026-10-02T04:45:20.648809+00:00 | Separate dedicated Rocky 8.10 VM; real species deployment and installed candidate CLI | Source/bundle/JVM checks Passed; measurement preparation Incomplete | Actual archiver-dev apply returns zero. The installed env and Maven HEADs match the two approved full pins; all four JVMs use -Xms256M and -Xmx256M, appliance and MariaDB are active, Python is 3.9.25, and the clock is synchronized. contract.verify_bundle accepts the 39 installed dependencies and candidate SHA256 remains 5673fc8cae3e272c2cfb55c07c8d2d637636e13240cbc6e5f57b008438dffd6f. Running the actual installed journal_retention.py snapshot returns 1 with FileNotFoundError for systemd in the declared PATH; the actual systemctl --version command returns zero and reports systemd 239. No live retention proof, fixture readiness, scenario pass or replacement observation is claimed. Private journal-test-deployment-verification.json and journal-test-tool-prerequisite-check.json preserve the observations |
 | T13/T14 corrected version command | 2026-10-02 05:00:13 UTC local; 05:01:14 UTC installation | Control host and dedicated Rocky 8.10 VM; current schema-5 bundle | Local checks and installation Passed | Actual unittest discovery ran 57 checks in 41.694 seconds, rc=0 and no skips, using retained runtime/export/fixture inputs and the actual 20-second all-journal export. All 39 bundle dependencies verify, 81 listed checksums match, bundled Python sources compile, and nineteen original schema-4 files remain byte-identical. New bundle SHA256 is 6ffbb8a541787a237c54e058bffa44e71b096a2b3146fe471b3f1d5c9c315168. Only journal_coverage.py, journal_retention.py and bundle.json were replaced on the dedicated VM after source pins, boot and absence of an observation were checked. Previous files are preserved. Private schema5-systemctl-candidate-verification.json and journal-test-systemctl-deployment-verification.json retain the evidence |
-| T23 single-collection prerequisite; T27 snapshot prerequisite | 2026-10-02T05:02:22.377393+00:00 | Dedicated VM; actual installed journal_coverage.collect and journal_retention.py snapshot | Single collection Passed; retention preparation Incomplete | Actual root-owned journal collection returns zero, validates six sequence records with one required record, and records coverage_complete=true for that one bounded interval. The actual snapshot CLI advances beyond version detection but returns 1 with Journal configuration application to the running daemon is unverified; no snapshot is produced. Private journal-test-systemctl-prerequisite-check.json and VM raw collection files preserve results. This single collection does not complete repeated quiet-interval T23, other live scenarios, retention preparation or a full observation |
-| T27 journald configuration application | 2026-10-02T05:10:44.065538+00:00 | Dedicated Rocky VM; actual daemon and installed configuration | Application prerequisite Passed; preparation Pending | Preflight found one of two configuration files newer than the daemon. A scoped restart returns zero, replaces the daemon identity, and leaves journald active; both unchanged configuration files now precede daemon start. The subsequent actual snapshot reaches the missing fixture-adjustment input. Configuration caps remain persistent storage, 1 GiB and eight weeks. Private journal-test-daemon-configuration-preflight-20261002.json and journal-test-journald-application-20261002.json retain results; retained soak VMs are unchanged |
+| Historical M22 / T23 single-collection prerequisite; T27 snapshot prerequisite (journal: M25 / T2; M25 / T6) | 2026-10-02T05:02:22.377393+00:00 | Dedicated VM; actual installed journal_coverage.collect and journal_retention.py snapshot | Single collection Passed; retention preparation Incomplete | Actual root-owned journal collection returns zero, validates six sequence records with one required record, and records coverage_complete=true for that one bounded interval. The actual snapshot CLI advances beyond version detection but returns 1 with Journal configuration application to the running daemon is unverified; no snapshot is produced. Private journal-test-systemctl-prerequisite-check.json and VM raw collection files preserve results. This single collection does not complete repeated quiet-interval T23, other live scenarios, retention preparation or a full observation |
+| Historical M22 / T27 journald configuration application (journal: M25 / T6) | 2026-10-02T05:10:44.065538+00:00 | Dedicated Rocky VM; actual daemon and installed configuration | Application prerequisite Passed; preparation Pending | Preflight found one of two configuration files newer than the daemon. A scoped restart returns zero, replaces the daemon identity, and leaves journald active; both unchanged configuration files now precede daemon start. The subsequent actual snapshot reaches the missing fixture-adjustment input. Configuration caps remain persistent storage, 1 GiB and eight weeks. Private journal-test-daemon-configuration-preflight-20261002.json and journal-test-journald-application-20261002.json retain results; retained soak VMs are unchanged |
 | T14 dedicated fixture readiness | 2026-10-02T05:15:17.787255+00:00 | Dedicated VM; shipped install-fixture.py, apply-fixture.py and register.py with original fixture | Fixture installation and registration Passed; full measurement readiness Pending | Actual installation, override application, registration and verify-existing commands all return zero. The actual API reports exactly 903 unique expected PVs, all connected and Being archived. The real CA check verifies all twenty MDEL/ADEL values as -1. Original databases and configuration are preserved by the shipped installers. No observation manifest was created. Private journal-test-fixture-installation-20261002.json retains commands, responses and counts |
-| T27 single raw snapshot and fresh-host prerequisite | 2026-10-02T05:17:03.399818+00:00 | Dedicated VM; actual installed journal_retention.py snapshot and systemctl unit properties | Raw snapshot collected; retention proof and instrumentation Pending | The actual snapshot CLI returns zero and records the approved load and ten verified adjusted records. Sample and finish units are loaded with 4min/15min timeouts; abort is not-found while systemctl still reports its default 1min 30s timeout. That default is not an installed abort bound and this snapshot cannot qualify preparation. measurement-config.json and the instrumentation drop-in are absent, as are prior observation/terminal records. Existing retest entry points cannot initialize this fresh deployment. Private journal-test-fresh-preparation-preflight-20261002.json preserves the actual snapshot and properties. Seven qualified load measurements, hash-bound budgets, health/full samples and all required live scenarios remain pending |
+| Historical M22 / T27 single raw snapshot and fresh-host prerequisite (journal: M25 / T6) | 2026-10-02T05:17:03.399818+00:00 | Dedicated VM; actual installed journal_retention.py snapshot and systemctl unit properties | Raw snapshot collected; retention proof and instrumentation Pending | The actual snapshot CLI returns zero and records the approved load and ten verified adjusted records. Sample and finish units are loaded with 4min/15min timeouts; abort is not-found while systemctl still reports its default 1min 30s timeout. That default is not an installed abort bound and this snapshot cannot qualify preparation. measurement-config.json and the instrumentation drop-in are absent, as are prior observation/terminal records. Existing retest entry points cannot initialize this fresh deployment. Private journal-test-fresh-preparation-preflight-20261002.json preserves the actual snapshot and properties. Seven qualified load measurements, hash-bound budgets, health/full samples and all required live scenarios remain pending |
 | T13/T14 fresh initializer local checks | 2026-10-02T07:26:16.394059+00:00 | Control host; shipped schema-5 tools and retained real runtime/export/fixture inputs | Local checks Passed; measured preparation Pending | Actual unittest discovery ran 59 checks in 40.347 seconds, rc=0 and no skips. All 40 runtime dependencies and 82 checksums verify; nineteen original schema-4 files remain byte-identical. Candidate bundle SHA256 is 5cd0f390f42e7ed3d9bb8b9fcd88f3e42ab2dcf68d566f21912bca40c30553c6. Actual fresh-initializer guard paths reject previous observations and absent measurement inputs without changing retained evidence. Private schema5-fresh-initializer-local-verification.json records execution. These local guards do not prove fresh-VM preparation or any journal scenario |
-| T14/T27 fresh instrumentation prerequisites | 2026-10-02T07:28:37.931661+00:00 | Dedicated VM; actual installed initialize-fresh.py instruments and journal_retention.py snapshot | Instrument initialization Passed; measured preparation Pending | The current 40-dependency bundle verifies. Before installing the abort unit, the actual retention CLI rejects the missing loaded sample/finish/abort prerequisite. The actual instruments command returns zero, preserves originals and records four 256M JVMs with running JFR recordings and nonempty GC logs. Real sample/finish/abort timeouts are 240/2700/2700 seconds. Existing tools are privately preserved; no observation exists. Private journal-test-fresh-initializer-deployment-20261002.json retains commands and initialization evidence. Two accepted health completions, two full samples, retention/capacity proofs and required live scenarios remain pending |
-| T27 measured preparation execution | 2026-10-02T07:36:53.093134+00:00 | Dedicated VM; real initialize-fresh.py measure service | Running; no preparation verdict | The finite 45-minute oneshot service is loaded and activating with an actual process. One real journal snapshot and one GC/retrieval progress record exist; measurements.json and observation.json do not exist. The launcher wait timed out after 30 seconds while the service continued; journal-test-fresh-measurements-launch-20261002.json preserves that failure. Seven consecutive approved-load snapshots, two measured capacity windows and successful budget evaluation remain required |
-| T14/T27 measurement progress and queued checks | 2026-10-02T07:48:03.568699+00:00 | Dedicated VM; actual subsystem captures and systemd jobs | Measurement running; followup waiting | Three journal snapshots and three GC/retrieval captures exist. Actual snapshot times are 07:35:39.932971, 07:40:40.014429 and 07:45:40.091088 UTC; the latest capture reports 903 recent PVs, six visible probes and all four GC components. A root-initiated followup is genuinely queued with After/Requires on the running measurement service and a finite 35-minute timeout. It runs the shipped prepare action from actual completed inputs, then verify-chain.py and verify-health.py; the latter performs two real health/full-sample checks. It preserves failures and opens no manifest. No followup result is inferred. Private journal-test-fresh-followup-launch-20261002.json records exact executable source and the successful queue operation; journal-test-chain-preflight-verified-20261002.json separately records two completed captures and one actual fixture PV matching shortened stores. This one-PV check does not replace all-903 chain verification |
-| T27 dedicated measured retention budget | 2026-10-02T08:05:44.772270+00:00 calculation; observed at 08:25:26 and re-derived at 08:26:54 UTC | Dedicated VM; seven actual snapshots and shipped journal_retention calculation | Failed; preparation and dependent checks did not execute | All seven snapshots retain the actual 903-PV load and ten verified adjusted records. Six intervals last 300.064-300.084 seconds, with peak physical write bound 61,778.213 bytes/s per stream; shipped calculation requires 1,291,544,426 bytes against the effective 1,073,741,824-byte cap and fails independently. The final 4.376396-second interval records 12,210,176 written bytes, raising the bound to 2,790,006.860 bytes/s per stream, required bytes to 34,248,546,484 and required files to 259 against 100. The measurement service exits 1 and preserves its failed proof; measurements.json, preparation.json, chain/health verification and observation.json are absent. Root has 43,213,418,496 bytes free at diagnosis. No passing preparation, full-sample readiness or 24-hour launch is inferred. Actual VM measurement sources and private journal-test-fresh-measurements-result-20261002.json retain evidence; diagnose the short-interval accounting and resolve cap sufficiency before another execution |
-| T27 retention budget diagnosis | 2026-10-03T06:09:18Z | Control host; shipped `journal_retention` at `55ae31a` on the seven actual dedicated-VM snapshots, the failed proof and the 07:35:00-08:06:00 UTC actual journal export (46,062 entries) | Diagnosed; correction accepted | Re-derivation reproduces the recorded values exactly: six 300.064-300.084-second intervals with write deltas of 14,544,896-18,538,496 bytes, peak 61,778.213 bytes/s, 1,291,544,426 required bytes, and 34,248,546,484 bytes with the 4.376-second final interval, equal to the failed proof's budget. `rates()` applies the one daemon `write_bytes` counter to both streams, so the rate term is counted twice; over the six intervals the user journal's allocation grew by 4,096 bytes and the system journal's by 25,165,824 bytes in 8-MiB steps. Every write delta is a multiple of 4,096 bytes; the counter records about 3.9 times the actual file growth and about 2.2 times the exported JSON size (7,368,071-7,603,388 bytes per interval). The final interval holds one 6,367-entry latency-probe burst, which each five-minute interval also contains. Counting the rate term once gives 918,404,021 bytes. Page-granular re-dirtying of journald's memory-mapped pages is the likely source of the excess over file growth; it was not tested |
-| T13/T27 accounting-corrected candidate | 2026-10-03T06:12:06Z | Control host; Python 3.13.5; shipped tools with the corrected `journal_retention.py`; private evidence, archive, extracted, journal-sequence and retention-snapshot paths | Local checks Passed; live preparation Pending | `contract.py --freeze` rewrote `bundle.json` (SHA256 `e11d3ebc820f14d961bbefbf1dc1e514c2b304733fdf21ce1d8aa1f30871f98c`) and `contract.verify_bundle` accepts all 20 dependencies; all 51 `SHA256SUMS` entries verify. Unittest discovery runs 58 checks with no skips and rc=0 with every private path set, and 37 pass with 21 skipped without them. On the actual snapshots the corrected tools bound the system stream at 61,778.213 bytes/s and the user stream at 13.650 bytes/s from its allocation growth, exclude the 4.376-second final interval, and require 918,486,465 bytes and 11 files against 1,073,741,824 bytes and 100 files: passed. The new shared-counter checks fail on the tools at `55ae31a` (user bound equal to the write rate); the real-input short-interval check errors there because the interval rule does not exist. No VM was contacted |
+| Historical M22 / T14/T27 fresh instrumentation prerequisites (journal: M25 / T6) | 2026-10-02T07:28:37.931661+00:00 | Dedicated VM; actual installed initialize-fresh.py instruments and journal_retention.py snapshot | Instrument initialization Passed; measured preparation Pending | The current 40-dependency bundle verifies. Before installing the abort unit, the actual retention CLI rejects the missing loaded sample/finish/abort prerequisite. The actual instruments command returns zero, preserves originals and records four 256M JVMs with running JFR recordings and nonempty GC logs. Real sample/finish/abort timeouts are 240/2700/2700 seconds. Existing tools are privately preserved; no observation exists. Private journal-test-fresh-initializer-deployment-20261002.json retains commands and initialization evidence. Two accepted health completions, two full samples, retention/capacity proofs and required live scenarios remain pending |
+| Historical M22 / T27 measured preparation execution (journal: M25 / T6) | 2026-10-02T07:36:53.093134+00:00 | Dedicated VM; real initialize-fresh.py measure service | Running; no preparation verdict | The finite 45-minute oneshot service is loaded and activating with an actual process. One real journal snapshot and one GC/retrieval progress record exist; measurements.json and observation.json do not exist. The launcher wait timed out after 30 seconds while the service continued; journal-test-fresh-measurements-launch-20261002.json preserves that failure. Seven consecutive approved-load snapshots, two measured capacity windows and successful budget evaluation remain required |
+| Historical M22 / T14/T27 measurement progress and queued checks (journal: M25 / T6) | 2026-10-02T07:48:03.568699+00:00 | Dedicated VM; actual subsystem captures and systemd jobs | Measurement running; followup waiting | Three journal snapshots and three GC/retrieval captures exist. Actual snapshot times are 07:35:39.932971, 07:40:40.014429 and 07:45:40.091088 UTC; the latest capture reports 903 recent PVs, six visible probes and all four GC components. A root-initiated followup is genuinely queued with After/Requires on the running measurement service and a finite 35-minute timeout. It runs the shipped prepare action from actual completed inputs, then verify-chain.py and verify-health.py; the latter performs two real health/full-sample checks. It preserves failures and opens no manifest. No followup result is inferred. Private journal-test-fresh-followup-launch-20261002.json records exact executable source and the successful queue operation; journal-test-chain-preflight-verified-20261002.json separately records two completed captures and one actual fixture PV matching shortened stores. This one-PV check does not replace all-903 chain verification |
+| Historical M22 / T27 dedicated measured retention budget (journal: M25 / T6) | 2026-10-02T08:05:44.772270+00:00 calculation; observed at 08:25:26 and re-derived at 08:26:54 UTC | Dedicated VM; seven actual snapshots and shipped journal_retention calculation | Failed; preparation and dependent checks did not execute | All seven snapshots retain the actual 903-PV load and ten verified adjusted records. Six intervals last 300.064-300.084 seconds, with peak physical write bound 61,778.213 bytes/s per stream; shipped calculation requires 1,291,544,426 bytes against the effective 1,073,741,824-byte cap and fails independently. The final 4.376396-second interval records 12,210,176 written bytes, raising the bound to 2,790,006.860 bytes/s per stream, required bytes to 34,248,546,484 and required files to 259 against 100. The measurement service exits 1 and preserves its failed proof; measurements.json, preparation.json, chain/health verification and observation.json are absent. Root has 43,213,418,496 bytes free at diagnosis. No passing preparation, full-sample readiness or 24-hour launch is inferred. Actual VM measurement sources and private journal-test-fresh-measurements-result-20261002.json retain evidence; diagnose the short-interval accounting and resolve cap sufficiency before another execution |
+| Historical M22 / T27 retention budget diagnosis (journal: M25 / T6) | 2026-10-03T06:09:18Z | Control host; shipped `journal_retention` at `55ae31a` on the seven actual dedicated-VM snapshots, the failed proof and the 07:35:00-08:06:00 UTC actual journal export (46,062 entries) | Diagnosed; correction accepted | Re-derivation reproduces the recorded values exactly: six 300.064-300.084-second intervals with write deltas of 14,544,896-18,538,496 bytes, peak 61,778.213 bytes/s, 1,291,544,426 required bytes, and 34,248,546,484 bytes with the 4.376-second final interval, equal to the failed proof's budget. `rates()` applies the one daemon `write_bytes` counter to both streams, so the rate term is counted twice; over the six intervals the user journal's allocation grew by 4,096 bytes and the system journal's by 25,165,824 bytes in 8-MiB steps. Every write delta is a multiple of 4,096 bytes; the counter records about 3.9 times the actual file growth and about 2.2 times the exported JSON size (7,368,071-7,603,388 bytes per interval). The final interval holds one 6,367-entry latency-probe burst, which each five-minute interval also contains. Counting the rate term once gives 918,404,021 bytes. Page-granular re-dirtying of journald's memory-mapped pages is the likely source of the excess over file growth; it was not tested |
+| Historical M22 / T13/T27 accounting-corrected candidate (journal: M25 / T6) | 2026-10-03T06:12:06Z | Control host; Python 3.13.5; shipped tools with the corrected `journal_retention.py`; private evidence, archive, extracted, journal-sequence and retention-snapshot paths | Local checks Passed; live preparation Pending | `contract.py --freeze` rewrote `bundle.json` (SHA256 `e11d3ebc820f14d961bbefbf1dc1e514c2b304733fdf21ce1d8aa1f30871f98c`) and `contract.verify_bundle` accepts all 20 dependencies; all 51 `SHA256SUMS` entries verify. Unittest discovery runs 58 checks with no skips and rc=0 with every private path set, and 37 pass with 21 skipped without them. On the actual snapshots the corrected tools bound the system stream at 61,778.213 bytes/s and the user stream at 13.650 bytes/s from its allocation growth, exclude the 4.376-second final interval, and require 918,486,465 bytes and 11 files against 1,073,741,824 bytes and 100 files: passed. The new shared-counter checks fail on the tools at `55ae31a` (user bound equal to the write rate); the real-input short-interval check errors there because the interval rule does not exist. No VM was contacted |
 | Second dedicated environment and fixture | 2026-10-03T07:02:04Z | A fresh Rocky 8.10 VM created by cloud-provision on the control host (2 vCPU, 4096 MiB, 48 GiB), shipped `archiver_dev` species at `8bfa611` with `common.yml`, `shortened.yml` and the full source pins | Passed | The species apply returned rc=0 with 33 successful tasks and no failed or unreachable host. The installed tools verify the 20-dependency bundle `e11d3ebc`. The species wrote the journald drop-in 49 ms before the daemon started, so the daemon ran with it, but `journal_retention.py snapshot` derives the start from the whole-second boot time and refused the application as unverified; one `systemd-journald` restart made it verifiable, after which the snapshot refused only the absent measurement units. `install-fixture.py` and `apply-fixture.py` returned rc=0 (10 records, 20 fields); `register.py` received 903 replies; all 903 PVs were connected and archiving with no unexpected PV; `--verify-existing` passed. `initialize-fresh.py instruments` returned rc=0 with four JVMs, and `check` returned rc=0 after the population reconnected. The second environment's inventory, owner and execution authority are recorded in private `work/soak-etl-pass-3bdf378c/journal-test-20261003/environment.json`, beside its step records; `journal-test-environment.json` remains the first environment's record |
-| T27 measured retention budget on the second VM | 2026-10-03T07:33:25Z | Second dedicated VM; shipped `initialize-fresh.py measure` with the corrected candidate under the approved 903-PV load | Passed; first attempt failed | The first attempt at 07:02:22 UTC, 76 seconds after the instrumentation restart, stopped after one snapshot: one of 903 retrieval requests returned an HTTP error, and three later requests for the same PV returned HTTP 200. Its directory is preserved on the VM. The second attempt from 07:03:20 UTC took seven snapshots 300.074-300.128 seconds apart with every latency probe complete; write deltas per interval were 16,326,656, 17,776,640, 19,234,816, 19,619,840, 20,832,256 and 20,197,376 bytes. The system bound is 69,421.028 bytes/s and the user bound 0 bytes/s; 964,562,529 bytes and 11 files are required against 1,073,741,824 bytes and 100 files, so the budget passed with about 10 percent headroom. The capacity projection requires 11,838,250,087 bytes of growth for 86400 seconds. No observation was opened |
+| Historical M22 / T27 measured retention budget on the second VM (journal: M25 / T6) | 2026-10-03T07:33:25Z | Second dedicated VM; shipped `initialize-fresh.py measure` with the corrected candidate under the approved 903-PV load | Passed; first attempt failed | The first attempt at 07:02:22 UTC, 76 seconds after the instrumentation restart, stopped after one snapshot: one of 903 retrieval requests returned an HTTP error, and three later requests for the same PV returned HTTP 200. Its directory is preserved on the VM. The second attempt from 07:03:20 UTC took seven snapshots 300.074-300.128 seconds apart with every latency probe complete; write deltas per interval were 16,326,656, 17,776,640, 19,234,816, 19,619,840, 20,832,256 and 20,197,376 bytes. The system bound is 69,421.028 bytes/s and the user bound 0 bytes/s; 964,562,529 bytes and 11 files are required against 1,073,741,824 bytes and 100 files, so the budget passed with about 10 percent headroom. The capacity projection requires 11,838,250,087 bytes of growth for 86400 seconds. No observation was opened |
 | T15 fresh preparation on the second VM | 2026-10-03T07:35:14Z | Second dedicated VM; shipped `initialize-fresh.py prepare` with the measured retention proof and capacity input, 86400 seconds, shortened chain | Passed; runtime verification Pending | rc=0. `preparation.json`, the copied retention proof and its sources and the capacity inputs exist under `/var/lib/etl-soak/`; the sample and finish timers are inactive and no observation exists. Deployed-chain, health, full-sample and empty/abort runtime verification remain required before launch |
 | T15 readiness health check on the second VM | 2026-10-04T04:31:24Z | Second dedicated VM; shipped `verify-health.py` with bundle `e11d3ebc` | Failed; evidence retained | The first health invocation and full sample at 04:31:14 UTC had no errors, 903 archiving PVs and a passing in-window budget at the measured 69,421.028 bytes/s system bound. The second full sample, 9.419 seconds later, failed `journal_retention_budget`: `runtime()` took the interval, which held one latency-probe burst, as a 1,781,193.678 bytes/s bound and required 11,303,673,757 bytes and 89 files against 1,073,741,824 bytes and 100 files. `verify-health.py` returned rc=1 and wrote no `health-verification.json`; the timers stayed inactive and no observation exists. Both runtime snapshots and the first budget are retained privately under `journal-test-20261003/runtime-short-interval/` |
-| T13/T27 in-window interval correction | 2026-10-04T04:35:07Z | Control host; Python 3.13.5; shipped tools with `interval_budget()` and the evaluator change; every private evidence path including the two runtime snapshots | Local checks Passed; preparation on a third VM Pending | `contract.py --freeze` rewrote `bundle.json` (SHA256 `7c551c4b75382acf0ab94f091fb1710b3755563dfe11368387ff4da3d35a7158`), `contract.verify_bundle` accepts all 20 dependencies and all 51 `SHA256SUMS` entries verify. Unittest discovery runs 60 checks with no skips and rc=0 with every private path set, and 38 pass with 22 skipped without them. On the two actual runtime snapshots `interval_budget()` keeps the 69,421.028 bytes/s bound, records the 9.419-second gap and passes. The two new checks error on the tools at `31917b3` because `interval_budget()` does not exist there; the failing budget recorded on the second VM is the evidence of the earlier `runtime()` behavior |
+| Historical M22 / T13/T27 in-window interval correction (journal: M25 / T6) | 2026-10-04T04:35:07Z | Control host; Python 3.13.5; shipped tools with `interval_budget()` and the evaluator change; every private evidence path including the two runtime snapshots | Local checks Passed; preparation on a third VM Pending | `contract.py --freeze` rewrote `bundle.json` (SHA256 `7c551c4b75382acf0ab94f091fb1710b3755563dfe11368387ff4da3d35a7158`), `contract.verify_bundle` accepts all 20 dependencies and all 51 `SHA256SUMS` entries verify. Unittest discovery runs 60 checks with no skips and rc=0 with every private path set, and 38 pass with 22 skipped without them. On the two actual runtime snapshots `interval_budget()` keeps the 69,421.028 bytes/s bound, records the 9.419-second gap and passes. The two new checks error on the tools at `31917b3` because `interval_budget()` does not exist there; the failing budget recorded on the second VM is the evidence of the earlier `runtime()` behavior |
 | Third dedicated environment, preparation and readiness | 2026-10-04T05:32:51Z | A fresh Rocky 8.10 VM created by cloud-provision on the control host (2 vCPU, 4096 MiB, 48 GiB); shipped `archiver_dev` species at `31917b3` with the same variables; bundle `7c551c4b` | Passed through the empty-data check | The species apply returned rc=0 with 33 successful tasks; the journald drop-in needed the same one restart to become verifiable; fixture, deadband adjustment (10 records, 20 fields), 903-PV registration and readiness, `instruments` and `check` returned rc=0. Measurement started 300 seconds after the instrumentation restart, at 05:01:49 UTC, and passed at 05:31:55 UTC: six intervals of 300.065-300.167 seconds, write deltas rising from 16,654,336 to 19,632,128 bytes per interval, a 65,403.934 bytes/s system bound and 0 bytes/s user bound, 940,299,280 bytes and 10 files required against 1,073,741,824 bytes and 100 files. `prepare` returned rc=0 at 05:32:16 UTC. `verify-health.py` passed two health invocations and full samples; the second sample, 5.206 seconds after the first, kept the 65,403.934 bytes/s bound and passed. `verify-chain.py` verified 903 PVs on the shortened chain and `verify-runtime.py empty` returned rc=0. Private record: `journal-test-20261004a/environment.json` |
 | T15 terminal-path check on the third VM | 2026-10-04T05:33:32Z | Third dedicated VM; shipped `verify-runtime.py abort` with bundle `7c551c4b` | Failed; evidence retained | Early finish and repeated finish were rejected, the abort verdict was Incomplete, the whole-unit stop returned rc=0 in 11.248 seconds and all four complete GC recordings were captured. The only terminal error was `cancel_timers`: `systemctl stop` on `etl-soak-sample.timer` and `etl-soak-finish.timer` returned 5 because the finish timer is created only when an observation opens and was not loaded. The check therefore returned rc=1 and, by design, did not restart the appliance, which remains inactive. The probe directory is preserved on the VM |
 | T13 unloaded-finish-timer correction | 2026-10-04T05:37:07Z | Control host; Python 3.13.5; shipped tools with `observe.stop_loaded()`; every private evidence path | Local checks Passed; preparation on a fourth VM Pending | `contract.py --freeze` rewrote `bundle.json` (SHA256 `bbbf5d90165eaa8679e0d64daf9d053e28b61f7dad27fd923e528cfd47dd81e3`), `contract.verify_bundle` accepts all 20 dependencies and all 51 `SHA256SUMS` entries verify. Unittest discovery runs 62 checks with no skips and rc=0 with every private path set, and 40 pass with 22 skipped without them. Through the real `observe.terminal()` with only the command boundary replaced, an abort before launch with an unloaded finish timer stops only the sample timer and records no `cancel_timers` error, while a failed stop of a loaded timer still records it. On the `observe.py` at `31917b3` the unloaded-timer case fails with `cancel_timers` in the errors, as on the third VM |
@@ -4992,7 +4997,9 @@ Local journal-candidate verification supplements the pending live checks:
 | Launch of both 24-hour observations | 2026-10-05T05:20:41Z | The two VMs of the row above; shipped `launch-retest.py` with bundle `68d527a0`; private steps `refresh-runtime-proofs.bash`, `fresh-capacity-refresh.py` and `launch-after-capacity.bash` | Both observations started; running | The first launch attempt at 05:12Z failed on both VMs with `Current capacity growth measurement is stale` and opened nothing: the current window of the preparation's capacity measurement had ended at 02:40Z and the launcher only checks that it ended within 600 seconds, it does not measure. The runtime proofs had also passed their one-hour limit twice while the decisions were pending, and were repeated (empty-data and abort checks, stops of 11.3 and 11.2 seconds, no errors, 903 of 903 PVs afterwards). A private step then took two real full samples 300 seconds apart, built a new current window from the shipped `contract` functions, kept the historical window and the previous capacity files, and `launch-retest.py` opened both observations with a 75-second target: shortened at 05:20:41Z, default at 05:20:40Z, each with an initial sample of rc 0 and earliest finish 24 hours later. At 07:05Z (1.75 hours) both had 22 error-free in-window samples, no consecutive failures or abort request, 61 (shortened) and 10 (default) closed ETL passes, journal accounting passing at 172,082 and 193,905 stored entries with no unreturned number outside the retained range, and about 39 GiB free; the journal held 129 and 137 MiB, below the 1-GiB cap. The retained evidence is on each VM and in its private `journal-test-<label>/` directory |
 | First 24-hour observations, aborted at the first journal rotation | 2026-10-05T14:00:25Z | The two VMs of the row above; bundle `68d527a0`; private evidence under each VM's `aborted-evidence/` directory (evidence and real journal files, hash-listed) | Failed; both observations Incomplete | Both aborted by the abort policy after consecutive full samples failed `journal_retention_budget`: shortened at 14:00:05Z (107 in-window samples), default at 07:20:06Z (27). Until then every in-window sample had no error and the journal accounting passed (last samples 419,988 and 208,259 stored entries for the same number of sequence numbers). The first failing sample was the one after the system journal reached its 128-MiB file size and rotated (shortened 13:55:00Z, default 07:15:00Z): the 134,225,920-byte file reappeared under an archived name and `rates()` took it as new growth, so the 300-second interval measured 447,374.855 bytes/s against 25,000-60,000 bytes/s before, which fails the 1-GiB budget (3,424,768,893 required bytes) and stays in the peak bound for every later sample. The real writes in the interval were 11,563,008 bytes. The inventory already recorded the inode and device of each file. The abort itself ran as designed (stop rc 0, verdict Incomplete). Cause and fix are in the next row |
 | T13 rotation accounting correction | 2026-10-05T15:19:30Z | Control host; Python 3.13.5; shipped tools with the `rates()` change and every private evidence path including the actual snapshot pair across the first rotation | Local checks Passed; preparation on new VMs Pending | `rates()` now matches files by device and inode. On the actual pair the committed code returns 447,374.855 bytes/s and the corrected code 38,539.494 bytes/s, equal to the interval's writes; `interval_budget()` passes with the first collection's bound, and both new checks (the actual pair and a synthetic rename) fail on the committed `journal_retention.py`. A file whose inode did not exist before still counts in full. `contract.py --freeze` rewrote `bundle.json` (SHA256 `cb9b8106693cd2006c6873008d9ee1712eac8357ed1e801e5b90620ad6661c3d`), `contract.verify_bundle` accepts all 20 dependencies and all 51 `SHA256SUMS` entries verify. Unittest discovery runs 71 checks with no skips and rc=0 with every private path set, and 44 pass with 27 skipped without them. No VM has been built at this bundle |
-| Twelfth and thirteenth dedicated environments, both chains | 2026-10-05T17:18:34Z | Two fresh Rocky 8.10 VMs created by cloud-provision on the control host (2 vCPU, 4096 MiB, 48 GiB); species at `19adbfd`; bundle `cb9b8106`; Maven `aa953a44`; private step `run-and-launch.bash` | Both prepared; shortened observation aborted, default observation started | Both passed every readiness check (903 of 903 PVs, first full sample after the first closed pass without errors, empty-data and abort checks, health after the abort) and were launched through the capacity refresh. The shortened observation opened at 16:56:07Z and was aborted by the abort policy at 17:10:05Z: the full samples at 17:05:00Z and 17:10:00Z each failed `sts_bytes` with `du` exit status 1, a store size measurement that races the ETL pass of that chain, which moves and removes 5-minute partitions on the same 5-minute grid as the sampler. The verdict was Incomplete with `observation_duration` and `sts_bytes` failed. The default observation opened at 17:18:34Z with an initial sample of rc 0 and an earliest finish at 2026-10-06T17:18:34Z |\n| T13 store size measurement correction | 2026-10-05T17:16:59Z | Control host; Python 3.13.5; shipped tools with `collect.tolerated_du()` and `directory_bytes()`; every private evidence path including an actual `du -sb` result captured while a directory was being rewritten | Local checks Passed; shortened preparation on a new VM Pending | `du` printed a total and `No such file or directory` messages and exited 1 on a real directory walk raced against removals on the control host; the corrected measurement accepts exactly that result and still fails on any other exit status, on an error other than a vanished file, and on an empty total, while the committed collector fails all three new checks. `contract.py --freeze` rewrote `bundle.json` (SHA256 `3e9815b03a5d33a21652da422c5274374cec1326d8b110c1be91f3e9a42588f2`), `contract.verify_bundle` accepts all 20 dependencies and all 51 `SHA256SUMS` entries verify. Unittest discovery runs 74 checks with no skips and rc=0 with every private path set, and 46 pass with 28 skipped without them. The appliance's own partition removal was not reproduced; its exit status 1 is read from the failed samples |\n| T13 standalone schema-5 bundle | 2026-10-02 20:54:06 UTC | Control host; Python 3.13.5; shipped schema-5 tools and retained real runtime/export/fixture inputs | Local checks Passed; dedicated installation and live scenarios Pending | Earlier-schema sources were removed from the shipped tools: `BUNDLE_FILES` no longer lists the schema-3 evaluator or the nineteen schema-4 files, and the evaluator returns Incomplete with `unsupported_observation_schema` for any other schema. Actual unittest discovery ran 55 checks in 36.505 seconds, rc=0 and no skips. `contract.verify_bundle` accepts all 20 dependencies and all 51 checksums verify. Candidate bundle SHA256 is 567d629b11704a2291302eb603830e313d85a9b7bab37629a0656ec7a31c0726; it supersedes the 40-dependency candidate recorded above and is not installed on any VM. Four retained-evidence cases now relabel the pre-schema-5 input and require a non-Passed verdict with the expected failed assertion. Four cases are removed because they exercised the removed schema-3 evaluator: Passed replay, missing scheduled pass, missing GC pair and aborted observation. The current evaluator has no retained-evidence coverage for those four until a schema-5 observation completes; add them then. The removed sources remain in the private evidence directory as `legacy-sources-removed-from-tree-20261002/` |
+| Twelfth and thirteenth dedicated environments, both chains | 2026-10-05T17:18:34Z | Two fresh Rocky 8.10 VMs created by cloud-provision on the control host (2 vCPU, 4096 MiB, 48 GiB); species at `19adbfd`; bundle `cb9b8106`; Maven `aa953a44`; private step `run-and-launch.bash` | Both prepared; shortened observation aborted, default observation started | Both passed every readiness check (903 of 903 PVs, first full sample after the first closed pass without errors, empty-data and abort checks, health after the abort) and were launched through the capacity refresh. The shortened observation opened at 16:56:07Z and was aborted by the abort policy at 17:10:05Z: the full samples at 17:05:00Z and 17:10:00Z each failed `sts_bytes` with `du` exit status 1, a store size measurement that races the ETL pass of that chain, which moves and removes 5-minute partitions on the same 5-minute grid as the sampler. The verdict was Incomplete with `observation_duration` and `sts_bytes` failed. The default observation opened at 17:18:34Z with an initial sample of rc 0 and an earliest finish at 2026-10-06T17:18:34Z |
+| T13 store size measurement correction | 2026-10-05T17:16:59Z | Control host; Python 3.13.5; shipped tools with `collect.tolerated_du()` and `directory_bytes()`; every private evidence path including an actual `du -sb` result captured while a directory was being rewritten | Local checks Passed; shortened preparation on a new VM Pending | `du` printed a total and `No such file or directory` messages and exited 1 on a real directory walk raced against removals on the control host; the corrected measurement accepts exactly that result and still fails on any other exit status, on an error other than a vanished file, and on an empty total, while the committed collector fails all three new checks. `contract.py --freeze` rewrote `bundle.json` (SHA256 `3e9815b03a5d33a21652da422c5274374cec1326d8b110c1be91f3e9a42588f2`), `contract.verify_bundle` accepts all 20 dependencies and all 51 `SHA256SUMS` entries verify. Unittest discovery runs 74 checks with no skips and rc=0 with every private path set, and 46 pass with 28 skipped without them. The appliance's own partition removal was not reproduced; its exit status 1 is read from the failed samples |
+| T13 standalone schema-5 bundle | 2026-10-02 20:54:06 UTC | Control host; Python 3.13.5; shipped schema-5 tools and retained real runtime/export/fixture inputs | Local checks Passed; dedicated installation and live scenarios Pending | Earlier-schema sources were removed from the shipped tools: `BUNDLE_FILES` no longer lists the schema-3 evaluator or the nineteen schema-4 files, and the evaluator returns Incomplete with `unsupported_observation_schema` for any other schema. Actual unittest discovery ran 55 checks in 36.505 seconds, rc=0 and no skips. `contract.verify_bundle` accepts all 20 dependencies and all 51 checksums verify. Candidate bundle SHA256 is 567d629b11704a2291302eb603830e313d85a9b7bab37629a0656ec7a31c0726; it supersedes the 40-dependency candidate recorded above and is not installed on any VM. Four retained-evidence cases now relabel the pre-schema-5 input and require a non-Passed verdict with the expected failed assertion. Four cases are removed because they exercised the removed schema-3 evaluator: Passed replay, missing scheduled pass, missing GC pair and aborted observation. The current evaluator has no retained-evidence coverage for those four until a schema-5 observation completes; add them then. The removed sources remain in the private evidence directory as `legacy-sources-removed-from-tree-20261002/` |
 | T13 journal budget separation | 2026-10-06T00:26:09Z | Control host; Python 3.13.5; shipped tools with `collect.budget_capture()`, `journal_retention.BudgetFailed` and the evaluator and aggregator change; every private evidence path including the complete evidence of the aborted rehearsal observation | Local checks Passed; observation on new VMs Pending | The evaluator replayed on the actual aborted rehearsal observation no longer lists `journal_retention_budget` among the failed assertions and reports the failed samples separately, while the abort and its terminal errors remain; the committed tools list it as a failed assertion, and both new checks fail on them. Any other journal failure is still raised as a sample error. `contract.py --freeze` rewrote `bundle.json` (SHA256 `11ee9c8e8737a177d133ced4563e5d406a1e41549468b02b01aeac92835f7ad1`), `contract.verify_bundle` accepts all 20 dependencies and all 51 `SHA256SUMS` entries verify. Unittest discovery runs 77 checks with no skips and rc=0 with every private path set, and 48 pass with 29 skipped without them. No VM has run this bundle |
 | Replacement shortened observation | 2026-10-05T18:24:54Z | A fresh Rocky 8.10 VM created by cloud-provision on the control host (2 vCPU, 4096 MiB, 48 GiB); species at `19adbfd`; bundle `3e9815b0`; Maven `aa953a44`; private step `run-and-launch.bash` | Prepared and launched; running | Species rc=0 with every readiness check passed (903 of 903 PVs, first full sample after the first closed pass without errors, empty-data and abort checks, health after the abort, ready at 18:18:23Z); after the capacity refresh the observation opened at 18:24:54Z. At 20:05Z it had 21 error-free in-window samples, no consecutive failure and no abort request; the store size measurement that aborted the earlier shortened observation had not failed. On the default observation of the pair the first system journal rotation occurred at 20:00:00Z with bundle `cb9b8106`: the budget passed with the system bound unchanged at 51,853 bytes/s and 1,035,708,866 required bytes against 1,073,741,824, and the sequence accounting passed |
 | Fourteenth and fifteenth dedicated environments, both chains, and the rehearsal environment | 2026-10-06T02:12:51Z | Three fresh Rocky 8.10 VMs created by cloud-provision on the control host (2 vCPU, 4096 MiB, 48 GiB); species at `19adbfd`; bundle `11ee9c8e`; Maven `aa953a44`; private step `run-and-launch.bash` | All three prepared and launched; two observations running | Each passed every readiness check (903 of 903 PVs archiving after the abort check, two health completions after it, empty-data and terminal-path proofs present) and was launched through the capacity refresh: the shortened observation opened at 01:36:33Z, the default observation at 02:12:51Z, each with an initial sample of rc 0 and an earliest finish 24 hours later, across UTC midnight. The third VM opened a shortened observation at 01:36:36Z for the `M25` / T8 rehearsal only. At 05:26Z the shortened observation had 46 error-free in-window samples and the default 39, each past its first system journal rotation (05:10:00Z and 04:40:00Z) with the budget passed (907,922,937 and 1,035,657,923 required bytes against 1,073,741,824) and the sequence accounting passed |
@@ -5072,9 +5079,9 @@ Local journal-candidate verification supplements the pending live checks:
 
 #### M23 - Add the Perl modules for the EPICS-env installed-tree utility to the EPICS OS package set
 
-- Origin: 38560eb / M23
-- GitHub Issue: #29, https://github.com/jeonghanlee/ansible-provision/issues/29
-- Status: Complete
+Origin: 38560eb / M23
+GitHub Issue: #29, https://github.com/jeonghanlee/ansible-provision/issues/29
+Status: Complete
 
 ##### Summary
 
@@ -5165,9 +5172,9 @@ package names.
 
 #### M24 - Split the archiver MariaDB operator into socket and TCP operators and rename the archiver-dev species
 
-- Origin: 38560eb / M24
-- GitHub Issue: #52, https://github.com/jeonghanlee/ansible-provision/issues/52; peer request from the cloud-provision session on 2026-10-05
-- Status: Complete
+Origin: 38560eb / M24
+GitHub Issue: #52, https://github.com/jeonghanlee/ansible-provision/issues/52; peer request from the cloud-provision session on 2026-10-05
+Status: Complete
 - GitHub Projection: observed 2026-10-16T06:43:15.845854+00:00; state `closed`; reason `completed`; label `enhancement`; milestone `Backlog`; assignee `jeonghanlee`; updated 2026-10-16T06:42:05Z.
 
 ##### Summary
@@ -5266,10 +5273,10 @@ bundle, which pins no species name.
 
 #### M25 - Verify independent journal recording, retention and collection
 
-- Origin: 38560eb / M25
-- Identity History: transferred on 2026-10-05 from `M22` / T22-T28 (`D22`)
-- GitHub Issue: #31, https://github.com/jeonghanlee/ansible-provision/issues/31
-- Status: Complete
+Origin: 38560eb / M25
+Identity History: transferred on 2026-10-05 from `M22` / T22-T28 (`D22`)
+GitHub Issue: #31, https://github.com/jeonghanlee/ansible-provision/issues/31
+Status: Complete
 
 ##### Summary
 
@@ -5615,10 +5622,10 @@ journalctl behavior, which is recorded in `M22`'s results (a systemd 239
 
 #### M26 - Provision the SQLite Archiver Appliance on an existing general Rocky Linux 8.10 server
 
-- Origin: 38560eb / M26
-- Identity History: none
-- GitHub Issue: none
-- Status: Blocked
+Origin: 38560eb / M26
+Identity History: none
+GitHub Issue: none
+Status: Blocked
 
 ##### Summary
 
@@ -5709,10 +5716,10 @@ pins `archiver_env_ref` and `archiver_maven_src_tag`, and any change to the clou
 
 #### M51 - Verify current Archiver sources through a complete general-server SQLite VM installation
 
-- Origin: 38560eb / M51
-- Identity History: none
-- GitHub Issue: none
-- Status: Complete
+Origin: 38560eb / M51
+Identity History: none
+GitHub Issue: none
+Status: Complete
 
 ##### Summary
 
@@ -5814,9 +5821,9 @@ The post-trial documentation check completed at 2026-10-22T23:23:38.614298+00:00
 
 #### G1 - the production IOC server reaches the internal git host
 
-- Origin: 38560eb / G1
-- GitHub Issue: none
-- Status: Complete
+Origin: 38560eb / G1
+GitHub Issue: none
+Status: Complete
 
 ##### Summary
 
@@ -5843,9 +5850,9 @@ owner of the production IOC server. Affected work: `M4` / T2.
 
 #### G2 - cloud-provision ships the middleware package baseline and the middleware VM
 
-- Origin: 38560eb / G2
-- GitHub Issue: none
-- Status: Open
+Origin: 38560eb / G2
+GitHub Issue: none
+Status: Open
 
 ##### Summary
 
@@ -5873,9 +5880,9 @@ Blocked while this gate is Open; its implementation proceeds on the branch again
 
 #### G3 - epicsarchiverap-env ships a `sql.fill` that loads the configuration schema when the database and application account are provisioned externally
 
-- Origin: 38560eb / G3
-- GitHub Issue: none
-- Status: Complete
+Origin: 38560eb / G3
+GitHub Issue: none
+Status: Complete
 
 ##### Summary
 
@@ -5903,9 +5910,9 @@ epicsarchiverap-env session. Affected work: `M14`.
 
 #### G4 - Prepare two independent ETL soak environments
 
-- Origin: 38560eb / G4
-- GitHub Issue: none
-- Status: Complete
+Origin: 38560eb / G4
+GitHub Issue: none
+Status: Complete
 
 ##### Summary
 
@@ -5937,9 +5944,9 @@ initial capacity assessment before deployment and registration.
 
 #### G5 - The server owner prepares the proxy settings and approves the installation on the existing server
 
-- Origin: 38560eb / G5
-- GitHub Issue: none
-- Status: Open
+Origin: 38560eb / G5
+GitHub Issue: none
+Status: Open
 
 ##### Summary
 
@@ -5965,9 +5972,9 @@ The assembly neither writes nor checks these files (`D26`). `M26` depends on the
 
 #### G8 - Prepare a fresh dedicated Rocky 8.10 installation guest
 
-- Origin: 38560eb / G8
-- GitHub Issue: none
-- Status: Complete
+Origin: 38560eb / G8
+GitHub Issue: none
+Status: Complete
 
 ##### Summary
 
@@ -6004,7 +6011,7 @@ The VM provider supplies M51's fresh dedicated Rocky 8.10 guest through its norm
 | Tools | M32 | Keep kernel diagnostics independent of the ETL terminal verdict | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m32---keep-kernel-diagnostics-independent-of-the-etl-terminal-verdict) |
 | Tools | M33 | Use timestamps accepted by systemd 239 journal queries | Carry-forward | Complete | No | D31, D39, D40, D41, G6 | T1-T6 Passed; source f633973 and four checked query criteria in #54 verified; [detail](#m33---use-timestamps-accepted-by-systemd-239-journal-queries) |
 | Tools | M34 | Match JFR exports to the recording process and lifetime | Carry-forward | Complete | No | D31, D43, D44, G7 | T1-T6 Passed; source e48083d and five JFR-related #54 criteria verified; [detail](#m34---match-jfr-exports-to-the-recording-process-and-lifetime) |
-| Tools | M35 | Persist terminal state before evaluating terminal coherence | Carry-forward | In progress | No | D31, D47, D46, D48 | D48 verification complete: actual exception and overlapping requests Passed; prior normal/fault/replay evidence retained. All guests off with evidence preserved. Source landing and scoped issue reconciliation remain; [detail](#m35---persist-terminal-state-before-evaluating-terminal-coherence) |
+| Tools | M35 | Persist terminal state before evaluating terminal coherence | Carry-forward | Complete | No | D31, D47, D46, D48, D49 | D48 verification complete; source 42e9360 and plan record 230307e are on origin/master. The three source-#40 criteria and overlapping terminal criterion are checked in #54; its remaining group work stays open under D49. Historical failures and exclusions remain; [detail](#m35---persist-terminal-state-before-evaluating-terminal-coherence) |
 | Tools | M36 | Match ETL pass times by UTC instant with nanosecond precision | Carry-forward | Complete | No | D31, D37, D38 | T1-T6 Passed; source landing and four UTC boxes in #54 verified; [detail](#m36---match-etl-pass-times-by-utc-instant-with-nanosecond-precision) |
 | Tools | M37 | Refresh preserved-tool checksums | Carry-forward | Complete | No | D31, D34, D35, D36 | Real source/copy checks, source landing and four checksum boxes in #56 verified; [detail](#m37---refresh-preserved-tool-checksums) |
 | Tools | M38 | Finish ETL tool independence checks across both store chains | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m38---finish-etl-tool-independence-checks-across-both-store-chains) |
@@ -6029,11 +6036,11 @@ Unassigned work is excluded from the release tally.
 
 #### M27 - Verify collector capture around normal appliance shutdown
 
-- Origin: 38560eb / M27
-- Identity History: created from the explicitly transferred M25 condition on 2026-10-15 (D28).
-- GitHub Issue: #53, https://github.com/jeonghanlee/ansible-provision/issues/53
-- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #32 is closed not_planned at 2026-10-17T01:11:41Z; unfinished criteria are tracked in #53. Original issue references below are historical and do not create an active source-issue dependency.
-- Status: Deferred
+Origin: 38560eb / M27
+Identity History: created from the explicitly transferred M25 condition on 2026-10-15 (D28).
+GitHub Issue: #53, https://github.com/jeonghanlee/ansible-provision/issues/53
+Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #32 is closed not_planned at 2026-10-17T01:11:41Z; unfinished criteria are tracked in #53. Original issue references below are historical and do not create an active source-issue dependency.
+Status: Deferred
 
 ##### Summary
 
@@ -6115,11 +6122,11 @@ Another positive 24-hour observation; ETL acceptance or changes to ETL deploymen
 
 #### M28 - Reproduce journal results on an independent recipient
 
-- Origin: 38560eb / M28
-- Identity History: created from the explicitly transferred M25 condition on 2026-10-15 (D28).
-- GitHub Issue: #53, https://github.com/jeonghanlee/ansible-provision/issues/53
-- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #33 is closed not_planned at 2026-10-17T01:11:45Z; unfinished criteria are tracked in #53. Original issue references below are historical and do not create an active source-issue dependency.
-- Status: Deferred
+Origin: 38560eb / M28
+Identity History: created from the explicitly transferred M25 condition on 2026-10-15 (D28).
+GitHub Issue: #53, https://github.com/jeonghanlee/ansible-provision/issues/53
+Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #33 is closed not_planned at 2026-10-17T01:11:45Z; unfinished criteria are tracked in #53. Original issue references below are historical and do not create an active source-issue dependency.
+Status: Deferred
 
 ##### Summary
 
@@ -6201,11 +6208,11 @@ A new 24-hour recording, live appliance operations, ETL acceptance, collector no
 
 #### M29 - Track ETL collection-tool follow-ups
 
-- Origin: 38560eb / M29
-- Identity History: created from explicit M22 tool-defect Backlog separation on 2026-10-15 (D29).
-- GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
-- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #34 is closed not_planned at 2026-10-17T01:11:50Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
-- Status: Deferred
+Origin: 38560eb / M29
+Identity History: created from explicit M22 tool-defect Backlog separation on 2026-10-15 (D29).
+GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #34 is closed not_planned at 2026-10-17T01:11:50Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
+Status: Deferred
 
 ##### Summary
 
@@ -6384,11 +6391,11 @@ Independent membership and transferred coverage:
 
 #### M30 - Track ETL evaluation and reporting follow-ups
 
-- Origin: 38560eb / M30
-- Identity History: created from explicit M22 tool-defect Backlog separation on 2026-10-15 (D29).
-- GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
-- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #35 is closed not_planned at 2026-10-17T01:11:56Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
-- Status: Deferred
+Origin: 38560eb / M30
+Identity History: created from explicit M22 tool-defect Backlog separation on 2026-10-15 (D29).
+GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #35 is closed not_planned at 2026-10-17T01:11:56Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
+Status: Deferred
 
 ##### Summary
 
@@ -6560,11 +6567,11 @@ Independent membership and transferred coverage:
 
 #### M31 - Preserve kernel cursor refusal evidence and prove interval coverage
 
-- Origin: 38560eb / M31
-- Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
-- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #36 is closed not_planned at 2026-10-17T01:12:02Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
-- Status: Deferred
+Origin: 38560eb / M31
+Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
+GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #36 is closed not_planned at 2026-10-17T01:12:02Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
+Status: Deferred
 
 ##### Summary
 
@@ -6651,11 +6658,11 @@ The repository candidate at 3ff784e has collector SHA256 7444a7b2f0d2383b7d77cfd
 
 #### M32 - Keep kernel diagnostics independent of the ETL terminal verdict
 
-- Origin: 38560eb / M32
-- Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
-- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #37 is closed not_planned at 2026-10-17T01:12:07Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
-- Status: Deferred
+Origin: 38560eb / M32
+Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
+GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #37 is closed not_planned at 2026-10-17T01:12:07Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
+Status: Deferred
 
 ##### Summary
 
@@ -6737,11 +6744,11 @@ Out of scope: Repairing kernel cursor coverage or changing ETL application sched
 
 #### M33 - Use timestamps accepted by systemd 239 journal queries
 
-- Origin: 38560eb / M33
-- Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
-- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #38 is closed not_planned at 2026-10-17T01:12:13Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
-- Status: Complete
+Origin: 38560eb / M33
+Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
+GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #38 is closed not_planned at 2026-10-17T01:12:13Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
+Status: Complete
 
 ##### Summary
 
@@ -6967,11 +6974,11 @@ Execution safeguards and evidence locations: volume/limits belong in the fixture
 
 #### M34 - Match JFR exports to the recording process and lifetime
 
-- Origin: 38560eb / M34
-- Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
-- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #39 is closed not_planned at 2026-10-17T01:12:18Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
-- Status: Complete
+Origin: 38560eb / M34
+Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
+GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #39 is closed not_planned at 2026-10-17T01:12:18Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
+Status: Complete
 
 ##### Summary
 
@@ -7084,15 +7091,15 @@ Current input evidence (2026-10-22T01:19:27.527336+00:00): 32 delivered files pa
 
 #### M35 - Persist terminal state before evaluating terminal coherence
 
-- Origin: 38560eb / M35
-- Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
-- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #40 is closed not_planned at 2026-10-17T01:12:25Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
-- Status: In progress
+Origin: 38560eb / M35
+Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
+GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #40 is closed not_planned at 2026-10-17T01:12:25Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
+Status: Complete
 
 ##### Summary
 
-At source basis dc27ebb, the initial terminal evaluation reports `coherent_manifest_and_terminal`, but executing the unchanged native evaluator after final persistence removes that finding on both completed observations. The correction saves terminal facts before evaluation; both default and corrected shortened normal terminals agree with fresh-copy replays. All four normal/abort chain cells have executed within their stated scope. First-save ordering, persistence faults, evaluator interruption, sequential refusals and the abort-request guard have actual evidence. XC01 now verifies the final two D48 claims: actual evaluator exception capture and overlapping lifecycle requests refused by the lock without another stop. Verification of the selected correction is complete; source landing and scoped issue reconciliation remain. Broader original/candidate installation comparison and full installed proof production/consumption are excluded, not passed. Independent metric coverage remains Incomplete and does not reopen accepted full-day ETL functionality.
+At source basis dc27ebb, the initial terminal evaluation reports `coherent_manifest_and_terminal`, but executing the unchanged native evaluator after final persistence removes that finding on both completed observations. The correction saves terminal facts before evaluation; both default and corrected shortened normal terminals agree with fresh-copy replays. All four normal/abort chain cells have executed within their stated scope. First-save ordering, persistence faults, evaluator interruption, sequential refusals and the abort-request guard have actual evidence. XC01 now verifies the final two D48 claims: actual evaluator exception capture and overlapping lifecycle requests refused by the lock without another stop. The selected correction is Complete under D48/D49: source 42e9360 and plan record 230307e are published on origin/master, and #54 records all three component criteria plus the overlapping terminal criterion. The consolidated issue remains open for its other work. Broader original/candidate installation comparison and full installed proof production/consumption are excluded, not passed. Independent metric coverage remains Incomplete and does not reopen accepted full-day ETL functionality.
 
 ##### Scope
 
@@ -7104,7 +7111,7 @@ Out of scope: JFR process selection, source-access fault production, power-loss 
 
 ##### Root Cause
 
-At source basis dc27ebb, `observe.py` calls the evaluator before writing `shutdown.json` or `abort.json`; the aggregate reader sees only the started marker. The current local correction adds the first atomic terminal write before that evaluator call and retains the final replacement afterward.
+At source basis dc27ebb, `observe.py` calls the evaluator before writing `shutdown.json` or `abort.json`; the aggregate reader sees only the started marker. The correction shipped in 42e9360 adds the first atomic terminal write before that evaluator call and retains the final replacement afterward.
 
 ##### Completion Criteria
 
@@ -7118,6 +7125,7 @@ At source basis dc27ebb, `observe.py` calls the evaluator before writing `shutdo
 - D47; Decision Date: 2026-10-22. Existing-file persistence was selected for plan preparation; this historical decision remains unchanged.
 - D46; Decision Date: 2026-10-22. The detailed plan is accepted and local implementation/retained-input verification is authorized. M35 transitions from Deferred to In progress for that scope. This decision originally authorized local work only; subsequent live execution has separate plan and exact-resource authorization records. External mutations remain separate.
 - D48; Decision Date: 2026-10-24. Complete only the remaining evaluator-exception and overlapping-request checks. Exclude the broader original/candidate installation comparison and full preparation-proof campaign from M35 completion; retain their historical unexecuted outcomes. Reuse existing successful evidence rather than repeat long observations. This scope decision supersedes conflicting broader requirements below and in historical execution plans.
+- D49; Decision Date: 2026-10-24. The accepted four-group Completion Approach closes an individually verified component after source publication and matching issue criteria, while the consolidated issue stays open for unmet criteria. This component-only issue-closure exception applies to M35; it waives no verification and does not complete M48/#54.
 - Coordination: M30/#35. This is a tracking relationship, not an invented sequential execution dependency.
 - Preserve original inputs, frozen tool identities and unsuccessful outcomes. Reuse retained evidence and bounded real-path checks; no new full-day producer run solely for tool correction or reporting.
 
@@ -7151,7 +7159,7 @@ Selected persistence contract:
 4. If interrupted after the first save, retain the readable non-successful terminal facts. If the final replacement fails, retain the prior valid file and any diagnostic temporary file; do not publish success. Repeated finish/abort remains a refusal, including after interruption. Recovery is separate offline evaluation of preserved evidence, not another appliance stop or automatic overwrite of the original.
 5. The evaluator and aggregator must use the same terminal facts. Existing readers should continue accepting completed historical records without requiring new fields. Compare observation identity, terminal kind, time/stop/capture facts and errors exactly. Compare runtime and offline findings semantically; do not require recursive embedded evaluation data or source-file digests to remain identical after the terminal itself is updated.
 
-Current ordered work under D48 (completed implementation and historical plans remain evidence):
+Completed D48 execution plan (retained as historical verification evidence):
 
 1. Preserve existing source identities, original outcomes and successful normal/fault/replay evidence. Bind the remaining bounded case to its exact isolated resource; do not use old R01 retry authority.
 2. Reuse the corrected observer, supervisor and cache checks. Prepare only the private controller necessary to coordinate actual overlapping requests and an outer-filesystem dependency fault; do not replace internal functions or fabricate an observation.
@@ -7196,7 +7204,7 @@ Execution safeguards and evidence:
 | T7 | 2026-10-24T07:04:47Z | Actual R00/R01 installations, capability consumers and candidate preparation | Partial; new proof producers unexecuted | Both single installations and capability batches returned0; actual capability consumers accepted each current proof. R00 original fixture preparation failed. R01 private helper omitted two approved generated files from its exact inventory and stopped before any health/runtime producer. This is a helper defect, not a product terminal result. Full installed proof consumption remains unexecuted; prior source and capability checks retain their narrower claims. |
 
 
-Current live evidence checkpoint (2026-10-23 UTC):
+Historical live evidence checkpoint (2026-10-23 UTC):
 
 - T6: default replay completed at 09:13:23 UTC using the real evaluator and aggregator on separate fully verified copies. Both returned native 1/Incomplete with only `metric_counter_coverage` missing, no failed assertions, and scheduler/JFR Passed. Runtime semantic agreement and replay assertions Passed; original exported input/tool trees and consumer copies remained unchanged. This is agreement for an Incomplete observation, not whole-product acceptance. Evidence: `work/m35-live-remaining-20261023/default-finish/replay/summary.json`. Earlier retained-input rows above keep their original observation dates.
 - Complete exports were independently verified: shortened 2738 members, 2525 files and 325143979 file bytes; default 2842 members, 2624 files and 369801013 file bytes. Both frozen stages and tool trees matched after transfer. Default live state also matched. Shortened state matched before/copy/after snapshot, but its four still-running JVM GC logs grew before the later transfer recheck; that native 1 result and differences remain preserved. The frozen export is intact; the later live state is not claimed unchanged.
@@ -7419,7 +7427,10 @@ Final D48 scoped result (2026-10-24T19:24:55Z):
 
 ##### Closure Evidence
 
-- Verification complete within D48 on 2026-10-24; M35 remains In progress pending source landing and scoped issue reconciliation. Existing normal/fault/replay evidence and XC01 actual exception/concurrency results satisfy the three completion criteria. Broader fresh-installed original/candidate comparison and full preparation-proof production/consumption are excluded by the dated D48 decision, not passed. Historical failures and independent missing metric coverage remain visible. No further test campaign or new whole-product acceptance is implied; previously accepted ETL functionality remains complete.
+- Complete under D48/D49; status reconciled on 2026-11-03 (America/Los_Angeles). Verification completed on 2026-10-24, followed by source publication and the scoped issue update. Existing normal/fault/replay evidence and XC01 actual exception/concurrency results satisfy the three completion criteria. Broader fresh-installed original/candidate comparison and full preparation-proof production/consumption are excluded by the dated D48 decision, not passed. Historical failures and independent missing metric coverage remain visible. No further test campaign or new whole-product acceptance is implied; previously accepted ETL functionality remains complete.
+- Source publication rechecked at 2026-11-04T02:54:17Z: commits 42e9360f50f7e3967a205c961d6572fdb2e16035 and 230307e7e5fd73dd4efd1c9aaf2825e0afc123e7 are ancestors of fetched origin/master. The observer and five terminal verification tools are unchanged from 42e9360. Recheck each commit with `git -C /data/gitsrc/ansible-provision branch -r --contains 42e9360`, substituting 230307e for the plan record; compare the sources with `git -C /data/gitsrc/ansible-provision diff 42e9360 HEAD -- tests/archiver-soak/etl-pass`.
+- Issue publication rechecked at 2026-11-04T02:54:17Z with `gh issue view 54 --repo jeonghanlee/ansible-provision --json body,state,labels,milestone,assignees,updatedAt`: the full body exactly matches `work/issue-etl-bounded-body.md`, SHA256 717582a75880276509ba0a6380100da8cf725246a6b15463593e3e062f5a987d. Its three source-#40 criteria and overlapping source-#35 terminal criterion are checked; 17 boxes are checked and 64 remain unchecked overall. D49 permits this component closure while #54 stays open for M48.
+- Retained verification results: `work/retained-test-results-20261026/summary/terminal-exception-concurrency.json` and the archived normal/fault/replay records indexed by `work/retained-test-results-20261026/README.md`. These are historical real-path results; this status reconciliation runs no lifecycle test and does not restore retired raw inputs.
 - Two independent pre-edit reviews found no new design blocker. The subsequent implementation review of `observe.py` SHA256 `e5da14869928bf98acc532ec46f9de5e6ad12adaee078484374ae13eb01e0a92` and `test-terminal.py` SHA256 `5ecf2c45c552f52db4c21a99d410680955a5e39f048d9f4127a3a05b25f4e065` found no additional defect and executed seven actual runner CLI preflight/failure cases. Source-order checks and those narrower cases do not establish live terminal acceptance. Local review evidence: `work/review_sessions/20261022_193200_m35-terminal/reviews/fup20261022_195320_codex_gpt6_process_on_rev20261022_193847_supersedes_fup20261022_195302.md`.
 
 ##### GitHub Projection
@@ -7434,10 +7445,10 @@ Final D48 scoped result (2026-10-24T19:24:55Z):
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-17T01:09:40Z
-- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
-- Prepared Body: `work/issue-tools-etl.md`
-- Published Body SHA256: b6a0ab483695713866a62fe7ccf6cb65a4f04514238fa3adce424715686417f0
+- Observed Updated At: 2026-10-24T20:20:32Z
+- Last Compared: 2026-11-04T02:54:17Z; full applied body and open state, title, labels, milestone and assignee match the retained publication record. Seventeen boxes checked, 64 unchecked; all M35 criteria are checked.
+- Prepared Body: `work/issue-etl-bounded-body.md`
+- Published Body SHA256: 717582a75880276509ba0a6380100da8cf725246a6b15463593e3e062f5a987d
 - Historical Source Issue: #40, https://github.com/jeonghanlee/ansible-provision/issues/40
 - Historical Source State: closed
 - Historical Source Reason: not_planned
@@ -7447,11 +7458,11 @@ Final D48 scoped result (2026-10-24T19:24:55Z):
 
 #### M36 - Match ETL pass times by UTC instant with nanosecond precision
 
-- Origin: 38560eb / M36
-- Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
-- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #41 is closed not_planned at 2026-10-17T01:12:30Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
-- Status: Complete
+Origin: 38560eb / M36
+Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
+GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #41 is closed not_planned at 2026-10-17T01:12:30Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
+Status: Complete
 
 ##### Summary
 
@@ -7598,11 +7609,11 @@ Additional review-helper outcomes remain separate: attempt 001 stopped on a repo
 
 #### M37 - Refresh preserved-tool checksums
 
-- Origin: 38560eb / M37
-- Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: #56, https://github.com/jeonghanlee/ansible-provision/issues/56
-- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #42 is closed not_planned at 2026-10-17T01:13:17Z; unfinished criteria are tracked in #56. Original issue references below are historical and do not create an active source-issue dependency.
-- Status: Complete
+Origin: 38560eb / M37
+Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
+GitHub Issue: #56, https://github.com/jeonghanlee/ansible-provision/issues/56
+Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #42 is closed not_planned at 2026-10-17T01:13:17Z; unfinished criteria are tracked in #56. Original issue references below are historical and do not create an active source-issue dependency.
+Status: Complete
 
 ##### Summary
 
@@ -7701,11 +7712,11 @@ Historical T1-T3 below describe the pre-deduplication local implementation and r
 
 #### M38 - Finish ETL tool independence checks across both store chains
 
-- Origin: 38560eb / M38
-- Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
-- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #43 is closed not_planned at 2026-10-17T01:12:35Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
-- Status: Deferred
+Origin: 38560eb / M38
+Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
+GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #43 is closed not_planned at 2026-10-17T01:12:35Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
+Status: Deferred
 
 ##### Summary
 
@@ -7836,11 +7847,11 @@ Use the six-row scope matrix and preserve the two recorded planned-abort evidenc
 
 #### M39 - Finish partial-source ETL evidence verification on both chains
 
-- Origin: 38560eb / M39
-- Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
-- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #44 is closed not_planned at 2026-10-17T01:12:41Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
-- Status: Deferred
+Origin: 38560eb / M39
+Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
+GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #44 is closed not_planned at 2026-10-17T01:12:41Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
+Status: Deferred
 
 ##### Summary
 
@@ -7938,11 +7949,11 @@ A wrong exit code, a failed scenario assertion, unavailable required verificatio
 
 #### M40 - Finish all-source evidence loss and automatic-abort verification
 
-- Origin: 38560eb / M40
-- Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
-- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #45 is closed not_planned at 2026-10-17T01:12:47Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
-- Status: Deferred
+Origin: 38560eb / M40
+Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
+GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #45 is closed not_planned at 2026-10-17T01:12:47Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
+Status: Deferred
 
 ##### Summary
 
@@ -8040,11 +8051,11 @@ A wrong exit code, a failed scenario assertion, unavailable required verificatio
 
 #### M41 - Verify ETL collector capture and refusal after normal shutdown
 
-- Origin: 38560eb / M41
-- Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
-- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #46 is closed not_planned at 2026-10-17T01:12:52Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
-- Status: Deferred
+Origin: 38560eb / M41
+Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
+GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #46 is closed not_planned at 2026-10-17T01:12:52Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
+Status: Deferred
 
 ##### Summary
 
@@ -8122,11 +8133,11 @@ Out of scope: The separate journal collector verification in #32, product shutdo
 
 #### M42 - Verify real collection during source-store deletion
 
-- Origin: 38560eb / M42
-- Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
-- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #47 is closed not_planned at 2026-10-17T01:12:57Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
-- Status: Deferred
+Origin: 38560eb / M42
+Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
+GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #47 is closed not_planned at 2026-10-17T01:12:57Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
+Status: Deferred
 
 ##### Summary
 
@@ -8204,11 +8215,11 @@ Out of scope: New ETL storage-failure product tests, forcing data loss in accept
 
 #### M43 - Reconcile retained ETL measurements and process identities
 
-- Origin: 38560eb / M43
-- Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
-- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #48 is closed not_planned at 2026-10-17T01:13:02Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
-- Status: Deferred
+Origin: 38560eb / M43
+Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
+GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #48 is closed not_planned at 2026-10-17T01:13:02Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
+Status: Deferred
 
 ##### Summary
 
@@ -8288,11 +8299,11 @@ Out of scope: Changing ETL functionality acceptance, rewriting raw measurements,
 
 #### M44 - Compare ETL busy time and workload with retained earlier results
 
-- Origin: 38560eb / M44
-- Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
-- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #49 is closed not_planned at 2026-10-17T01:13:07Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
-- Status: Deferred
+Origin: 38560eb / M44
+Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
+GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #49 is closed not_planned at 2026-10-17T01:13:07Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
+Status: Deferred
 
 ##### Summary
 
@@ -8370,11 +8381,11 @@ Out of scope: ETL functionality acceptance, host sizing, capacity forecasts, or 
 
 #### M45 - Reproduce completed ETL observation reports on an independent recipient
 
-- Origin: 38560eb / M45
-- Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
-- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #50 is closed not_planned at 2026-10-17T01:13:12Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
-- Status: Deferred
+Origin: 38560eb / M45
+Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
+GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #50 is closed not_planned at 2026-10-17T01:13:12Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
+Status: Deferred
 
 ##### Summary
 
@@ -8457,11 +8468,11 @@ The comparison baseline consists of the complete evaluator JSON and complete num
 
 #### M46 - Report actual test phase durations against the agreed allocations
 
-- Origin: 38560eb / M46
-- Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
-- GitHub Issue: #56, https://github.com/jeonghanlee/ansible-provision/issues/56
-- Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #51 is closed not_planned at 2026-10-17T01:13:22Z; unfinished criteria are tracked in #56. Original issue references below are historical and do not create an active source-issue dependency.
-- Status: Deferred
+Origin: 38560eb / M46
+Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
+GitHub Issue: #56, https://github.com/jeonghanlee/ansible-provision/issues/56
+Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #51 is closed not_planned at 2026-10-17T01:13:22Z; unfinished criteria are tracked in #56. Original issue references below are historical and do not create an active source-issue dependency.
+Status: Deferred
 
 ##### Summary
 
@@ -8539,10 +8550,10 @@ Out of scope: New runtime tests, ETL or journal functionality reacceptance, and 
 
 #### M47 - Track journal test tooling
 
-- Origin: 38560eb / M47
-- Identity History: created as a test-type coordination entry on 2026-10-16 (D32); no existing identity is replaced.
-- GitHub Issue: #53, https://github.com/jeonghanlee/ansible-provision/issues/53
-- Status: Not started
+Origin: 38560eb / M47
+Identity History: created as a test-type coordination entry on 2026-10-16 (D32); no existing identity is replaced.
+GitHub Issue: #53, https://github.com/jeonghanlee/ansible-provision/issues/53
+Status: Not started
 
 ##### Summary
 
@@ -8662,12 +8673,13 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 ##### Closure Evidence
 
+- D49 publication reconciled at 2026-11-04T02:54:17Z: the applied #53 body matches the retained publication file and the source/plan commits are on origin/master. This records publication only; the group remains Not started with its remaining criteria open.
 - D49 approach accepted on 2026-10-24; group execution is Not started. Earlier dated Deferred statements below describe their recorded checkpoints. The accepted approach is not a verification result; no new criterion is completed merely by this plan update.
 - Tool work is not complete. GitHub tracking consolidation completed under D33 at 2026-10-17T01:14:10.675787+00:00: replacement #53 is open and all its source issues are closed not_planned with exact body/comment readback. Original criteria and unsuccessful evidence remain active; source closure establishes no tool verification.
 
 ##### GitHub Projection
 
-- Projection Difference: D49 completion approach prepared locally; GitHub publication is not yet observed.
+- Projection Difference: None for the D49 completion approach; the applied body exactly matches the retained publication file. Remaining verification criteria stay open.
 - Title: `Track journal test tooling`
 - Labels: `enhancement`
 - GitHub Milestone: `Backlog`
@@ -8678,19 +8690,19 @@ All criteria below remain active in the replacement issue. Source closure is adm
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-17T01:09:36Z
-- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
+- Observed Updated At: 2026-10-24T20:20:31Z
+- Last Compared: 2026-11-04T02:54:17Z; exact full-body match and open state, title, labels, milestone and assignee verified by `gh issue view 53 --repo jeonghanlee/ansible-provision --json body,state,title,labels,milestone,assignees,updatedAt`. Checked boxes: 0; unchecked: 13.
 - Prepared Body: `work/issue-journal-bounded-body.md`
 - Prepared Body SHA256: 9251fba14f599573edb7800c67d32a1a26f8ec99f6c951ee11f6d49c027ed1fa
-- Published Body SHA256: 57226e8a00e7b8aca7c4a5143f1ff5a915bc8b13dea7b1e2f5d99d032d46305d
+- Published Body SHA256: 9251fba14f599573edb7800c67d32a1a26f8ec99f6c951ee11f6d49c027ed1fa
 - Historical Source Issues: #32, #33
 
 #### M48 - Track ETL test tooling
 
-- Origin: 38560eb / M48
-- Identity History: created as a test-type coordination entry on 2026-10-16 (D32); no existing identity is replaced.
-- GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
-- Status: Not started
+Origin: 38560eb / M48
+Identity History: created as a test-type coordination entry on 2026-10-16 (D32); no existing identity is replaced.
+GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
+Status: Not started
 
 ##### Summary
 
@@ -8778,7 +8790,7 @@ These summaries preserve the recorded scope. Each linked issue retains its full 
 ###### #40 - Persist terminal state before evaluating terminal coherence
 
 - Problem and evidence: Evaluation preceded terminal persistence; unchanged reevaluation afterward removed the coherence finding on both observations.
-- Verified result: M35/D48 actual normal, fault, interruption, exception and concurrent-request evidence satisfies the terminal correction criteria. Source publication and issue readback remain outstanding.
+- Result: M35 is Complete under D48/D49. Actual normal, fault, interruption, exception and concurrent-request evidence satisfies the terminal correction criteria; source 42e9360 is on origin/master and the four terminal-related criteria are checked in #54 with exact body/metadata readback.
 - Done when: The verified source is published and the four terminal-related issue criteria match the recorded evidence. Other ETL tooling criteria remain independent.
 
 ###### #41 - Match ETL pass times by UTC instant with nanosecond precision
@@ -9041,7 +9053,7 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 ##### Verification Results
 
-M35/D48 terminal criteria are verified from the recorded real normal/fault/replay cases, including exception17/17 and concurrency18/18. This supplies the three source-#40 criteria and the overlapping source-#35 terminal criterion only; broader group results remain incomplete. Source publication and issue readback remain pending.
+M35/D48 terminal criteria are verified from the recorded real normal/fault/replay cases, including exception17/17 and concurrency18/18. This supplies the three source-#40 criteria and the overlapping source-#35 terminal criterion only; broader group results remain incomplete. Source 42e9360 and plan record 230307e are on origin/master; exact #54 body readback confirms these four terminal criteria. M35 is Complete under D48/D49, while this group remains Not started for its remaining work.
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
@@ -9054,6 +9066,7 @@ M35/D48 terminal criteria are verified from the recorded real normal/fault/repla
 
 ##### Closure Evidence
 
+- D49 publication reconciled at 2026-11-04T02:54:17Z: the applied #54 body matches the retained publication file and the source/plan commits are on origin/master. This records publication only; the group remains Not started with its remaining criteria open.
 - D49 approach accepted on 2026-10-24; group execution is Not started. Earlier dated Deferred statements below describe their recorded checkpoints. The accepted approach is not a verification result; no new criterion is completed merely by this plan update.
 - Tool work is not complete. GitHub tracking consolidation completed under D33 at 2026-10-17T01:14:10.675787+00:00: replacement #54 is open and all its source issues are closed not_planned with exact body/comment readback. Original criteria and unsuccessful evidence remain active; source closure establishes no tool verification.
 - UTC component update observed at 2026-10-19T23:01:41.312239+00:00: M36 is Complete under D38, with four checked boxes and 77 unchecked boxes in #54. Source landing and exact body/metadata readback are recorded in M36. This aggregate remains Deferred; no other component is completed or activated by the UTC correction.
@@ -9064,9 +9077,11 @@ M35/D48 terminal criteria are verified from the recorded real normal/fault/repla
 
 - JFR component update observed at 2026-10-22T10:49:17Z: M34 is Complete under D44 after its three JFR criteria, two overlapping evaluator criteria and full prepared body were read back exactly from #54. The issue remains open with thirteen checked and 68 unchecked boxes; title, labels, milestone and assignee are unchanged. This aggregate remains Deferred.
 
+- Terminal component publication reconciled at 2026-11-04T02:54:17Z: M35 is Complete under D48/D49 after source landing and exact #54 body readback. Its three source-#40 criteria and overlapping source-#35 terminal criterion bring the issue to 17 checked and 64 unchecked boxes. Original outcomes and D48 exclusions are preserved; no other component or aggregate result is completed.
+
 ##### GitHub Projection
 
-- Projection Difference: D49 completion approach prepared locally; GitHub publication is not yet observed.
+- Projection Difference: None for the D49 completion approach; the applied body exactly matches the retained publication file. Remaining verification criteria stay open.
 - Title: `Track ETL test tooling`
 - Labels: `enhancement`
 - GitHub Milestone: `Backlog`
@@ -9077,21 +9092,21 @@ M35/D48 terminal criteria are verified from the recorded real normal/fault/repla
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-22T10:49:06Z
-- Last Compared: 2026-10-22T10:49:17Z; exact JFR-only prepared body and unchanged title/labels/milestone/assignee/open state verified. Thirteen boxes checked, 68 unchecked.
+- Observed Updated At: 2026-10-24T20:20:32Z
+- Last Compared: 2026-11-04T02:54:17Z; exact full-body match and open state, title, labels, milestone and assignee verified by `gh issue view 54 --repo jeonghanlee/ansible-provision --json body,state,title,labels,milestone,assignees,updatedAt`. Checked boxes: 17; unchecked: 64.
 - Query Update Readback: 2026-10-21T08:34:55+00:00; four query criteria newly checked and all other source sections/criteria preserved. Full comparison retained at `work/issue-etl-query-applied-20261021.json`.
 - JFR Update Readback: 2026-10-22T10:49:17Z; the three source-#39 criteria and two overlapping source-#35 criteria are newly checked; all other sections and criteria are preserved. Receipt: `work/issue-etl-jfr-applied-20261022.json`.
 - Prepared Body: `work/issue-etl-bounded-body.md`
-- Prepared Body SHA256: d9611b6ebbd8d487e7751ec2de331a3a9fb3af71f35cfd3a1c89476e1f29d6c3
-- Published Body SHA256: ebd55a80f7cb224507e8605a676dbb27ce436f1b46c33edad77fadc1d3c6bc79
+- Prepared Body SHA256: 717582a75880276509ba0a6380100da8cf725246a6b15463593e3e062f5a987d
+- Published Body SHA256: 717582a75880276509ba0a6380100da8cf725246a6b15463593e3e062f5a987d
 - Historical Source Issues: #34, #35, #36, #37, #38, #39, #40, #41, #43, #44, #45, #46, #47, #48, #49, #50
 
 #### M49 - Track buffer test tooling
 
-- Origin: 38560eb / M49
-- Identity History: created as a test-type coordination entry on 2026-10-16 (D32); no existing identity is replaced.
-- GitHub Issue: #55, https://github.com/jeonghanlee/ansible-provision/issues/55
-- Status: Not started
+Origin: 38560eb / M49
+Identity History: created as a test-type coordination entry on 2026-10-16 (D32); no existing identity is replaced.
+GitHub Issue: #55, https://github.com/jeonghanlee/ansible-provision/issues/55
+Status: Not started
 
 ##### Summary
 
@@ -9198,12 +9213,13 @@ Reopening jeonghanlee/epicsarchiverap-maven#29, editing Maven code here, a new f
 
 ##### Closure Evidence
 
+- D49 publication reconciled at 2026-11-04T02:54:17Z: the applied #55 body matches the retained publication file and the source/plan commits are on origin/master. This records publication only; the group remains Not started with its remaining criteria open.
 - D49 approach accepted on 2026-10-24; group execution is Not started. Earlier dated Deferred statements below describe their recorded checkpoints. The accepted approach is not a verification result; no new criterion is completed merely by this plan update.
 - Tool work is not complete. GitHub tracking consolidation completed under D33 at 2026-10-17T01:14:10.675787+00:00: replacement #55 is open and all its source issues are closed not_planned with exact body/comment readback. Original criteria and unsuccessful evidence remain active; source closure establishes no tool verification.
 
 ##### GitHub Projection
 
-- Projection Difference: D49 completion approach prepared locally; GitHub publication is not yet observed.
+- Projection Difference: None for the D49 completion approach; the applied body exactly matches the retained publication file. Remaining verification criteria stay open.
 - Title: `Track buffer test tooling`
 - Labels: `enhancement`
 - GitHub Milestone: `Backlog`
@@ -9214,19 +9230,19 @@ Reopening jeonghanlee/epicsarchiverap-maven#29, editing Maven code here, a new f
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-17T01:09:42Z
-- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
+- Observed Updated At: 2026-10-24T20:20:33Z
+- Last Compared: 2026-11-04T02:54:17Z; exact full-body match and open state, title, labels, milestone and assignee verified by `gh issue view 55 --repo jeonghanlee/ansible-provision --json body,state,title,labels,milestone,assignees,updatedAt`. Checked boxes: 0; unchecked: 5.
 - Prepared Body: `work/issue-buffer-bounded-body.md`
 - Prepared Body SHA256: 87b8a1363cd10c46efa10aadc5f6a3a8f0592a012da7d373ef4ac311a108dfa5
-- Published Body SHA256: 68475d0897f4a062b6984649f43b95503f985c3d16e73e33a1317461468bbe63
+- Published Body SHA256: 87b8a1363cd10c46efa10aadc5f6a3a8f0592a012da7d373ef4ac311a108dfa5
 - Historical Source Issues: none; buffer tooling scope is declared directly here.
 
 #### M50 - Track shared test tooling
 
-- Origin: 38560eb / M50
-- Identity History: created as a test-type coordination entry on 2026-10-16 (D32); no existing identity is replaced.
-- GitHub Issue: #56, https://github.com/jeonghanlee/ansible-provision/issues/56
-- Status: Not started
+Origin: 38560eb / M50
+Identity History: created as a test-type coordination entry on 2026-10-16 (D32); no existing identity is replaced.
+GitHub Issue: #56, https://github.com/jeonghanlee/ansible-provision/issues/56
+Status: Not started
 
 ##### Summary
 
@@ -9362,6 +9378,7 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 ##### Closure Evidence
 
+- D49 publication reconciled at 2026-11-04T02:54:17Z: the applied #56 body matches the retained publication file and the source/plan commits are on origin/master. This records publication only; the group remains Not started with its remaining criteria open.
 - D49 approach accepted on 2026-10-24; group execution is Not started. Earlier dated Deferred statements below describe their recorded checkpoints. The accepted approach is not a verification result; no new criterion is completed merely by this plan update.
 - Not complete; Decision Date: 2026-10-18 (D36). The checksum component M37 is Complete, with four checked boxes in #56. The remaining seven boxes stay unchecked and the issue stays open. The remaining group scope returns to Deferred because D34/D35 authorized only checksum execution; other plans remain draft and unauthorized.
 - Source landing for the checksum component is verified at 2026-10-18T20:55:25.554346+00:00 on `origin/m14-middleware-reconcile`; see M37 and `work/issue-shared-checks-yh2b0_ok/landing.json`. Four checksum boxes are checked in #56 after exact body/metadata readback at 2026-10-18T21:25:36.301871+00:00; the remaining seven boxes and the overall issue stay open. Receipt: `work/issue-56-apply-2sxck42w/verification.json`.
@@ -9370,7 +9387,7 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 ##### GitHub Projection
 
-- Projection Difference: D49 completion approach prepared locally; GitHub publication is not yet observed.
+- Projection Difference: None for the D49 completion approach; the applied body exactly matches the retained publication file. Remaining verification criteria stay open.
 - Title: `Track shared test tooling`
 - Labels: `enhancement`
 - GitHub Milestone: `Backlog`
@@ -9381,19 +9398,19 @@ All criteria below remain active in the replacement issue. Source closure is adm
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-18T21:25:35Z
-- Last Compared: 2026-10-18T21:25:36.301871+00:00; exact body readback verifies the checksum-only revision, four checked boxes, seven unchecked boxes and unchanged metadata/open state.
-- Checksum Projection: unchanged; only the four-group completion approach is newly prepared.
+- Observed Updated At: 2026-10-24T20:20:34Z
+- Last Compared: 2026-11-04T02:54:17Z; exact full-body match and open state, title, labels, milestone and assignee verified by `gh issue view 56 --repo jeonghanlee/ansible-provision --json body,state,title,labels,milestone,assignees,updatedAt`. Checked boxes: 4; unchecked: 7.
+- Checksum Projection: Unchanged; the D49 completion approach is published, with four checksum boxes checked and seven other boxes unchecked.
 - Prepared Body: `work/issue-shared-bounded-body.md`
 - Prepared Body SHA256: 59cde8d545dbe6515cc5c77703c4f89c7e95b378adf65320b5dde130771655e3
-- Published Body SHA256: 6f6c6d060d64d7ca35d211ee6c7bcf4495306a2e5a9a24ee97aa9c1112fd1321
+- Published Body SHA256: 59cde8d545dbe6515cc5c77703c4f89c7e95b378adf65320b5dde130771655e3
 - Historical Source Issues: #42, #51
 
 #### G6 - Provide M33's dedicated systemd 239 query environment
 
-- Origin: 38560eb / G6
-- GitHub Issue: none
-- Status: Complete
+Origin: 38560eb / G6
+GitHub Issue: none
+Status: Complete
 
 ##### Summary
 
@@ -9419,9 +9436,9 @@ The cloud-provision owner delivered the fresh dedicated Rocky 8.10/systemd 239 g
 
 #### G7 - Provide retained full-day JFR inputs for M34
 
-- Origin: 38560eb / G7
-- GitHub Issue: none
-- Status: Complete
+Origin: 38560eb / G7
+GitHub Issue: none
+Status: Complete
 - Responsible party: cloud-provision resource owner, with the requester independently verifying received inputs.
 - Affected work: M34; resumed as In progress after verified delivery.
 
