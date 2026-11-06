@@ -38,6 +38,7 @@ verification results are in [the work register](../../docs/milestone-38560eb.md)
 | `diagnostics/` | Retained full-day/fault-record analysis and actual fixed-interval physical/HTTP checkpoints |
 | `etl-scenarios/` | Preserved preparation, module challenge, actual source-fault and replay payloads with explicit private configuration |
 | `etl-pass/test_contract.py` | Contract, bundle, fixture-preservation and retained-export replay checks |
+| `etl-pass/test-kernel-query.py` | Actual local journal queries and collector CLI checks for failed-query receipts |
 | `etl-pass/test-terminal.py` | Explicit-path lifecycle CLI receipts and complete retained terminal replay; separate replay assertions from live acceptance |
 | `etl-pass/focused.py`, `PBFixture.java`, `test_focused.py` | Installed configuration inventory, real writer/decoder, automatic two-hop physical/HTTP checks and subsequent regular-pass evidence |
 | `etl-pass/replace-bundle.py` | Replace an installed bundle by a frozen bundle while carrying every other file and keeping a preserved sibling and rollback; not a bundle member |
@@ -677,7 +678,15 @@ jstat includes actual request/response times; young/full counters reconcile
 with collections, and concurrent counters with remark/cleanup pauses.
 `G1Old` includes concurrent mark and undo events and differs from jstat `CGC`.
 Kernel collection reads the unfiltered current-boot journal and retains each
-actual query in `kernel-checkpoint-journal.jsonl`. Its initial checkpoint is
+actual query in `kernel-checkpoint-journal.jsonl`. The initial reverse lookup
+uses `journal-retention-query.jsonl`. Both queries preserve their native stdout
+bytes, `.stderr` bytes and `.jsonl.receipt.json` before parsing or refusal.
+The receipt records the argument array, native return code, query start/end UTC
+times, monotonic elapsed seconds, timeout and original cursor/since/sample time.
+`interval.query_cursor` identifies the cursor actually queried; `sampled_at`
+is the collection timestamp, not an additional query cutoff. A timeout or launch
+error retains available output and its exception with a null return code because
+no native exit status was returned. Its initial checkpoint is
 the latest retained journal record at or before the collection boundary.
 Adjacent reads require the exact prior checkpoint, remove only that overlap
 and advance through every transport, including intervals without kernel messages.
@@ -686,6 +695,12 @@ memory-event checks. Query errors, missing boundaries, suppression
 and actual kernel memory events remain visible. These are ETL process diagnostics;
 all-stream sequence accounting, journal-file headers, rotation, retention budgets
 and deliberate-loss acceptance belong to the independent journal package.
+
+`test-kernel-query.py --output <new-private-directory>` exercises normal and
+invalid queries against a readable local current-boot journal. `--tools` selects
+an explicit source directory. The test retains native command outputs, query
+receipts, source hashes and results; it does not establish historical interval
+coverage, rotation behavior or whole-appliance acceptance.
 
 Visibility probes read six representative scalar, fast, slow and waveform CA
 timestamps with one-microsecond precision, then query matching archived samples

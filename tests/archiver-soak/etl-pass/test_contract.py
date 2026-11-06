@@ -387,7 +387,7 @@ class ContractTests(unittest.TestCase):
             def transport(args, **kwargs):
                 self.assertIn('prior-day-cursor', args)
                 self.assertNotIn('--since', args)
-                return subprocess.CompletedProcess(args, 0, '\n'.join(json.dumps(row) for row in rows), '')
+                return subprocess.CompletedProcess(args, 0, '\n'.join(json.dumps(row) for row in rows).encode(), b'')
             with patch('subprocess.run', side_effect=transport):
                 result = collect.collect_kernel(raw, previous, datetime.datetime(2026, 9, 30, tzinfo=datetime.timezone.utc))
                 self.assertTrue(result['coverage_complete'])
@@ -408,7 +408,7 @@ class ContractTests(unittest.TestCase):
                     output = json.dumps(before) if '--reverse' in args else ''
                 else:
                     output = '\n'.join(json.dumps(row) for row in (before, event))
-                return subprocess.CompletedProcess(args, 0, output, '')
+                return subprocess.CompletedProcess(args, 0, output.encode(), b'')
             with patch('subprocess.run', side_effect=transport):
                 result = collect.collect_kernel(raw, {'kernel_journal_since': '2026-09-30 00:00:00 UTC'}, boundary)
             self.assertTrue(result['coverage_complete'])
@@ -424,7 +424,7 @@ class ContractTests(unittest.TestCase):
             def transport(args, **kwargs):
                 self.assertNotIn('-k', args)
                 self.assertEqual(args[-2:], ['--cursor', 'previous-checkpoint'])
-                return subprocess.CompletedProcess(args, 0, '\n'.join(json.dumps(row) for row in rows), '')
+                return subprocess.CompletedProcess(args, 0, '\n'.join(json.dumps(row) for row in rows).encode(), b'')
             with patch('subprocess.run', side_effect=transport):
                 result = collect.collect_kernel(raw, previous, datetime.datetime.now(datetime.timezone.utc))
             self.assertTrue(result['coverage_complete'])

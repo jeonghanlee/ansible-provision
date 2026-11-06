@@ -40,6 +40,7 @@ ABORT_UNIT = "etl-soak-abort.service"
 HEALTH_COMMAND = Path('/opt/epicsarchiverap-maven/archappl.bash')
 HEALTH_COMPLETION_MAX_AGE_SECONDS = 120
 BOOT_ID_FILE = Path('/proc/sys/kernel/random/boot_id')
+KERNEL_QUERY_TIMEOUT_SECONDS = 60
 
 
 @contextlib.contextmanager
@@ -335,11 +336,41 @@ def collect_application_files(out, raw, previous, pids, invocation=None, stopped
     return None, counts, pass_count, sources
 
 
+def kernel_query(raw, name, command, interval):
+    """Preserve native query bytes and execution metadata before reporting errors."""
+    started = time.monotonic()
+    receipt = {'command': command, 'interval': interval,
+               'started_at': datetime.datetime.now(datetime.timezone.utc).isoformat(),
+               'timeout_seconds': KERNEL_QUERY_TIMEOUT_SECONDS, 'returncode': None}
+    stdout, stderr = b'', b''
+    try:
+        result = subprocess.run(command, capture_output=True, timeout=KERNEL_QUERY_TIMEOUT_SECONDS)
+        stdout, stderr = result.stdout, result.stderr
+        receipt['returncode'] = result.returncode
+    except (subprocess.TimeoutExpired, OSError) as error:
+        if isinstance(error, subprocess.TimeoutExpired):
+            stdout, stderr = error.stdout or b'', error.stderr or b''
+        receipt['error'] = {'type': type(error).__name__, 'message': str(error)}
+        raise
+    finally:
+        receipt['finished_at'] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+        receipt['elapsed_seconds'] = time.monotonic() - started
+        (raw / (name + '.jsonl')).write_bytes(stdout)
+        (raw / (name + '.stderr')).write_bytes(stderr)
+        write_json(raw / (name + '.jsonl.receipt.json'), receipt)
+    if result.returncode:
+        raise RuntimeError('Kernel journal collection failed: ' + str(result.returncode))
+    return stdout.decode('utf-8')
+
+
 def collect_kernel(raw, previous, now):
     cursor = previous.get('kernel_journal_cursor')
     since = previous.get('kernel_journal_since', now.strftime('%Y-%m-%d 00:00:00 UTC'))
+    interval = {'previous_cursor': cursor, 'since': since, 'sampled_at': now.isoformat()}
     if not cursor:
-        boot = run(['journalctl', '-b', '--no-pager', '-o', 'json', '--reverse', '--until', since, '--lines=1'])
+        boot = kernel_query(raw, 'journal-retention-query',
+                            ['journalctl', '-b', '--no-pager', '-o', 'json', '--reverse',
+                             '--until', since, '--lines=1'], {**interval, 'query_cursor': None})
         first_boot = json.loads(boot.splitlines()[0]) if boot else None
         if not first_boot or int(first_boot['__REALTIME_TIMESTAMP']) > datetime.datetime.fromisoformat(
                 since.replace(' UTC', '+00:00')).timestamp() * 1000000:
@@ -348,12 +379,9 @@ def collect_kernel(raw, previous, now):
             {key: first_boot[key] for key in JOURNAL_KEYS if key in first_boot}) + '\n')
         cursor = first_boot['__CURSOR']
     command = ['journalctl', '-b', '--no-pager', '--all', '-o', 'json', '--cursor', cursor]
-    result = subprocess.run(command, capture_output=True, text=True, timeout=60)
-    (raw / 'kernel-checkpoint-journal.jsonl').write_text(result.stdout)
-    (raw / 'kernel-checkpoint-journal.stderr').write_text(result.stderr)
-    if result.returncode:
-        raise RuntimeError('Kernel journal collection failed')
-    lines = result.stdout.splitlines()
+    output = kernel_query(raw, 'kernel-checkpoint-journal', command,
+                          {**interval, 'query_cursor': cursor})
+    lines = output.splitlines()
     if not lines or json.loads(lines[0]).get('__CURSOR') != cursor:
         raise RuntimeError('Previous kernel journal cursor is unavailable')
     events = 0
