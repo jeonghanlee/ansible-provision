@@ -31,7 +31,7 @@ Canonical branch or ref: `master`
 Git upstream: `origin/master`
 Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: M47 / T1 passed the bounded normal-stop case on 2026-11-06 UTC; preserve its frozen evidence and do not repeat the observation. M27 / T2-T3 remain unexecuted. M47 / T2 needs a scope decision because the retained inventory excludes the original full-day raw inputs required for independent-recipient replay; the short case cannot replace them. The local result is not yet projected to #53. M48-M50 remain Not started. Continue retained-evidence accounting under D49 without a new long observation or the historical broad matrix. M14 and M26 remain Blocked on G2 and G5 respectively; confirm those external conditions before resuming either installation. M35 remains Complete within D48/D49; no new product acceptance is claimed.
+Next session entry point: M47 / T1 passed the bounded normal-stop case on 2026-11-06 UTC; preserve its frozen evidence and do not repeat the observation. M27 / T2-T3 remain unexecuted. M47 / T2 needs a scope decision because the retained inventory excludes the original full-day raw inputs required for independent-recipient replay; the short case cannot replace them. The bounded result and missing full-day replay input were published to #53 and verified on 2026-11-06 UTC. M48-M50 remain Not started. Continue retained-evidence accounting under D49 without a new long observation or the historical broad matrix. M14 and M26 remain Blocked on G2 and G5 respectively; confirm those external conditions before resuming either installation. M35 remains Complete within D48/D49; no new product acceptance is claimed.
 
 Retained results and available inputs are indexed by `work/retained-test-results-20261026/README.md`. Its 2026-10-26 retention policy supersedes historical original-path instructions below: retired raw observations are not complete local replay inputs, and historical hashes do not establish current availability. Check the retained archives and inventories before planning a replay.
 
@@ -8697,14 +8697,14 @@ Private evidence: `work/m47-normal-stop-20261105/evidence` and `work/m47-normal-
 
 ##### Closure Evidence
 
-- Bounded T1 evidence recorded on 2026-11-06 UTC; M47 remains In progress with component T2-T3 and full-day recipient replay unresolved. At that recording checkpoint, the evidence update had no repository landing or #53 publication confirmation.
+- Bounded T1 evidence is recorded in b8d70e8 on origin/master. Publication to #53 was verified at 2026-11-06T08:53:45Z: the full body matches the retained publication file, with five checked boxes and eight unchecked; open state, title, labels, milestone and assignee match the canonical record. M47 remains In progress with M27 / T2-T3 and full-day recipient replay unresolved.
 - D49 publication reconciled at 2026-11-04T02:54:17Z: the applied #53 body matched the retained publication file and the source/plan commits were on origin/master. At that checkpoint the group was Not started; this historical publication result establishes no later verification.
 - D49 approach accepted on 2026-10-24; group execution was Not started at that checkpoint. Earlier dated Deferred statements below describe their recorded checkpoints. The accepted approach is not a verification result; no new criterion is completed merely by this plan update.
 - Tool work is not complete. GitHub tracking consolidation completed under D33 at 2026-10-17T01:14:10.675787+00:00: replacement #53 is open and all its source issues are closed not_planned with exact body/comment readback. Original criteria and unsuccessful evidence remain active; source closure establishes no tool verification.
 
 ##### GitHub Projection
 
-- Projection Difference: Local bounded T1 results and the missing full-day replay input are not yet published to #53. The recorded 2026-11-04 comparison applies only to the earlier D49 completion approach; no current remote equality or issue closure is claimed.
+- Projection Difference: None for the bounded normal-stop result and missing full-day replay input; the published body exactly matches the prepared file. Five criteria are checked, eight remain unchecked, and #53 remains open.
 - Title: `Track journal test tooling`
 - Labels: `enhancement`
 - GitHub Milestone: `Backlog`
@@ -8715,11 +8715,11 @@ Private evidence: `work/m47-normal-stop-20261105/evidence` and `work/m47-normal-
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-24T20:20:31Z
-- Last Compared: 2026-11-04T02:54:17Z; exact full-body match and open state, title, labels, milestone and assignee verified by `gh issue view 53 --repo jeonghanlee/ansible-provision --json body,state,title,labels,milestone,assignees,updatedAt`. Checked boxes: 0; unchecked: 13.
-- Prepared Body: `work/issue-journal-bounded-body.md`
-- Prepared Body SHA256: 9251fba14f599573edb7800c67d32a1a26f8ec99f6c951ee11f6d49c027ed1fa
-- Published Body SHA256: 9251fba14f599573edb7800c67d32a1a26f8ec99f6c951ee11f6d49c027ed1fa
+- Observed Updated At: 2026-11-06T08:43:21Z
+- Last Compared: 2026-11-06T08:53:45Z; full-body byte equality with the prepared file and open state, title, labels, milestone and assignee verified using `gh api repos/jeonghanlee/ansible-provision/issues/53`. Checked boxes: 5; unchecked: 8.
+- Prepared Body: `work/issue-journal-stop-body.md`
+- Prepared Body SHA256: 1109629b11ad887c04f90c9520b4cc1c5d3e5a6d3e984d22baa8cdcb4fbe51a9
+- Published Body SHA256: 1109629b11ad887c04f90c9520b4cc1c5d3e5a6d3e984d22baa8cdcb4fbe51a9
 - Historical Source Issues: #32, #33
 
 #### M48 - Track ETL test tooling
