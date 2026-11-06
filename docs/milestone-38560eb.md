@@ -31,7 +31,7 @@ Canonical branch or ref: `master`
 Git upstream: `origin/master`
 Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: M47 / T1 passed the bounded normal-stop case on 2026-11-06 UTC; preserve its frozen evidence and do not repeat the observation. M27 / T2-T3 remain unexecuted. M47 / T2 needs a scope decision because the retained inventory excludes the original full-day raw inputs required for independent-recipient replay; the short case cannot replace them. The bounded result and missing full-day replay input were published to #53 and verified on 2026-11-06 UTC. M48-M50 remain Not started. Continue retained-evidence accounting under D49 without a new long observation or the historical broad matrix. M14 and M26 remain Blocked on G2 and G5 respectively; confirm those external conditions before resuming either installation. M35 remains Complete within D48/D49; no new product acceptance is claimed.
+Next session entry point: M27 / T1-T3 have Passed evidence within the bounded M47 normal-stop, same-directory repeat and actual stop/query-error cases completed on 2026-11-06 UTC. Preserve their frozen evidence; no further normal-stop execution is selected. Land the new evidence record and project the prepared #53 body under their separate publication scopes. M47 / T2 needs a scope decision because the retained inventory excludes the original full-day raw inputs required for independent-recipient replay; the short cases cannot replace them. The earlier normal-stop result and missing replay input are published; repeat refusal and command-error results are recorded locally. M48-M50 remain Not started. Continue retained-evidence accounting under D49 without a new long observation or the historical broad matrix. M14 and M26 remain Blocked on G2 and G5 respectively; confirm those external conditions before resuming either installation. M35 remains Complete within D48/D49; no new product acceptance is claimed.
 
 Retained results and available inputs are indexed by `work/retained-test-results-20261026/README.md`. Its 2026-10-26 retention policy supersedes historical original-path instructions below: retired raw observations are not complete local replay inputs, and historical hashes do not establish current availability. Check the retained archives and inventories before planning a replay.
 
@@ -394,7 +394,7 @@ full mode carries every OS tree, second apply `failed=0`). Delivered in
 
 </details>
 
-Status tally: 25 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 6 external gates (4 Complete, 2 Open). Backlog excluded: 5 Complete, 1 In progress, 3 Not started and 15 Deferred carry-forward items, plus 2 Complete external gates. M51 is Complete after T1-T7 Passed and verified repository landing at 82ef88a; closure recorded on 2026-10-23 UTC. M35 is Complete within D48/D49 after source publication and scoped issue reconciliation. M47 / T1 Passed within its bounded case; M47 remains In progress with component T2-T3 and full-day recipient input unresolved. M48-M50 remain ready for later evidence accounting.
+Status tally: 25 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 6 external gates (4 Complete, 2 Open). Backlog excluded: 5 Complete, 1 In progress, 3 Not started and 15 Deferred carry-forward items, plus 2 Complete external gates. M51 is Complete after T1-T7 Passed and verified repository landing at 82ef88a; closure recorded on 2026-10-23 UTC. M35 is Complete within D48/D49 after source publication and scoped issue reconciliation. M47 / T1 Passed within its bounded normal-stop, repeat and command-error cases; M47 remains In progress with new evidence publication and full-day recipient input unresolved. M48-M50 remain ready for later evidence accounting.
 
 ## Milestone
 
@@ -6023,7 +6023,7 @@ The VM provider supplies M51's fresh dedicated Rocky 8.10 guest through its norm
 | Tools | M44 | Compare ETL busy time and workload with retained earlier results | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m44---compare-etl-busy-time-and-workload-with-retained-earlier-results) |
 | Tools | M45 | Reproduce completed ETL observation reports on an independent recipient | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m45---reproduce-completed-etl-observation-reports-on-an-independent-recipient) |
 | Tools | M46 | Report actual test phase durations against the agreed allocations | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m46---report-actual-test-phase-durations-against-the-agreed-allocations) |
-| Tools | M47 | Track journal test tooling | Carry-forward | In progress | No | D32, D33, D49 | Bounded normal-stop T1 Passed; component T2-T3 and full-day recipient input remain unresolved under D49; [detail](#m47---track-journal-test-tooling) |
+| Tools | M47 | Track journal test tooling | Carry-forward | In progress | No | D32, D33, D49 | Bounded normal-stop, repeat and actual command-error checks Passed; new evidence publication and full-day recipient input remain unresolved under D49; [detail](#m47---track-journal-test-tooling) |
 | Tools | M48 | Track ETL test tooling | Carry-forward | Not started | Yes | D32, D33, D49 | Retained evidence first; only necessary bounded real cases, then source/issue reconciliation under D49; [detail](#m48---track-etl-test-tooling) |
 | Tools | M49 | Track buffer test tooling | Carry-forward | Not started | Yes | D32, D33, D49 | Retained evidence first; only necessary bounded real cases, then source/issue reconciliation under D49; [detail](#m49---track-buffer-test-tooling) |
 | Tools | M50 | Track shared test tooling | Carry-forward | Not started | Yes | D32, D33, D34, D35, D36, D49 | Retained evidence first; only necessary bounded real cases, then source/issue reconciliation under D49; [detail](#m50---track-shared-test-tooling) |
@@ -6044,7 +6044,7 @@ Status: Deferred
 
 ##### Summary
 
-The bounded M47 / T1 case establishes normal-stop final capture and the later post-stop direct read independently of the completed 24-hour journal observation in #31. Reuse that evidence here; repeated terminal requests and live error-boundary behavior remain unexecuted.
+The bounded M47 / T1 cases establish normal-stop final capture and the later post-stop direct read independently of the completed 24-hour journal observation in #31. Follow-ups establish the frozen operational driver's same-directory repeat refusal and its handling of actual stop refusal and later journal-access failure as Incomplete, with no confirmed-loss claim or original-result change. Reuse those bounded results here; no broader lifecycle matrix or new product acceptance is claimed.
 
 ##### Scope
 
@@ -6065,7 +6065,7 @@ Another positive 24-hour observation; ETL acceptance or changes to ETL deploymen
 ##### Dependencies And Decisions
 
 - D28; Decision Date: 2026-10-15. The owner directed separate Backlog work for later execution. It is not a gate on M25 or M22; the full component plan remains unaccepted and unauthorized.
-- D49 permits reuse of the bounded M47 / T1 evidence obtained on 2026-11-06 UTC. This does not activate the draft component plan or establish T2-T3.
+- D49 permits reuse of the bounded M47 / T1 normal-stop, same-directory repeat and actual command-error results obtained on 2026-11-06 UTC for T1-T3 respectively. These accepted group cases do not activate the full draft component plan or establish unselected lifecycle behavior.
 
 ##### Implementation Plan
 
@@ -6083,20 +6083,20 @@ Another positive 24-hour observation; ETL acceptance or changes to ETL deploymen
 | Label | Purpose | Actual Path And Expected Result |
 | --- | --- | --- |
 | T1 | Normal stop and later capture | Real dedicated appliance stop, native collection and later live query; exact required-record equality. |
-| T2 | Repeated terminal request | Real terminal CLI; no second stop and no original-result overwrite. |
-| T3 | Failure distinction | Actual command errors and incomplete evidence remain distinct from observed record loss. |
+| T2 | Repeated terminal request | Two sequential calls of the frozen operational normal-stop CLI against the same completed result directory on verified copies of actual evidence; status 2 refusal, no external command and no original-result overwrite. |
+| T3 | Failure distinction | Unchanged driver with actual systemd stop refusal and later journal-access failure; native status 2 and incomplete capture without a loss violation. Frozen compare CLI distinguishes missing/malformed input from an actual-record missing-record control. |
 
 ##### Verification Results
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
 | T1 | 2026-11-06T03:52:42.447032+00:00 | Dedicated Rocky Linux 8.10 SQLite appliance; copied offline evidence | Passed within the bounded normal-stop case | Reused M47 / T1: one actual stop, 60.001-second later read, all 3504 required identities/content preserved and native final coverage complete. See M47 for exact evidence hashes and scope. |
-| T2 | Not run | Separate future verification | Pending | Repeated terminal request is unexecuted; completed journal measurements do not prove this check. |
-| T3 | Not run | Separate future verification | Pending | Failure distinction is unexecuted; completed journal measurements do not prove this check. |
+| T2 | 2026-11-06T09:46:37.466963+00:00 | Control-host Python 3.13.5; isolated complete copies of the frozen normal-stop driver, package and actual evidence | Passed within the same-directory repeat scope | Two native status-2 refusals; 12 assertions Passed, no external command or changed member. Three source mutations failed only their intended assertions. Reused M47 / T1 follow-up; no reusable normal-stop CLI, concurrent/interrupted request or new-directory behavior is claimed. |
+| T3 | 2026-11-06T10:37:43.507599+00:00; transferred evidence verified at 10:41:18.108984 UTC | Retained dedicated Rocky Linux 8.10 / systemd 239 guest; actual 300-second producers; copied evidence evaluation | Passed within the two declared actual error boundaries | Stop refusal returned 4; later journal query returned 1 after a successful stop. Both native driver runs returned 2 with incomplete capture and no loss violation. Four actual-input comparisons distinguished Incomplete, Failed and Passed. Original preservation and restoration verified; reused M47 / T1 follow-up. |
 
 ##### Closure Evidence
 
-- Not complete. The component remains Deferred; only T1 has reused evidence from the accepted M47 bounded case. T2-T3 remain unexecuted, the component plan remains draft, and no closure is claimed.
+- Not complete. The component remains Deferred under D28; T1-T3 now reuse the declared bounded M47 results. The new repeat and command-error evidence has not yet landed or been projected to #53. The full component plan remains draft; no unselected matrix or component closure is claimed.
 
 ##### GitHub Projection
 
@@ -8591,6 +8591,29 @@ The M47 / T1 case uses the existing SQLite assembly and its default pinned appli
 
 The case runs at most 900 seconds after readiness, inside the requested 120-minute guest-use window. Stop at sufficient evidence, a failed prerequisite or the bound without launching another observation. No deliberate live fault, persistence/interruption matrix, collection/deletion overlap, performance comparison, long-volume result or independent-recipient claim is selected. Those absent lifecycle stages and matrices remain outside this bounded claim; their pending component criteria are unchanged. Retain the actual case duration, record/member counts, source identities, command receipts, service effects and any missing evidence. Send the provider a finished notice when use ends and retain the guest disk and evidence.
 
+###### Selected bounded follow-up: repeated normal-stop request
+
+The 2026-11-06 execution authorization selects two sequential repetitions of the completed normal-stop command against the same copied result directory. Use the actual frozen `normal-stop.py run` driver from the completed case, SHA256 `e8ec2761e040c0c6fd1df16cf1bbb53c091f102c389a1568e39070cc7747f2f0`, its unchanged installed package and the complete retained transfer. This verifies that operational entry point's same-directory refusal; it does not introduce or claim a reusable normal-stop CLI in the journal package. M27 / T2 may reuse only the resulting bounded evidence.
+
+Verify the independent transfer manifest and every declared member, mode and hash before copying. Each isolated execution uses real copied inputs and unmodified imports, with no internal function replacement. The control-host Python version and tool identities are recorded separately from the original deployment. Run the actual package verifier before repetition. Keep the original evidence read-only to the child, isolate its network and service sockets, and allow writes only within the separate case copy and its receipts. No VM restart, producer schedule or appliance operation is selected.
+
+Each CLI invocation is limited to 30 seconds; the complete follow-up is limited to 600 seconds and 256 MiB of retained working data. Record actual command start/end times, native stdout, stderr and status, full process/file system-call traces and before/after evidence inventories. The expected native status is 2 with the existing-case refusal, no external command execution, and unchanged membership, modes and bytes for all copied inputs. An unavailable tracer or isolation boundary, an incomplete capture or a timeout is Incomplete; an unexpected command or evidence change is Failed. Stop on a failed original-path check without extending the case.
+
+Qualify the assertions using separate source copies: a wrong refusal status must fail the status assertion, a harmless real `systemctl --version` invocation must fail the external-command assertion, and an appended byte in the copied original result must fail preservation. These controls qualify the checks only. Record the mutated source hashes and exact expected failing assertions; retain original successful and unsuccessful evidence unchanged. Full-volume journal replay, new signal exposure, live command errors, interruption, concurrent terminal requests and new-output-directory behavior are outside this same-directory request check.
+
+Coverage safeguards use the complete retained input membership rather than a reconstructed fixture, native refusal outcomes rather than success markers, measured invocation durations, observed process execution, explicit hash/permission comparisons, verified frozen dependencies and the two declared repetitions. No fresh collection, final appliance capture or runtime fault is needed for a request that must refuse before those stages; their historical evidence remains separate. Evidence is retained under `work/m27-repeat-stop-20261106/`.
+
+###### Selected bounded follow-up: actual command errors
+
+The 2026-11-06 execution request selects two actual error boundaries in the same frozen normal-stop driver for reuse by M27 / T3. Reuse the original requester's retained dedicated Rocky Linux 8.10 / systemd 239 guest after provider capacity and identity verification. Preserve the original completed case and package; each attempt uses a new result directory and the unchanged 300-second real producer. Verify the installed package, driver hash, current-boot readiness and service identities before execution. Do not replace internal functions, command executables or producer outputs.
+
+1. Apply a temporary runtime `RefuseManualStop=yes` unit setting to the dedicated appliance. Run the unchanged driver through its producer, pre-stop query and actual `systemctl stop`. Require a native nonzero stop status, retained stdout/stderr and terminal facts, the appliance still active, one stop attempt, `capture_complete=false`, an unresolved error and no confirmed record-loss violation. Restore the runtime setting and verify its effective removal before another case.
+2. Run the unchanged driver in a private mount namespace. After its successful normal stop, immediate query and persisted required-record file, hide the persistent and volatile journal directories only in that namespace using empty bind mounts. The real later `journalctl` must report unsuccessful or incomplete access. Require the actual command receipt/error, preserved terminal facts and partial bytes, native driver status 2, `capture_complete=false`, an unresolved error and no confirmed loss. Require independent unhidden journal access and unchanged source/evidence after the namespace exits. Failure to reach the declared boundary or apply the fault is Incomplete, never a passing error-path check.
+
+Each live case has a 900-second bound after prerequisites; the guest-use window is at most 45 minutes after provider readiness, with at most 512 MiB of new retained test data. End after the two declared boundaries or the first unavailable prerequisite; do not extend automatically. Record start/end times, actual producer results, fault exposure, native command status, full relevant stdout/stderr, source hashes, before/after original inventories and restoration. A completed case must distinguish its expected unsuccessful native outcome from the verification verdict. Full-day replay, timeout/interruption matrices, storage exhaustion, new product acceptance and unrelated service changes are excluded.
+
+Use the retained actual-record comparison results as the confirmed-loss control, and execute the same frozen compare CLI with unavailable and malformed copies of actual captured input to establish Incomplete separately. Qualify any new assertion helper directly with these observed outcomes and a rejecting input; do not manufacture replacement lifecycle evidence. Preserve original normal-stop and repeat results. Evidence-volume, elapsed-time, source/installation, actual-fault and case-coverage checks apply to each case; long-volume, overlapping deletion and performance claims are inapplicable. Retain evidence under `work/m27-command-errors-20261106/` and send the provider a finished notice immediately after use, keeping the guest disk.
+
 ##### Scope
 
 All remaining component work is tracked directly in this issue. Source issue references identify preserved historical records; retiring those issues does not complete their checks or require their reopening. Every unmet criterion in the transferred contracts remains active here. Journal tooling remains independent of accepted ETL functionality.
@@ -8609,7 +8632,7 @@ These summaries preserve the recorded scope. Each linked issue retains its full 
 ###### #32 - Verify collector capture around normal appliance shutdown
 
 - Problem and evidence: The bounded normal-stop final capture and later live read Passed on 2026-11-06 UTC, independently of the accepted full-day journal result.
-- Remaining work: Reuse T1 evidence without another observation. M27 / T2 repeated terminal requests and T3 live error-boundary behavior remain unexecuted; no whole-component closure is claimed.
+- Remaining work: Land and project the bounded normal-stop, repeat-refusal and actual command-error evidence. M27 / T1-T3 have observed results in their declared scopes; no further live case is selected and no whole-component closure is claimed before publication.
 - Done when: All required identities/content match the later live query and final archive; overlap is explained, no second stop occurs and missing evidence is distinct from confirmed loss.
 
 ###### #33 - Reproduce journal results on an independent recipient
@@ -8620,7 +8643,7 @@ These summaries preserve the recorded scope. Each linked issue retains its full 
 
 ##### Existing Evidence
 
-The full-day journal result is accepted in #31. The bounded normal-stop/post-stop capture now Passed; independent-recipient full-day replay remains Incomplete because its required original inputs are unavailable. Neither missing input nor unexecuted component checks establish journal loss. Earlier corrected health-record matching and inventory-processing failures remain historical tool findings.
+The full-day journal result is accepted in #31. The bounded normal-stop/post-stop capture, same-directory repeat refusal and actual stop/query-error distinction Passed. Independent-recipient full-day replay remains Incomplete because its required original inputs are unavailable. Missing replay input and expected command errors establish no journal loss. Earlier corrected health-record matching and inventory-processing failures remain historical tool findings.
 
 ##### Out Of Scope
 
@@ -8666,8 +8689,8 @@ All criteria below remain active in the replacement issue. Source closure is adm
 ##### Implementation Plan
 
 - Plan Status: accepted
-- Plan Acceptance: 2026-10-24, D49; retained evidence first and necessary short real execution only.
-- Implementation Authorization: 2026-10-24; prepare completion accounting and scoped corrections/checks under D49. Before each necessary live case, record its actual target, missing claim, exposure, time/resource limits and stop condition; no blanket historical matrix is selected.
+- Plan Acceptance: 2026-10-24, D49; retained evidence first and necessary short real execution only. The bounded same-directory repetition and subsequent actual command-error follow-up were accepted on 2026-11-06.
+- Implementation Authorization: 2026-10-24; prepare completion accounting and scoped corrections/checks under D49. The 2026-11-06 requests authorize the declared repeated-request check on frozen actual evidence copies and the subsequent two bounded live command-error cases. Before each necessary live case, record its actual target, missing claim, exposure, time/resource limits and stop condition; no blanket historical matrix is selected.
 - Superseded Plan Artifacts: earlier representative-only issue projection under D32.
 
 1. Map remaining criteria to actual existing evidence and identify only the missing claims.
@@ -8679,7 +8702,7 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 | Label | Layer | Method | Environment | Expected Result |
 | --- | --- | --- | --- | --- |
-| T1 | Lifecycle | Run the real normal-stop collector and later live-query comparison specified by #32. | Separate dedicated deployment | Exact required-record equality; errors visible and no duplicate stop. |
+| T1 | Lifecycle | Run the real normal-stop collector and later live-query comparison specified by #32; repeat the frozen operational CLI twice against the same completed output directory; execute the two declared actual stop/query-error cases. | Dedicated deployment and retained guest; verified actual-evidence copies for repeat refusal and comparison | Exact required-record equality; repeat refusal without another command; actual command errors remain Incomplete rather than confirmed loss; originals and terminal facts preserved. |
 | T2 | Recipient replay | Run the exact frozen full-record CLI and private member verification specified by #33. | Independent recipient | Complete result and digest match; original inputs unchanged. |
 
 ##### Verification Results
@@ -8687,24 +8710,44 @@ All criteria below remain active in the replacement issue. Source closure is adm
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
 | T1 | 2026-11-06T03:52:42.447032+00:00 | Dedicated Rocky Linux 8.10 / systemd 239 SQLite appliance; separate copied offline inputs | Passed within the declared bounded case | Actual capture took 434.748 seconds within the 900-second limit; one stop returned 0 in 10.711 seconds. The later query began 60.001 seconds after stop completion. All 3504 required identities and full records matched both the later query and combined 3695-record archive. Native producer replay matched the original complete JSON exactly; three actual-record negative copies failed for their declared reasons. |
+| T1 | 2026-11-06T09:46:37.466963+00:00 | Control-host Python 3.13.5, strace 6.13 and bubblewrap 0.12.0; complete actual-evidence copies | Passed within the declared same-directory repeat follow-up | Both native CLI invocations returned 2 with the existing-case refusal before any external command. All 12 assertions Passed; complete membership, modes and bytes were unchanged. Three independent source mutations failed only their expected assertions. M27 / T2 reuses this scope. |
+| T1 | 2026-11-06T10:28:24.781806+00:00 and 2026-11-06T10:37:43.507599+00:00 | Retained dedicated Rocky Linux 8.10 / systemd 239 guest, Python 3.9.25 and strace 5.18; frozen original driver/package | Passed within the two declared actual command-error boundaries | Native stop refusal 4 and later-query failure 1 both produced driver status 2, incomplete capture and no loss violation. All 14 live assertions and four actual-input comparison cases matched their expected outcomes. Each 300-second producer completed 635 actions without skips; originals, command receipts and terminal facts were preserved. M27 / T3 reuses this scope. |
 | T2 | Input accounting on 2026-11-05; replay not run | Retained historical inventory | Incomplete: required original full-day inputs unavailable | The retention inventory excludes 5135 raw-stream/comparison-population files and two capture/transfer archives. No independent-recipient full-day replay or digest equality is claimed; this requires a scope decision and is not a journal-loss result. |
 
 The real 300-second producer schedule confirmed all 300 system, 300 retrieval, 30 kernel and five health actions, with 940 required source records. Delivery, later live read and native collection each Passed; the saved native result remains a short probe, with one-hour acceptance Incomplete and full-day acceptance Pending. The stop-boundary query supplied 53 actual appliance/systemd records. Three collector intervals contained 3563, 62 and 72 records; exactly the two identical adjacent checkpoint records overlapped, producing 3695 unique archived records. The required 3504-record population includes the independent pre-stop query and stop-boundary records, not a nominal-rate estimate.
 
-The missing-record, changed-content and duplicate-identity controls each used one actual captured record on a separate copy. Each real comparison process exited 1 and reported exactly its declared category and identity; both unmodified comparisons and the frozen native producer replay exited 0. These controls establish comparator behavior, not the unexecuted live command-error/interruption matrix. M27 / T2-T3 remain Pending. The transient worker's actual journal records its successful completion; later default properties of its unloaded unit are not used as exit evidence.
+The missing-record, changed-content and duplicate-identity controls each used one actual captured record on a separate copy. Each real comparison process exited 1 and reported exactly its declared category and identity; both unmodified comparisons and the frozen native producer replay exited 0. These controls establish comparator behavior, not live command-error or interruption behavior. M27 / T2-T3 use the separate repeat-refusal and actual command-error results below. The transient worker's actual journal records its successful completion; later default properties of its unloaded unit are not used as exit evidence.
 
 Private evidence: `work/m47-normal-stop-20261105/evidence` and `work/m47-normal-stop-20261105/offline-001`. The transferred snapshot contains 3087 files and 39447758 bytes, with complete membership, mode and SHA256 verification before evaluation and unchanged originals afterward. Independent transfer manifest SHA256: `c2e6c166e0bbfa49ec5b5cf63f47580dd2d552de997791bfcf894d1026d2e783`; archive SHA256: `97d0bb4a78067d0f26baeee885c5bcaa000542cd927fa305fac978c4ca98e5d5`; runtime driver SHA256: `e8ec2761e040c0c6fd1df16cf1bbb53c091f102c389a1568e39070cc7747f2f0`. Shipped sources and historical results were not changed. The provider confirmed graceful shutdown at 2026-11-06T03:55:16.508575+00:00, within the use deadline. A subsequent read-only provisioner status reported shut off; definition, disk, seed, reservation, creation record and evidence remain retained.
 
+The repeated-request follow-up verified all 3087 manifest-declared payload files plus the independent manifest itself: 3088 copied files and 40233800 bytes per input copy. The actual frozen package verifier exited 0. The unmodified driver refused both sequential requests at the existing output-directory boundary, with native status 2 in 0.115024 and 0.114580 seconds. Full process traces show only the initial Python execution and the directory creation returning EEXIST; neither call executed an external command. All copied input membership, modes and hashes and the complete source inventory remained unchanged.
+
+The complete follow-up took 2.503652 seconds against its 600-second limit. Retained data including the final result was 170585665 bytes against 268435456 bytes. All 12 positive assertions Passed. Separate source mutations produced exactly the expected failures: status 0 failed `refusal_status`; the harmless real `systemctl --version` call failed `no_external_commands`; an appended byte in the copied result failed `input_preservation`. Direct evaluation of the retained wrong-status execution by the actual assertion helper also returned Failed only for `refusal_status`. These qualification failures establish the checks, not live command-error handling or a product failure.
+
+Private repeat evidence: `work/m27-repeat-stop-20261106/run-002/`, including native receipts, complete traces, before/after inventories, mutation contract and results. Final `result.json` SHA256: `19d8b96fc119353efc1595809d9629a3fa4cda83d610e5e3f72c596a02f43cbf`; verification harness SHA256: `14ec92cb20ad5469b764e43654404b005dcd0f4e5f2eb907e7ee8e51b8f2d082`. The original driver, package and independent transfer hashes above were verified before execution. This is the frozen operational driver's same-directory refusal on actual completed evidence, not a shipped reusable normal-stop CLI or a concurrent, interrupted, new-directory or live-error result. No appliance operation or new recording was performed.
+
+The actual command-error cases used the unchanged driver and installed package after native readiness passed, including the actual 903-PV fixture. Each real 300-second producer completed 300 system, 300 retrieval, 30 kernel and five health actions with no skips and Passed delivery, later read and collection. In the stop-refusal case, the actual systemd unit rejected manual stop with status 4 and remained active. The driver retained the command's stderr and terminal facts, reported incomplete capture with an unresolved error and no violation, and returned 2 after 364.957875 seconds. The temporary runtime setting was removed and its effective value verified as `no`.
+
+In the later-query case, the actual appliance stopped successfully before the immediate query and required-record file were persisted. The private namespace then hid the persistent journal directory; no volatile journal files were present. The real later `journalctl` returned 1 with unavailable-boot diagnostics and empty stdout, all retained in its native receipt. The driver returned 2 after 436.459832 seconds, with incomplete capture and no loss violation. Namespace mounts disappeared on exit and a separate unhidden journal query succeeded. Process traces independently show exactly one `systemctl stop` execution in each case. Both cases stayed within 900 seconds; originals and earlier case records remained unchanged.
+
+Four executions of the same frozen compare CLI used actual retained records: an unavailable file and a truncated actual-record copy each returned Incomplete/status 2; complete input returned Passed/status 0; the retained missing-record control returned Failed/status 1. The assertion helper also rejected the retained successful normal-stop facts as an error-case result. The 14 live assertions and these four comparison outcomes establish only the selected boundaries, not timeout/interruption, storage-exhaustion or full-day behavior.
+
+Harness diagnostic: the first wrapper exited 1 during cross-filesystem restoration after the native driver had already returned 2. Separate restoration and evaluation verified the effective setting, original preservation and all seven native-case assertions without repeating the live run. The initial harness is retained with SHA256 `b360f8866c1497b0d6473ecfb2da719528d6723b5e69751bb31bf4ae181eb86f`; the second case used `fa2a933193a77366176e517c7c9448570bf919593dc39a20d761276fbc25d66d`, with cross-filesystem move handling and the first case included in its preservation inventory. The wrapper diagnostic remains distinct from the native target outcomes.
+
+Private command-error evidence: `work/m27-command-errors-20261106/evidence/` and `work/m27-command-errors-20261106/result.json`. All 7483 transferred payload files, totaling 56003255 bytes, matched complete membership, modes and SHA256; this is below the 512 MiB data bound. Independent transfer manifest SHA256: `28eb12aacdb92233b2924ba33788831e065e06b7ac368e2fe3d88edd71ccc8c5`; archive SHA256: `93672c56377bb2b4232e1f631bc763025066fe320d991508f540d197b167b072`; local result SHA256: `d4504cfbef14eddb261a53a89798dbf35aa4dc7ead9c48fec4aa58984b124157`. Frozen driver and package identities remain those recorded above. This transfer preserves the new bounded cases only; it does not restore the missing original full-day replay inputs.
+
+The provider confirmed graceful shutdown after the command-error cases at 2026-11-06T10:41:55.272494+00:00, before the 11:04:48 UTC use deadline. A subsequent read-only provisioner status independently reported `shut off`. The definition, disk, seed, reservation, creation record and evidence remain retained; the provider's shutdown record verifies unchanged evidence hashes and modes.
+
 ##### Closure Evidence
 
-- Bounded T1 evidence is recorded in b8d70e8 on origin/master. Publication to #53 was verified at 2026-11-06T08:53:45Z: the full body matches the retained publication file, with five checked boxes and eight unchecked; open state, title, labels, milestone and assignee match the canonical record. M47 remains In progress with M27 / T2-T3 and full-day recipient replay unresolved.
+- Bounded normal-stop evidence is recorded in b8d70e8 on origin/master. Its publication to #53 was verified at 2026-11-06T08:53:45Z with five checked boxes and eight unchecked. The same-directory repeat and two actual command-error follow-ups Passed and are recorded locally; they have not been committed or published to #53. M27 / T1-T3 have bounded evidence, while M47 remains In progress with publication and full-day recipient replay unresolved.
 - D49 publication reconciled at 2026-11-04T02:54:17Z: the applied #53 body matched the retained publication file and the source/plan commits were on origin/master. At that checkpoint the group was Not started; this historical publication result establishes no later verification.
 - D49 approach accepted on 2026-10-24; group execution was Not started at that checkpoint. Earlier dated Deferred statements below describe their recorded checkpoints. The accepted approach is not a verification result; no new criterion is completed merely by this plan update.
 - Tool work is not complete. GitHub tracking consolidation completed under D33 at 2026-10-17T01:14:10.675787+00:00: replacement #53 is open and all its source issues are closed not_planned with exact body/comment readback. Original criteria and unsuccessful evidence remain active; source closure establishes no tool verification.
 
 ##### GitHub Projection
 
-- Projection Difference: None for the bounded normal-stop result and missing full-day replay input; the published body exactly matches the prepared file. Five criteria are checked, eight remain unchecked, and #53 remains open.
+- Projection Difference: The canonical same-directory repeat-refusal and actual command-error results are not yet in #53. Its live body still matches the earlier normal-stop publication file; five criteria remain checked, eight unchecked, and the issue remains open. The next body update must preserve all 13 criteria and the unresolved original full-day replay input.
 - Title: `Track journal test tooling`
 - Labels: `enhancement`
 - GitHub Milestone: `Backlog`
@@ -8716,9 +8759,9 @@ Private evidence: `work/m47-normal-stop-20261105/evidence` and `work/m47-normal-
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
 - Observed Updated At: 2026-11-06T08:43:21Z
-- Last Compared: 2026-11-06T08:53:45Z; full-body byte equality with the prepared file and open state, title, labels, milestone and assignee verified using `gh api repos/jeonghanlee/ansible-provision/issues/53`. Checked boxes: 5; unchecked: 8.
-- Prepared Body: `work/issue-journal-stop-body.md`
-- Prepared Body SHA256: 1109629b11ad887c04f90c9520b4cc1c5d3e5a6d3e984d22baa8cdcb4fbe51a9
+- Last Compared: 2026-11-06T10:40:29Z; full-body byte equality with `work/issue-journal-stop-body.md` and open state, title, labels, milestone and assignee verified using `gh api repos/jeonghanlee/ansible-provision/issues/53`. Checked boxes: 5; unchecked: 8. The repeat-refusal and command-error results remain unpublished.
+- Prepared Body: `work/issue-journal-errors-body.md`
+- Prepared Body SHA256: 32261fdbb422aa734a3a40a6dcc65deb889bdee8f9071c53fca3b985901994a8
 - Published Body SHA256: 1109629b11ad887c04f90c9520b4cc1c5d3e5a6d3e984d22baa8cdcb4fbe51a9
 - Historical Source Issues: #32, #33
 
