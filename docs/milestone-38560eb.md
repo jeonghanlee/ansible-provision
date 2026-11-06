@@ -31,7 +31,7 @@ Canonical branch or ref: `master`
 Git upstream: `origin/master`
 Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: M14 and M26 remain Blocked on G2 and G5 respectively; confirm those external conditions before resuming either installation. For the independent tool Backlog, resume M47-M50 only when requested, starting with retained evidence mapped to each remaining criterion under D49. Run only a necessary short real case for a missing behavior, with its claim, exposure, time/resource bounds and stop condition declared before execution. Do not repeat completed long observations or launch the historical broad matrix by default. M35 is Complete within D48/D49: source 42e9360 and plan record 230307e are on origin/master, and the applied #53-#56 bodies match the retained publication files. The four group plans remain accepted and Not started; no new test execution is claimed.
+Next session entry point: M47 / T1 passed the bounded normal-stop case on 2026-11-06 UTC; preserve its frozen evidence and do not repeat the observation. M27 / T2-T3 remain unexecuted. M47 / T2 needs a scope decision because the retained inventory excludes the original full-day raw inputs required for independent-recipient replay; the short case cannot replace them. The local result is not yet projected to #53. M48-M50 remain Not started. Continue retained-evidence accounting under D49 without a new long observation or the historical broad matrix. M14 and M26 remain Blocked on G2 and G5 respectively; confirm those external conditions before resuming either installation. M35 remains Complete within D48/D49; no new product acceptance is claimed.
 
 Retained results and available inputs are indexed by `work/retained-test-results-20261026/README.md`. Its 2026-10-26 retention policy supersedes historical original-path instructions below: retired raw observations are not complete local replay inputs, and historical hashes do not establish current availability. Check the retained archives and inventories before planning a replay.
 
@@ -394,7 +394,7 @@ full mode carries every OS tree, second apply `failed=0`). Delivered in
 
 </details>
 
-Status tally: 25 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 6 external gates (4 Complete, 2 Open). Backlog excluded: 5 Complete, 0 In progress, 4 Not started and 15 Deferred carry-forward items, plus 2 Complete external gates. M51 is Complete after T1-T7 Passed and verified repository landing at 82ef88a; closure recorded on 2026-10-23 UTC. M35 is Complete within D48/D49 after source publication and scoped issue reconciliation. The four group plans are ready for D49 evidence accounting when their execution is resumed.
+Status tally: 25 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 6 external gates (4 Complete, 2 Open). Backlog excluded: 5 Complete, 1 In progress, 3 Not started and 15 Deferred carry-forward items, plus 2 Complete external gates. M51 is Complete after T1-T7 Passed and verified repository landing at 82ef88a; closure recorded on 2026-10-23 UTC. M35 is Complete within D48/D49 after source publication and scoped issue reconciliation. M47 / T1 Passed within its bounded case; M47 remains In progress with component T2-T3 and full-day recipient input unresolved. M48-M50 remain ready for later evidence accounting.
 
 ## Milestone
 
@@ -6023,7 +6023,7 @@ The VM provider supplies M51's fresh dedicated Rocky 8.10 guest through its norm
 | Tools | M44 | Compare ETL busy time and workload with retained earlier results | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m44---compare-etl-busy-time-and-workload-with-retained-earlier-results) |
 | Tools | M45 | Reproduce completed ETL observation reports on an independent recipient | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m45---reproduce-completed-etl-observation-reports-on-an-independent-recipient) |
 | Tools | M46 | Report actual test phase durations against the agreed allocations | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m46---report-actual-test-phase-durations-against-the-agreed-allocations) |
-| Tools | M47 | Track journal test tooling | Carry-forward | Not started | Yes | D32, D33, D49 | Retained evidence first; only necessary bounded real cases, then source/issue reconciliation under D49; [detail](#m47---track-journal-test-tooling) |
+| Tools | M47 | Track journal test tooling | Carry-forward | In progress | No | D32, D33, D49 | Bounded normal-stop T1 Passed; component T2-T3 and full-day recipient input remain unresolved under D49; [detail](#m47---track-journal-test-tooling) |
 | Tools | M48 | Track ETL test tooling | Carry-forward | Not started | Yes | D32, D33, D49 | Retained evidence first; only necessary bounded real cases, then source/issue reconciliation under D49; [detail](#m48---track-etl-test-tooling) |
 | Tools | M49 | Track buffer test tooling | Carry-forward | Not started | Yes | D32, D33, D49 | Retained evidence first; only necessary bounded real cases, then source/issue reconciliation under D49; [detail](#m49---track-buffer-test-tooling) |
 | Tools | M50 | Track shared test tooling | Carry-forward | Not started | Yes | D32, D33, D34, D35, D36, D49 | Retained evidence first; only necessary bounded real cases, then source/issue reconciliation under D49; [detail](#m50---track-shared-test-tooling) |
@@ -6044,7 +6044,7 @@ Status: Deferred
 
 ##### Summary
 
-Normal-stop final capture and the later post-stop direct read have not been demonstrated by the positive journal observation. Verify the collector lifecycle boundary independently of the completed 24-hour recording, live-retention and archive-equality result in #31.
+The bounded M47 / T1 case establishes normal-stop final capture and the later post-stop direct read independently of the completed 24-hour journal observation in #31. Reuse that evidence here; repeated terminal requests and live error-boundary behavior remain unexecuted.
 
 ##### Scope
 
@@ -6056,15 +6056,16 @@ Another positive 24-hour observation; ETL acceptance or changes to ETL deploymen
 
 ##### Completion Criteria
 
-- [ ] Declare the real source actions, expected messages, normal-stop boundary and later direct-read condition before execution; retain actual service/process identities and command outcomes.
-- [ ] Run a short independent case through the real appliance, journald and shipped collector. Confirm required records before and around the actual stop; do not replace the logging path with synthetic success markers.
-- [ ] Compare every declared required identity and full content with the later successful direct journal query and combined final archive. Explain overlap explicitly and report missing, changed or repeated identities.
-- [ ] Dispatch the normal stop once, retain the final collector outcome and report delivery, later visibility and terminal collection separately. Missing evidence is Incomplete and confirmed loss remains Failed.
-- [ ] Preserve the completed #31 originals and unsuccessful attempts. No new 24-hour recording is a prerequisite for this lifecycle case.
+- [x] Declare the real source actions, expected messages, normal-stop boundary and later direct-read condition before execution; retain actual service/process identities and command outcomes.
+- [x] Run a short independent case through the real appliance, journald and shipped collector. Confirm required records before and around the actual stop; do not replace the logging path with synthetic success markers.
+- [x] Compare every declared required identity and full content with the later successful direct journal query and combined final archive. Explain overlap explicitly and report missing, changed or repeated identities.
+- [x] Dispatch the normal stop once, retain the final collector outcome and report delivery, later visibility and terminal collection separately. Missing evidence is Incomplete and confirmed loss remains Failed.
+- [x] Preserve the completed #31 originals and unsuccessful attempts. No new 24-hour recording is a prerequisite for this lifecycle case.
 
 ##### Dependencies And Decisions
 
-- D28; Decision Date: 2026-10-15. The owner directed separate Backlog work for later execution. It is not a gate on M25 or M22; implementation is not authorized.
+- D28; Decision Date: 2026-10-15. The owner directed separate Backlog work for later execution. It is not a gate on M25 or M22; the full component plan remains unaccepted and unauthorized.
+- D49 permits reuse of the bounded M47 / T1 evidence obtained on 2026-11-06 UTC. This does not activate the draft component plan or establish T2-T3.
 
 ##### Implementation Plan
 
@@ -6089,13 +6090,13 @@ Another positive 24-hour observation; ETL acceptance or changes to ETL deploymen
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
-| T1 | Not run | Separate future verification | Pending | Normal stop and later capture is unexecuted; completed journal measurements do not prove this check. |
+| T1 | 2026-11-06T03:52:42.447032+00:00 | Dedicated Rocky Linux 8.10 SQLite appliance; copied offline evidence | Passed within the bounded normal-stop case | Reused M47 / T1: one actual stop, 60.001-second later read, all 3504 required identities/content preserved and native final coverage complete. See M47 for exact evidence hashes and scope. |
 | T2 | Not run | Separate future verification | Pending | Repeated terminal request is unexecuted; completed journal measurements do not prove this check. |
 | T3 | Not run | Separate future verification | Pending | Failure distinction is unexecuted; completed journal measurements do not prove this check. |
 
 ##### Closure Evidence
 
-- Not complete. Deferred by explicit dated owner decision, with no execution or Passed claim.
+- Not complete. The component remains Deferred; only T1 has reused evidence from the accepted M47 bounded case. T2-T3 remain unexecuted, the component plan remains draft, and no closure is claimed.
 
 ##### GitHub Projection
 
@@ -6130,7 +6131,7 @@ Status: Deferred
 
 ##### Summary
 
-The complete corrected 24-hour journal result was reproduced exactly by a separate frozen CLI process on the recording deployment. Reproduction on an independent recipient has not yet been executed. Verify evidence portability and replay reproducibility separately from the Passed journal recording, retention and collection measurements in #31.
+The complete corrected 24-hour journal result was reproduced exactly by a separate frozen CLI process on the recording deployment. Reproduction on an independent recipient has not yet been executed. M47's 2026-11-05 input accounting found that the retention inventory excludes required full-day raw streams and transfer archives; resolve that missing input before claiming transfer or replay. The new bounded normal-stop evidence cannot replace the original observation. Journal recording, retention and collection acceptance in #31 remains unchanged.
 
 ##### Scope
 
@@ -8553,7 +8554,7 @@ Out of scope: New runtime tests, ETL or journal functionality reacceptance, and 
 Origin: 38560eb / M47
 Identity History: created as a test-type coordination entry on 2026-10-16 (D32); no existing identity is replaced.
 GitHub Issue: #53, https://github.com/jeonghanlee/ansible-provision/issues/53
-Status: Not started
+Status: In progress
 
 ##### Summary
 
@@ -8573,6 +8574,23 @@ Close a component after its required claims have actual evidence, its relevant s
 - Necessary short execution: Use one bounded normal-stop case only if retained evidence does not establish final collection and the later direct journal read. Compare required record identities and full content; retain the stop outcome.
 - Done when: Normal-stop collection and independent-recipient replay have their declared evidence, originals are unchanged, and the issue records the actual result of each criterion.
 
+Preparation resumed on 2026-11-05 after authorization to identify the missing short case and request its VM. The selected resource request is one fresh Rocky Linux 8.10 base with actual systemd 239, 2 vCPU, 4096 MiB RAM and 48 GiB disk, for at most 120 minutes after provider readiness. The normal-stop case is bounded to 900 seconds after its own prerequisites pass. Requester preparation, a complete case declaration and actual provider readiness precede live execution. No component verification or child-plan acceptance follows merely from this resource request.
+
+The retained `journal-basic-20261013.inventory.jsonl.gz` lists 5135 raw-stream/comparison-population files and two capture/transfer archives excluded by the 2026-10-26 policy. Retained historical results do not supply the complete original input required by recipient replay. Keep that missing input explicit; do not generate a substitute observation or start a new full-day producer. The shipped positive CLIs do not stop the appliance, and `failure.py` owns a collector-failure case; neither is an executed normal-stop result.
+
+Operational request: `work/m47-normal-stop-vm-request-20261105.txt`. The shipped `prepare.py build` and `prepare.py verify` both exited 0; the preserved package is `work/m47-normal-stop-20261105/evidence/opt/journal-validation`. Its manifest SHA256 is `f23837db991057bdfea299ee16cbb17faac790e0336716a84ad225e5167261e9`, covering 25 members and the unchanged 903-PV fixture. Package preparation is separate from the bounded T1 result below. Independent-recipient full-day replay and the unselected component lifecycle checks remain unexecuted.
+
+###### Selected bounded case: normal stop and later collection
+
+The M47 / T1 case uses the existing SQLite assembly and its default pinned appliance sources on the fresh dedicated guest, with loopback CA discovery. The installed independent journal package supplies its actual preflight, 903-PV fixture, four source schedules, collector and record identity rules. The run does not replace any internal path or change shipped sources.
+
+1. Require the real installed preflight and package verification. Run `basic.py run-basic --seconds 300`, retaining its native stdout, stderr, exit status and all evidence. System and retrieval actions occur every second, kernel actions every ten seconds and health actions every minute; actual producer receipts, not nominal rates, identify required records. This reduced duration cannot establish one-hour or full-day acceptance.
+2. Require successful delivery, later live read and collection for that short producer interval. Preserve its complete original result and artifact index. Capture the active appliance identity and a successful direct query immediately before one normal `systemctl stop` of that service. Persist the stop command outcome and inactive service identity before evaluation; no retry or second stop is selected.
+3. Retain actual service/systemd records observed around that stop. At least 60 measured seconds after successful stop completion, run the later native journal query from the same original cursor and boot. Then call the unchanged shipped collector with the last real checkpoint, retaining its complete native output and proof. Compare every required pre-stop and stop-boundary identity and full record content with the later direct query and combined actual archive. Only identical query overlap and the declared adjacent collector checkpoint are allowed.
+4. Report delivery, later visibility, final collection and the normal stop separately. Confirmed missing/changed records after successful complete reads are Failed; unavailable required queries, invalid prerequisites, timeouts or incomplete capture are Incomplete. Freeze source and evidence hashes before separate-copy comparison and verify originals unchanged afterward. Exercise the comparison on actual-record copies with a removed record, changed content and duplicate identity; these controls qualify the comparison only, not product behavior.
+
+The case runs at most 900 seconds after readiness, inside the requested 120-minute guest-use window. Stop at sufficient evidence, a failed prerequisite or the bound without launching another observation. No deliberate live fault, persistence/interruption matrix, collection/deletion overlap, performance comparison, long-volume result or independent-recipient claim is selected. Those absent lifecycle stages and matrices remain outside this bounded claim; their pending component criteria are unchanged. Retain the actual case duration, record/member counts, source identities, command receipts, service effects and any missing evidence. Send the provider a finished notice when use ends and retain the guest disk and evidence.
+
 ##### Scope
 
 All remaining component work is tracked directly in this issue. Source issue references identify preserved historical records; retiring those issues does not complete their checks or require their reopening. Every unmet criterion in the transferred contracts remains active here. Journal tooling remains independent of accepted ETL functionality.
@@ -8590,19 +8608,19 @@ These summaries preserve the recorded scope. Each linked issue retains its full 
 
 ###### #32 - Verify collector capture around normal appliance shutdown
 
-- Problem and evidence: Normal-stop final capture and the later live journal read are unexecuted collector checks.
-- Remaining work: Declare source actions and stop/read boundaries; run the shipped collector around one real normal stop.
+- Problem and evidence: The bounded normal-stop final capture and later live read Passed on 2026-11-06 UTC, independently of the accepted full-day journal result.
+- Remaining work: Reuse T1 evidence without another observation. M27 / T2 repeated terminal requests and T3 live error-boundary behavior remain unexecuted; no whole-component closure is claimed.
 - Done when: All required identities/content match the later live query and final archive; overlap is explained, no second stop occurs and missing evidence is distinct from confirmed loss.
 
 ###### #33 - Reproduce journal results on an independent recipient
 
 - Problem and evidence: Full-day replay matched on the recording deployment; independent-recipient replay is unexecuted.
-- Remaining work: Privately transfer actual evidence and frozen tools, verify every declared member/hash and execute the frozen replay CLI on another recipient.
+- Remaining work: Resolve the unavailable original full-day replay inputs identified by the retained inventory before a transfer or replay can establish this claim. Historical summaries and the new short observation cannot substitute for those inputs.
 - Done when: Complete JSON, per-path verdicts and comparison digest match exactly; original successful and unsuccessful records remain unchanged.
 
 ##### Existing Evidence
 
-The full-day journal result is accepted in #31. Normal-stop/post-stop capture and independent-recipient replay remain unexecuted checks, not demonstrated journal loss. Earlier corrected health-record matching and inventory-processing failures remain historical tool findings.
+The full-day journal result is accepted in #31. The bounded normal-stop/post-stop capture now Passed; independent-recipient full-day replay remains Incomplete because its required original inputs are unavailable. Neither missing input nor unexecuted component checks establish journal loss. Earlier corrected health-record matching and inventory-processing failures remain historical tool findings.
 
 ##### Out Of Scope
 
@@ -8620,11 +8638,11 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 ###### Source #32 - Verify collector capture around normal appliance shutdown
 
-- [ ] Declare the real source actions, expected messages, normal-stop boundary and later direct-read condition before execution; retain actual service/process identities and command outcomes.
-- [ ] Run a short independent case through the real appliance, journald and shipped collector. Confirm required records before and around the actual stop; do not replace the logging path with synthetic success markers.
-- [ ] Compare every declared required identity and full content with the later successful direct journal query and combined final archive. Explain overlap explicitly and report missing, changed or repeated identities.
-- [ ] Dispatch the normal stop once, retain the final collector outcome and report delivery, later visibility and terminal collection separately. Missing evidence is Incomplete and confirmed loss remains Failed.
-- [ ] Preserve the completed #31 originals and unsuccessful attempts. No new 24-hour recording is a prerequisite for this lifecycle case.
+- [x] Declare the real source actions, expected messages, normal-stop boundary and later direct-read condition before execution; retain actual service/process identities and command outcomes.
+- [x] Run a short independent case through the real appliance, journald and shipped collector. Confirm required records before and around the actual stop; do not replace the logging path with synthetic success markers.
+- [x] Compare every declared required identity and full content with the later successful direct journal query and combined final archive. Explain overlap explicitly and report missing, changed or repeated identities.
+- [x] Dispatch the normal stop once, retain the final collector outcome and report delivery, later visibility and terminal collection separately. Missing evidence is Incomplete and confirmed loss remains Failed.
+- [x] Preserve the completed #31 originals and unsuccessful attempts. No new 24-hour recording is a prerequisite for this lifecycle case.
 
 
 
@@ -8640,7 +8658,7 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 ##### Dependencies And Decisions
 
-- D49; Decision Date: 2026-10-24. The bounded completion approach is accepted. This supersedes blanket group deferral for preparation and evidence accounting, not component results or scope. Component details retain their identities; select only missing claims after accounting for reusable evidence. No new trial has run.
+- D49; Decision Date: 2026-10-24. The bounded completion approach is accepted. This supersedes blanket group deferral for preparation and evidence accounting, not component results or scope. Component details retain their identities; select only missing claims after accounting for reusable evidence. The bounded normal-stop case ran under the 2026-11-05 authorization; its results do not extend to the unselected component checks.
 - D33; Decision Date: 2026-10-16. Consolidate GitHub tracking into four issues; copy every original contract and retire twenty source issues with reason not planned. This supersedes D32's plan to keep those twenty GitHub issues open. Independent canonical component work and future tool execution remain Deferred.
 - Primary links are coordination relationships, not a new sequential execution dependency. Each existing issue retains its original criteria, source identities and evidence; no original result is rewritten.
 - Accepted M22/#30 ETL and M25/#31 journal results remain complete. The completed buffer acceptance in jeonghanlee/epicsarchiverap-maven#29 remains separate.
@@ -8668,18 +8686,25 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
-| T1 | Not run | Separate dedicated deployment | Pending | Future scoped verification is not established by grouping or by a historical result outside this check. |
-| T2 | Not run | Independent recipient | Pending | Future scoped verification is not established by grouping or by a historical result outside this check. |
+| T1 | 2026-11-06T03:52:42.447032+00:00 | Dedicated Rocky Linux 8.10 / systemd 239 SQLite appliance; separate copied offline inputs | Passed within the declared bounded case | Actual capture took 434.748 seconds within the 900-second limit; one stop returned 0 in 10.711 seconds. The later query began 60.001 seconds after stop completion. All 3504 required identities and full records matched both the later query and combined 3695-record archive. Native producer replay matched the original complete JSON exactly; three actual-record negative copies failed for their declared reasons. |
+| T2 | Input accounting on 2026-11-05; replay not run | Retained historical inventory | Incomplete: required original full-day inputs unavailable | The retention inventory excludes 5135 raw-stream/comparison-population files and two capture/transfer archives. No independent-recipient full-day replay or digest equality is claimed; this requires a scope decision and is not a journal-loss result. |
+
+The real 300-second producer schedule confirmed all 300 system, 300 retrieval, 30 kernel and five health actions, with 940 required source records. Delivery, later live read and native collection each Passed; the saved native result remains a short probe, with one-hour acceptance Incomplete and full-day acceptance Pending. The stop-boundary query supplied 53 actual appliance/systemd records. Three collector intervals contained 3563, 62 and 72 records; exactly the two identical adjacent checkpoint records overlapped, producing 3695 unique archived records. The required 3504-record population includes the independent pre-stop query and stop-boundary records, not a nominal-rate estimate.
+
+The missing-record, changed-content and duplicate-identity controls each used one actual captured record on a separate copy. Each real comparison process exited 1 and reported exactly its declared category and identity; both unmodified comparisons and the frozen native producer replay exited 0. These controls establish comparator behavior, not the unexecuted live command-error/interruption matrix. M27 / T2-T3 remain Pending. The transient worker's actual journal records its successful completion; later default properties of its unloaded unit are not used as exit evidence.
+
+Private evidence: `work/m47-normal-stop-20261105/evidence` and `work/m47-normal-stop-20261105/offline-001`. The transferred snapshot contains 3087 files and 39447758 bytes, with complete membership, mode and SHA256 verification before evaluation and unchanged originals afterward. Independent transfer manifest SHA256: `c2e6c166e0bbfa49ec5b5cf63f47580dd2d552de997791bfcf894d1026d2e783`; archive SHA256: `97d0bb4a78067d0f26baeee885c5bcaa000542cd927fa305fac978c4ca98e5d5`; runtime driver SHA256: `e8ec2761e040c0c6fd1df16cf1bbb53c091f102c389a1568e39070cc7747f2f0`. Shipped sources and historical results were not changed. The provider confirmed graceful shutdown at 2026-11-06T03:55:16.508575+00:00, within the use deadline. A subsequent read-only provisioner status reported shut off; definition, disk, seed, reservation, creation record and evidence remain retained.
 
 ##### Closure Evidence
 
-- D49 publication reconciled at 2026-11-04T02:54:17Z: the applied #53 body matches the retained publication file and the source/plan commits are on origin/master. This records publication only; the group remains Not started with its remaining criteria open.
-- D49 approach accepted on 2026-10-24; group execution is Not started. Earlier dated Deferred statements below describe their recorded checkpoints. The accepted approach is not a verification result; no new criterion is completed merely by this plan update.
+- Bounded T1 evidence recorded on 2026-11-06 UTC; M47 remains In progress with component T2-T3 and full-day recipient replay unresolved. At that recording checkpoint, the evidence update had no repository landing or #53 publication confirmation.
+- D49 publication reconciled at 2026-11-04T02:54:17Z: the applied #53 body matched the retained publication file and the source/plan commits were on origin/master. At that checkpoint the group was Not started; this historical publication result establishes no later verification.
+- D49 approach accepted on 2026-10-24; group execution was Not started at that checkpoint. Earlier dated Deferred statements below describe their recorded checkpoints. The accepted approach is not a verification result; no new criterion is completed merely by this plan update.
 - Tool work is not complete. GitHub tracking consolidation completed under D33 at 2026-10-17T01:14:10.675787+00:00: replacement #53 is open and all its source issues are closed not_planned with exact body/comment readback. Original criteria and unsuccessful evidence remain active; source closure establishes no tool verification.
 
 ##### GitHub Projection
 
-- Projection Difference: None for the D49 completion approach; the applied body exactly matches the retained publication file. Remaining verification criteria stay open.
+- Projection Difference: Local bounded T1 results and the missing full-day replay input are not yet published to #53. The recorded 2026-11-04 comparison applies only to the earlier D49 completion approach; no current remote equality or issue closure is claimed.
 - Title: `Track journal test tooling`
 - Labels: `enhancement`
 - GitHub Milestone: `Backlog`
