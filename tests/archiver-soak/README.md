@@ -39,6 +39,7 @@ verification results are in [the work register](../../docs/milestone-38560eb.md)
 | `etl-scenarios/` | Preserved preparation, module challenge, actual source-fault and replay payloads with explicit private configuration |
 | `etl-pass/test_contract.py` | Contract, bundle, fixture-preservation and retained-export replay checks |
 | `etl-pass/test-kernel-query.py` | Actual local journal queries and collector CLI checks for failed-query receipts |
+| `etl-pass/test-pass-wait.py` | Retained native pass checks through the actual observer wait and local collector |
 | `etl-pass/test-terminal.py` | Explicit-path lifecycle CLI receipts and complete retained terminal replay; separate replay assertions from live acceptance |
 | `etl-pass/focused.py`, `PBFixture.java`, `test_focused.py` | Installed configuration inventory, real writer/decoder, automatic two-hop physical/HTTP checks and subsequent regular-pass evidence |
 | `etl-pass/replace-bundle.py` | Replace an installed bundle by a frozen bundle while carrying every other file and keeping a preserved sibling and rollback; not a bundle member |
@@ -580,6 +581,26 @@ invocation to finish successfully. Final journal-only collection also requires
 every started health invocation to have its completion record.
 Final collection errors and skipped JFR captures remain visible in the terminal
 record. An aborted observation cannot later receive a normal finish.
+
+Pass waiting checks the actual journal-only sample before interpreting a nonzero
+collector status. A status of 1 can continue to pass inspection when the fresh
+sample matches the command's output, application capture succeeded, and every
+recorded error is outside `evaluate.scheduler_checks(manifest)`. Diagnostic
+errors and the native status remain recorded. Required collection errors,
+missing or stale sample evidence, and an unmet pass deadline still refuse
+completion; the observation's recorded abort checks remain decisive.
+
+`test-pass-wait.py --input <retained-state> --output <new-private-directory>`
+runs the actual wait function and collector subprocess on a control host without
+appliance JVMs. The input must contain genuine current-schema `observation.json`
+and `passes.jsonl` files with an actual regular scheduled pass. The test preserves
+their bytes and declares a separate one-second interval at that firing; it does
+not rewrite or replay the whole original observation. Native local journal
+refusals and real filesystem failures exercise diagnostic isolation, missing
+passes, required collection failure, recorded abort checks, and absent, stale
+or malformed sample output. `--tools` selects an independently identified source
+bundle for original/candidate comparison. These checks do not establish actual
+appliance normal finish, abort dispatch or complete terminal/replay agreement.
 
 Both terminal modes atomically save their completed stop/capture facts to
 `shutdown.json` or `abort.json` before evaluation. This first record contains

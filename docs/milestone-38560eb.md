@@ -31,7 +31,7 @@ Canonical branch or ref: `master`
 Git upstream: `origin/master`
 Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: The bounded M31 kernel-query receipt correction is implemented and verified locally under M48/D49. Five actual journalctl/collector cases passed, the pre-correction source failed the missing-receipt check, and five scratch mutations were detected. Source landing and the matching #54 projection remain pending under separate publication scopes. The canonical ETL checklist has 18 verified criteria and 63 unchecked; the last observed #54 body still has 17 checked and 64 unchecked. Preserve the frozen query evidence in work/m31-kernel-query-20261106. Obsolete-anchor interval coverage and M32 diagnostic isolation remain separate unverified work; define their own bounded case before execution. The retained-evidence inventory and the published M27 normal-stop/repeat/error results remain valid. M47 / T2 still needs a scope decision because original full-day replay inputs are unavailable. M49-M50 remain Not started, and M14/M26 remain Blocked on G2/G5. No new long observation or historical broad matrix is selected.
+Next session entry point: M32 ETL verdict isolation passed its scoped verification. One actual 7200-second shortened observation completed with 26/26 required passes, normal stop, four post-stop wait cases and terminal/replay agreement. The scheduler verdict is Passed; kernel diagnostics, overall Incomplete and native status 1 remain preserved. Final evidence is `work/m32-live-20261106/verification.json`, verified at 2026-11-06T23:41:56.796490+00:00. The dedicated VM was shut down with its data retained. Next, prepare the verified source changes for commit and reconcile the four newly supported #54 criteria after source landing; M32 and M48 remain In progress until their publication conditions are satisfied. The canonical #54 checklist has 22 checked and 59 unchecked criteria; the live issue still has 18 checked and 63 unchecked. Do not repeat or extend the completed observation. Kernel interval coverage is separate work. M47 / T2 still needs a scope decision because original full-day replay inputs are unavailable. M49-M50 remain Not started; M14/M26 remain Blocked on G2/G5. No full-day run or expanded producer matrix is selected.
 
 Retained results and available inputs are indexed by `work/retained-test-results-20261026/README.md`. Its 2026-10-26 retention policy supersedes historical original-path instructions below: retired raw observations are not complete local replay inputs, and historical hashes do not establish current availability. Check the retained archives and inventories before planning a replay.
 
@@ -394,7 +394,7 @@ full mode carries every OS tree, second apply `failed=0`). Delivered in
 
 </details>
 
-Status tally: 25 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 6 external gates (4 Complete, 2 Open). Backlog excluded: 5 Complete, 2 In progress, 2 Not started and 15 Deferred carry-forward items, plus 2 Complete external gates. M51 is Complete after T1-T7 Passed and verified repository landing at 82ef88a; closure recorded on 2026-10-23 UTC. M35 is Complete within D48/D49 after source publication and scoped issue reconciliation. M47 / T1 Passed within its bounded normal-stop, repeat and command-error cases, with repository and #53 publication verified. M47 retains its unresolved full-day recipient input. M48 is In progress for retained-evidence accounting and the remaining scoped tool corrections; M49-M50 remain ready for later evidence accounting.
+Status tally: 25 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 6 external gates (4 Complete, 2 Open). Backlog excluded: 5 Complete, 3 In progress, 2 Not started and 14 Deferred carry-forward items, plus 2 Complete external gates. M51 is Complete after T1-T7 Passed and verified repository landing at 82ef88a; closure recorded on 2026-10-23 UTC. M35 is Complete within D48/D49 after source publication and scoped issue reconciliation. M47 / T1 Passed within its bounded normal-stop, repeat and command-error cases, with repository and #53 publication verified. M47 retains its unresolved full-day recipient input. M48 is In progress for retained-evidence accounting and the remaining scoped tool corrections; M49-M50 remain ready for later evidence accounting.
 
 ## Milestone
 
@@ -6008,7 +6008,7 @@ The VM provider supplies M51's fresh dedicated Rocky 8.10 guest through its norm
 | Tools | M29 | Track ETL collection-tool follow-ups | Carry-forward | Deferred | No | D29, D30, D31 | Coordinate independent child completion and retain original evidence; no combined implementation or repeat full-day run solely for tool repair; [detail](#m29---track-etl-collection-tool-follow-ups) |
 | Tools | M30 | Track ETL evaluation and reporting follow-ups | Carry-forward | Deferred | No | D29, D30, D31 | Coordinate independent child completion and retain original evidence; no combined implementation or repeat full-day run solely for tool repair; [detail](#m30---track-etl-evaluation-and-reporting-follow-ups) |
 | Tools | M31 | Preserve kernel cursor refusal evidence and prove interval coverage | Carry-forward | Deferred | No | D31, D49 | Bounded query receipts verified locally; full interval-coverage work remains Deferred; [detail](#m31---preserve-kernel-cursor-refusal-evidence-and-prove-interval-coverage) |
-| Tools | M32 | Keep kernel diagnostics independent of the ETL terminal verdict | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m32---keep-kernel-diagnostics-independent-of-the-etl-terminal-verdict) |
+| Tools | M32 | Keep kernel diagnostics independent of the ETL terminal verdict | Carry-forward | In progress | No | D31 | T1-T4 Passed within their declared scopes; source landing and #54 publication remain; [detail](#m32---keep-kernel-diagnostics-independent-of-the-etl-terminal-verdict) |
 | Tools | M33 | Use timestamps accepted by systemd 239 journal queries | Carry-forward | Complete | No | D31, D39, D40, D41, G6 | T1-T6 Passed; source f633973 and four checked query criteria in #54 verified; [detail](#m33---use-timestamps-accepted-by-systemd-239-journal-queries) |
 | Tools | M34 | Match JFR exports to the recording process and lifetime | Carry-forward | Complete | No | D31, D43, D44, G7 | T1-T6 Passed; source e48083d and five JFR-related #54 criteria verified; [detail](#m34---match-jfr-exports-to-the-recording-process-and-lifetime) |
 | Tools | M35 | Persist terminal state before evaluating terminal coherence | Carry-forward | Complete | No | D31, D47, D46, D48, D49 | D48 verification complete; source 42e9360 and plan record 230307e are on origin/master. The three source-#40 criteria and overlapping terminal criterion are checked in #54; its remaining group work stays open under D49. Historical failures and exclusions remain; [detail](#m35---persist-terminal-state-before-evaluating-terminal-coherence) |
@@ -6024,7 +6024,7 @@ The VM provider supplies M51's fresh dedicated Rocky 8.10 guest through its norm
 | Tools | M45 | Reproduce completed ETL observation reports on an independent recipient | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m45---reproduce-completed-etl-observation-reports-on-an-independent-recipient) |
 | Tools | M46 | Report actual test phase durations against the agreed allocations | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m46---report-actual-test-phase-durations-against-the-agreed-allocations) |
 | Tools | M47 | Track journal test tooling | Carry-forward | In progress | No | D32, D33, D49 | Bounded normal-stop, repeat and actual command-error results are published; full-day recipient input remains unresolved under D49; [detail](#m47---track-journal-test-tooling) |
-| Tools | M48 | Track ETL test tooling | Carry-forward | In progress | No | D32, D33, D49 | Retained inputs accounted for; 18 criteria verified locally, with query-receipt publication and other collector/evaluator claims remaining under D49; [detail](#m48---track-etl-test-tooling) |
+| Tools | M48 | Track ETL test tooling | Carry-forward | In progress | No | D32, D33, D49 | Retained inputs accounted for; 22 criteria verified locally, with M32 source/issue publication and other collector/evaluator claims remaining under D49; [detail](#m48---track-etl-test-tooling) |
 | Tools | M49 | Track buffer test tooling | Carry-forward | Not started | Yes | D32, D33, D49 | Retained evidence first; only necessary bounded real cases, then source/issue reconciliation under D49; [detail](#m49---track-buffer-test-tooling) |
 | Tools | M50 | Track shared test tooling | Carry-forward | Not started | Yes | D32, D33, D34, D35, D36, D49 | Retained evidence first; only necessary bounded real cases, then source/issue reconciliation under D49; [detail](#m50---track-shared-test-tooling) |
 | Tools | G6 | Provide M33's dedicated systemd 239 query environment | External gate | Complete | No | D40 | Capacity, private handoff and actual guest access/versions verified; [detail](#g6---provide-m33s-dedicated-systemd-239-query-environment) |
@@ -6265,7 +6265,7 @@ Retained transferred technical coverage follows; record each result in its ownin
 
 - [ ] The real failed-query path preserves its original output and enough cursor/interval metadata to diagnose the refusal without exposing credentials or internal identifiers.
 - [ ] Focused real-journald checks distinguish an obsolete anchor with independently proven interval coverage from an actual or unresolved required-interval gap; unproved coverage never becomes `Passed`.
-- [ ] The actual normal-finish and replay paths keep a kernel-only diagnostic failure visible without rejecting a complete required ETL pass set.
+- [x] The actual normal-finish and replay paths keep a kernel-only diagnostic failure visible without rejecting a complete required ETL pass set. Result: M32 / T4 verifies this claim; other child contracts remain independent.
 - [ ] Genuine loss of required ETL evidence remains `Incomplete` or `Failed` as applicable, and the declared all-sources-unavailable automatic-abort expectations remain enforced.
 - [ ] Both completed observations are rechecked from retained evidence with their exact original tools and a separately identified candidate; original data, failed records and verdicts remain unchanged.
 - [ ] The follow-up uses retained evidence and bounded real-path checks; no new 24-hour observation is required solely to repair the collector.
@@ -6348,7 +6348,7 @@ Independent membership and transferred coverage:
 | --- | --- | --- | --- | --- |
 | T1 | Not run | Retained real-input or bounded future runtime verification | Pending | Candidate corrective verification is not established by the original accepted ETL result. |
 | T2 | Not run | Retained real-input or bounded future runtime verification | Pending | Candidate corrective verification is not established by the original accepted ETL result. |
-| T3 | Not run | Retained real-input or bounded future runtime verification | Pending | Candidate corrective verification is not established by the original accepted ETL result. |
+| T3 | 2026-11-06T23:41:56.796490+00:00 | Actual M32 appliance observation and frozen replay | Passed within M32's declared scope | M32 / T4 verifies complete required ETL passes through normal finish and replay while preserving kernel diagnostics and native aggregate Incomplete. This reuses the child result; it does not execute or complete other child contracts. |
 | T4 | Not run | Retained real-input or bounded future runtime verification | Pending | Candidate corrective verification is not established by the original accepted ETL result. |
 | T5 | Not run | Retained real-input or bounded future runtime verification | Pending | Candidate corrective verification is not established by the original accepted ETL result. |
 | T6 | Not run | Retained real-input or bounded future runtime verification | Pending | Candidate corrective verification is not established by the original accepted ETL result. |
@@ -6666,7 +6666,7 @@ Origin: 38560eb / M32
 Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
 GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
 Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #37 is closed not_planned at 2026-10-17T01:12:07Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
-Status: Deferred
+Status: In progress
 
 ##### Summary
 
@@ -6686,42 +6686,61 @@ Out of scope: Repairing kernel cursor coverage or changing ETL application sched
 
 ##### Completion Criteria
 
-- [ ] A real kernel-only diagnostic failure does not invalidate complete required application ETL evidence at pass waiting or normal finish.
-- [ ] Missing required ETL evidence still refuses complete acceptance and preserves the applicable abort policy.
-- [ ] The actual terminal CLI and retained-input replay agree while keeping original diagnostic and unsuccessful aggregate findings.
+- [x] A real kernel-only diagnostic failure does not invalidate complete required application ETL evidence at pass waiting or normal finish.
+- [x] Missing required ETL evidence still refuses complete acceptance and preserves the applicable abort policy.
+- [x] The actual terminal CLI and retained-input replay agree while keeping original diagnostic and unsuccessful aggregate findings.
 
 ##### Dependencies And Decisions
 
-- D31; Decision Date: 2026-10-15. Independent Backlog work is excluded from current execution; accepted M22/#30 ETL functionality and M25/#31 journal results remain complete.
+- D31; Decision Date: 2026-10-15. Historical deferral is superseded for the scoped correction below on 2026-11-06. The owner selected ETL verdict isolation for correction and verification; M32 moved from Deferred through Not started to In progress. Accepted M22/#30 ETL functionality and M25/#31 journal results remain complete.
 - Coordination: M29/#34. This is a tracking relationship, not an invented sequential execution dependency.
 - Preserve original inputs, frozen tool identities and unsuccessful outcomes. Reuse retained evidence and bounded real-path checks; no new full-day producer run solely for tool correction or reporting.
 
 ##### Implementation Plan
 
-- Plan Status: draft
-- Plan Acceptance: none
-- Implementation Authorization: none
-- Superseded Plan Artifacts: none
+- Plan Status: accepted
+- Plan Acceptance: 2026-11-06; owner selected ETL verdict isolation rather than kernel interval coverage.
+- Implementation Authorization: 2026-11-06; the same selection authorizes correction and verification of the existing ETL/diagnostic separation. The owner selected a fresh dedicated test VM and subsequently authorized the proposed two-hour normal-terminal and replay verification. This is one scoped exception to D49's exclusion of new two-hour observations; no full-day run or expanded producer matrix is selected.
+- Superseded Plan Artifacts: generic deferred implementation steps; original completion criteria remain active.
 
-1. Preserve and identify actual existing inputs, original outcomes and frozen/candidate source boundaries.
-2. Perform only the scoped correction or follow-up after separate execution authorization.
-3. Execute the declared real path and record actual results without replacing internal path segments or rewriting original observations.
+1. Apply the existing `evaluate.scheduler_checks(manifest)` contract to `observe.wait_passes()`. A nonzero collector result may continue to pass inspection only when its newly persisted journal sample matches the actual command result and all recorded failures are outside the scheduler checks. Missing, malformed, stale or unmatched evidence remains a refusal. Preserve original collector status, diagnostic samples, terminal facts, overall verdicts and the abort policy.
+2. Add a regression that executes the actual observer wait function and its actual collector subprocess. Use unchanged retained native pass bytes from the surviving schema-6 shortened observation, with a separately declared one-second interval at an actual scheduled pass. Derive configuration and invocation from that real observation; never reconstruct pass messages or claim whole-observation replay. Use actual local journalctl refusal for the diagnostic exposure. Only test paths and the wait timeout are configured; no internal function is replaced.
+3. Check complete retained passes, missing passes, actual required-journal refusal and collector filesystem failures that leave stale or absent sample output. The original source must fail the positive diagnostic-isolation case. Keep all sources, inputs, receipts and unsuccessful results separately. Refresh the complete bundle identity and document the actual boundary.
+4. Run one actual 7200-second shortened observation on the prepared dedicated appliance, using the installed start and normal-finish CLI without changing clocks or the duration contract. After actual initial collection, preserve the collector state and replace only its kernel cursor with a deliberately invalid form of the actual cursor under the collector lock. Retain native failed-query receipts and verify application-file capture, required passes and recorded abort-check classification. An unrelated diagnostic does not authorize an early stop; genuine abort conditions retain their existing behavior.
+5. Preserve final capture and terminal facts before replay. Freeze complete evidence membership, hashes, bundle and dependencies, then run the actual evaluator and aggregate CLI on separate verified copies. Compare their six declared verdict/assertion/coverage fields with the actual terminal record, preserving unsuccessful aggregate outcomes. On separate negative copies, exercise actual post-stop collection and pass waiting with unavailable required evidence and a recorded decisive diagnostic check. These checks establish refusal and recorded-policy enforcement, not a separate automatic-abort dispatch campaign.
+
+Live execution bounds: the existing Rocky Linux 8.10 guest has 2 vCPU, 8192 MiB RAM and a 48 GiB disk. Require the actual 903-PV fixture, four instrumented JVMs, synchronized clocks, unchanged source pins and candidate hashes, and the existing 2 GiB disk reserve. Record preparation, the full 7200-second observation, the installed 2700-second terminal limit and at most 30 minutes for negative-copy checks/replay separately. Stop for actual source/boot drift, disk reserve, required-evidence failure under the shipped abort policy, or an exceeded operation deadline; retain every unsuccessful output and do not repeat or extend the observation automatically. Measure native query failure exposure and actual full-sample/pass counts; configured cadence is not observed coverage. Preserve the original input volume and capture/replay membership, without an invented evidence-size acceptance limit.
+
+The local target is a copied retained pass set plus the control host's read-only journal. Each collector invocation retains its existing command timeouts; each external test invocation is bounded to 90 seconds and the local suite to five minutes. Stop on unavailable actual input, source drift, unexpected native behavior or expiry. No appliance service, producer or original observation is modified. The source correction reuses the existing scheduler/diagnostic contract without changing a schema or persisted state shape; self-review covers implementation and verification, with a reader pass for the operator text.
 
 ##### Test Plan
 
 | Label | Layer | Method | Environment | Expected Result |
 | --- | --- | --- | --- | --- |
-| T1 | Real-path tool verification | Execute the actual collector/terminal path with real configured evidence sources in a bounded dedicated case, then replay retained originals. | Retained actual inputs and separately authorized bounded environment where required | All completion criteria established with explicit actual coverage; original unsuccessful evidence unchanged. |
+| T1 | Retained-pass diagnostic isolation | Execute actual `wait_passes()` and its actual collector CLI with unchanged retained native pass bytes, an explicitly selected actual firing interval and real invalid kernel cursor; compare pre-correction and candidate sources. | Fresh private local directories; real schema-6 retained input and local journalctl | Candidate confirms the required retained pass despite diagnostic errors; original source refuses. Native failed-query and original pass bytes remain available. This is not appliance lifecycle acceptance. |
+| T2 | Required-evidence refusal | Run the same actual paths with missing pass bytes, native application-journal refusal and real filesystem failures leaving missing, stale or malformed latest sample output. | Separate private local cases; existing timeout shortened only for the missing-pass test | Missing required pass or required collection failure still refuses; diagnostic classification cannot authorize stale or absent collector evidence. |
+| T3 | Source and policy preservation | Verify complete before/after runtime source identities, input hashes, unchanged abort-policy/evaluator classification, refreshed bundle and selected existing contract checks. | Local repository and isolated source copies | Only the intended wait behavior changes; originals and unsuccessful results are preserved. |
+| T4 | Actual appliance lifecycle and replay | Execute the installed collector, one 7200-second shortened observation, normal terminal CLI and frozen-input replay with a real kernel query failure; expose required-evidence loss and recorded-policy enforcement on separate actual-input copies. | Prepared dedicated Rocky Linux 8.10 appliance; two-hour scope authorized 2026-11-06 | Complete required ETL evidence remains independent of kernel diagnostics; actual required loss preserves refusal and recorded-policy enforcement, and terminal/replay agree. Preserve original diagnostic and aggregate outcomes; no automatic-abort dispatch claim from wait-only negative cases. |
 
 ##### Verification Results
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
-| T1 | Not run | Scoped future real-path verification | Pending | Original accepted behavior explains scope only; it does not establish completion of this follow-up. |
+| T1 | 2026-11-06T20:06:28.794375+00:00 | Control host; actual schema-6 retained passes and native local journalctl | Passed within local scope | `work/m32-pass-wait-20261106/run-002/`: original 6876564 wait refused the positive case; candidate confirmed the actual retained scheduled pass. Native kernel query failure and unchanged original pass bytes were retained. Other local diagnostics were present; this does not establish kernel-only appliance acceptance. |
+| T2 | 2026-11-06T20:06:28.794375+00:00 | Separate native collector and filesystem-fault cases | Passed within local scope | Candidate ran all seven cases without failures: diagnostic isolation, missing passes, application-journal refusal, recorded abort policy, and stale/absent/malformed sample cases. The last three prove refusal after an actual collector filesystem failure, not independent coverage of every freshness comparison. |
+| T3 | 2026-11-06 | Current sources, isolated original/candidate bundles and retained inputs | Passed within local scope | All 23 runtime source identities and both original inputs match their execution records; bundles differ only in `observe.py`. Three existing contract checks passed. Two targeted mutations were detected by native test failures; the earlier mutation with a redundant required-journal guard survived and is retained separately. Current-source checking passed 106 parent, 5 diagnostic and 19 scenario entries after refreshing current manifests. |
+| T4 | 2026-11-06T23:41:56.796490+00:00 | Dedicated Rocky Linux 8.10 appliance; frozen replay on the control host | Passed within the authorized two-hour scope | `work/m32-live-20261106/verification.json`: actual observation lasted 7200.385 monotonic seconds, with 26/26 required passes and 26 full samples each recording all 903 PVs connected, archiving and recently sampled. The installed normal terminal waited successfully for all passes and stopped the appliance with rc 0 in 11.257 seconds. Native kernel failures remained the only sample errors. Four actual post-stop wait cases passed on separate copies: complete evidence, missing passes, required-journal refusal and recorded decisive policy. Both frozen evaluator/aggregate CLI replays returned 1 and matched the declared terminal semantics. Original inputs, tools, diagnostics and overall Incomplete remain unchanged; no automatic-abort dispatch claim. |
+
+The candidate observer SHA256 is `544d85992f026250a8a319302236213c0c4a5249a32dda144704c29a74d9ab8c`; the executed test SHA256 is `bc3e80fd49a998dabb8cfb6994215a62ffc7b2eaaeb9940fec8075496905db9d`. Native outcomes and times are in `run-002/baseline/result.json`, `run-002/candidate/result.json`, `mutation-results.json` and `unit-checks.json` under the private evidence root. The original unsuccessful setup and mutation outcomes remain preserved. The collector, evaluator, fixture files, abort policy and runtime schema are unchanged.
+
+The live observation started at 2026-11-06T21:34:45.057273+00:00 and normal finish began at 23:34:45.442168 UTC. All 125 checkpoints retained the same boot and 23 runtime source hashes without an abort request. The two transitions produced 24 and 2 actual required passes. Pass waiting completed in 0.310 seconds under the shipped 180-second deadline. The preserved invalid kernel cursor produced 27 native failed-query receipts between 21:39:52.118481 and 23:35:06.488506 UTC; initial full samples had no errors. The terminal retained `final_sample` and `final_journal` errors, aggregate Incomplete and CLI status 1, while scheduler and JFR verdicts were Passed. Negative-copy checks completed at 23:37:39.292210 UTC; replay completed at 23:37:48.728540 UTC, within the declared 30-minute bound.
+
+Complete transferred state, tools and preparation contain 1249, 39 and 165 regular files respectively; state input totals 276643775 bytes. Archive hashes and every declared member, mode and byte count were verified before replay; original inputs and replay copies remained unchanged afterward. Final verification SHA256 is `fa59ab3d86c4408e3ea9ce7b884cc40c74ffe842e1d3be61a8978b2021945a42`; the full final evidence inventory is `evidence-members.json`, SHA256 `8dbcf6d929c80265806766980e28a1147dfce1a0949452d8cba47570bcaabeca`. Native command receipts, query bytes, terminal facts, replay results and unsuccessful outcomes remain under `work/m32-live-20261106/`.
 
 ##### Closure Evidence
 
-- Not complete. D31 excludes this independent follow-up from current execution; no candidate correction or follow-up acceptance is claimed.
+- The accepted implementation plan and all three completion criteria are verified within T1-T4's declared scopes. Source landing and the corresponding #54 update/readback remain pending; M32 stays In progress.
+- The provider confirmed graceful VM shutdown at 2026-11-06T23:42:49.768617+00:00 after evidence retrieval. Its retained requester record and native shutdown log confirm the disk, definition, seed, reservation, creation record and evidence were preserved. No observation restart or deletion occurred.
 
 ##### GitHub Projection
 
@@ -8843,7 +8862,7 @@ These summaries preserve the recorded scope. Each linked issue retains its full 
 ###### #37 - Keep kernel diagnostics independent of the ETL terminal verdict
 
 - Problem and evidence: Kernel-only failure produced pass-wait/final-sample/final-journal findings despite complete required ETL passes.
-- Remaining work: Verify actual collection, pass waiting, normal terminal handling and replay using independent configured ETL sources.
+- Result: M32 / T1-T4 verify actual collection, pass waiting, normal terminal handling, required-evidence refusal, recorded-policy enforcement and replay. The authorized two-hour observation retained scheduler Passed alongside native aggregate Incomplete and diagnostic errors. Source landing and #54 publication remain pending.
 - Done when: Kernel failure stays visible without rejecting complete ETL evidence; real required-evidence loss still prevents acceptance and preserves the abort policy.
 
 ###### #38 - Use timestamps accepted by systemd 239 journal queries
@@ -8980,7 +8999,7 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 - [ ] The real failed-query path preserves its original output and enough cursor/interval metadata to diagnose the refusal without exposing credentials or internal identifiers.
 - [ ] Focused real-journald checks distinguish an obsolete anchor with independently proven interval coverage from an actual or unresolved required-interval gap; unproved coverage never becomes `Passed`.
-- [ ] The actual normal-finish and replay paths keep a kernel-only diagnostic failure visible without rejecting a complete required ETL pass set.
+- [x] The actual normal-finish and replay paths keep a kernel-only diagnostic failure visible without rejecting a complete required ETL pass set. Result: M32 / T4 confirms 26/26 required passes through actual normal finish and frozen replay; native aggregate Incomplete and diagnostic findings remain preserved.
 - [ ] Genuine loss of required ETL evidence remains `Incomplete` or `Failed` as applicable, and the declared all-sources-unavailable automatic-abort expectations remain enforced.
 - [ ] Both completed observations are rechecked from retained evidence with their exact original tools and a separately identified candidate; original data, failed records and verdicts remain unchanged.
 - [ ] The follow-up uses retained evidence and bounded real-path checks; no new 24-hour observation is required solely to repair the collector.
@@ -9024,9 +9043,9 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 ###### Source #37 - Keep kernel diagnostics independent of the ETL terminal verdict
 
-- [ ] A real kernel-only diagnostic failure does not invalidate complete required application ETL evidence at pass waiting or normal finish.
-- [ ] Missing required ETL evidence still refuses complete acceptance and preserves the applicable abort policy.
-- [ ] The actual terminal CLI and retained-input replay agree while keeping original diagnostic and unsuccessful aggregate findings.
+- [x] A real kernel-only diagnostic failure does not invalidate complete required application ETL evidence at pass waiting or normal finish.
+- [x] Missing required ETL evidence still refuses complete acceptance and preserves the applicable abort policy.
+- [x] The actual terminal CLI and retained-input replay agree while keeping original diagnostic and unsuccessful aggregate findings.
 
 
 
@@ -9138,7 +9157,7 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 ##### Dependencies And Decisions
 
-- D49; Decision Date: 2026-10-24. The bounded completion approach is accepted. This supersedes blanket group deferral for preparation and evidence accounting, not component results or scope. Component details retain their identities; select only missing claims after accounting for reusable evidence. Retained-evidence accounting and the separately accepted bounded query-receipt correction ran on 2026-11-06; no new appliance observation ran.
+- D49; Decision Date: 2026-10-24. The bounded completion approach is accepted. This supersedes blanket group deferral for preparation and evidence accounting, not component results or scope. Component details retain their identities; select only missing claims after accounting for reusable evidence. Retained-evidence accounting and the separately accepted bounded query-receipt correction ran on 2026-11-06 without a new appliance observation. M32 subsequently received separate authorization for one actual 7200-second shortened observation and completed it; this scoped exception does not authorize another run or expanded matrix.
 - D33; Decision Date: 2026-10-16. Consolidate GitHub tracking into four issues; copy every original contract and retire twenty source issues with reason not planned. This supersedes D32's plan to keep those twenty GitHub issues open. Independent canonical component work and future tool execution remain Deferred.
 - Primary links are coordination relationships, not a new sequential execution dependency. Each existing issue retains its original criteria, source identities and evidence; no original result is rewritten.
 - Accepted M22/#30 ETL and M25/#31 journal results remain complete. The completed buffer acceptance in jeonghanlee/epicsarchiverap-maven#29 remains separate.
@@ -9176,9 +9195,12 @@ M35/D48 terminal criteria are verified from the recorded real normal/fault/repla
 | T2 | 2026-10-21T08:34:55+00:00 | Separate query source/input records and exact issue before/after comparison | Pending | Query-component preservation and issue scope isolation are verified. The other collection/evaluation/reporting components retain their original state and unmet criteria; no aggregate Passed claim. |
 | T1 | 2026-11-06T18:13:27.720546+00:00 | Control-host read-only archive and source inspection | Pending; retained-input integrity accounted for | Four completed component scopes retain 17 checked criteria. All 14 summary hashes and five archive/inventory pairs matched; every member of the 322-file historical offline input set was read and verified. No new functional result or independent-recipient replay is claimed; the other 64 issue criteria remain unchecked. |
 | T1 | 2026-11-06T18:43:46.190202+00:00 | Debian 13/systemd 257; actual local collector and journalctl | Pending; receipt subcase Passed | Five actual cases and six receipts establish the query-preservation criterion. Pre-correction missing-receipt failure and five targeted mutation failures are retained. The canonical checklist has 18 checked and 63 unchecked; #54 publication and broader component verification remain pending. |
+| T1 | 2026-11-06T23:41:56.796490+00:00 | Actual dedicated appliance and frozen control-host replay | Pending; M32 isolation criteria Passed | M32 / T1-T4 establish the three source-#37 criteria and the overlapping source-#34 normal-finish/replay criterion. The canonical checklist has 22 checked and 59 unchecked; the four new criteria await source landing and #54 publication. Broader matrices and automatic-abort dispatch remain unverified. |
+| T2 | 2026-11-06T23:41:56.796490+00:00 | Separate original, candidate, negative-case and replay directories | Pending; M32 preservation verified | Complete membership/hash checks preserve the actual observation, tool identities and native aggregate Incomplete/status-1 outcomes. M32's final evidence inventory is retained with its verification record; this does not complete other components' isolation requirements. |
 
 ##### Closure Evidence
 
+- On 2026-11-06, M32's actual normal observation, four post-stop wait cases and frozen terminal replay verified four group criteria. Source landing and their #54 publication remain pending. M32 and M48 stay In progress; the original aggregate Incomplete is preserved.
 - On 2026-11-06, the bounded M31 query-receipt criterion passed actual verification. Its source and issue publication remain pending; this does not close M31 or M48.
 - On 2026-11-06, retained-evidence accounting began under D49. The source-availability boundary and next collector receipt correction are recorded above. No new acceptance criterion or component closure follows from archive integrity; the group remains In progress.
 - D49 publication reconciled at 2026-11-04T02:54:17Z: the applied #54 body matched the retained publication file and the source/plan commits were on origin/master. At that checkpoint the group was Not started with its remaining criteria open; this records publication only.
@@ -9196,7 +9218,7 @@ M35/D48 terminal criteria are verified from the recorded real normal/fault/repla
 
 ##### GitHub Projection
 
-- Projection Difference: Retained-input accounting and the newly verified M31 query-receipt criterion are local. The canonical checklist has 18 checked and 63 unchecked; the last observed #54 body retains 17 checked and 64 unchecked. No #54 body update is prepared or published by this correction.
+- Projection Difference: The canonical checklist has 22 checked and 59 unchecked. Read-only #54 inspection after M32 verification found 18 checked and 63 unchecked, state open, updated at 2026-11-06T19:50:49Z. M32's three source-#37 criteria and overlapping source-#34 normal-finish/replay criterion are verified locally and await publication. The earlier full-body comparison below remains a historical checkpoint; no M32 issue update has been applied.
 - Title: `Track ETL test tooling`
 - Labels: `enhancement`
 - GitHub Milestone: `Backlog`

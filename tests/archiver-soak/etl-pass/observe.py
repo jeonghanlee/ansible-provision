@@ -241,12 +241,26 @@ def wait_passes(manifest):
                 for row in contract.expected_firings(datetime.datetime.fromisoformat(manifest['started_at']),
                     datetime.datetime.fromisoformat(manifest['earliest_finish_at']), configuration)}
     invocation = collect.properties(manifest['unit_before_observation']).get('InvocationID')
+    checks = evaluate.scheduler_checks(manifest)
     began, deadline = time.monotonic(), time.monotonic() + PASS_WAIT_SECONDS
     while True:
+        sampled_after = datetime.datetime.now(datetime.timezone.utc)
         result = command(['/usr/bin/python3', str(TOOLS / 'collect.py'), str(OUT),
                           str(TOOLS / 'pvs-all.csv'), '--journal-only'])
         if result['rc']:
-            raise RuntimeError('Required pass wait could not collect complete journals')
+            if result['rc'] != 1:
+                raise RuntimeError('Required pass wait could not collect complete journals')
+            reported = json.loads(result['stdout'])
+            sample = json.loads((OUT / 'latest.json').read_text())
+            errors = sample.get('errors')
+            if (sample.get('sample_kind') != 'journal' or sample.get('journal') is None
+                    or sample.get('observed_at') != reported.get('observed_at')
+                    or datetime.datetime.fromisoformat(sample['observed_at']) < sampled_after
+                    or not isinstance(errors, list) or not errors
+                    or reported.get('error_count') != len(errors)
+                    or any(not isinstance(error, dict) or not isinstance(error.get('check'), str)
+                           or error['check'] in checks for error in errors)):
+                raise RuntimeError('Required pass wait could not collect complete journals')
         records = evaluate.pass_records(OUT / 'passes.jsonl')
         completed = {(row['transition'], row['cadence'], evaluate.epoch(row['plannedAt']))
                      for row in records if row['invocation_id'] == invocation}
