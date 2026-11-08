@@ -31,7 +31,7 @@ Canonical branch or ref: `master`
 Git upstream: `origin/master`
 Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: Finish M46 publication before selecting another component. Its retained-record report and arithmetic verification are complete locally: 18 phase intervals and five overlap calculations, with scheduling waits and missing preparation/analysis boundaries explicit. Commit/landing and the matching #56 body update remain pending; M46 and M50 remain In progress. M50 has eight satisfied local criteria and three remaining; the live #56 body still has four checked and seven unchecked boxes. M32 is Complete in 71b7aa7 after source 6146651 and exact #54 publication. ETL has 22 checked and 59 unchecked criteria. M47 still needs a scope decision for unavailable original full-day replay inputs. M49 remains Not started; M14/M26 remain Blocked on G2/G5.
+Next session entry point: Select the next remaining component under the accepted one-at-a-time completion approach. M46 is Complete: its report is on origin/master in 5ae70cd, and exact #56 readback at 2026-11-08T03:39:05Z confirms the four related boxes. Eighteen phase intervals and five overlap calculations retain scheduling waits and missing preparation/analysis boundaries. M50 and #56 remain open for three shared criteria: reusable-source preservation, installation dependencies and shared procedures; the canonical and live checklists agree at eight checked and three unchecked. M32 is Complete in 71b7aa7 after source 6146651 and exact #54 publication. ETL has 22 checked and 59 unchecked criteria. M47 still needs a scope decision for unavailable original full-day replay inputs. M49 remains Not started; M14/M26 remain Blocked on G2/G5.
 
 Retained results and available inputs are indexed by `work/retained-test-results-20261026/README.md`. Its 2026-10-26 retention policy supersedes historical original-path instructions below: retired raw observations are not complete local replay inputs, and historical hashes do not establish current availability. Check the retained archives and inventories before planning a replay.
 
@@ -6022,11 +6022,11 @@ The VM provider supplies M51's fresh dedicated Rocky 8.10 guest through its norm
 | Tools | M43 | Reconcile retained ETL measurements and process identities | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m43---reconcile-retained-etl-measurements-and-process-identities) |
 | Tools | M44 | Compare ETL busy time and workload with retained earlier results | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m44---compare-etl-busy-time-and-workload-with-retained-earlier-results) |
 | Tools | M45 | Reproduce completed ETL observation reports on an independent recipient | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m45---reproduce-completed-etl-observation-reports-on-an-independent-recipient) |
-| Tools | M46 | Report actual test phase durations against the agreed allocations | Carry-forward | In progress | No | D31, D49 | Retained phase report verified; source landing and #56 reconciliation pending; [detail](#m46---report-actual-test-phase-durations-against-the-agreed-allocations) |
+| Tools | M46 | Report actual test phase durations against the agreed allocations | Carry-forward | Complete | No | D31, D49 | Phase report in 5ae70cd on origin/master; exact #56 readback confirms all four related criteria; [detail](#m46---report-actual-test-phase-durations-against-the-agreed-allocations) |
 | Tools | M47 | Track journal test tooling | Carry-forward | In progress | No | D32, D33, D49 | Bounded normal-stop, repeat and actual command-error results are published; full-day recipient input remains unresolved under D49; [detail](#m47---track-journal-test-tooling) |
 | Tools | M48 | Track ETL test tooling | Carry-forward | In progress | No | D32, D33, D49 | Canonical and #54 checklists agree: 22 verified and 59 unmet criteria; M32 Complete, with other collector/evaluator claims remaining under D49; [detail](#m48---track-etl-test-tooling) |
 | Tools | M49 | Track buffer test tooling | Carry-forward | Not started | Yes | D32, D33, D49 | Retained evidence first; only necessary bounded real cases, then source/issue reconciliation under D49; [detail](#m49---track-buffer-test-tooling) |
-| Tools | M50 | Track shared test tooling | Carry-forward | In progress | No | D32, D33, D34, D35, D36, D49 | M46 phase reporting active under D49; source preservation and installer verification remain unfinished; [detail](#m50---track-shared-test-tooling) |
+| Tools | M50 | Track shared test tooling | Carry-forward | In progress | No | D32, D33, D34, D35, D36, D49 | M37/M46 Complete; canonical and #56 agree at eight checked and three unchecked criteria; [detail](#m50---track-shared-test-tooling) |
 | Tools | G6 | Provide M33's dedicated systemd 239 query environment | External gate | Complete | No | D40 | Capacity, private handoff and actual guest access/versions verified; [detail](#g6---provide-m33s-dedicated-systemd-239-query-environment) |
 | Tools | G7 | Provide retained full-day JFR inputs for M34 | External gate | Complete | No | D43 | Both observations and frozen tools delivered; complete member/hash checks, original anchors and native JFR decoding verified locally; [detail](#g7---provide-retained-full-day-jfr-inputs-for-m34) |
 
@@ -8499,7 +8499,7 @@ Origin: 38560eb / M46
 Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
 GitHub Issue: #56, https://github.com/jeonghanlee/ansible-provision/issues/56
 Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #51 is closed not_planned at 2026-10-17T01:13:22Z; unfinished criteria are tracked in #56. Original issue references below are historical and do not create an active source-issue dependency.
-Status: In progress
+Status: Complete
 
 ##### Summary
 
@@ -8616,8 +8616,10 @@ Complete provisioning boundaries, activity within the pre-continuation gaps, pur
 
 ##### Closure Evidence
 
-- The phase report satisfies all three local criteria as verified at 2026-11-08T02:59:31.144668+00:00. Repository commit/landing and the matching #56 body publication remain pending, so M46 remains In progress. This is retained-record reconciliation only, not a new runtime result.
-- The shared issue must remain open for its other three unsatisfied criteria. After report landing and exact issue readback, record the component closure with the dated shared-issue exception under the accepted D49 component boundary.
+- Complete. The phase report satisfies all three component criteria through M46 / T1 at 2026-11-08T02:59:31.144668+00:00. This is retained-record reconciliation only, not a new runtime result; no required check is waived.
+- Source landing observed at 2026-11-08T03:29:31Z: commit 5ae70cdc60aa7c77b664d298453279d005f5409c equals fetched origin/master, and the committed report matches that upstream path. Evidence: `work/m46-phase-durations-20261107/landing.json`.
+- Exact #56 readback at 2026-11-08T03:39:05Z matches the prepared body SHA256 ec26f27e5083f441797de4526aa65041405e7d3aaa49e9cfaf207374301e6ea5. Four phase-report boxes changed to checked, all eleven criterion texts and metadata are unchanged, and the shared issue has eight checked and three unchecked boxes. Evidence: `work/m46-phase-durations-20261107/publication.json`.
+- Linked-issue closure exception; Decision Date: 2026-11-07. Under the accepted D49 component boundary, M46 is Complete while #56 remains open for reusable-source preservation, installation dependencies and shared procedures. Those three criteria are not waived or claimed complete.
 
 ##### GitHub Projection
 
@@ -8627,16 +8629,16 @@ Complete provisioning boundaries, activity within the pre-continuation gaps, pur
 - Assignee: `jeonghanlee`
 - Issue: #56, https://github.com/jeonghanlee/ansible-provision/issues/56
 - Projection Scope: Component contract from historical source #51; current tracking uses its section in the consolidated issue.
-- Projection Difference: All three phase-report criteria are satisfied locally; the corresponding #56 body update has not been applied.
+- Projection Difference: None for phase reporting; its three detailed criteria and shared summary criterion match the published result.
 - Observed State: open
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-24T20:20:34Z
-- Last Compared: 2026-11-08T03:03:52Z; live #56 remains open with four checked and seven unchecked boxes. Title, labels, milestone, assignee and body match the retained pre-publication snapshot in `work/m46-phase-durations-20261107/issue-before.json`.
+- Observed Updated At: 2026-11-08T03:38:28Z
+- Last Compared: 2026-11-08T03:39:05Z; exact body, unchanged title/labels/milestone/assignee, open state and eight checked/three unchecked boxes verified by live readback. Receipt: `work/m46-phase-durations-20261107/publication.json`.
 - Prepared Body: `work/issue-shared-phase-body.md`
 - Prepared Body SHA256: ec26f27e5083f441797de4526aa65041405e7d3aaa49e9cfaf207374301e6ea5
-- Published Body SHA256: 59cde8d545dbe6515cc5c77703c4f89c7e95b378adf65320b5dde130771655e3
+- Published Body SHA256: ec26f27e5083f441797de4526aa65041405e7d3aaa49e9cfaf207374301e6ea5
 - Historical Source Issue: #51, https://github.com/jeonghanlee/ansible-provision/issues/51
 - Historical Source State: closed
 - Historical Source Reason: not_planned
@@ -9480,9 +9482,9 @@ All remaining component work is tracked directly in this issue. Source issue ref
 Component canonical identities remain independent under this single GitHub projection:
 
 - M37: historical source #42; checksum work is Complete under D36, with its four related boxes checked in #56.
-- M46: historical source #51; retained phase reporting is verified locally, with publication outstanding in #56.
+- M46: historical source #51; phase reporting is Complete, with its four related boxes checked in #56.
 
-Source GitHub issues were retired for consolidation at 2026-10-17T01:14:10.675787+00:00. M37 is Complete; M46 is In progress until its verified report is published. Reusable-source, installation and shared-procedure criteria remain incomplete. Current tracking is #56; retired source metadata remains in component details.
+Source GitHub issues were retired for consolidation at 2026-10-17T01:14:10.675787+00:00. M37 and M46 are Complete. Reusable-source, installation and shared-procedure criteria remain incomplete. Current tracking is #56; retired source metadata remains in component details.
 
 ##### Detailed Work Summary
 
@@ -9497,7 +9499,7 @@ These summaries preserve the recorded scope. Each linked issue retains its full 
 ###### #51 - Report actual test phase durations against the agreed allocations
 
 - Result: Eighteen retained UTC intervals and five overlap calculations are verified. Journal basics lasted 3660.861496 seconds; the default continuation span was 9871.848430 seconds including scheduling waits and checks. Parallel ETL observations span 86783.769796 seconds, not their summed 172831.474744 seconds. Complete preparation and analysis boundaries remain explicitly unknown; the original allocations and unsuccessful results are unchanged.
-- Remaining work: Commit and land the canonical report, then reconcile the four related #56 boxes. No new runtime observation is required.
+- Publication: The canonical report is in 5ae70cd on origin/master. Exact #56 readback at 2026-11-08T03:39:05Z confirms all four related boxes. No phase-report work or new runtime observation remains.
 - Done when: Measured elapsed/simultaneous work, default scheduling waits and missing boundaries are explicit; original allocations are unchanged.
 
 ###### Reusable source and procedure preservation
@@ -9586,11 +9588,11 @@ All criteria below remain active in the replacement issue. Source closure is adm
 | T1 | 2026-10-17T06:51:10.441861+00:00 | Actual current source checkout and isolated real copies | Passed locally | M37 T1-T3: 98 parent members, 5/17 child members, twelve real CLI regression tests and unchanged frozen/source identities. Scope is checksum work only; commit/landing and the published checkbox update remain outstanding. |
 | T1 | 2026-10-18T18:02:02.562508+00:00 | Committed common checker; actual checkout and retained project copies | Passed locally | M37/T4: 19 project integration cases and the documented commands pass; current coverage is 96 parent and 5/17 child members. Duplicate local scripts are privately preserved and removed; all 95 non-target sources and frozen manifests are unchanged. Evidence: `work/source-checker-dedup-fu6jzviu/integration.json` and `preservation.json`. This does not complete other shared-tool criteria. |
 | T2 | Not run | Separately authorized bounded deployment | Pending | Future scoped verification is not established by grouping or by a historical result outside this check. |
-| T3 | 2026-11-08T02:59:31.144668+00:00 | Retained completed-test records and native field copies | Passed for phase reporting | M46 / T1 verifies 18 UTC intervals and five overlap calculations against unchanged actual records; source identities, waiting, allocation comparisons and missing boundaries are explicit in its Phase Duration Report. No runtime or original full-day replay was performed. Repository/issue publication is pending. |
+| T3 | 2026-11-08T02:59:31.144668+00:00 | Retained completed-test records and native field copies | Passed for phase reporting | M46 / T1 verifies 18 UTC intervals and five overlap calculations against unchanged actual records; source identities, waiting, allocation comparisons and missing boundaries are explicit in its Phase Duration Report. No runtime or original full-day replay was performed. Source 5ae70cd and exact #56 publication are verified in M46 Closure Evidence. |
 
 ##### Closure Evidence
 
-- M46 reporting is verified locally at 2026-11-08T02:59:31.144668+00:00. Eight of eleven shared criteria are now satisfied locally; three remain for reusable-source preservation, installation dependencies and shared procedures. The live #56 body still has four checked and seven unchecked boxes until the prepared update is authorized and read back. M50 remains In progress.
+- M46 is Complete after report landing in 5ae70cd and exact #56 readback at 2026-11-08T03:39:05Z. The canonical and published checklists agree: eight checked, three unchecked. Reusable-source preservation, installation dependencies and shared procedures remain unfinished; M50 remains In progress and #56 stays open. Receipt: `work/m46-phase-durations-20261107/publication.json`.
 - D49 publication reconciled at 2026-11-04T02:54:17Z: the applied #56 body matches the retained publication file and the source/plan commits are on origin/master. This records publication only; the group remains Not started with its remaining criteria open.
 - D49 approach accepted on 2026-10-24; group execution is Not started. Earlier dated Deferred statements below describe their recorded checkpoints. The accepted approach is not a verification result; no new criterion is completed merely by this plan update.
 - Not complete; Decision Date: 2026-10-18 (D36). The checksum component M37 is Complete, with four checked boxes in #56. The remaining seven boxes stay unchecked and the issue stays open. The remaining group scope returns to Deferred because D34/D35 authorized only checksum execution; other plans remain draft and unauthorized.
@@ -9600,7 +9602,7 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 ##### GitHub Projection
 
-- Projection Difference: Four phase-report boxes and their verified result summary need publication. The live body still has four checked and seven unchecked boxes; the local canonical criteria have eight checked and three unchecked. The D49 completion approach and other criteria are unchanged.
+- Projection Difference: None; exact published body matches the prepared phase-report update, with eight checked and three unchecked criteria. The D49 completion approach and other criterion texts are unchanged.
 - Title: `Track shared test tooling`
 - Labels: `enhancement`
 - GitHub Milestone: `Backlog`
@@ -9611,12 +9613,12 @@ All criteria below remain active in the replacement issue. Source closure is adm
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-24T20:20:34Z
-- Last Compared: 2026-11-08T03:03:52Z; exact full-body match and open state, title, labels, milestone and assignee verified by `gh issue view 56 --repo jeonghanlee/ansible-provision --json body,state,title,labels,milestone,assignees,updatedAt`. Checked boxes: 4; unchecked: 7. The phase-report draft preserves all eleven criterion texts and changes exactly four boxes to checked.
-- Checksum Projection: Unchanged; the D49 completion approach is published, with four checksum boxes checked and seven other boxes unchecked.
+- Observed Updated At: 2026-11-08T03:38:28Z
+- Last Compared: 2026-11-08T03:39:05Z; exact full-body match and unchanged open state, title, labels, milestone and assignee verified by `gh issue view 56 --repo jeonghanlee/ansible-provision --json body,state,title,labels,milestone,assignees,updatedAt`. Checked boxes: 8; unchecked: 3. All eleven criterion texts are preserved; exactly four phase-report boxes changed to checked.
+- Checksum Projection: Unchanged; its four boxes remain checked. Four phase-report boxes are now checked, and the other three shared criteria remain unchecked.
 - Prepared Body: `work/issue-shared-phase-body.md`
 - Prepared Body SHA256: ec26f27e5083f441797de4526aa65041405e7d3aaa49e9cfaf207374301e6ea5
-- Published Body SHA256: 59cde8d545dbe6515cc5c77703c4f89c7e95b378adf65320b5dde130771655e3
+- Published Body SHA256: ec26f27e5083f441797de4526aa65041405e7d3aaa49e9cfaf207374301e6ea5
 - Historical Source Issues: #42, #51
 
 #### G6 - Provide M33's dedicated systemd 239 query environment
