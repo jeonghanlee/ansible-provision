@@ -31,7 +31,7 @@ Canonical branch or ref: `master`
 Git upstream: `origin/master`
 Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: Select the next remaining component under the accepted one-at-a-time completion approach. M46 is Complete: its report is on origin/master in 5ae70cd, and exact #56 readback at 2026-11-08T03:39:05Z confirms the four related boxes. Eighteen phase intervals and five overlap calculations retain scheduling waits and missing preparation/analysis boundaries. M50 and #56 remain open for three shared criteria: reusable-source preservation, installation dependencies and shared procedures; the canonical and live checklists agree at eight checked and three unchecked. M32 is Complete in 71b7aa7 after source 6146651 and exact #54 publication. ETL has 22 checked and 59 unchecked criteria. M47 still needs a scope decision for unavailable original full-day replay inputs. M49 remains Not started; M14/M26 remain Blocked on G2/G5.
+Next session entry point: Publish the verified shared-procedure documentation and reconcile its #56 criterion before selecting another component. M50 / T4 verifies source/evidence selection, privacy, transfer/member verification, original/candidate replay and verdict instructions locally; repository landing and issue publication remain outstanding. The canonical checklist has nine checked and two unchecked criteria; the last live #56 readback has eight checked and three unchecked. Reusable buffer-source preservation and installer dependencies remain unfinished. M46 is Complete, with its report in 5ae70cd, #56 readback at 2026-11-08T03:39:05Z and completion record in f89e63a. M32 is Complete in 71b7aa7 after source 6146651 and exact #54 publication. ETL has 22 checked and 59 unchecked criteria. M47 still needs a scope decision for unavailable original full-day replay inputs. M49 remains Not started; M14/M26 remain Blocked on G2/G5.
 
 Retained results and available inputs are indexed by `work/retained-test-results-20261026/README.md`. Its 2026-10-26 retention policy supersedes historical original-path instructions below: retired raw observations are not complete local replay inputs, and historical hashes do not establish current availability. Check the retained archives and inventories before planning a replay.
 
@@ -6026,7 +6026,7 @@ The VM provider supplies M51's fresh dedicated Rocky 8.10 guest through its norm
 | Tools | M47 | Track journal test tooling | Carry-forward | In progress | No | D32, D33, D49 | Bounded normal-stop, repeat and actual command-error results are published; full-day recipient input remains unresolved under D49; [detail](#m47---track-journal-test-tooling) |
 | Tools | M48 | Track ETL test tooling | Carry-forward | In progress | No | D32, D33, D49 | Canonical and #54 checklists agree: 22 verified and 59 unmet criteria; M32 Complete, with other collector/evaluator claims remaining under D49; [detail](#m48---track-etl-test-tooling) |
 | Tools | M49 | Track buffer test tooling | Carry-forward | Not started | Yes | D32, D33, D49 | Retained evidence first; only necessary bounded real cases, then source/issue reconciliation under D49; [detail](#m49---track-buffer-test-tooling) |
-| Tools | M50 | Track shared test tooling | Carry-forward | In progress | No | D32, D33, D34, D35, D36, D49 | M37/M46 Complete; canonical and #56 agree at eight checked and three unchecked criteria; [detail](#m50---track-shared-test-tooling) |
+| Tools | M50 | Track shared test tooling | Carry-forward | In progress | No | D32, D33, D34, D35, D36, D49 | Shared procedures verified locally; nine satisfied criteria, two remaining; repository and #56 publication pending; [detail](#m50---track-shared-test-tooling) |
 | Tools | G6 | Provide M33's dedicated systemd 239 query environment | External gate | Complete | No | D40 | Capacity, private handoff and actual guest access/versions verified; [detail](#g6---provide-m33s-dedicated-systemd-239-query-environment) |
 | Tools | G7 | Provide retained full-day JFR inputs for M34 | External gate | Complete | No | D43 | Both observations and frozen tools delivered; complete member/hash checks, original anchors and native JFR decoding verified locally; [detail](#g7---provide-retained-full-day-jfr-inputs-for-m34) |
 
@@ -9484,7 +9484,7 @@ Component canonical identities remain independent under this single GitHub proje
 - M37: historical source #42; checksum work is Complete under D36, with its four related boxes checked in #56.
 - M46: historical source #51; phase reporting is Complete, with its four related boxes checked in #56.
 
-Source GitHub issues were retired for consolidation at 2026-10-17T01:14:10.675787+00:00. M37 and M46 are Complete. Reusable-source, installation and shared-procedure criteria remain incomplete. Current tracking is #56; retired source metadata remains in component details.
+Source GitHub issues were retired for consolidation at 2026-10-17T01:14:10.675787+00:00. M37 and M46 are Complete. Shared procedures are documented and verified locally; their publication remains outstanding. Reusable-source and installation criteria remain incomplete. Current tracking is #56; retired source metadata remains in component details.
 
 ##### Detailed Work Summary
 
@@ -9514,6 +9514,12 @@ These summaries preserve the recorded scope. Each linked issue retains its full 
 - Remaining work: Declare inputs, pins, service effects and prerequisites; verify the real packaged installer separately.
 - Done when: Every installed command has its actual declared dependencies and effects, originals remain intact and no unobserved runtime failure is claimed.
 
+###### Shared evidence procedures
+
+- Result: `tests/archiver-soak/PROCEDURES.md` documents actual source/evidence selection, privacy, transfer eligibility and complete member checks, separate original/candidate replay and native-versus-wrapper verdict interpretation. Existing test-specific signals, durations, exposure and acceptance remain authoritative.
+- Verification: M50 / T4 checks shipped CLI help/source contracts, document links and shell syntax, complete current-source integrity and unchanged runtime sources. No new transfer/replay, live observation or independent-recipient result is claimed.
+- Remaining publication: Commit and land the documentation, then reconcile the single shared-procedure criterion in #56. Buffer source preservation and installer verification remain separate unfinished criteria.
+
 ##### Existing Evidence
 
 The baseline source manifest check reported three missing source files and sixteen mismatched hashes. M37 retains the original local correction evidence: 98-file parent coverage, passing 5/17-file child checks and twelve local real-copy regression tests before D35. Current shared-checker integration passed 19 declared cases with 96 parent and 5/17 child members; original sources and historical results remain intact. Source commits 8028c4d and 21dc11e are verified on origin/m14-middleware-reconcile; the checksum-only GitHub body update is applied and verified. Current-source manifests and immutable observation-specific manifests have different ownership. The retained buffer fixture installer writes ETL units referring to `collect.py` and `observe.py`, neither included in its 18-file bundle. That campaign uses its own runner, so no missing-dependency runtime failure is claimed. Setup embeds one-deployment paths/pins and is not a repeatable Ansible role.
@@ -9528,7 +9534,7 @@ Test-specific repairs owned by other groups, altering original evidence/frozen m
 - [ ] Preserve reusable buffer sources/procedures in Git-managed locations with explicit original/candidate identity and dependencies. Exclude raw captures, PB data, operational logs, credentials and deployment-specific configuration.
 - [ ] Make installation inputs, pins, service effects and prerequisites explicit. Install only commands whose declared dependencies are supplied; validate the real installer in a separate bounded environment and preserve originals.
 - [x] Complete the transferred phase-report criteria from #51 from actual start/end records against approximately one-hour journal basics, three-hour ETL processing, parallel full-day observations and two-hour result decision allocations. Separate preparation, processing, waiting, observation and analysis; never predict missing times.
-- [ ] Document shared source/evidence selection, privacy, transfer/member verification, original/candidate replay and verdict handling while retaining each test's own signals, timing and acceptance criteria.
+- [x] Document shared source/evidence selection, privacy, transfer/member verification, original/candidate replay and verdict handling while retaining each test's own signals, timing and acceptance criteria.
 
 ##### Transferred Acceptance Criteria
 
@@ -9552,6 +9558,7 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 ##### Dependencies And Decisions
 
+- Decision Date: 2026-11-07. Execute shared-procedure documentation under the accepted one-at-a-time approach. Document source/evidence selection, privacy, transfer/member checks, original/candidate replay and verdict handling from the shipped entry points. Verify document commands and source integrity locally; do not start another observation or claim buffer source preservation or installer completion.
 - Decision Date: 2026-11-07. Execute M46 retained-record phase reporting first. This activates the shared group for that component only; reusable-source and installer work remain unfinished.
 - D49; Decision Date: 2026-10-24. The bounded completion approach is accepted. This supersedes blanket group deferral for preparation and evidence accounting, not component results or scope. Component details retain their identities; select only missing claims after accounting for reusable evidence. No new trial has run.
 - D36; Decision Date: 2026-10-18. M37 is Complete. Its checksum-only activation under D34/D35 has ended; this group returns to Deferred for the remaining scope already excluded by D31. No other component is started or authorized by the closure record.
@@ -9573,6 +9580,8 @@ All criteria below remain active in the replacement issue. Source closure is adm
 3. Use a bounded real installation check only for changed packaging or missing dependency evidence. Run each selected installed entry point with its actual dependencies and inspect its declared service effects.
 4. Reusable sources and procedures are tracked, necessary installed commands have verified dependencies, measured phase durations and missing boundaries are recorded, and the issue matches those facts. Preserve native results and original inputs; do not mark an unexecuted or excluded check Passed.
 
+Shared-procedure execution scope; Plan Acceptance and Implementation Authorization: 2026-11-07. Add `tests/archiver-soak/PROCEDURES.md`, link it from the existing README, and update only the changed current-source manifest entries. Check the documented entry points, local links, complete source coverage and unchanged runtime sources. Installation, live capture, terminal lifecycle, fault exposure and long-duration acceptance are outside this documentation check; they retain their existing test-specific contracts. Record local verification before repository and issue publication.
+
 ##### Test Plan
 
 | Label | Layer | Method | Environment | Expected Result |
@@ -9580,6 +9589,7 @@ All criteria below remain active in the replacement issue. Source closure is adm
 | T1 | Source preservation | Run the actual checksum CLI and coverage checks specified by #42 on current sources and isolated real copies. | Reusable source tree and isolated copies | All required sources covered; frozen observation manifests unchanged. |
 | T2 | Installation | Run the actual packaged installer/preflight using declared inputs and inspect generated units and dependencies. | Separately authorized bounded deployment | Commands have real dependencies and declared service effects; private inputs excluded. |
 | T3 | Phase reporting | Reconcile retained controller/observation/terminal timestamps and phase receipts as specified by #51. | Retained completed-test records | Measured intervals distinguish overlap/waiting and disclose missing boundaries. |
+| T4 | Shared procedures | Compare the procedure with shipped CLI help/source contracts, check local links and command syntax, run the actual shared source checker, and compare runtime sources with the committed baseline. | Local checkout and installed shared helpers; no runtime observation | Selection, privacy, transfer, replay and verdict handling are explicit; documented commands exist; all required current sources pass; runtime files and original evidence are unchanged. |
 
 ##### Verification Results
 
@@ -9589,9 +9599,11 @@ All criteria below remain active in the replacement issue. Source closure is adm
 | T1 | 2026-10-18T18:02:02.562508+00:00 | Committed common checker; actual checkout and retained project copies | Passed locally | M37/T4: 19 project integration cases and the documented commands pass; current coverage is 96 parent and 5/17 child members. Duplicate local scripts are privately preserved and removed; all 95 non-target sources and frozen manifests are unchanged. Evidence: `work/source-checker-dedup-fu6jzviu/integration.json` and `preservation.json`. This does not complete other shared-tool criteria. |
 | T2 | Not run | Separately authorized bounded deployment | Pending | Future scoped verification is not established by grouping or by a historical result outside this check. |
 | T3 | 2026-11-08T02:59:31.144668+00:00 | Retained completed-test records and native field copies | Passed for phase reporting | M46 / T1 verifies 18 UTC intervals and five overlap calculations against unchanged actual records; source identities, waiting, allocation comparisons and missing boundaries are explicit in its Phase Duration Report. No runtime or original full-day replay was performed. Source 5ae70cd and exact #56 publication are verified in M46 Closure Evidence. |
+| T4 | 2026-11-08T06:14:18.009610+00:00 | Local checkout and installed shared helpers | Passed for documentation and source integrity | The real source checker verifies 107 parent, 5 diagnostic and 19 scenario members. Eight shipped CLI help invocations, three Bash syntax checks, local links, ASCII document text, register validation and diff checking pass. All 105 unchanged source members match baseline f89e63a; helper and selected preservation-record hashes are unchanged. Evidence: `work/shared-procedures-20261107/verification.json` and native command streams. Transfer/replay execution, installation, independent recipients and live/long-duration claims were not run. |
 
 ##### Closure Evidence
 
+- Shared-procedure documentation is verified locally by M50 / T4 at 2026-11-08T06:14:18.009610+00:00. Nine of eleven canonical criteria are satisfied; reusable buffer-source preservation and installation dependencies remain unfinished. Repository landing and the single corresponding #56 checkbox update remain outstanding, so M50 stays In progress. The last published checklist remains eight checked and three unchecked; documentation checks establish no new product or replay acceptance.
 - M46 is Complete after report landing in 5ae70cd and exact #56 readback at 2026-11-08T03:39:05Z. The canonical and published checklists agree: eight checked, three unchecked. Reusable-source preservation, installation dependencies and shared procedures remain unfinished; M50 remains In progress and #56 stays open. Receipt: `work/m46-phase-durations-20261107/publication.json`.
 - D49 publication reconciled at 2026-11-04T02:54:17Z: the applied #56 body matches the retained publication file and the source/plan commits are on origin/master. This records publication only; the group remains Not started with its remaining criteria open.
 - D49 approach accepted on 2026-10-24; group execution is Not started. Earlier dated Deferred statements below describe their recorded checkpoints. The accepted approach is not a verification result; no new criterion is completed merely by this plan update.
@@ -9602,7 +9614,7 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 ##### GitHub Projection
 
-- Projection Difference: None; exact published body matches the prepared phase-report update, with eight checked and three unchecked criteria. The D49 completion approach and other criterion texts are unchanged.
+- Projection Difference: Shared-procedure documentation is verified locally and its single criterion is checked canonically; the corresponding body update has not been prepared or published. Canonical criteria: nine checked, two unchecked. The last live readback remains eight checked, three unchecked. The D49 completion approach and other criterion texts are unchanged.
 - Title: `Track shared test tooling`
 - Labels: `enhancement`
 - GitHub Milestone: `Backlog`

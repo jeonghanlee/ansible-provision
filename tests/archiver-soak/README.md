@@ -15,10 +15,16 @@ configuration backups, measured CSVs, logs, JFR recordings and live run status.
 Those belong in private evidence directories. The canonical plan and observed
 verification results are in [the work register](../../docs/milestone-38560eb.md).
 
+Use the [shared evidence procedures](PROCEDURES.md) for source/input selection,
+privacy, transfer verification, separate original/candidate replay and verdict
+interpretation. Test-specific signals, timing and acceptance remain in the
+contracts below and the linked Journal/scenario procedures.
+
 ## Contents
 
 | Path | Purpose |
 | --- | --- |
+| `PROCEDURES.md` | Shared source/evidence selection, private transfer, original/candidate replay and result interpretation |
 | `etl-pass/collect.py` | Collect actual application-file pass events, diagnostics, metrics, process resources, stores, service state and GC/latency measurements |
 | `etl-pass/measure.py`, `heap.jfc` | Capture GC heap/collection/pause events, complete jstat fields, retrieval freshness and representative visibility bounds |
 | `etl-pass/resource_helpers.py` | Host, process and JVM helpers imported by the collector; preserves the baseline sampler source |
