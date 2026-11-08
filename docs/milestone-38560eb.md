@@ -31,7 +31,7 @@ Canonical branch or ref: `master`
 Git upstream: `origin/master`
 Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: M32 ETL verdict isolation is Complete. Source 6146651 is on origin/master, and exact #54 body readback at 2026-11-07T09:34:43Z confirms all four newly supported criteria. The canonical and live checklists agree: 22 checked and 59 unchecked; M48 remains In progress and #54 remains open for the other component claims. Continue M48 retained-evidence accounting under D49 by mapping the remaining criteria to available actual evidence and identifying only the missing claims. The completed 7200-second observation, four post-stop wait cases and frozen replay retain scheduler Passed, aggregate Incomplete and native status 1. Final evidence is `work/m32-live-20261106/verification.json`; the dedicated VM was shut down with its data retained. Do not repeat or extend that observation. Kernel interval coverage is separate work. M47 / T2 still needs a scope decision because original full-day replay inputs are unavailable. M49-M50 remain Not started; M14/M26 remain Blocked on G2/G5. No new full-day run or expanded producer matrix is selected.
+Next session entry point: Finish M46 publication before selecting another component. Its retained-record report and arithmetic verification are complete locally: 18 phase intervals and five overlap calculations, with scheduling waits and missing preparation/analysis boundaries explicit. Commit/landing and the matching #56 body update remain pending; M46 and M50 remain In progress. M50 has eight satisfied local criteria and three remaining; the live #56 body still has four checked and seven unchecked boxes. M32 is Complete in 71b7aa7 after source 6146651 and exact #54 publication. ETL has 22 checked and 59 unchecked criteria. M47 still needs a scope decision for unavailable original full-day replay inputs. M49 remains Not started; M14/M26 remain Blocked on G2/G5.
 
 Retained results and available inputs are indexed by `work/retained-test-results-20261026/README.md`. Its 2026-10-26 retention policy supersedes historical original-path instructions below: retired raw observations are not complete local replay inputs, and historical hashes do not establish current availability. Check the retained archives and inventories before planning a replay.
 
@@ -6022,11 +6022,11 @@ The VM provider supplies M51's fresh dedicated Rocky 8.10 guest through its norm
 | Tools | M43 | Reconcile retained ETL measurements and process identities | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m43---reconcile-retained-etl-measurements-and-process-identities) |
 | Tools | M44 | Compare ETL busy time and workload with retained earlier results | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m44---compare-etl-busy-time-and-workload-with-retained-earlier-results) |
 | Tools | M45 | Reproduce completed ETL observation reports on an independent recipient | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m45---reproduce-completed-etl-observation-reports-on-an-independent-recipient) |
-| Tools | M46 | Report actual test phase durations against the agreed allocations | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m46---report-actual-test-phase-durations-against-the-agreed-allocations) |
+| Tools | M46 | Report actual test phase durations against the agreed allocations | Carry-forward | In progress | No | D31, D49 | Retained phase report verified; source landing and #56 reconciliation pending; [detail](#m46---report-actual-test-phase-durations-against-the-agreed-allocations) |
 | Tools | M47 | Track journal test tooling | Carry-forward | In progress | No | D32, D33, D49 | Bounded normal-stop, repeat and actual command-error results are published; full-day recipient input remains unresolved under D49; [detail](#m47---track-journal-test-tooling) |
 | Tools | M48 | Track ETL test tooling | Carry-forward | In progress | No | D32, D33, D49 | Canonical and #54 checklists agree: 22 verified and 59 unmet criteria; M32 Complete, with other collector/evaluator claims remaining under D49; [detail](#m48---track-etl-test-tooling) |
 | Tools | M49 | Track buffer test tooling | Carry-forward | Not started | Yes | D32, D33, D49 | Retained evidence first; only necessary bounded real cases, then source/issue reconciliation under D49; [detail](#m49---track-buffer-test-tooling) |
-| Tools | M50 | Track shared test tooling | Carry-forward | Not started | Yes | D32, D33, D34, D35, D36, D49 | Retained evidence first; only necessary bounded real cases, then source/issue reconciliation under D49; [detail](#m50---track-shared-test-tooling) |
+| Tools | M50 | Track shared test tooling | Carry-forward | In progress | No | D32, D33, D34, D35, D36, D49 | M46 phase reporting active under D49; source preservation and installer verification remain unfinished; [detail](#m50---track-shared-test-tooling) |
 | Tools | G6 | Provide M33's dedicated systemd 239 query environment | External gate | Complete | No | D40 | Capacity, private handoff and actual guest access/versions verified; [detail](#g6---provide-m33s-dedicated-systemd-239-query-environment) |
 | Tools | G7 | Provide retained full-day JFR inputs for M34 | External gate | Complete | No | D43 | Both observations and frozen tools delivered; complete member/hash checks, original anchors and native JFR decoding verified locally; [detail](#g7---provide-retained-full-day-jfr-inputs-for-m34) |
 
@@ -8499,11 +8499,11 @@ Origin: 38560eb / M46
 Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
 GitHub Issue: #56, https://github.com/jeonghanlee/ansible-provision/issues/56
 Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #51 is closed not_planned at 2026-10-17T01:13:22Z; unfinished criteria are tracked in #56. Original issue references below are historical and do not create an active source-issue dependency.
-Status: Deferred
+Status: In progress
 
 ##### Summary
 
-The agreed schedule reserves approximately one hour for journal basics, three hours for ETL functionality, parallel full-day observations and two hours overall for the result decision. Actual preparation, waiting and analysis durations have not been consolidated against those allocations.
+The agreed schedule reserves approximately one hour for journal basics, three hours for ETL functionality, parallel full-day observations and two hours overall for the result decision. The retained-record report below separates measured intervals, overlapping observations, scheduling waits and missing preparation/analysis boundaries without changing those allocations.
 
 ##### Scope
 
@@ -8515,42 +8515,109 @@ Out of scope: New runtime tests, ETL or journal functionality reacceptance, and 
 
 ##### Completion Criteria
 
-- [ ] Each reported duration identifies actual start/end evidence and separates simultaneous work from elapsed wall time.
-- [ ] Waiting for default-chain scheduling is recorded explicitly; it is not presented as successful processing time.
-- [ ] Schedule conflicts and missing boundaries are disclosed without changing the agreed allocation, shortening an observation or inventing times.
+- [x] Each reported duration identifies actual start/end evidence and separates simultaneous work from elapsed wall time.
+- [x] Waiting for default-chain scheduling is recorded explicitly; it is not presented as successful processing time.
+- [x] Schedule conflicts and missing boundaries are disclosed without changing the agreed allocation, shortening an observation or inventing times.
 
 ##### Dependencies And Decisions
 
-- D31; Decision Date: 2026-10-15. Independent Backlog work is excluded from current execution; accepted M22/#30 ETL functionality and M25/#31 journal results remain complete.
+- D31; Decision Date: 2026-10-15. Historical deferral is superseded for phase reporting on 2026-11-07 under D49 and the selected one-at-a-time completion approach. M46 returns through Not started to In progress. Accepted M22/#30 ETL and M25/#31 journal results remain complete.
 - Coordination: M30/#35. This is a tracking relationship, not an invented sequential execution dependency.
 - Preserve original inputs, frozen tool identities and unsuccessful outcomes. Reuse retained evidence and bounded real-path checks; no new full-day producer run solely for tool correction or reporting.
 
 ##### Implementation Plan
 
-- Plan Status: draft
-- Plan Acceptance: none
-- Implementation Authorization: none
-- Superseded Plan Artifacts: none
+- Plan Status: accepted
+- Plan Acceptance: 2026-11-07; retained-record phase reporting, explicit default scheduling waits and missing-boundary disclosure.
+- Implementation Authorization: 2026-11-07; execute this selected component one at a time using existing evidence. No new runtime observation is included.
+- Superseded Plan Artifacts: generic deferred implementation steps.
 
-1. Preserve and identify actual existing inputs, original outcomes and frozen/candidate source boundaries.
-2. Perform only the scoped correction or follow-up after separate execution authorization.
-3. Execute the declared real path and record actual results without replacing internal path segments or rewriting original observations.
+1. Identify retained native controller, observation, terminal and command receipts; verify selected archive members against preservation hashes before deriving values. Read original records rather than copying prior narrative totals.
+2. Calculate actual UTC and available monotonic intervals for preparation, initial processing, regular-pass waiting, observation and analysis. Report simultaneous work separately from the combined wall-clock span; retain original allocations and failed attempts.
+3. Record each interval with source field selectors and identities, reproduce the arithmetic from unchanged inputs, and mark absent boundaries unknown. Preserve archived bytes and report the verified scope in M50/#56.
 
 ##### Test Plan
 
 | Label | Layer | Method | Environment | Expected Result |
 | --- | --- | --- | --- | --- |
-| T1 | Real-path tool verification | Reconcile actual controller/observation/terminal records and phase receipts already retained from the completed work. | Retained actual inputs and separately authorized bounded environment where required | All completion criteria established with explicit actual coverage; original unsuccessful evidence unchanged. |
+| T1 | Retained-record reconciliation | Verify archive/inventory and selected member hashes; derive UTC/monotonic intervals from native records and retained field copies; independently recalculate UTC durations and overlaps. | Local retained completed-test records; no runtime or replay rerun | Every reported interval has identified boundaries; overlap, scheduling waits, missing boundaries and original unsuccessful results remain explicit. |
 
 ##### Verification Results
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
-| T1 | Not run | Scoped future real-path verification | Pending | Original accepted behavior explains scope only; it does not establish completion of this follow-up. |
+| T1 | 2026-11-08T02:59:31.144668+00:00 | Retained native records and captured original fields on the control host | Passed for identity and duration reconciliation | Eighteen UTC intervals and five overlap calculations independently matched GNU date and an integer event sweep. Two archive/inventory pairs match preservation hashes; all 17 selected archive members match retained bytes. Nineteen duration-source files remain unchanged. The ETL inspection producer and captured remote program match their receipts. Original setup and both ETL terminal Incomplete results are preserved. Evidence: `work/m46-phase-durations-20261107/durations.json` and `verification.json`. No runtime or original full-day replay was performed. |
+
+##### Phase Duration Report
+
+All boundaries below are UTC. Elapsed seconds are exact differences of the retained timestamp fields; they are not CPU time or hands-on effort. The private calculation record identifies each source path, SHA256 and field selector. Its SHA256 is `677e79021a76dade5e6e3a8899f8bb1d69a56b7910c421bf3872d27076ce4c3c`.
+
+| Recorded interval | Start UTC | End UTC | Elapsed seconds |
+| --- | --- | --- | --- |
+| Journal basic recording | 2026-10-13 16:57:52.576315 | 2026-10-13 17:58:53.437811 | 3660.861496 |
+| Visible ETL setup envelope | 2026-10-13 17:55:08.841670 | 2026-10-13 18:12:20.368533 | 1031.526863 |
+| Shortened initial functional check | 2026-10-13 18:12:17.440901 | 2026-10-13 18:16:15.640934 | 238.200033 |
+| Default initial functional check | 2026-10-13 18:12:20.526017 | 2026-10-13 18:16:17.220844 | 236.694827 |
+| Shortened initial-to-continuation gap | 2026-10-13 18:16:15.640934 | 2026-10-13 21:26:00.412898 | 11384.771964 |
+| Default initial-to-continuation gap | 2026-10-13 18:16:17.220844 | 2026-10-13 21:26:02.378201 | 11385.157357 |
+| Shortened continuation launch-to-completion | 2026-10-13 21:26:00.412898 | 2026-10-13 21:26:31.680391 | 31.267493 |
+| Default continuation launch-to-completion | 2026-10-13 21:26:02.378201 | 2026-10-14 00:10:34.226631 | 9871.848430 |
+| Shortened full functional envelope | 2026-10-13 18:12:17.440901 | 2026-10-13 21:26:31.680391 | 11654.239490 |
+| Default full functional envelope | 2026-10-13 18:12:20.526017 | 2026-10-14 00:10:34.226631 | 21493.700614 |
+| Journal full-day recorded window | 2026-10-13 22:04:17.803792 | 2026-10-14 22:05:35.231640 | 86477.427848 |
+| Shortened full-day window | 2026-10-14 02:10:54.145355 | 2026-10-15 02:11:10.531953 | 86416.386598 |
+| Default full-day window | 2026-10-14 02:17:02.827005 | 2026-10-15 02:17:17.915151 | 86415.088146 |
+| Shortened normal finalization | 2026-10-15 02:11:10.531953 | 2026-10-15 02:11:41.687253 | 31.155300 |
+| Default normal finalization | 2026-10-15 02:17:17.915151 | 2026-10-15 02:17:49.054688 | 31.139537 |
+| Shortened retained inspection command | 2026-10-15 16:25:03.878805 | 2026-10-15 16:25:18.066287 | 14.187482 |
+| Default retained inspection command | 2026-10-15 16:26:12.947886 | 2026-10-15 16:26:20.720796 | 7.772910 |
+| Default finalization-to-inspection checkpoint | 2026-10-15 02:17:49.054688 | 2026-10-15 16:26:20.720796 | 50911.666108 |
+
+Source selection uses the journal-basic and ETL-functional retained archives, plus the original read-only ETL full-day inspection receipts. In the table below, chain-specific records are selected for the corresponding shortened/default row; functional envelopes and gaps use those same initial, launch and completion endpoints.
+
+| Boundary | Retained source and field selector |
+| --- | --- |
+| Journal basic start/end | Basic replay input `contract.json:start.utc` and `observation.json:ended.utc`; both monotonic counters and equal boot identities are retained. |
+| Visible setup start/end | Shortened `initial-evidence/preparation/etl-functional-setup/result.json:started_at` and default `initial-evidence/preparation/etl-functional-ready/result.json:launched_at`. |
+| Initial functional start/end | Each chain's `initial-evidence/focused/<chain>/functional-initial-result.json:started_at` and `completed_at`; wrapper completion timestamps are not substituted. |
+| Continuation launch | Each chain's `regular-start.stdout:launched_at`. |
+| Continuation completion | Shortened `regular-monitor-2127.stdout:functional.finished_at`; default `regular-start-readiness-query.stdout:functional.finished_at`. |
+| Journal full-day start/end | `long-full-start-001.stdout:t0.utc` and `inspect-finished-long-20261014.stdout:ended.utc`; these are retained field copies, not complete original replay inputs. The start is the declared recording-window boundary, not the earlier launch-command completion. |
+| ETL full-day start/end | Each `<chain>-inspection-001.json:inspection.window.started_at` and `inspection.terminal.finish_started_at`; starts also match archived `active-observation-003.stdout:started_at`. |
+| ETL finalization end | Each `<chain>-inspection-001.json:inspection.terminal.finished_at`. |
+| Inspection command start/end | Each `<chain>-inspection-001.json:started_at` and `finished_at`. These measure command execution only. |
+
+Archive SHA256 values are `5135c76dd8be23496debc40eeb7cefb4e1d3ab65c47eb530c9baa2c82c4c3142` for `journal-basic-20261013.tar.gz` and `85e6f11ab45bf580122d998c9ccd526ee05d586d51495acaafea8e703c1b4b8f` for `etl-functional-20261013.tar.gz`. Their compressed inventories also match `preservation.json`; all selected member bytes match those inventories. The full-day ETL receipts retain original manifest/terminal hashes and unchanged-input assertions. Their inspection producer matches SHA256 `14adb76f9a9c2732d2b17c86fe904b67f197b24730979c5c7d1821434083f77c`, and each JSON inspection exactly matches its captured stdout. This verifies the retained copies' provenance; it does not establish present availability or replay of the retired full-day originals.
+
+Monotonic seconds are 3660.861488975 for journal basics, matching its native result; the full-day ETL terminals record 86416.38661314899 and 86415.088157011 with unchanged boot identities. The retained journal full-day counter difference is 86477.427856090, but the selected field copies do not supply an independent same-boot check; UTC remains the reported boundary basis for that row. Cross-host overlaps use UTC, never a sum or subtraction of different hosts' monotonic clocks.
+
+| Combined intervals | Wall span seconds | Covered-time union seconds | Sum of member seconds | Repeated overlap seconds |
+| --- | --- | --- | --- | --- |
+| Parallel initial functional checks | 239.779943 | 239.779943 | 474.894860 | 235.114917 |
+| Parallel continuation jobs | 9873.813733 | 9873.813733 | 9903.115923 | 29.302190 |
+| Parallel ETL full-day windows | 86783.769796 | 86783.769796 | 172831.474744 | 86047.704948 |
+| Journal and both ETL full-day windows | 101580.111359 | 101580.111359 | 259308.902592 | 157728.791233 |
+| Retained inspection commands | 76.841991 | 21.960392 | 21.960392 | 0.000000 |
+
+Wall span runs from the earliest selected start to the latest end. Covered-time union excludes uncovered gaps; repeated overlap is the member sum minus that union, so a triple-covered instant contributes twice. These are elapsed-record calculations, not measurements of processor utilization. Preparation, functional envelopes and observation rows overlap or contain other rows and must not be added into an overall campaign duration.
+
+| Agreed allocation | Measured comparison and limit |
+| --- | --- |
+| Approximately one hour for journal basics | The recording lasted 61 minutes 0.861496 seconds, 60.861496 seconds beyond 3600; setup and reconciliation are outside these recording boundaries. |
+| Approximately three hours for ETL functionality | Initial checks took 238.200033/236.694827 seconds. Start-to-continuity completion spans were 3 hours 14 minutes 14.239490 seconds and 5 hours 58 minutes 13.700614 seconds. Both exceed a three-hour wall-clock allocation, but include unassigned gaps and scheduling waits; neither is a measured processing-only duration. |
+| Parallel full-day observations | Each recorded window exceeds 86400 seconds. The two ETL windows cover 24 hours 6 minutes 23.769796 seconds of elapsed time; including the earlier journal window gives 28 hours 13 minutes 0.111359 seconds. Staggered starts explain why the combined span exceeds one day. Summed member durations are not elapsed campaign time. |
+| Approximately two hours overall for the result decision | Unknown: complete analysis/decision start and end boundaries and hands-on effort are not established by the retained phase receipts. The two inspection commands total 21.960392 seconds; the 14 hours 8 minutes 31.666108 seconds from default finalization to the later inspection is an elapsed checkpoint span, not analysis work. Neither establishes compliance with the two-hour allocation. |
+
+Preparation is only partially bounded: the visible 17 minutes 11.526863 seconds covers selected setup through the final ready launch, includes an Incomplete fixture-registration attempt and gaps, and overlaps other work. It does not measure complete VM provisioning or all preparation. The 3 hours 9 minutes 44.771964/45.157357 seconds before continuation launch have no activity attribution and are not assigned to scheduler waiting.
+
+Default continuation remained active with `regular_pass_continuity=Pending` at 2026-10-13 22:27:19.571718 UTC in `regular-monitor-2228.stdout`. Its launch-to-completion span is 2 hours 44 minutes 31.848430 seconds and includes default-chain scheduling waits plus final checks. An exact idle-only/processing-only split is unavailable. The shortened continuation span is 31.267493 seconds. Original initial, setup and terminal verdicts are preserved; reporting durations neither changes the original Incomplete terminals nor reaccepts functionality.
+
+Complete provisioning boundaries, activity within the pre-continuation gaps, pure ETL processing time and complete journal/ETL analysis-to-decision boundaries remain unknown. The original one-hour/three-hour/parallel-full-day/two-hour allocations are unchanged. No observation was shortened and no new runtime test or original full-day replay was used to fill missing records.
 
 ##### Closure Evidence
 
-- Not complete. D31 excludes this independent follow-up from current execution; no candidate correction or follow-up acceptance is claimed.
+- The phase report satisfies all three local criteria as verified at 2026-11-08T02:59:31.144668+00:00. Repository commit/landing and the matching #56 body publication remain pending, so M46 remains In progress. This is retained-record reconciliation only, not a new runtime result.
+- The shared issue must remain open for its other three unsatisfied criteria. After report landing and exact issue readback, record the component closure with the dated shared-issue exception under the accepted D49 component boundary.
 
 ##### GitHub Projection
 
@@ -8560,14 +8627,16 @@ Out of scope: New runtime tests, ETL or journal functionality reacceptance, and 
 - Assignee: `jeonghanlee`
 - Issue: #56, https://github.com/jeonghanlee/ansible-provision/issues/56
 - Projection Scope: Component contract from historical source #51; current tracking uses its section in the consolidated issue.
+- Projection Difference: All three phase-report criteria are satisfied locally; the corresponding #56 body update has not been applied.
 - Observed State: open
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-17T01:09:45Z
-- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
-- Prepared Body: `work/issue-tools-shared.md`
-- Published Body SHA256: 991316dabf5a9f3ac639c6550aa1a090cd16b43f0aa719c0e0afa8f477e906c2
+- Observed Updated At: 2026-10-24T20:20:34Z
+- Last Compared: 2026-11-08T03:03:52Z; live #56 remains open with four checked and seven unchecked boxes. Title, labels, milestone, assignee and body match the retained pre-publication snapshot in `work/m46-phase-durations-20261107/issue-before.json`.
+- Prepared Body: `work/issue-shared-phase-body.md`
+- Prepared Body SHA256: ec26f27e5083f441797de4526aa65041405e7d3aaa49e9cfaf207374301e6ea5
+- Published Body SHA256: 59cde8d545dbe6515cc5c77703c4f89c7e95b378adf65320b5dde130771655e3
 - Historical Source Issue: #51, https://github.com/jeonghanlee/ansible-provision/issues/51
 - Historical Source State: closed
 - Historical Source Reason: not_planned
@@ -9384,7 +9453,7 @@ Reopening jeonghanlee/epicsarchiverap-maven#29, editing Maven code here, a new f
 Origin: 38560eb / M50
 Identity History: created as a test-type coordination entry on 2026-10-16 (D32); no existing identity is replaced.
 GitHub Issue: #56, https://github.com/jeonghanlee/ansible-provision/issues/56
-Status: Not started
+Status: In progress
 
 ##### Summary
 
@@ -9411,9 +9480,9 @@ All remaining component work is tracked directly in this issue. Source issue ref
 Component canonical identities remain independent under this single GitHub projection:
 
 - M37: historical source #42; checksum work is Complete under D36, with its four related boxes checked in #56.
-- M46: historical source #51; unfinished work is tracked in #56.
+- M46: historical source #51; retained phase reporting is verified locally, with publication outstanding in #56.
 
-Source GitHub issues were retired for consolidation at 2026-10-17T01:14:10.675787+00:00. M37 is now Complete; M46 and the other remaining shared criteria are Deferred and incomplete. Current tracking is #56; retired source metadata remains in component details.
+Source GitHub issues were retired for consolidation at 2026-10-17T01:14:10.675787+00:00. M37 is Complete; M46 is In progress until its verified report is published. Reusable-source, installation and shared-procedure criteria remain incomplete. Current tracking is #56; retired source metadata remains in component details.
 
 ##### Detailed Work Summary
 
@@ -9427,8 +9496,8 @@ These summaries preserve the recorded scope. Each linked issue retains its full 
 
 ###### #51 - Report actual test phase durations against the agreed allocations
 
-- Problem and evidence: Actual phase durations have not been consolidated against agreed one-hour journal, three-hour ETL, parallel full-day and two-hour decision allocations.
-- Remaining work: Reconcile retained UTC/monotonic boundaries, separating preparation, processing, waiting, observation and analysis.
+- Result: Eighteen retained UTC intervals and five overlap calculations are verified. Journal basics lasted 3660.861496 seconds; the default continuation span was 9871.848430 seconds including scheduling waits and checks. Parallel ETL observations span 86783.769796 seconds, not their summed 172831.474744 seconds. Complete preparation and analysis boundaries remain explicitly unknown; the original allocations and unsuccessful results are unchanged.
+- Remaining work: Commit and land the canonical report, then reconcile the four related #56 boxes. No new runtime observation is required.
 - Done when: Measured elapsed/simultaneous work, default scheduling waits and missing boundaries are explicit; original allocations are unchanged.
 
 ###### Reusable source and procedure preservation
@@ -9456,7 +9525,7 @@ Test-specific repairs owned by other groups, altering original evidence/frozen m
 - [x] Complete the transferred checksum criteria from #42 through the actual checksum CLI and current-source coverage check, detecting missing, omitted, duplicate, removed or changed files without regenerating original observation manifests.
 - [ ] Preserve reusable buffer sources/procedures in Git-managed locations with explicit original/candidate identity and dependencies. Exclude raw captures, PB data, operational logs, credentials and deployment-specific configuration.
 - [ ] Make installation inputs, pins, service effects and prerequisites explicit. Install only commands whose declared dependencies are supplied; validate the real installer in a separate bounded environment and preserve originals.
-- [ ] Complete the transferred phase-report criteria from #51 from actual start/end records against approximately one-hour journal basics, three-hour ETL processing, parallel full-day observations and two-hour result decision allocations. Separate preparation, processing, waiting, observation and analysis; never predict missing times.
+- [x] Complete the transferred phase-report criteria from #51 from actual start/end records against approximately one-hour journal basics, three-hour ETL processing, parallel full-day observations and two-hour result decision allocations. Separate preparation, processing, waiting, observation and analysis; never predict missing times.
 - [ ] Document shared source/evidence selection, privacy, transfer/member verification, original/candidate replay and verdict handling while retaining each test's own signals, timing and acceptance criteria.
 
 ##### Transferred Acceptance Criteria
@@ -9473,14 +9542,15 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 ###### Source #51 - Report actual test phase durations against the agreed allocations
 
-- [ ] Each reported duration identifies actual start/end evidence and separates simultaneous work from elapsed wall time.
-- [ ] Waiting for default-chain scheduling is recorded explicitly; it is not presented as successful processing time.
-- [ ] Schedule conflicts and missing boundaries are disclosed without changing the agreed allocation, shortening an observation or inventing times.
+- [x] Each reported duration identifies actual start/end evidence and separates simultaneous work from elapsed wall time.
+- [x] Waiting for default-chain scheduling is recorded explicitly; it is not presented as successful processing time.
+- [x] Schedule conflicts and missing boundaries are disclosed without changing the agreed allocation, shortening an observation or inventing times.
 
 
 
 ##### Dependencies And Decisions
 
+- Decision Date: 2026-11-07. Execute M46 retained-record phase reporting first. This activates the shared group for that component only; reusable-source and installer work remain unfinished.
 - D49; Decision Date: 2026-10-24. The bounded completion approach is accepted. This supersedes blanket group deferral for preparation and evidence accounting, not component results or scope. Component details retain their identities; select only missing claims after accounting for reusable evidence. No new trial has run.
 - D36; Decision Date: 2026-10-18. M37 is Complete. Its checksum-only activation under D34/D35 has ended; this group returns to Deferred for the remaining scope already excluded by D31. No other component is started or authorized by the closure record.
 - D35; Decision Date: 2026-10-18. M37 uses the committed common checker instead of duplicate local scripts. Only this source-check component is active; other shared work remains unauthorized.
@@ -9516,10 +9586,11 @@ All criteria below remain active in the replacement issue. Source closure is adm
 | T1 | 2026-10-17T06:51:10.441861+00:00 | Actual current source checkout and isolated real copies | Passed locally | M37 T1-T3: 98 parent members, 5/17 child members, twelve real CLI regression tests and unchanged frozen/source identities. Scope is checksum work only; commit/landing and the published checkbox update remain outstanding. |
 | T1 | 2026-10-18T18:02:02.562508+00:00 | Committed common checker; actual checkout and retained project copies | Passed locally | M37/T4: 19 project integration cases and the documented commands pass; current coverage is 96 parent and 5/17 child members. Duplicate local scripts are privately preserved and removed; all 95 non-target sources and frozen manifests are unchanged. Evidence: `work/source-checker-dedup-fu6jzviu/integration.json` and `preservation.json`. This does not complete other shared-tool criteria. |
 | T2 | Not run | Separately authorized bounded deployment | Pending | Future scoped verification is not established by grouping or by a historical result outside this check. |
-| T3 | Not run | Retained completed-test records | Pending | Future scoped verification is not established by grouping or by a historical result outside this check. |
+| T3 | 2026-11-08T02:59:31.144668+00:00 | Retained completed-test records and native field copies | Passed for phase reporting | M46 / T1 verifies 18 UTC intervals and five overlap calculations against unchanged actual records; source identities, waiting, allocation comparisons and missing boundaries are explicit in its Phase Duration Report. No runtime or original full-day replay was performed. Repository/issue publication is pending. |
 
 ##### Closure Evidence
 
+- M46 reporting is verified locally at 2026-11-08T02:59:31.144668+00:00. Eight of eleven shared criteria are now satisfied locally; three remain for reusable-source preservation, installation dependencies and shared procedures. The live #56 body still has four checked and seven unchecked boxes until the prepared update is authorized and read back. M50 remains In progress.
 - D49 publication reconciled at 2026-11-04T02:54:17Z: the applied #56 body matches the retained publication file and the source/plan commits are on origin/master. This records publication only; the group remains Not started with its remaining criteria open.
 - D49 approach accepted on 2026-10-24; group execution is Not started. Earlier dated Deferred statements below describe their recorded checkpoints. The accepted approach is not a verification result; no new criterion is completed merely by this plan update.
 - Not complete; Decision Date: 2026-10-18 (D36). The checksum component M37 is Complete, with four checked boxes in #56. The remaining seven boxes stay unchecked and the issue stays open. The remaining group scope returns to Deferred because D34/D35 authorized only checksum execution; other plans remain draft and unauthorized.
@@ -9529,7 +9600,7 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 ##### GitHub Projection
 
-- Projection Difference: None for the D49 completion approach; the applied body exactly matches the retained publication file. Remaining verification criteria stay open.
+- Projection Difference: Four phase-report boxes and their verified result summary need publication. The live body still has four checked and seven unchecked boxes; the local canonical criteria have eight checked and three unchecked. The D49 completion approach and other criteria are unchanged.
 - Title: `Track shared test tooling`
 - Labels: `enhancement`
 - GitHub Milestone: `Backlog`
@@ -9541,10 +9612,10 @@ All criteria below remain active in the replacement issue. Source closure is adm
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
 - Observed Updated At: 2026-10-24T20:20:34Z
-- Last Compared: 2026-11-04T02:54:17Z; exact full-body match and open state, title, labels, milestone and assignee verified by `gh issue view 56 --repo jeonghanlee/ansible-provision --json body,state,title,labels,milestone,assignees,updatedAt`. Checked boxes: 4; unchecked: 7.
+- Last Compared: 2026-11-08T03:03:52Z; exact full-body match and open state, title, labels, milestone and assignee verified by `gh issue view 56 --repo jeonghanlee/ansible-provision --json body,state,title,labels,milestone,assignees,updatedAt`. Checked boxes: 4; unchecked: 7. The phase-report draft preserves all eleven criterion texts and changes exactly four boxes to checked.
 - Checksum Projection: Unchanged; the D49 completion approach is published, with four checksum boxes checked and seven other boxes unchecked.
-- Prepared Body: `work/issue-shared-bounded-body.md`
-- Prepared Body SHA256: 59cde8d545dbe6515cc5c77703c4f89c7e95b378adf65320b5dde130771655e3
+- Prepared Body: `work/issue-shared-phase-body.md`
+- Prepared Body SHA256: ec26f27e5083f441797de4526aa65041405e7d3aaa49e9cfaf207374301e6ea5
 - Published Body SHA256: 59cde8d545dbe6515cc5c77703c4f89c7e95b378adf65320b5dde130771655e3
 - Historical Source Issues: #42, #51
 
