@@ -41,6 +41,7 @@ contracts below and the linked Journal/scenario procedures.
 | `etl-pass/aggregate.py`, `evidence.py`, `rate-semantics.json` | Portable numerical aggregation, bounded GC overlap handling and pinned metric meanings |
 | `etl-pass/pass_source.py` | Capture actual per-component Log4j File events with producer PID/invocation, immutable file-prefix receipts and native completed-pass fields |
 | `journal-validation/` | Independent journal installation, producer schedules, direct queries, native collection and frozen replay |
+| `buffer-validation/` | Preserved buffer observer, native shim, decoder, campaign and diagnostics with original hashes and explicit build/configuration dependencies |
 | `diagnostics/` | Retained full-day/fault-record analysis and actual fixed-interval physical/HTTP checkpoints |
 | `etl-scenarios/` | Preserved preparation, module challenge, actual source-fault and replay payloads with explicit private configuration |
 | `etl-pass/test_contract.py` | Contract, bundle, fixture-preservation and retained-export replay checks |
@@ -63,6 +64,11 @@ sources and fixtures originate from `work/soak-9eed006/`. The registration
 client is shared by both workflows. `resource_helpers.py` and the baseline
 sampler retain separate filenames because the current collector imports that
 module name. Original working copies remain in private evidence directories.
+
+Buffer sources and their build/configuration contracts are documented in
+[`buffer-validation/README.md`](buffer-validation/README.md). They use shared
+fixtures and the parent source manifest; source preservation does not establish
+installer or campaign acceptance.
 
 Reusable retained-record diagnostics are documented in
 [`diagnostics/README.md`](diagnostics/README.md). Additional-test execution

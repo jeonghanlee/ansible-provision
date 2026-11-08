@@ -1,0 +1,144 @@
+{
+  "format_version": 1,
+  "scope": "Reusable buffer verification sources; no runtime evidence or deployment inputs.",
+  "original_archive_sha256": "ded31931b66db42b6cc06a41f0b8a0fc65b93af87a05cdbe11544492d942cae7",
+  "original_inventory_sha256": "8ee2deef53568d2f0c9009c04ad74dc999a1bc5c1b8a1f4b4abb906ea2484a5b",
+  "current_source_identity": "../SHA256SUMS and the carrying Git commit; original hashes are immutable.",
+  "appliance_source": "629533a37ef889ffe3203d97538038eaaec95283",
+  "environment_source": "482cf2939ea997064e4a2df64e3cb420681f4566",
+  "members": [
+    {
+      "original_member": "deployed-tools/Agent.java",
+      "original_sha256": "d5a4917496a3ca2187a0fcfd04de2d7b7115f6d942ca110e267e8ceb2aa76567",
+      "disposition": "preserved-source",
+      "source": "Agent.java"
+    },
+    {
+      "original_member": "deployed-tools/PBDecode.java",
+      "original_sha256": "d862cba16b7cbd95eb07f4aa2df42b7a48177b75b1393ac85ec985ebcaa317e0",
+      "disposition": "preserved-source",
+      "source": "PBDecode.java"
+    },
+    {
+      "original_member": "deployed-tools/Trace.java",
+      "original_sha256": "4246c385c9ee5d0c46855bff32eb7218d89f4c03dc903b51dd4d37f1097253a2",
+      "disposition": "preserved-source",
+      "source": "Trace.java"
+    },
+    {
+      "original_member": "deployed-tools/aasoak.db",
+      "original_sha256": "c0a70bbd3b4e9bf9b37df6ad3cb6fb5b78889c5dc1bac172ce738b5619d2e1b5",
+      "disposition": "shared-source",
+      "source": "../fixtures/aasoak.db"
+    },
+    {
+      "original_member": "deployed-tools/bootstrap.jar",
+      "original_sha256": "be4866541f53f83fb2861c1d2d01215a8e287040d80c63d3b459508ee7723666",
+      "disposition": "build-output",
+      "sources": [
+        "Trace.java"
+      ]
+    },
+    {
+      "original_member": "deployed-tools/campaign.py",
+      "original_sha256": "43d7464b932d2d1f7bfd9434cdf41a70cfb44b4af0bd1de25d2b127659252813",
+      "disposition": "preserved-source",
+      "source": "campaign.py"
+    },
+    {
+      "original_member": "deployed-tools/fast.txt",
+      "original_sha256": "47ba9fabb82725c1e7c2717075a214a7a9d58d527c64b5636daa1d21e9c99f3d",
+      "disposition": "preserved-source",
+      "source": "fast.txt"
+    },
+    {
+      "original_member": "deployed-tools/fixture-sha256.json",
+      "original_sha256": "c5f521b81437f13b588ba8d04a0d644a9b7ee9a3ecc95127d9afb22df8874300",
+      "disposition": "preserved-source",
+      "source": "fixture-sha256.json"
+    },
+    {
+      "original_member": "deployed-tools/install-fixture.py",
+      "original_sha256": "281937eed9ce1a97e626801d05c15d673b1ea8928e2c23963bcea0875728b3e0",
+      "disposition": "shared-source",
+      "source": "../etl-pass/install-fixture.py"
+    },
+    {
+      "original_member": "deployed-tools/load1.db",
+      "original_sha256": "c7cfa5d2c934db5f1ee204da2289a6ebe96acbb2882e1518feba109fbcbfcf54",
+      "disposition": "shared-source",
+      "source": "../fixtures/load1.db"
+    },
+    {
+      "original_member": "deployed-tools/load2.db",
+      "original_sha256": "229f7f6725c4a21417974f113b97cacf2b8621aae2c4593f7917dbf54921061e",
+      "disposition": "shared-source",
+      "source": "../fixtures/load2.db"
+    },
+    {
+      "original_member": "deployed-tools/observer.jar",
+      "original_sha256": "96c3625a5e02959feaa0d0d02a254628c7b47d66becc21e7f227eedd031285df",
+      "disposition": "build-output",
+      "sources": [
+        "Agent.java",
+        "observer.mf"
+      ]
+    },
+    {
+      "original_member": "deployed-tools/pvs-all.csv",
+      "original_sha256": "037a92691bc23a6dcac37ec3613ad19c9f80b93b689209ec8dc403b519eaf594",
+      "disposition": "shared-source",
+      "source": "../fixtures/pvs-all.csv"
+    },
+    {
+      "original_member": "deployed-tools/register.py",
+      "original_sha256": "56e852b053cbdebf2713e1973372a1621b015b59cfe3c2bb1ab9a43cd02a8ebf",
+      "disposition": "shared-source",
+      "source": "../etl-pass/register.py"
+    },
+    {
+      "original_member": "deployed-tools/retest-deadband.db",
+      "original_sha256": "22807aa84340c38afade200f5bd277ee24ce708f00acd48bae17922e18e1d1d6",
+      "disposition": "shared-source",
+      "source": "../fixtures/retest-deadband.db"
+    },
+    {
+      "original_member": "deployed-tools/runner.py",
+      "original_sha256": "8434436962c66e9b524018b527b2ce4baa0bf05b3312e07d9d96b4874a35c553",
+      "disposition": "preserved-source",
+      "source": "runner.py"
+    },
+    {
+      "original_member": "deployed-tools/setup.py",
+      "original_sha256": "e83fd6126c515e90505902eadec288d2b8ebc61489122f6d5407b1fd14594686",
+      "disposition": "configured-source",
+      "source": "setup.py",
+      "configuration_changes": [
+        "Require BUFFER_SOURCE_DIR instead of a deployment-specific staging path."
+      ],
+      "imported_sha256": "e8d96c07094278f6e5be40d1cff26b5b027b03365396f92f0db62568dbf42189"
+    },
+    {
+      "original_member": "deployed-tools/shim.c",
+      "original_sha256": "f1c2f4c67454df8b642ca96e13ac9a8fa7d5b7d599efefd77b506a8567faea7f",
+      "disposition": "preserved-source",
+      "source": "shim.c"
+    },
+    {
+      "original_member": "received/source-diagnostics/TransformCheck.java",
+      "original_sha256": "988492dbd356dbe765333c0dbdad208a4c07702bafe696df2a353d96872e18d1",
+      "disposition": "preserved-source",
+      "source": "source-diagnostics/TransformCheck.java"
+    },
+    {
+      "original_member": "received/source-diagnostics/verify_retained.py",
+      "original_sha256": "689a4dc920b7a348c2f81dd0e8e67d73a8eb08fcbf40eefd1450901b23369eaf",
+      "disposition": "configured-source",
+      "source": "source-diagnostics/verify_retained.py",
+      "configuration_changes": [
+        "Require BUFFER_REPLAY_OUTPUT, BUFFER_REPLAY_ARCHIVE and BUFFER_REPLAY_RUNNER instead of deployment-specific paths."
+      ],
+      "imported_sha256": "ecb3c05f5282e1d7e2e5510bce08db7669e348479c5ebadf5e868209cba37387"
+    }
+  ]
+}
