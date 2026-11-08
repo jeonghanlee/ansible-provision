@@ -31,7 +31,7 @@ Canonical branch or ref: `master`
 Git upstream: `origin/master`
 Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: M32 ETL verdict isolation passed its scoped verification. One actual 7200-second shortened observation completed with 26/26 required passes, normal stop, four post-stop wait cases and terminal/replay agreement. The scheduler verdict is Passed; kernel diagnostics, overall Incomplete and native status 1 remain preserved. Final evidence is `work/m32-live-20261106/verification.json`, verified at 2026-11-06T23:41:56.796490+00:00. The dedicated VM was shut down with its data retained. Next, prepare the verified source changes for commit and reconcile the four newly supported #54 criteria after source landing; M32 and M48 remain In progress until their publication conditions are satisfied. The canonical #54 checklist has 22 checked and 59 unchecked criteria; the live issue still has 18 checked and 63 unchecked. Do not repeat or extend the completed observation. Kernel interval coverage is separate work. M47 / T2 still needs a scope decision because original full-day replay inputs are unavailable. M49-M50 remain Not started; M14/M26 remain Blocked on G2/G5. No full-day run or expanded producer matrix is selected.
+Next session entry point: M32 ETL verdict isolation is Complete. Source 6146651 is on origin/master, and exact #54 body readback at 2026-11-07T09:34:43Z confirms all four newly supported criteria. The canonical and live checklists agree: 22 checked and 59 unchecked; M48 remains In progress and #54 remains open for the other component claims. Continue M48 retained-evidence accounting under D49 by mapping the remaining criteria to available actual evidence and identifying only the missing claims. The completed 7200-second observation, four post-stop wait cases and frozen replay retain scheduler Passed, aggregate Incomplete and native status 1. Final evidence is `work/m32-live-20261106/verification.json`; the dedicated VM was shut down with its data retained. Do not repeat or extend that observation. Kernel interval coverage is separate work. M47 / T2 still needs a scope decision because original full-day replay inputs are unavailable. M49-M50 remain Not started; M14/M26 remain Blocked on G2/G5. No new full-day run or expanded producer matrix is selected.
 
 Retained results and available inputs are indexed by `work/retained-test-results-20261026/README.md`. Its 2026-10-26 retention policy supersedes historical original-path instructions below: retired raw observations are not complete local replay inputs, and historical hashes do not establish current availability. Check the retained archives and inventories before planning a replay.
 
@@ -6008,7 +6008,7 @@ The VM provider supplies M51's fresh dedicated Rocky 8.10 guest through its norm
 | Tools | M29 | Track ETL collection-tool follow-ups | Carry-forward | Deferred | No | D29, D30, D31 | Coordinate independent child completion and retain original evidence; no combined implementation or repeat full-day run solely for tool repair; [detail](#m29---track-etl-collection-tool-follow-ups) |
 | Tools | M30 | Track ETL evaluation and reporting follow-ups | Carry-forward | Deferred | No | D29, D30, D31 | Coordinate independent child completion and retain original evidence; no combined implementation or repeat full-day run solely for tool repair; [detail](#m30---track-etl-evaluation-and-reporting-follow-ups) |
 | Tools | M31 | Preserve kernel cursor refusal evidence and prove interval coverage | Carry-forward | Deferred | No | D31, D49 | Bounded query receipts verified locally; full interval-coverage work remains Deferred; [detail](#m31---preserve-kernel-cursor-refusal-evidence-and-prove-interval-coverage) |
-| Tools | M32 | Keep kernel diagnostics independent of the ETL terminal verdict | Carry-forward | In progress | No | D31 | T1-T4 Passed within their declared scopes; source landing and #54 publication remain; [detail](#m32---keep-kernel-diagnostics-independent-of-the-etl-terminal-verdict) |
+| Tools | M32 | Keep kernel diagnostics independent of the ETL terminal verdict | Carry-forward | Complete | No | D31 | T1-T4 Passed within their declared scopes; 6146651 landed and all component criteria matched #54 readback on 2026-11-07; [detail](#m32---keep-kernel-diagnostics-independent-of-the-etl-terminal-verdict) |
 | Tools | M33 | Use timestamps accepted by systemd 239 journal queries | Carry-forward | Complete | No | D31, D39, D40, D41, G6 | T1-T6 Passed; source f633973 and four checked query criteria in #54 verified; [detail](#m33---use-timestamps-accepted-by-systemd-239-journal-queries) |
 | Tools | M34 | Match JFR exports to the recording process and lifetime | Carry-forward | Complete | No | D31, D43, D44, G7 | T1-T6 Passed; source e48083d and five JFR-related #54 criteria verified; [detail](#m34---match-jfr-exports-to-the-recording-process-and-lifetime) |
 | Tools | M35 | Persist terminal state before evaluating terminal coherence | Carry-forward | Complete | No | D31, D47, D46, D48, D49 | D48 verification complete; source 42e9360 and plan record 230307e are on origin/master. The three source-#40 criteria and overlapping terminal criterion are checked in #54; its remaining group work stays open under D49. Historical failures and exclusions remain; [detail](#m35---persist-terminal-state-before-evaluating-terminal-coherence) |
@@ -6024,7 +6024,7 @@ The VM provider supplies M51's fresh dedicated Rocky 8.10 guest through its norm
 | Tools | M45 | Reproduce completed ETL observation reports on an independent recipient | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m45---reproduce-completed-etl-observation-reports-on-an-independent-recipient) |
 | Tools | M46 | Report actual test phase durations against the agreed allocations | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m46---report-actual-test-phase-durations-against-the-agreed-allocations) |
 | Tools | M47 | Track journal test tooling | Carry-forward | In progress | No | D32, D33, D49 | Bounded normal-stop, repeat and actual command-error results are published; full-day recipient input remains unresolved under D49; [detail](#m47---track-journal-test-tooling) |
-| Tools | M48 | Track ETL test tooling | Carry-forward | In progress | No | D32, D33, D49 | Retained inputs accounted for; 22 criteria verified locally, with M32 source/issue publication and other collector/evaluator claims remaining under D49; [detail](#m48---track-etl-test-tooling) |
+| Tools | M48 | Track ETL test tooling | Carry-forward | In progress | No | D32, D33, D49 | Canonical and #54 checklists agree: 22 verified and 59 unmet criteria; M32 Complete, with other collector/evaluator claims remaining under D49; [detail](#m48---track-etl-test-tooling) |
 | Tools | M49 | Track buffer test tooling | Carry-forward | Not started | Yes | D32, D33, D49 | Retained evidence first; only necessary bounded real cases, then source/issue reconciliation under D49; [detail](#m49---track-buffer-test-tooling) |
 | Tools | M50 | Track shared test tooling | Carry-forward | Not started | Yes | D32, D33, D34, D35, D36, D49 | Retained evidence first; only necessary bounded real cases, then source/issue reconciliation under D49; [detail](#m50---track-shared-test-tooling) |
 | Tools | G6 | Provide M33's dedicated systemd 239 query environment | External gate | Complete | No | D40 | Capacity, private handoff and actual guest access/versions verified; [detail](#g6---provide-m33s-dedicated-systemd-239-query-environment) |
@@ -6666,7 +6666,7 @@ Origin: 38560eb / M32
 Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
 GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
 Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #37 is closed not_planned at 2026-10-17T01:12:07Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
-Status: In progress
+Status: Complete
 
 ##### Summary
 
@@ -6682,7 +6682,7 @@ Out of scope: Repairing kernel cursor coverage or changing ETL application sched
 
 ##### Root Cause
 
-`observe.py` rejects a nonzero journal-only collector exit before checking the available application ETL pass records. Diagnostic availability and required processing evidence are treated as the same condition.
+Before 6146651, `observe.wait_passes()` rejected a nonzero journal-only collector exit before checking the available application ETL pass records. The correction uses the existing scheduler checks to distinguish diagnostic failures from unavailable required evidence; final collection diagnostics and the overall verdict remain recorded.
 
 ##### Completion Criteria
 
@@ -6739,7 +6739,10 @@ Complete transferred state, tools and preparation contain 1249, 39 and 165 regul
 
 ##### Closure Evidence
 
-- The accepted implementation plan and all three completion criteria are verified within T1-T4's declared scopes. Source landing and the corresponding #54 update/readback remain pending; M32 stays In progress.
+- Complete on 2026-11-07: the accepted implementation plan and all three completion criteria are verified within T1-T4's declared scopes, source 6146651 is landed, and the corresponding #54 criteria match the verified results.
+- Source landing observed at 2026-11-07T09:34:43Z after `git fetch --no-tags origin`: HEAD and origin/master both resolve to `6146651461816059cda5c2a1caa456b51706dd8d`. `git diff --exit-code origin/master --` for all six committed paths returned 0 before this status update.
+- Issue publication observed at 2026-11-07T09:34:43Z using `gh issue view 54 --repo jeonghanlee/ansible-provision --json number,title,url,state,labels,milestone,assignees,updatedAt,body`: the complete body exactly matches `work/issue-etl-isolation-body.md`, SHA256 `b44d3d57cfa3ead1ef1e3ae8895bbbbd7433e1687d5e6aaf92d3428d95f76309`. The three source-#37 criteria and overlapping source-#34 criterion are checked; the issue has 22 checked and 59 unchecked criteria. Title, labels, milestone and assignee are unchanged; the issue is open, updated at 2026-11-07T09:28:33Z. The publication receipt is `work/issue-etl-isolation-publication.json`.
+- Linked-issue closure exception; Decision Date: 2026-11-07. Close this verified component independently under D33/D49 while consolidated #54 remains open for its other unmet criteria. No check is waived, and this exception does not complete M48 or another component.
 - The provider confirmed graceful VM shutdown at 2026-11-06T23:42:49.768617+00:00 after evidence retrieval. Its retained requester record and native shutdown log confirm the disk, definition, seed, reservation, creation record and evidence were preserved. No observation restart or deletion occurred.
 
 ##### GitHub Projection
@@ -6750,14 +6753,15 @@ Complete transferred state, tools and preparation contain 1249, 39 and 165 regul
 - Assignee: `jeonghanlee`
 - Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
 - Projection Scope: Component contract from historical source #37; current tracking uses its section in the consolidated issue.
+- Projection Difference: None for this component; all three criteria and the implemented change are reflected in #54. The consolidated issue remains open for other components.
 - Observed State: open
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-17T01:09:40Z
-- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
-- Prepared Body: `work/issue-tools-etl.md`
-- Published Body SHA256: b6a0ab483695713866a62fe7ccf6cb65a4f04514238fa3adce424715686417f0
+- Observed Updated At: 2026-11-07T09:28:33Z
+- Last Compared: 2026-11-07T09:34:43Z; exact complete body equality and unchanged metadata verified with the native issue view command recorded in Closure Evidence. All three source-#37 criteria are checked.
+- Prepared Body: `work/issue-etl-isolation-body.md`
+- Published Body SHA256: b44d3d57cfa3ead1ef1e3ae8895bbbbd7433e1687d5e6aaf92d3428d95f76309
 - Historical Source Issue: #37, https://github.com/jeonghanlee/ansible-provision/issues/37
 - Historical Source State: closed
 - Historical Source Reason: not_planned
@@ -8804,7 +8808,7 @@ Use retained actual evidence first. Run the real reader, evaluator or replay on 
 
 Run a short real experiment only for a necessary behavior that retained evidence cannot establish. Before starting, name the missing claim, real entry point and inputs, required exposure, expected native outcome, time and resource limits, and stop condition. Use the existing shipped tools and fixtures; do not replace internal execution with mocks or reconstructed positive fixtures. Stop when the declared evidence is complete, or preserve Failed/Incomplete when the bound is reached. A short run cannot satisfy an unmet long-duration requirement.
 
-Preserve accepted ETL, journal and buffer functionality, original records and unsuccessful outcomes. No new two-hour or full-day observation, expanded matrix, general framework redesign or additional tool-perfecting campaign is selected. If a required claim cannot be resolved within the bounded approach, record the exact missing evidence for a scope decision instead of automatically extending or repeating the experiment.
+Preserve accepted ETL, journal and buffer functionality, original records and unsuccessful outcomes. One separately authorized 7200-second shortened observation completed the diagnostic-isolation verification described under M32. No additional two-hour or full-day observation, expanded matrix, general framework redesign or additional tool-perfecting campaign is selected. If a required claim cannot be resolved within the bounded approach, record the exact missing evidence for a scope decision instead of automatically extending or repeating the experiment.
 
 Close a component after its required claims have actual evidence, its relevant source changes are committed, and its issue criteria agree with the result. Unexecuted or excluded work is never marked Passed; any retirement or exclusion needs an explicit dated decision. Keep each group issue open until its own remaining criteria are satisfied or explicitly retired.
 
@@ -8821,7 +8825,7 @@ Component canonical identities remain independent under this single GitHub proje
 - M29: historical source #34; unfinished work is tracked in #54.
 - M30: historical source #35; unfinished work is tracked in #54.
 - M31: historical source #36; unfinished work is tracked in #54.
-- M32: historical source #37; unfinished work is tracked in #54.
+- M32: historical source #37; diagnostic-isolation component Complete on 2026-11-07, with its verified criteria retained in #54.
 - M33: historical source #38; query component Complete under D41, with its verified criteria retained in #54.
 - M34: historical source #39; JFR recording component Complete under D44, with its verified criteria retained in #54.
 - M35: historical source #40; unfinished work is tracked in #54.
@@ -8862,7 +8866,7 @@ These summaries preserve the recorded scope. Each linked issue retains its full 
 ###### #37 - Keep kernel diagnostics independent of the ETL terminal verdict
 
 - Problem and evidence: Kernel-only failure produced pass-wait/final-sample/final-journal findings despite complete required ETL passes.
-- Result: M32 / T1-T4 verify actual collection, pass waiting, normal terminal handling, required-evidence refusal, recorded-policy enforcement and replay. The authorized two-hour observation retained scheduler Passed alongside native aggregate Incomplete and diagnostic errors. Source landing and #54 publication remain pending.
+- Result: M32 / T1-T4 verify actual collection, pass waiting, normal terminal handling, required-evidence refusal, recorded-policy enforcement and replay. The authorized two-hour observation retained scheduler Passed alongside native aggregate Incomplete and diagnostic errors. Source 6146651 is on origin/master, and exact #54 readback confirms its three criteria and the overlapping normal-finish/replay criterion under source #34. M32 is Complete on 2026-11-07.
 - Done when: Kernel failure stays visible without rejecting complete ETL evidence; real required-evidence loss still prevents acceptance and preserves the abort policy.
 
 ###### #38 - Use timestamps accepted by systemd 239 journal queries
@@ -9200,7 +9204,8 @@ M35/D48 terminal criteria are verified from the recorded real normal/fault/repla
 
 ##### Closure Evidence
 
-- On 2026-11-06, M32's actual normal observation, four post-stop wait cases and frozen terminal replay verified four group criteria. Source landing and their #54 publication remain pending. M32 and M48 stay In progress; the original aggregate Incomplete is preserved.
+- Source/issue reconciliation completed at 2026-11-07T09:34:43Z: fetched origin/master and HEAD both resolve to `6146651461816059cda5c2a1caa456b51706dd8d`, and all six committed paths match. Exact #54 body readback matches `work/issue-etl-isolation-body.md`, SHA256 `b44d3d57cfa3ead1ef1e3ae8895bbbbd7433e1687d5e6aaf92d3428d95f76309`. M32 is Complete; its three source-#37 criteria and overlapping source-#34 criterion bring both checklists to 22 checked and 59 unchecked. M48 remains In progress and #54 remains open for the other component contracts. No additional test result or aggregate completion follows from this publication check.
+- At the 2026-11-06 verification checkpoint, M32's actual normal observation, four post-stop wait cases and frozen terminal replay verified four group criteria. Source landing and their #54 publication were pending. M32 and M48 were In progress; the original aggregate Incomplete was preserved.
 - On 2026-11-06, the bounded M31 query-receipt criterion passed actual verification. Its source and issue publication remain pending; this does not close M31 or M48.
 - On 2026-11-06, retained-evidence accounting began under D49. The source-availability boundary and next collector receipt correction are recorded above. No new acceptance criterion or component closure follows from archive integrity; the group remains In progress.
 - D49 publication reconciled at 2026-11-04T02:54:17Z: the applied #54 body matched the retained publication file and the source/plan commits were on origin/master. At that checkpoint the group was Not started with its remaining criteria open; this records publication only.
@@ -9218,7 +9223,7 @@ M35/D48 terminal criteria are verified from the recorded real normal/fault/repla
 
 ##### GitHub Projection
 
-- Projection Difference: The canonical checklist has 22 checked and 59 unchecked. Read-only #54 inspection after M32 verification found 18 checked and 63 unchecked, state open, updated at 2026-11-06T19:50:49Z. M32's three source-#37 criteria and overlapping source-#34 normal-finish/replay criterion are verified locally and await publication. The earlier full-body comparison below remains a historical checkpoint; no M32 issue update has been applied.
+- Projection Difference: None for the published diagnostic-isolation correction. The canonical and live checklists both have 22 checked and 59 unchecked criteria. M32's three source-#37 criteria and overlapping source-#34 normal-finish/replay criterion are reflected in #54; other component contracts remain unmet.
 - Title: `Track ETL test tooling`
 - Labels: `enhancement`
 - GitHub Milestone: `Backlog`
@@ -9229,13 +9234,13 @@ M35/D48 terminal criteria are verified from the recorded real normal/fault/repla
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-24T20:20:32Z
-- Last Compared: 2026-11-06T18:13:33.833579+00:00; complete body equality with `work/issue-etl-bounded-body.md` verified using `gh api repos/jeonghanlee/ansible-provision/issues/54`. The separate live metadata read confirmed the unchanged open state, title, labels, milestone, assignee and update time. Checked boxes: 17; unchecked: 64.
+- Observed Updated At: 2026-11-07T09:28:33Z
+- Last Compared: 2026-11-07T09:34:43Z; complete body equality with `work/issue-etl-isolation-body.md` verified using the native issue view command recorded in M32 Closure Evidence. Open state, title, labels, milestone and assignee are unchanged. Checked boxes: 22; unchecked: 59. Publication receipt: `work/issue-etl-isolation-publication.json`.
 - Query Update Readback: 2026-10-21T08:34:55+00:00; four query criteria newly checked and all other source sections/criteria preserved. Full comparison retained at `work/issue-etl-query-applied-20261021.json`.
 - JFR Update Readback: 2026-10-22T10:49:17Z; the three source-#39 criteria and two overlapping source-#35 criteria are newly checked; all other sections and criteria are preserved. Receipt: `work/issue-etl-jfr-applied-20261022.json`.
-- Prepared Body: `work/issue-etl-bounded-body.md`
-- Prepared Body SHA256: 717582a75880276509ba0a6380100da8cf725246a6b15463593e3e062f5a987d
-- Published Body SHA256: 717582a75880276509ba0a6380100da8cf725246a6b15463593e3e062f5a987d
+- Prepared Body: `work/issue-etl-isolation-body.md`
+- Prepared Body SHA256: b44d3d57cfa3ead1ef1e3ae8895bbbbd7433e1687d5e6aaf92d3428d95f76309
+- Published Body SHA256: b44d3d57cfa3ead1ef1e3ae8895bbbbd7433e1687d5e6aaf92d3428d95f76309
 - Historical Source Issues: #34, #35, #36, #37, #38, #39, #40, #41, #43, #44, #45, #46, #47, #48, #49, #50
 
 #### M49 - Track buffer test tooling
