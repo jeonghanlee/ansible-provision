@@ -23,6 +23,7 @@ private evidence and separate original/candidate results.
 | `runner.py` | Drive bounded preflight/main observations and compare native evidence | Installed fixture, observer, shim, decoder and running appliance dependencies |
 | `campaign.py` | Check frozen identities and sequence preflight before main | Successful setup; preflight verdict and configuration |
 | `setup.py` | Install the pinned tools and fixture on an empty appliance | Explicit staging directory; pinned appliance/environment and root privileges |
+| `install-fixture.py` | Install only the buffer fixture IOC unit | Inactive appliance/IOC, empty MariaDB, shipped fixture and softIoc |
 | `fast.txt`, `fixture-sha256.json` | Identify the 110 fast PVs and original fixture bytes | Shared 903-PV fixture |
 | `source-diagnostics/TransformCheck.java` | Verify transformed class bytes and callback insertion | Built observer and actual appliance classes/dependencies |
 | `source-diagnostics/verify_retained.py` | Compare retained native inputs/PB and reject missing exposure | Explicit archive, output directory and runner; installed decoder/fixtures |
@@ -36,8 +37,8 @@ source-only check must compile it without importing it.
 ## Source Identity And Shared Files
 
 `source.json` records the original hashes of all 18 deployed bundle members
-and both source diagnostics. Nine deployed text files and both diagnostics
-are present here. Seven identical shared files use their existing repository
+and both source diagnostics. Ten deployed text files and both diagnostics
+are present here. Six identical shared files use their existing repository
 paths. The two JARs are build outputs; their original hashes remain recorded,
 but generated binaries are excluded from Git.
 
@@ -49,11 +50,12 @@ but generated binaries are excluded from Git.
 | `retest-deadband.db` | [fixtures/retest-deadband.db](../fixtures/retest-deadband.db) |
 | `pvs-all.csv` | [fixtures/pvs-all.csv](../fixtures/pvs-all.csv) |
 | `register.py` | [etl-pass/register.py](../etl-pass/register.py) |
-| `install-fixture.py` | [etl-pass/install-fixture.py](../etl-pass/install-fixture.py) |
 
-The only source adaptations are explicit configuration inputs in `setup.py`
-and `verify_retained.py`. Their imported hashes are separate from the original
-hashes. Function bodies and the observation/comparison logic are preserved.
+The buffer-local `install-fixture.py` derives from the original shared installer
+and creates only the IOC unit. The shared ETL installer and its frozen bundle
+retain their original bytes. Other source adaptations are explicit configuration
+inputs in `setup.py` and `verify_retained.py`. Imported hashes are separate from
+original hashes. Observation/comparison logic is preserved.
 The parent [SHA256SUMS](../SHA256SUMS) identifies the current sources; it does
 not replace any immutable observation manifest. Run the parent README's
 complete source check before using a candidate.
@@ -104,8 +106,9 @@ observation's binaries.
 ## Configuration And Installation Contract
 
 `BUFFER_SOURCE_DIR` is required when importing or executing `setup.py`. It
-names an absolute staging directory containing the nine deployed text sources,
-the two built JARs and all seven shared files listed above. It must not point
+names an absolute staging directory containing the ten deployed text sources,
+the two built JARs and all six shared files listed above. Use this directory's
+`install-fixture.py` in that staging directory. The staging directory must not point
 directly at this source directory, which deliberately does not duplicate shared
 files or contain generated JARs.
 
@@ -126,20 +129,69 @@ EPICS 7.0.10 `softIoc` from the Rocky 8.10 EPICS 1.3.0 layout declared in its
 `systemctl` and `systemd-analyze` are required. The runner uses the local
 appliance management API and the installed registration client.
 
-Setup stops the appliance, creates tool/output directories, installs IOC and
-ETL units, restricts Channel Access to loopback, adds the deadband database,
+Setup stops the appliance, creates tool/output directories, installs the IOC
+unit, restricts Channel Access to loopback, adds the deadband database,
 compiles the shim/decoder, and adds Java-agent and `LD_PRELOAD` configuration.
 It preserves configuration backups and writes frozen identities. It refuses
 an existing campaign; it is not an idempotent Ansible role. Campaign execution
 then starts/stops services and registers PVs. These are separate live operations,
 not part of the local build procedure above.
 
-The shared fixture installer also defines sample/finish units referring to
-`collect.py` and `observe.py`. The preserved buffer bundle does not supply those
-files or their dependency closure; the buffer campaign uses its own runner.
-Installation is therefore still an unfinished M50 criterion. Do not treat this
-source package as a verified deployable bundle or infer an observed runtime
-failure from that missing dependency alone.
+The buffer fixture installer creates `etl-soak-ioc.service` only. It creates
+no `etl-soak-sample.service`, `etl-soak-sample.timer` or
+`etl-soak-finish.service`; those ETL commands belong to the separate shared
+installer. The buffer campaign uses its own runner. Existing units are not
+removed; installation requires a dedicated empty appliance. Actual installation
+verification remains recorded under M50 separately from source/build checks.
+
+## Bounded Installation Verification
+
+Use a fresh dedicated appliance with the declared source pins and prerequisites.
+Prepare the staging directory as specified above, retain its complete member
+list and hashes, and preserve original configuration and command output. Run
+setup with an explicit source directory:
+
+```bash
+buffer_stage=/path/to/buffer-staging
+sudo env BUFFER_SOURCE_DIR="$buffer_stage" /usr/bin/python3 "$buffer_stage/setup.py"
+sudo systemctl cat etl-soak-ioc.service
+systemctl show etl-soak-sample.service -p LoadState
+systemctl show etl-soak-sample.timer -p LoadState
+systemctl show etl-soak-finish.service -p LoadState
+```
+
+Setup must exit zero, preserve configuration backups, compile the native shim
+and decoder, and write frozen tool/fixture identities matching installed files.
+The IOC command must load the three shipped databases and deadband override.
+All three unused ETL units must report `LoadState=not-found`. Verify actual
+JVM transformation against the pinned installed classes using the build check
+above, and import the installed runner/campaign without invoking their main
+functions. Missing prerequisites are Incomplete, not a successful installation.
+
+Check the real IOC and Channel Access path on loopback, then stop it normally:
+
+```bash
+buffer_bin=/opt/epics/1.3.0/rocky-8.10/7.0.10/base/bin/linux-x86_64
+buffer_ca=(env EPICS_CA_ADDR_LIST=127.0.0.1 EPICS_CA_AUTO_ADDR_LIST=NO)
+sudo systemctl start etl-soak-ioc.service
+"${buffer_ca[@]}" "$buffer_bin/caget" -w 10 -t AASOAK:FAST:CH01 AASOAK:S1:CH01 AASOAK:SLOW:CH01
+"${buffer_ca[@]}" "$buffer_bin/caget" -w 10 -t AASOAK:DB:CH01.MDEL AASOAK:DB:CH01.ADEL
+sudo systemctl stop etl-soak-ioc.service
+systemctl show etl-soak-ioc.service -p ActiveState -p MainPID
+```
+
+The three real fixture PVs must be readable; both deadband values must be `-1`.
+After normal stop the IOC must be inactive with no main PID. A second setup
+invocation must refuse the existing campaign before changing frozen identities
+or configuration. Preserve that native refusal separately from the successful
+first invocation. Keep actual original/candidate unit files and confirm the
+unit audit rejects the original ETL sample/timer/finish definitions.
+
+Bound the installation and IOC checks to 900 seconds after prerequisites;
+retain native streams, statuses, installed source/dependency identities and
+final service state before evaluation. Verify complete evidence membership and
+hashes after transfer, then end use of the guest while keeping its disk and
+evidence. This verifies installation and IOC dependencies only.
 
 ## Retained-Input Diagnostic Contract
 

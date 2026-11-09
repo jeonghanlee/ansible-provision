@@ -60,8 +60,12 @@
     {
       "original_member": "deployed-tools/install-fixture.py",
       "original_sha256": "281937eed9ce1a97e626801d05c15d673b1ea8928e2c23963bcea0875728b3e0",
-      "disposition": "shared-source",
-      "source": "../etl-pass/install-fixture.py"
+      "disposition": "configured-source",
+      "source": "install-fixture.py",
+      "configuration_changes": [
+        "Install only the IOC unit; omit unused ETL sample, timer and finish units. The shared ETL installer remains unchanged."
+      ],
+      "imported_sha256": "85e1317d8444db76ef03f8d218a4208d4481600c81d6961f5b578d45d9d4a616"
     },
     {
       "original_member": "deployed-tools/load1.db",
