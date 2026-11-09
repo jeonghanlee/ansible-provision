@@ -31,7 +31,7 @@ Canonical branch or ref: `master`
 Git upstream: `origin/master`
 Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: Publish the locally verified IOC-only installer change and M50 / T2 result, then reconcile and close #56 when source landing and the full issue checklist match. All eleven canonical shared-tool criteria now have verification evidence; the last #56 body still has its installation criterion unchecked. M50 remains In progress until publication and closure. Buffer-source preservation is published in a111c1e; shared procedures are published in ad5636b. M46 is Complete, with its report in 5ae70cd, #56 readback at 2026-11-08T03:39:05Z and completion record in f89e63a. M32 is Complete in 71b7aa7 after source 6146651 and exact #54 publication. ETL has 22 checked and 59 unchecked criteria. M47 still needs a scope decision for unavailable original full-day replay inputs. M49 remains Not started; M14/M26 remain Blocked on G2/G5.
+Next session entry point: Prepare the canonical #56 completion record for repository publication, then account for retained evidence against #55's existing buffer-tool criteria before selecting any missing claim. M50 is Complete: installer source and T2 evidence are published in 08b7ec4, and exact #56 body/comment readback at 2026-11-09T17:40:08Z confirms completed closure with eleven checked and zero unchecked criteria. Buffer-source preservation is published in a111c1e; shared procedures are published in ad5636b. M46 is Complete, with its report in 5ae70cd, #56 readback at 2026-11-08T03:39:05Z and completion record in f89e63a. M32 is Complete in 71b7aa7 after source 6146651 and exact #54 publication. ETL has 22 checked and 59 unchecked criteria. M47 still needs a scope decision for unavailable original full-day replay inputs. M49 remains Not started; M14/M26 remain Blocked on G2/G5.
 
 Retained results and available inputs are indexed by `work/retained-test-results-20261026/README.md`. Its 2026-10-26 retention policy supersedes historical original-path instructions below: retired raw observations are not complete local replay inputs, and historical hashes do not establish current availability. Check the retained archives and inventories before planning a replay.
 
@@ -394,7 +394,7 @@ full mode carries every OS tree, second apply `failed=0`). Delivered in
 
 </details>
 
-Status tally: 25 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 6 external gates (4 Complete, 2 Open). Backlog excluded: 5 Complete, 3 In progress, 2 Not started and 14 Deferred carry-forward items, plus 2 Complete external gates. M51 is Complete after T1-T7 Passed and verified repository landing at 82ef88a; closure recorded on 2026-10-23 UTC. M35 is Complete within D48/D49 after source publication and scoped issue reconciliation. M47 / T1 Passed within its bounded normal-stop, repeat and command-error cases, with repository and #53 publication verified. M47 retains its unresolved full-day recipient input. M48 is In progress for retained-evidence accounting and the remaining scoped tool corrections; M49-M50 remain ready for later evidence accounting.
+Status tally: 25 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 6 external gates (4 Complete, 2 Open). Backlog excluded: 8 Complete, 2 In progress, 1 Not started and 13 Deferred carry-forward items, plus 2 Complete external gates. M51 is Complete after T1-T7 Passed and verified repository landing at 82ef88a; closure recorded on 2026-10-23 UTC. M35 is Complete within D48/D49 after source publication and scoped issue reconciliation. M47 / T1 Passed within its bounded normal-stop, repeat and command-error cases, with repository and #53 publication verified. M47 retains its unresolved full-day recipient input. M48 is In progress for retained-evidence accounting and the remaining scoped tool corrections. M49 remains Not started and Ready for evidence accounting; M50 is Complete after source landing and exact completed #56 closure readback.
 
 ## Milestone
 
@@ -6026,7 +6026,7 @@ The VM provider supplies M51's fresh dedicated Rocky 8.10 guest through its norm
 | Tools | M47 | Track journal test tooling | Carry-forward | In progress | No | D32, D33, D49 | Bounded normal-stop, repeat and actual command-error results are published; full-day recipient input remains unresolved under D49; [detail](#m47---track-journal-test-tooling) |
 | Tools | M48 | Track ETL test tooling | Carry-forward | In progress | No | D32, D33, D49 | Canonical and #54 checklists agree: 22 verified and 59 unmet criteria; M32 Complete, with other collector/evaluator claims remaining under D49; [detail](#m48---track-etl-test-tooling) |
 | Tools | M49 | Track buffer test tooling | Carry-forward | Not started | Yes | D32, D33, D49 | Retained evidence first; only necessary bounded real cases, then source/issue reconciliation under D49; [detail](#m49---track-buffer-test-tooling) |
-| Tools | M50 | Track shared test tooling | Carry-forward | In progress | No | D32, D33, D34, D35, D36, D49 | IOC-only installation verified under T2; all eleven criteria satisfied locally; installer landing and #56 closure pending; [detail](#m50---track-shared-test-tooling) |
+| Tools | M50 | Track shared test tooling | Carry-forward | Complete | No | D32, D33, D34, D35, D36, D49 | All eleven criteria verified; installer source/result published in 08b7ec4; exact #56 body/comment and completed closure verified on 2026-11-09; [detail](#m50---track-shared-test-tooling) |
 | Tools | G6 | Provide M33's dedicated systemd 239 query environment | External gate | Complete | No | D40 | Capacity, private handoff and actual guest access/versions verified; [detail](#g6---provide-m33s-dedicated-systemd-239-query-environment) |
 | Tools | G7 | Provide retained full-day JFR inputs for M34 | External gate | Complete | No | D43 | Both observations and frozen tools delivered; complete member/hash checks, original anchors and native JFR decoding verified locally; [detail](#g7---provide-retained-full-day-jfr-inputs-for-m34) |
 
@@ -9455,7 +9455,7 @@ Reopening jeonghanlee/epicsarchiverap-maven#29, editing Maven code here, a new f
 Origin: 38560eb / M50
 Identity History: created as a test-type coordination entry on 2026-10-16 (D32); no existing identity is replaced.
 GitHub Issue: #56, https://github.com/jeonghanlee/ansible-provision/issues/56
-Status: In progress
+Status: Complete
 
 ##### Summary
 
@@ -9484,7 +9484,7 @@ Component canonical identities remain independent under this single GitHub proje
 - M37: historical source #42; checksum work is Complete under D36, with its four related boxes checked in #56.
 - M46: historical source #51; phase reporting is Complete, with its four related boxes checked in #56.
 
-Source GitHub issues were retired for consolidation at 2026-10-17T01:14:10.675787+00:00. M37 and M46 are Complete. Shared procedures are documented, verified and published in ad5636b, with their #56 criterion checked. Buffer sources are verified under T5 and published in a111c1e, with exact #56 readback at 2026-11-08T09:32:48Z confirming the source-preservation criterion. IOC-only installation now passes T2 locally; installer source landing and #56 publication/closure remain pending. Current tracking is #56; retired source metadata remains in component details.
+Source GitHub issues were retired for consolidation at 2026-10-17T01:14:10.675787+00:00. M37 and M46 are Complete. Shared procedures are documented, verified and published in ad5636b, with their #56 criterion checked. Buffer sources are verified under T5 and published in a111c1e, with exact #56 readback at 2026-11-08T09:32:48Z confirming the source-preservation criterion. IOC-only installation and its T2 result are published in 08b7ec4. Exact #56 body/comment readback at 2026-11-09T17:40:08Z confirms all eleven criteria checked and completed closure. Tracking is retained in closed #56; retired source metadata remains in component details.
 
 ##### Detailed Work Summary
 
@@ -9514,14 +9514,14 @@ These summaries preserve the recorded scope. Each linked issue retains its full 
 - Problem and evidence: The retained original buffer installer used a fixture installer that defines unused ETL commands without their collector/observer dependencies. The campaign did not use them; no runtime failure is inferred from the original omission.
 - Result: The buffer-specific `install-fixture.py` creates only the IOC unit. The original shared ETL installer and frozen bundle remain byte-identical. Staging, source pins, prerequisites, generated files and service effects are explicit; candidate source and current-source hashes are recorded separately from originals.
 - Verification: T2 ran actual pinned setup and IOC start/read/stop on a fresh dedicated Rocky 8.10/systemd 239 guest. All 24 native command outcomes match expectations; original unused ETL unit definitions are rejected, candidate IOC-only installation passes, the actual transformer verifies three classes and repeated setup refuses without changing frozen files. All 73 transferred evidence members pass complete membership/hash checks.
-- Remaining work: Commit/landing and #56 installation-criterion publication/closure. Local verification does not itself complete repository publication.
+- Publication: Installer source and result are published in 08b7ec4 on origin/master, verified at 2026-11-09T17:13:24Z. Exact #56 body/comment readback at 2026-11-09T17:40:08Z confirms the applied completion content and completed closure.
 - Done when: Every installed command has its actual declared dependencies and effects, originals remain intact and no unobserved runtime failure is claimed.
 
 ###### Shared evidence procedures
 
 - Result: `tests/archiver-soak/PROCEDURES.md` documents actual source/evidence selection, privacy, transfer eligibility and complete member checks, separate original/candidate replay and native-versus-wrapper verdict interpretation. Existing test-specific signals, durations, exposure and acceptance remain authoritative.
 - Verification: M50 / T4 checks shipped CLI help/source contracts, document links and shell syntax, complete current-source integrity and unchanged runtime sources. No new transfer/replay, live observation or independent-recipient result is claimed.
-- Publication: The documentation is in ad5636b on origin/master. Exact #56 readback at 2026-11-08T07:23:00Z confirms its single criterion is checked. Buffer source preservation is now separately verified under T5 and published in a111c1e and #56; IOC-only installer verification now passes T2 locally, with its publication still pending.
+- Publication: The documentation is in ad5636b on origin/master. Exact #56 readback at 2026-11-08T07:23:00Z confirms its single criterion is checked. Buffer source preservation is separately verified under T5 and published in a111c1e and #56; IOC-only installer verification and sources are published in 08b7ec4. Exact #56 completion body/comment and completed closure are verified at 2026-11-09T17:40:08Z.
 
 ##### Existing Evidence
 
@@ -9614,6 +9614,8 @@ Installer execution scope; Plan Acceptance and Implementation Authorization: 202
 
 ##### Closure Evidence
 
+- Complete on 2026-11-09 after verified source landing and actual T1-T5 evidence within their declared scopes. Exact #56 readback at 2026-11-09T17:40:08Z matches the full prepared body and single completion comment, preserves all eleven criterion texts and unchanged title/labels/milestone/assignee, and confirms eleven checked and zero unchecked criteria. The issue closed at 2026-11-09T17:39:43Z with reason completed, independently confirmed by the issue API. Installer source/result landing remains 08b7ec4 on origin/master; original records and separate buffer behavior work remain preserved. Evidence: `work/m50-installer-20261108/publication.json` and `landing.json`. Earlier bullets below retain their historical checkpoints.
+- Installer source and T2 result landed in 08b7ec4 on origin/master at 2026-11-09T17:13:24Z; committed file bytes match the real installation verification. The full #56 completion body and comment are prepared with all eleven original criterion texts preserved and checked. GitHub body application and observed completed closure have not run, so M50 remains In progress. Evidence: `work/m50-installer-20261108/landing.json`; preparation: `work/issue-shared-tools-complete-body.md` and `work/issue-shared-tools-close.md`.
 - IOC-only installation passed M50 / T2 locally on 2026-11-08. All eleven canonical criteria now have verification evidence; installer source commit/landing and #56 publication/closure remain pending, so M50 stays In progress and #56 stays open. The last published checklist has ten checked and one unchecked criterion. The dedicated guest was shut down at 2026-11-08T10:03:00.934166+00:00 after complete evidence transfer; its definition, disk and evidence are retained. The read-only provider status command independently reports shut off. Local transfer validation compares member names and hashes; original archive metadata is retained, while extracted-file modes differ from archive modes. Evidence: `work/m50-installer-20261108/runtime-verification.json`.
 - Buffer-source preservation passed M50 / T5 on 2026-11-08 and is published in a111c1e on origin/master, verified at 2026-11-08T09:20:32Z. Exact #56 readback at 2026-11-08T09:32:48Z matches the prepared full body and unchanged metadata. Canonical and published checklists agree: ten checked, one unchecked; all eleven criterion texts remain unchanged. Installation is still unverified, so M50 remains In progress and #56 remains open. Native build results concern the identified current local build, not the original pinned deployment. Evidence: `work/buffer-source-preservation-20261108/landing.json` and `publication.json`.
 - Shared-procedure documentation passed M50 / T4 at 2026-11-08T06:14:18.009610+00:00 and is published in ad5636b on origin/master. Exact #56 readback at 2026-11-08T07:23:00Z matches the prepared body; all eleven criterion texts and metadata are unchanged, with only the shared-procedure checkbox newly checked. Canonical and published checklists agree: nine checked, two unchecked. Reusable buffer-source preservation and installation dependencies remain unfinished, so M50 stays In progress and #56 stays open. Documentation checks establish no new product or replay acceptance. Evidence: `work/shared-procedures-20261107/landing.json` and `work/shared-procedures-20261107/publication.json`.
@@ -9627,23 +9629,30 @@ Installer execution scope; Plan Acceptance and Implementation Authorization: 202
 
 ##### GitHub Projection
 
-- Projection Difference: IOC-only installation now passes T2 locally. Installer source landing and its result/checkbox projection and issue closure remain pending. Canonical criteria: eleven checked, none unchecked; last published criteria: ten checked, one unchecked. All criterion texts are unchanged.
+- Projection Difference: None at 2026-11-09T17:40:08Z. The live full body and completion comment match the prepared files exactly; all eleven criterion texts are unchanged and checked. Metadata is unchanged, and closed state with completed reason is verified. Installer source/result landing is verified in 08b7ec4.
 - Title: `Track shared test tooling`
 - Labels: `enhancement`
 - GitHub Milestone: `Backlog`
 - Assignee: `jeonghanlee`
 - Issue: #56, https://github.com/jeonghanlee/ansible-provision/issues/56
 - Projection Scope: Complete consolidated body containing all original source contracts and additional declared tooling work.
-- Observed State: open
+- Observed State: closed
+- Observed Close Reason: completed
+- Observed Closed At: 2026-11-09T17:39:43Z
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-11-08T09:32:34Z
-- Last Compared: 2026-11-08T09:32:48Z; exact full-body match and unchanged open state, title, labels, milestone and assignee verified by `gh issue view 56 --repo jeonghanlee/ansible-provision --json body,title,state,labels,milestone,assignees,updatedAt,url`. Checked boxes: 10; unchecked: 1. All eleven criterion texts are preserved; exactly one source-preservation box changed to checked.
-- Criterion Projection: Four checksum, four phase-report, one shared-procedure and one buffer-source box are checked. Installation is now checked locally but remains unchecked in the last published checklist.
-- Prepared Body: `work/issue-buffer-sources-body.md`
-- Prepared Body SHA256: 7bee195de9ec744c135bc15d2ff9db6f20dc4262ec3f0b28e91fcb254d74bf93
-- Published Body SHA256: 7bee195de9ec744c135bc15d2ff9db6f20dc4262ec3f0b28e91fcb254d74bf93
+- Observed Updated At: 2026-11-09T17:39:43Z
+- Last Compared: 2026-11-09T17:40:08Z; exact full-body/comment match, unchanged title/labels/milestone/assignee and closed state verified by `gh issue view` with body,title,state,labels,milestone,assignees,updatedAt,url,closedAt,comments. GET `/repos/jeonghanlee/ansible-provision/issues/56` independently confirms state_reason completed and closed_at. Checked boxes: 11; unchecked: 0. All eleven criterion texts are preserved.
+- Criterion Projection: Four checksum, four phase-report, one shared-procedure, one buffer-source and one installation box are checked in both canonical and published checklists.
+- Prepared Body: `work/issue-shared-tools-complete-body.md`
+- Prepared Body SHA256: e96d8451da5f0241622e3e0bf3e9e8ad949fc9b5ec87f8e2493da0d60f55d5e7
+- Prepared Close Comment: `work/issue-shared-tools-close.md`
+- Prepared Close Comment SHA256: 97a25bff147717a6448693ca8445fe7e2d2995a68345525bc94311550abe32a9
+- Prepared Close Reason: completed; executed and verified.
+- Published Body SHA256: e96d8451da5f0241622e3e0bf3e9e8ad949fc9b5ec87f8e2493da0d60f55d5e7
+- Published Close Comment: https://github.com/jeonghanlee/ansible-provision/issues/56#issuecomment-6747056484
+- Published Close Comment SHA256: 97a25bff147717a6448693ca8445fe7e2d2995a68345525bc94311550abe32a9
 - Historical Source Issues: #42, #51
 
 #### G6 - Provide M33's dedicated systemd 239 query environment
