@@ -77,7 +77,7 @@ def control(out, mode, origin, deadline):
 
 
 def validate_pass(pass_id, actual_pass, expected_first):
-    """Validate actual native-write evidence for a completed pass."""
+    """Validate full writes or compact boundaries against the observed native-write count."""
     writes = actual_pass['writes']
     injections = actual_pass['injections']
     phase = actual_pass['phase']
@@ -87,10 +87,18 @@ def validate_pass(pass_id, actual_pass, expected_first):
         return
     if len(injections) != 1 or not writes:
         raise Incomplete('Missing or duplicate native injection in pass {}'.format(pass_id))
+    compact = 'write_count' in actual_pass
+    write_count = actual_pass['write_count'] if compact else len(writes)
+    if type(write_count) is not int or write_count < 1:
+        raise Incomplete('Invalid native-write count in pass {}'.format(pass_id))
+    positions = [write['position'] for write in writes]
+    expected_positions = ([0, write_count - 1] if write_count > 1 else [0]) if compact else list(range(write_count))
+    if any(type(position) is not int for position in positions) or positions != expected_positions:
+        raise Incomplete('Native-write positions disagree with the observed count in pass {}'.format(pass_id))
     injected = injections[0]
     if injected['wait'] < actual_pass['requested'] or injected['error']:
         raise Incomplete('Delay was not demonstrated in pass {}'.format(pass_id))
-    expected_position = 0 if phase == 4 or expected_first else len(writes) - 1
+    expected_position = 0 if phase == 4 or expected_first else write_count - 1
     if injected['position'] != expected_position:
         raise Incomplete('First/last native-write alternation failed in pass {}'.format(pass_id))
     if expected_position != 0 and not injected.get('final_flush', False):

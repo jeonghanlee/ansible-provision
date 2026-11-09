@@ -109,8 +109,12 @@
     {
       "original_member": "deployed-tools/runner.py",
       "original_sha256": "8434436962c66e9b524018b527b2ce4baa0bf05b3312e07d9d96b4874a35c553",
-      "disposition": "preserved-source",
-      "source": "runner.py"
+      "disposition": "modified-source",
+      "source": "runner.py",
+      "behavior_changes": [
+        "Validate existing full write lists and compact boundary writes against the observed native-write count; preserve original records and source identity."
+      ],
+      "candidate_sha256": "ef23c4ea80551caf792bf50432e4d3560519df421506fcb9741cf24b21bf56b5"
     },
     {
       "original_member": "deployed-tools/setup.py",

@@ -27,6 +27,7 @@ private evidence and separate original/candidate results.
 | `fast.txt`, `fixture-sha256.json` | Identify the 110 fast PVs and original fixture bytes | Shared 903-PV fixture |
 | `source-diagnostics/TransformCheck.java` | Verify transformed class bytes and callback insertion | Built observer and actual appliance classes/dependencies |
 | `source-diagnostics/verify_retained.py` | Compare retained native inputs/PB and reject missing exposure | Explicit archive, output directory and runner; installed decoder/fixtures |
+| `source-diagnostics/test_pass_replay.py` | Check full/compact pass validation and negative evidence copies | Actual preflight full JSONL, compact JSON and initial missing-delay JSON; actual runner/fixtures |
 
 The observer captures inputs before buffering. The shim delays the filesystem
 write while preserving the actual write. The decoder uses the appliance PB
@@ -55,7 +56,8 @@ The buffer-local `install-fixture.py` derives from the original shared installer
 and creates only the IOC unit. The shared ETL installer and its frozen bundle
 retain their original bytes. Other source adaptations are explicit configuration
 inputs in `setup.py` and `verify_retained.py`. Imported hashes are separate from
-original hashes. Observation/comparison logic is preserved.
+original hashes. The runner validates both existing full and compact pass
+records as specified below; other observation/comparison logic is preserved.
 The parent [SHA256SUMS](../SHA256SUMS) identifies the current sources; it does
 not replace any immutable observation manifest. Run the parent README's
 complete source check before using a candidate.
@@ -209,6 +211,68 @@ and compares the declared interval ending 20 seconds before the verdict. Its
 unchanged. Freeze and verify the full private input set before execution;
 source preservation does not establish a replay result.
 
-The compact-write comparison and progress reporting retain their original
-behavior. Their separate M49/#55 work remains unfinished. A successful build
-or transformer check does not establish those behaviors or new product acceptance.
+## Full And Compact Pass Records
+
+The validator checks completed native-write passes. Eligible phases 2 and 3
+alternate the first and last native write; phase 4 uses the first write for
+the expected-loss control. Every eligible pass requires exactly one injection,
+measured wait at least the requested delay and no native error. Last-position
+injection requires the final native flush.
+
+| Form | Required write evidence | Last native-write position |
+| --- | --- | --- |
+| Full `passes.jsonl` record | Every write, with positions `0` through `len(writes) - 1`; no `write_count` field | `len(writes) - 1` |
+| Compact `passes.json` record | Positive integer `write_count` and exactly the first/last writes at positions `0` and `write_count - 1`; a single write is retained once | `write_count - 1` |
+
+`write_count` is the observed count saved after the live pass was validated;
+it is not the retained list length or buffer capacity. A compact record does
+not retain intermediate writes and cannot independently establish their PVs,
+values or timestamps. Pass validation establishes injection placement and
+delay evidence, not event equality or product acceptance.
+
+## Preflight Pass Regression
+
+Use separately frozen copies of actual preflight full JSONL, compact JSON
+and the initial unsuccessful preflight JSON. Preserve the original member
+list, hashes and tools before testing; verify each copy before launching a
+fresh process, and retain native output/status. The regression checks matching
+full/compact identities and boundary writes, accepts valid records, rejects
+the actual initial pass 16 without injection, and rejects negative copies
+with missing/duplicate injection, inadequate wait, native error, wrong
+alternation, absent final flush or inconsistent write counts/positions.
+These negative copies are separate from the unchanged positive inputs.
+
+The runner imports the installed fast-target and all-PV fixtures. On a local
+Linux host with Python 3.8 or later and `bwrap`, supply those actual shipped
+fixtures through a read-only filesystem namespace. Set the source and input
+paths to their actual locations:
+
+```bash
+buffer_source=/absolute/path/to/tests/archiver-soak/buffer-validation
+buffer_fixture=/absolute/path/to/tests/archiver-soak/fixtures
+buffer_inputs=/absolute/path/to/frozen/preflight-inputs
+buffer_test="$buffer_source/source-diagnostics/test_pass_replay.py"
+buffer_fs=(bwrap --ro-bind / / --tmpfs /usr/local/share)
+buffer_fs+=(--dir /usr/local/share/buffer29 --dir /usr/local/share/etl-soak)
+buffer_fs+=(--ro-bind "$buffer_source" /usr/local/share/buffer29)
+buffer_fs+=(--ro-bind "$buffer_fixture" /usr/local/share/etl-soak)
+buffer_args=(--runner "$buffer_source/runner.py" --full "$buffer_inputs/corrected-passes.jsonl")
+buffer_args+=(--compact "$buffer_inputs/corrected-passes.json" --initial "$buffer_inputs/initial-passes.json")
+"${buffer_fs[@]}" -- python3 -B "$buffer_test" "${buffer_args[@]}"
+```
+
+The script imports and calls the actual validator without replacing any
+internal function. Fixtures and input records are real files. It prints JSON
+with each case outcome and exits zero only when all selected cases pass;
+`--case NAME` selects one reported case for a scratch source mutation.
+Bound each command to 60 seconds and preserve the complete receipts outside
+the read-only namespace. The expected baseline defect is false refusal of
+compact last-position records. It must fail before the correction and pass
+afterwards, using the same frozen inputs.
+
+This check covers the retained preflight inputs only. Original main pass
+inputs are unavailable; their revalidation remains Incomplete. Existing
+four-hour acceptance and recorded comparisons remain separate historical
+results. This offline pass check performs no installation, live capture,
+decoder/PB comparison, service lifecycle or new product acceptance. Progress
+reporting and Maven assertion accounting remain separate M49/#55 work.

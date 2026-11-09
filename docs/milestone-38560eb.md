@@ -31,7 +31,7 @@ Canonical branch or ref: `master`
 Git upstream: `origin/master`
 Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: Prepare the canonical #56 completion record for repository publication, then account for retained evidence against #55's existing buffer-tool criteria before selecting any missing claim. M50 is Complete: installer source and T2 evidence are published in 08b7ec4, and exact #56 body/comment readback at 2026-11-09T17:40:08Z confirms completed closure with eleven checked and zero unchecked criteria. Buffer-source preservation is published in a111c1e; shared procedures are published in ad5636b. M46 is Complete, with its report in 5ae70cd, #56 readback at 2026-11-08T03:39:05Z and completion record in f89e63a. M32 is Complete in 71b7aa7 after source 6146651 and exact #54 publication. ETL has 22 checked and 59 unchecked criteria. M47 still needs a scope decision for unavailable original full-day replay inputs. M49 remains Not started; M14/M26 remain Blocked on G2/G5.
+Next session entry point: Publish the locally verified M49 / T1 preflight validator correction and evidence, then address immediate progress state and Maven assertion accounting separately under #55. Actual full/compact preflight inputs pass; main input revalidation remains Incomplete and unwaived because original pass inputs are unavailable. M50 completion and #56 closure are published in 3160990. M47 still needs a scope decision for unavailable full-day recipient input; M48 retains 22 checked and 59 unmet ETL criteria. M14/M26 remain Blocked on G2/G5.
 
 Retained results and available inputs are indexed by `work/retained-test-results-20261026/README.md`. Its 2026-10-26 retention policy supersedes historical original-path instructions below: retired raw observations are not complete local replay inputs, and historical hashes do not establish current availability. Check the retained archives and inventories before planning a replay.
 
@@ -394,7 +394,7 @@ full mode carries every OS tree, second apply `failed=0`). Delivered in
 
 </details>
 
-Status tally: 25 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 6 external gates (4 Complete, 2 Open). Backlog excluded: 8 Complete, 2 In progress, 1 Not started and 13 Deferred carry-forward items, plus 2 Complete external gates. M51 is Complete after T1-T7 Passed and verified repository landing at 82ef88a; closure recorded on 2026-10-23 UTC. M35 is Complete within D48/D49 after source publication and scoped issue reconciliation. M47 / T1 Passed within its bounded normal-stop, repeat and command-error cases, with repository and #53 publication verified. M47 retains its unresolved full-day recipient input. M48 is In progress for retained-evidence accounting and the remaining scoped tool corrections. M49 remains Not started and Ready for evidence accounting; M50 is Complete after source landing and exact completed #56 closure readback.
+Status tally: 25 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 6 external gates (4 Complete, 2 Open). Backlog excluded: 8 Complete, 3 In progress, 0 Not started and 13 Deferred carry-forward items, plus 2 Complete external gates. M51 is Complete after T1-T7 Passed and verified repository landing at 82ef88a; closure recorded on 2026-10-23 UTC. M35 is Complete within D48/D49 after source publication and scoped issue reconciliation. M47 / T1 Passed within its bounded normal-stop, repeat and command-error cases, with repository and #53 publication verified. M47 retains its unresolved full-day recipient input. M48 is In progress for retained-evidence accounting and the remaining scoped tool corrections. M49 is In progress for preflight pass validation with unavailable main inputs; M50 is Complete after source landing and exact completed #56 closure readback.
 
 ## Milestone
 
@@ -6025,7 +6025,7 @@ The VM provider supplies M51's fresh dedicated Rocky 8.10 guest through its norm
 | Tools | M46 | Report actual test phase durations against the agreed allocations | Carry-forward | Complete | No | D31, D49 | Phase report in 5ae70cd on origin/master; exact #56 readback confirms all four related criteria; [detail](#m46---report-actual-test-phase-durations-against-the-agreed-allocations) |
 | Tools | M47 | Track journal test tooling | Carry-forward | In progress | No | D32, D33, D49 | Bounded normal-stop, repeat and actual command-error results are published; full-day recipient input remains unresolved under D49; [detail](#m47---track-journal-test-tooling) |
 | Tools | M48 | Track ETL test tooling | Carry-forward | In progress | No | D32, D33, D49 | Canonical and #54 checklists agree: 22 verified and 59 unmet criteria; M32 Complete, with other collector/evaluator claims remaining under D49; [detail](#m48---track-etl-test-tooling) |
-| Tools | M49 | Track buffer test tooling | Carry-forward | Not started | Yes | D32, D33, D49 | Retained evidence first; only necessary bounded real cases, then source/issue reconciliation under D49; [detail](#m49---track-buffer-test-tooling) |
+| Tools | M49 | Track buffer test tooling | Carry-forward | In progress | No | D32, D33, D49 | T1 preflight pass validation verified locally; source publication pending, exact #55 body verified, main input revalidation Incomplete; [detail](#m49---track-buffer-test-tooling) |
 | Tools | M50 | Track shared test tooling | Carry-forward | Complete | No | D32, D33, D34, D35, D36, D49 | All eleven criteria verified; installer source/result published in 08b7ec4; exact #56 body/comment and completed closure verified on 2026-11-09; [detail](#m50---track-shared-test-tooling) |
 | Tools | G6 | Provide M33's dedicated systemd 239 query environment | External gate | Complete | No | D40 | Capacity, private handoff and actual guest access/versions verified; [detail](#g6---provide-m33s-dedicated-systemd-239-query-environment) |
 | Tools | G7 | Provide retained full-day JFR inputs for M34 | External gate | Complete | No | D43 | Both observations and frozen tools delivered; complete member/hash checks, original anchors and native JFR decoding verified locally; [detail](#g7---provide-retained-full-day-jfr-inputs-for-m34) |
@@ -9319,7 +9319,7 @@ M35/D48 terminal criteria are verified from the recorded real normal/fault/repla
 Origin: 38560eb / M49
 Identity History: created as a test-type coordination entry on 2026-10-16 (D32); no existing identity is replaced.
 GitHub Issue: #55, https://github.com/jeonghanlee/ansible-provision/issues/55
-Status: Not started
+Status: In progress
 
 ##### Summary
 
@@ -9356,7 +9356,7 @@ These summaries preserve the recorded scope. Each linked issue retains its full 
 ###### Compact pass replay
 
 - Problem and evidence: Full JSONL passes validate; compact last-position passes were falsely refused after write-list compaction.
-- Remaining work: Define supported full/compact contracts and exercise the real replay with retained valid and inadequate-exposure inputs.
+- Result: The actual preflight full/compact validator check passes locally under T1. Full records require contiguous native positions; compact records require the observed write_count and matching boundary writes. All 44 passes in each form, including 25 eligible passes, are accepted; the original missing-delay pass and negative copies remain rejected. Main input revalidation remains Incomplete and is not waived. Source publication, progress and assertion accounting remain unfinished. The full #55 body is applied and verified at 2026-11-09T19:02:14Z, with all five criterion texts unchanged and unchecked.
 - Done when: Declared valid input works, inadequate exposure stays detectable and omitted writes are never invented; accepted live results stay unchanged.
 
 ###### Observation progress
@@ -9373,7 +9373,7 @@ These summaries preserve the recorded scope. Each linked issue retains its full 
 
 ##### Existing Evidence
 
-The shipped `validate_pass()` accepts all 25 eligible preflight and 1152 main full JSONL records but rejects 12 preflight and 576 main compact last-position records. It uses `len(writes) - 1`, while compact records keep only first/last writes plus `write_count`. Live validation ran before compaction; this replay defect does not overturn the accepted four-hour result.
+The original retained review recorded that `validate_pass()` accepted all 25 eligible preflight and 1152 main full JSONL records but rejected 12 preflight and 576 main compact last-position records. The original validator used `len(writes) - 1`, while compact records keep only first/last writes plus `write_count`. The local correction uses the observed count and validates the retained positions; current preflight results are recorded under T1. Live validation ran before compaction; this replay defect does not overturn the accepted four-hour result.
 
 The runner records actual start/cutoff before its first hourly status update, leaving an active observation marked `Starting`. Maven sources at jeonghanlee/epicsarchiverap-maven@629533a37ef889ffe3203d97538038eaaec95283 lack a direct absent-property assertion in `SampleBufferMarginPropertyTest` and a one-second zero-loss assertion in the 1500 ms control of `SampleBufferMarginTest`. Deployment receipts independently establish effective margin 1.0 and zero non-fast control loss; narrower assertions do not establish a product defect.
 
@@ -9391,6 +9391,7 @@ Reopening jeonghanlee/epicsarchiverap-maven#29, editing Maven code here, a new f
 
 ##### Dependencies And Decisions
 
+- Decision Date: 2026-11-09. Correct and verify the common pass validator using retained actual preflight full/compact records and the initial missing-delay record. Preserve all originals and accepted four-hour results. Main pass inputs are absent from retained packages; the original guest and disks were removed on 2026-10-27, and a read-only domain query on 2026-11-09 confirms no definition. Keep main revalidation Incomplete; decide its necessity for closure after the bounded correction. No new observation or VM operation is selected.
 - D49; Decision Date: 2026-10-24. The bounded completion approach is accepted. This supersedes blanket group deferral for preparation and evidence accounting, not component results or scope. Component details retain their identities; select only missing claims after accounting for reusable evidence. No new trial has run.
 - D33; Decision Date: 2026-10-16. Consolidate GitHub tracking into four issues; copy every original contract and retire twenty source issues with reason not planned. This supersedes D32's plan to keep those twenty GitHub issues open. Independent canonical component work and future tool execution remain Deferred.
 - Primary links are coordination relationships, not a new sequential execution dependency. Each existing issue retains its original criteria, source identities and evidence; no original result is rewritten.
@@ -9408,11 +9409,13 @@ Reopening jeonghanlee/epicsarchiverap-maven#29, editing Maven code here, a new f
 3. Exercise the real runner start/progress path only as needed to establish immediate active state, actual time bounds and final-state preservation. Do not repeat the accepted multi-hour buffer campaign.
 4. Declared full/compact records replay correctly, inadequate exposure remains detectable, runner state is accurate, and reusable instructions and Maven ownership are explicit. Preserve native results and original inputs; do not mark an unexecuted or excluded check Passed.
 
+Preflight validator execution scope; Plan Acceptance and Implementation Authorization: 2026-11-09. Update only the pass validator, its actual-record regression driver, input-contract documentation, source provenance/current hashes and this detail. Full records retain every native write; compact records retain boundary writes and the observed write_count. Validate positions against the observed count without recreating omitted writes. Freeze original archive/inventory, selected input/tool/fixture membership and hashes; run fresh isolated copies with the actual runner and actual fixture files. Require valid preflight full/compact acceptance, rejection of actual initial missing delay and negative copies with missing/duplicate/insufficient exposure or inconsistent boundaries. Require the unmodified runner to expose the compact last-position defect and scratch source mutations to fail the intended regression. Each offline command is limited to 60 seconds. No installation, live capture, terminal lifecycle, decoder/PB comparison, product acceptance or main replay is claimed.
+
 ##### Test Plan
 
 | Label | Layer | Method | Environment | Expected Result |
 | --- | --- | --- | --- | --- |
-| T1 | Replay | Execute the shipped validator/replay on retained full/compact preflight/main records and actual missing-delay records. | Retained actual buffer evidence | Explicit schemas prevent false last-position refusals; inadequate exposure detected. |
+| T1 | Pass validation | Execute the actual validator on retained preflight full/compact records and initial missing-delay input; verify real-input negative copies and old-source/mutation failures. Freeze inputs, tools and fixture identities before each process. | Isolated local filesystem with actual shipped fixtures; 60 seconds per command | Valid preflight forms accepted, inadequate exposure and inconsistent boundaries rejected. Main input revalidation stays Incomplete; no omitted writes or product results are inferred. |
 | T2 | Progress | Execute the real runner start/progress path and inspect persisted state, bounds, checkpoints and terminal record. | Separately authorized bounded deployment | Active state visible before the first hourly checkpoint; final record intact. |
 | T3 | Coverage accounting | Read pinned Maven assertions and independent deployment receipts and record their separate coverage. | Pinned Maven sources and preserved receipts | No absent assertion is reported as executed. |
 
@@ -9420,19 +9423,21 @@ Reopening jeonghanlee/epicsarchiverap-maven#29, editing Maven code here, a new f
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
-| T1 | Not run | Retained actual buffer evidence | Pending | Future scoped verification is not established by grouping or by a historical result outside this check. |
+| T1 | 2026-11-09T18:51:16.358757+00:00 | Isolated local read-only filesystem namespace; actual shipped runner/fixtures and retained preflight records | Passed for preflight pass validation | The unmodified runner falsely refuses exactly 12 compact last-position passes. The candidate accepts all 44 actual full and 44 compact passes, including 25 eligible passes in each form. Sixteen regression cases pass, including the actual initial missing-injection pass and separate negative copies. Thirteen scratch source mutations fail their intended checks; two count-guard mutations are detected by the required refusal diagnostic, not by accepting invalid input. The documented command executes unchanged apart from explicit source/input paths. Complete outer archive verification covers 89 members; selected original inputs/tools/fixtures remain unchanged before and after every process. Current-source coverage passes for 123 parent, 5 diagnostic and 19 scenario members; 119 unchanged baseline source members match 3160990. Evidence: `work/m49-preflight-20261109/inputs.json`, `candidate/receipt.json`, `mutation-plan.json`, `mutation-results.json` and `verification.json`. No decoder/PB, live lifecycle or product reacceptance ran. |
+| T1 | 2026-11-09T18:51:16.358757+00:00 | Retained packages and original-guest removal records | Incomplete for main input revalidation | Neither full nor compact main pass input is retained; the original guest and disk were removed on 2026-10-27 and its definition is absent on the actual 2026-11-09 query. Existing main verdict/comparison reports remain historical evidence. Preflight verification is not main revalidation, and closure necessity remains undecided. |
 | T2 | Not run | Separately authorized bounded deployment | Pending | Future scoped verification is not established by grouping or by a historical result outside this check. |
 | T3 | Not run | Pinned Maven sources and preserved receipts | Pending | Future scoped verification is not established by grouping or by a historical result outside this check. |
 
 ##### Closure Evidence
 
+- The accepted 2026-11-09 bounded correction passes T1 locally for actual preflight full/compact pass validation. Original archive, inventory, selected records and unsuccessful initial outcome are unchanged. Runner SHA256: ef23c4ea80551caf792bf50432e4d3560519df421506fcb9741cf24b21bf56b5. Source landing remains pending. Exact #55 readback at 2026-11-09T19:02:14Z matches the prepared full body, preserves open state and all existing metadata, and retains zero checked and five unchecked criteria. Receipt: `work/m49-preflight-20261109/publication.json`. Main input revalidation is Incomplete and has not been waived; progress and Maven assertion accounting remain unfinished, so M49 is In progress and no completion criterion is newly checked.
 - D49 publication reconciled at 2026-11-04T02:54:17Z: the applied #55 body matches the retained publication file and the source/plan commits are on origin/master. This records publication only; the group remains Not started with its remaining criteria open.
 - D49 approach accepted on 2026-10-24; group execution is Not started. Earlier dated Deferred statements below describe their recorded checkpoints. The accepted approach is not a verification result; no new criterion is completed merely by this plan update.
 - Tool work is not complete. GitHub tracking consolidation completed under D33 at 2026-10-17T01:14:10.675787+00:00: replacement #55 is open and all its source issues are closed not_planned with exact body/comment readback. Original criteria and unsuccessful evidence remain active; source closure establishes no tool verification.
 
 ##### GitHub Projection
 
-- Projection Difference: None for the D49 completion approach; the applied body exactly matches the retained publication file. Remaining verification criteria stay open.
+- Projection Difference: None at 2026-11-09T19:02:14Z. The live body exactly matches the prepared preflight-only scope, local T1 result and unavailable main inputs. All five original criteria remain unchecked; title, labels, milestone, assignee and open state are unchanged. Source changes remain uncommitted and unpublished, as stated in the issue.
 - Title: `Track buffer test tooling`
 - Labels: `enhancement`
 - GitHub Milestone: `Backlog`
@@ -9443,11 +9448,13 @@ Reopening jeonghanlee/epicsarchiverap-maven#29, editing Maven code here, a new f
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-24T20:20:33Z
-- Last Compared: 2026-11-04T02:54:17Z; exact full-body match and open state, title, labels, milestone and assignee verified by `gh issue view 55 --repo jeonghanlee/ansible-provision --json body,state,title,labels,milestone,assignees,updatedAt`. Checked boxes: 0; unchecked: 5.
-- Prepared Body: `work/issue-buffer-bounded-body.md`
-- Prepared Body SHA256: 87b8a1363cd10c46efa10aadc5f6a3a8f0592a012da7d373ef4ac311a108dfa5
-- Published Body SHA256: 87b8a1363cd10c46efa10aadc5f6a3a8f0592a012da7d373ef4ac311a108dfa5
+- Observed Updated At: 2026-11-09T19:02:04Z
+- Last Compared: 2026-11-09T19:02:14Z; exact full-body match and unchanged open state, title, label, milestone and assignee verified by `gh issue view` for issue 55 in jeonghanlee/ansible-provision, selecting body,title,state,labels,milestone,assignees,updatedAt,url. Checked boxes: 0; unchecked: 5. All five criterion texts are unchanged.
+- Prepared Body: `work/issue-buffer-preflight-body.md`
+- Prepared Body SHA256: 8a93c39cdf9be7b4ce3a63dbe589c60b0e0b839ff90f2edeae29e725709e4ac0
+- Published Body SHA256: 8a93c39cdf9be7b4ce3a63dbe589c60b0e0b839ff90f2edeae29e725709e4ac0
+- Applied Operation: Complete body edit only; open state, title, labels, milestone, assignee and all five unchecked criteria preserved.
+- Publication Receipt: `work/m49-preflight-20261109/publication.json`
 - Historical Source Issues: none; buffer tooling scope is declared directly here.
 
 #### M50 - Track shared test tooling
