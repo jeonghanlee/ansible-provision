@@ -30,7 +30,7 @@ operation above that baseline. The first-pass validation environment uses
      | iocrunner_nfs -> iocrunner + nfs_sim
      | iocserver  -> common, provenance, con, conserver, procserv,
      |               python, epics, iocrunner
-     | epics_dev  -> common, python, epics_build, epics_support
+     | epics_dev  -> common, python, epics_build
      | nfs_sim    -> common, nfs_sim
      | rtbase     -> common, rt
      | ethercat   -> ethercat (on the rtbase golden)
@@ -81,11 +81,11 @@ ansible-provision/
 |       |-- ubuntu24.yml             (epics_os_dir: ubuntu-24.04)
 |       `-- ubuntu26.yml             (epics_os_dir: ubuntu-26.04)
 |-- playbooks/
-|   |-- operators/                   (one playbook per operator, 21, and the deprecated mariadb alias)
+|   |-- operators/                   (one playbook per operator, 20, and the deprecated mariadb alias)
 |   `-- species/                     (one assembly per species, 12, and the deprecated archiver_dev alias)
-`-- roles/                           (one role per operator, 21, and the optional proxy_check)
+`-- roles/                           (one role per operator, 20, and the optional proxy_check)
     |-- common/      rt/          provenance/  python/
-    |-- proxy/       epics/       epics_build/ epics_support/
+    |-- proxy/       epics/       epics_build/
     |-- procserv/    conserver/   con/         java/        tomcat/
     |-- nfs_sim/     iocrunner/   testusers/   ethercat/
     |-- mariadb_uds/ mariadb_tcp/ sqlite/      archiver_build/
@@ -224,7 +224,7 @@ EPICS path resolution:
 | Variable | rocky8 | debian13 |
 |---|---|---|
 | `epics_os_dir` | `rocky-8.10` | `debian-13` |
-| `epics_env_version` | `1.3.0` | `1.3.0` |
+| `epics_env_version` | `1.5.0` | `1.5.0` |
 | `epics_base_version` | `7.0.10` | `7.0.10` |
 
 ### Shared Install-Root Ownership
@@ -270,23 +270,20 @@ Site prerequisites (owned by the site provisioning record in
 
 ### EPICS-env Source Builds
 
-`epics_build` and `epics_support` run through the `epics_dev` species
-assembly on dedicated build hosts. The base layer installs vendor libraries inside the
-EPICS-env release tree before building EPICS Base and modules. The support
-layer then sources the installed environment and adds AreaDetector modules.
+`epics_build` runs through the `epics_dev` species assembly on dedicated
+build hosts. It installs vendor libraries inside the EPICS-env release tree
+before building EPICS Base and the EPICS-env module set, which includes the
+AreaDetector modules (ADCore, ADSimDetector, ADGenICam, ADVimba).
 
 ```
 operators/epics_build.yml
   |-- package automation
   |-- uldaq and open62541 -> <release>/vendor
   `-- EPICS-env -> /opt/epics/<version>/<os>/<base>
-
-operators/epics_support.yml
-  `-- EPICS-env-support -> <installed environment>/modules
 ```
 
 The `internal` flavor uses the normal build target. The `gz` flavor selects
-the reduced-debug build target. Both roles detect an installed result and skip
+the reduced-debug build target. The role detects an installed result and skips
 it on a repeated run.
 
 ### ioc-runner Infrastructure

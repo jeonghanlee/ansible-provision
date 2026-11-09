@@ -134,7 +134,6 @@ is the normative statement of content and order.
 | P_python | `python` | OS package manager |
 | P_epics | `epics` | [jeonghanlee/EPICS-env-distribution](https://github.com/jeonghanlee/EPICS-env-distribution) |
 | P_epics-build | `epics_build` | [jeonghanlee/EPICS-env](https://github.com/jeonghanlee/EPICS-env) |
-| P_epics-support | `epics_support` | [jeonghanlee/EPICS-env-support](https://github.com/jeonghanlee/EPICS-env-support) |
 | P_procserv | `procserv` | [jeonghanlee/procServ-env](https://github.com/jeonghanlee/procServ-env) |
 | P_conserver | `conserver` | [jeonghanlee/conserver-env](https://github.com/jeonghanlee/conserver-env) |
 | P_con | `con` | [jeonghanlee/con](https://github.com/jeonghanlee/con) |
@@ -492,7 +491,7 @@ build log names how to start it again.
 | `species/iocrunner.yml` | P_testusers P_iocrunner (P_epics or P_epics-build) P_python (P_con P_conserver P_procserv) P_provenance on bare |
 | `species/iocrunner_nfs.yml` | P_nfs-sim on iocrunner |
 | `species/iocserver.yml` | P_iocrunner (P_epics or P_epics-build) P_python (P_con P_conserver P_procserv) P_provenance on bare |
-| `species/epics_dev.yml` | P_epics-support P_epics-build P_python on bare |
+| `species/epics_dev.yml` | P_epics-build P_python on bare |
 | `species/nfs_sim.yml` | P_nfs-sim on bare |
 | `species/rtbase.yml` | P_rt on bare |
 | `species/ethercat.yml` | P_ethercat on the rtbase golden |

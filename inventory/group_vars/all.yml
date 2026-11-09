@@ -13,7 +13,6 @@
 epics_ioc_engineers:
   - vmadmin
 
-# EPICS install root and build flavor, shared by the epics_build and
-# epics_support operators.
+# EPICS install root and build flavor, used by the epics_build operator.
 path_epics_install:     "/opt/epics"
 epics_env_build_flavor: "internal"
