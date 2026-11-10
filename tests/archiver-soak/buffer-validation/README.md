@@ -283,4 +283,46 @@ inputs are unavailable; their revalidation remains Incomplete. Existing
 four-hour acceptance and recorded comparisons remain separate historical
 results. This offline pass check performs no installation, live capture,
 decoder/PB comparison, service lifecycle or new product acceptance. Progress
-reporting and Maven assertion accounting remain separate M49/#55 work.
+verification and Maven assertion accounting use their separate methods under
+M49/#55.
+
+## Maven Assertion Boundary
+
+The supported appliance pin is
+`629533a37ef889ffe3203d97538038eaaec95283` in
+`jeonghanlee/epicsarchiverap-maven`. Its tests and deployed observations
+establish different claims:
+
+| Test | Existing assertions | Missing direct assertion |
+| --- | --- | --- |
+| `SampleBufferMarginPropertyTest` | Accept finite values at or above the minimum, raise lower values, and default non-finite or unparsable text | An absent property returns the default; every existing case sets the key through `with(value)` |
+| `SampleBufferMarginTest` | No loss for all three sampling classes at 0 and 500 ms; fast loss and zero ten-second loss at 1500 ms; counter/gap equality for every class | Zero one-second loss in the 1500 ms scenario; that scenario does not assert `results.get("S").lostTotal == 0` |
+
+`EngineContext.sampleBufferMarginSecondsFrom()` implements the absent-key
+default branch. Reading that implementation or observing effective margin
+1.0 in an appliance does not execute an absent-key unit assertion. The
+`localEpics` scenario uses a real engine and IOC with a recording writer at
+the storage boundary; it is distinct from native appliance writes and PB
+comparison in this directory's runner.
+
+The original accepted deployment records effective margin 1.0 and write
+period 10 s. Its separate 1500 ms control records 550 fast gaps matching
+counters and zero non-fast counter events. The positive normal window has
+396000 exact fast-input/PB matches and no missing or conflicting events.
+The accepted four-hour result retains zero loss across all 903 counters and
+15840000 exact fast-input/PB matches. These are historical deployment
+results, not execution of either missing assertion or current main replay.
+
+Control outcomes belong to their own execution. The separate bounded
+progress verification's prerequisite records 550 fast gaps and 782 non-fast
+counter events in its expected-loss control, while its normal window has
+zero missing/conflicting fast events. Neither control establishes a
+universal non-fast zero-loss guarantee. Exact input/PB equality is measured
+for the 110 fast PVs; activity and buffer-full counters for the other PVs
+do not establish their exact event equality.
+
+Both assertion gaps remain follow-up work owned by
+`jeonghanlee/epicsarchiverap-maven`. Any test change and execution there
+needs its own scope; this accounting changes no Maven source, runs no Maven
+test and does not reopen completed product acceptance. The canonical work
+register owns dated evidence and publication state.
