@@ -219,6 +219,66 @@ and compares the declared interval ending 20 seconds before the verdict. Its
 unchanged. Freeze and verify the full private input set before execution;
 source preservation does not establish a replay result.
 
+## Observation And Verdict Contract
+
+The installed `runner.py` accepts `preflight` and `main`. Each mode records
+one attempt below `/var/lib/buffer29`; an existing `attempt.json` refuses an
+automatic retry. Installation and a dedicated running appliance must satisfy
+the pinned contract above before either mode is invoked. The `main` mode
+requires a native `Passed` preflight and starts a fresh capture with no
+buffer-full loss already present. These entry points are operational
+contracts, not authorization to repeat an accepted campaign.
+
+The trace carries input and swap records, pass begin/end, native writes,
+injections, readiness, configuration, final-flush state, I/O boundaries and
+observer errors. The runner binds its engine PID to boot ID and process
+start ticks, and checks stable buffer identities and nondecreasing counters.
+All 903 fixture PVs need input activity and counters; the 110 PVs in
+`fast.txt` additionally require full input payloads and physical PB evidence.
+
+| Mode or phase | Native timing and purpose |
+| --- | --- |
+| Preflight readiness | At most 300 s; require all 903 PVs, effective write period 10 s, margin 1 s and persisted fast data |
+| Preflight positive stages | `base`, `p500` and `p800`, each 120 s; cycle 0; require zero loss before the separate control |
+| Expected-loss control | One 1500 ms first-write injection, then 30 s recovery before IOC stop, drain and comparison |
+| Main observation | 14400 monotonic seconds after actual readiness; 24 cycles of 600 s: 60 s base, 240 s at 500 ms, 240 s at 800 ms and 60 s recovery |
+| Whole command | Preflight deadline 1200 s; main deadline 16200 s from command start, including preparation and comparison |
+
+Phases 2 and 3 request 500 and 800 ms respectively, alternating first and
+last native-write positions across eligible passes. Phase 4 requests 1500 ms
+at the first write. Requested sleep alone is insufficient: exactly one
+successful injection and its actual measured wait must be retained.
+
+Targets are frozen from the latest complete readiness pass. Only a fast PV
+at that pass's first native write may be excluded, because it can precede
+every injection; retain the exception and reason in `stress-targets.json`.
+At least 109 of the 110 fast PVs therefore remain. Main reuses this frozen
+set. Every target needs at least one qualifying exposure per level in cycle
+0 for preflight and in each cycle 1 through 24 for main:
+
+| Level | Measured wait | Swap interval | Actual inputs between swaps |
+| --- | --- | --- | --- |
+| 500 ms | At least 500 ms | 10.4 through 11.0 s | 104 through 110 |
+| 800 ms | At least 800 ms | 10.7 through 11.0 s | 107 through 110 |
+
+Drain requires a persisted fast swap beyond the declared cutoff. The runner
+preserves actual fast PB files by inode and decodes them with the appliance
+implementation. Comparison checks every declared interval, timestamps,
+value bits, status, severity, order and multiplicity. Full recovery remains
+in the expected-loss comparison; no interval is discarded. Non-fast PV
+activity and counters do not establish exact non-fast input/PB equality.
+
+Missing fast events in a positive window, conflicting/extra fast events
+in any comparison, or buffer-full loss in normal/within-margin stages
+produces `Failed`. In the expected-loss
+control, fast PB gaps must equal the corresponding counter deltas and
+demonstrate nonzero loss; non-fast counter events are recorded separately.
+Missing exposure, identity changes, inadequate evidence, command errors,
+deadline expiry and interruption produce `Incomplete`. The terminal path
+disables injection, attempts IOC stop and preserves pass/counter/input
+records. The bounded progress check establishes actual interruption and
+retry behavior separately from historical normal completion.
+
 ## Full And Compact Pass Records
 
 The validator checks completed native-write passes. Eligible phases 2 and 3
