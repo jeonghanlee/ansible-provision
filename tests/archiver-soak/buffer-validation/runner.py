@@ -570,6 +570,8 @@ def main_run(out, origin, deadline):
     control(out, 'main', start, cutoff)
     save(out / 'observation.json', {'start_mono_ns': start, 'end_mono_ns': cutoff,
                                     'duration_seconds': 14400, 'cycles': 24})
+    save(out / 'status.json', dict(capture.summary(), state='Main observation', completed_hours=0,
+                                    start_mono_ns=start, cutoff_mono_ns=cutoff))
     for hour in (1, 2, 3, 4):
         wait_until(capture, start + hour * 3600 * NS, deadline)
         save(out / ('checkpoint-{}.json'.format(hour)), dict(capture.summary(), hours=hour,

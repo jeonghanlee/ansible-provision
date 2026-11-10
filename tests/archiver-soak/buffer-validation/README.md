@@ -35,6 +35,14 @@ implementation; the runner compares timestamps, value bits, status, severity,
 order and multiplicity. Importing `runner.py` reads installed fixtures, so a
 source-only check must compile it without importing it.
 
+The main runner saves `observation.json` and immediately publishes
+`state: Main observation`, `completed_hours: 0`, `start_mono_ns` and
+`cutoff_mono_ns` in `status.json`. The bounds use the same monotonic start and
+four-hour cutoff as observation control. Hourly checkpoints advance the
+completed-hour count; terminal handling replaces the active status with
+`Passed`, `Failed` or `Incomplete`. An interrupted short check establishes
+only the observed start and interruption behavior, not four-hour completion.
+
 ## Source Identity And Shared Files
 
 `source.json` records the original hashes of all 18 deployed bundle members
