@@ -12,6 +12,9 @@ This directory provides preparation, unrelated-module challenge, source-unavaila
 | --- | --- |
 | Preparation and finite worker launch | `prepare-etl-nextcase-v3.py`, `prepare-etl-nextcase-v4.py`, `launch-etl-nextcase-preparation-v2.py`, `launch-etl-nextcase-runtime-v3.py` |
 | Unrelated journal-module challenge | `apply-journal-challenge.py`, `run-etl-independence-v2.py` |
+| Normal-finish independence candidate | `run-etl-independence-v3.py`, `replay-etl-independence-v2.py`, `test-independence-candidate.py` |
+| Source-fault candidates and local boundaries | `run-etl-fault-v3.py`, `replay-etl-fault-v2.py`, `fault_support.py`, `test-fault-candidate.py` |
+| Shared source staging and startup prerequisite | `prepare-vm-batch.py`, `wait-etl-startup-v1.py` |
 | Native readiness and actual fault boundary | `etl-native-preflight-v2.py`, `preflight-etl-fault-boundary.py` |
 | Actual source-access faults | `etl-fault-sampler.py`, `run-etl-fault.py`, `run-etl-fault-v2.py` |
 | Frozen checks and private evidence archives | `replay-etl-fault.py`, `replay-etl-independence.py`, `archive-etl-fault-v4.py`, `archive-etl-independence-v6.py` |
@@ -29,6 +32,216 @@ These payloads target the original isolated Rocky Linux 8.10/Python 3.9/systemd 
 Inspect `run.py --help` and the selected source before creating its private payload. The JSON must declare `role` as `etl`; `chain`, `case`, source hashes and deployed file paths follow the selected source's own contract. The payload files are executed source copies, not a claim that every historical variant or recipient replay succeeded.
 
 An original short observation's `Incomplete` status and a successful negative-scenario expectation remain separate. Original data and manifests are never rewritten to make a checker succeed.
+
+## Normal-Finish Independence Candidate
+
+`run-etl-independence-v3.py` and `replay-etl-independence-v2.py` are separate
+candidates for both chains and the `absent`, `failing` and `changed` unrelated
+study states. The existing challenge, v2 runtime and original replay remain
+unchanged planned-abort sources. A candidate implementation or local check does
+not establish any of the six live normal-finish/recipient rows.
+
+The private configuration declares actual installed paths and the original
+study's SHA-256:
+
+```json
+{
+  "role": "etl",
+  "chain": "shortened",
+  "study_state": "absent",
+  "duration_seconds": 7200,
+  "timeout_seconds": 14400,
+  "preparation_mode": "fresh",
+  "tools": "/usr/local/share/etl-soak",
+  "state_directory": "/var/lib/etl-soak",
+  "case_directory": "/var/lib/etl-independence/shortened-absent-finish",
+  "study_path": "/var/lib/etl-negative-study/journal_coverage.py",
+  "original_sha256": "<actual-original-study-sha256>"
+}
+```
+
+`check` validates configuration, the real native bundle and original study
+without changing the case or appliance. `challenge` and `restore` exercise only
+the actual file/import boundary. They preserve the original file by moving it
+into the new case directory; restoration refuses an unexpected source change.
+The changed and failing states retain their actual challenged source and native
+import output. A repeated successful restore verifies the existing original
+without overwriting its first restoration record.
+
+```bash
+scenarios=/path/to/archiver-soak/etl-scenarios
+config=/path/to/private-case.json
+python3 -B "$scenarios/run-etl-independence-v3.py" check --config "$config"
+```
+
+On the selected dedicated VM, `run` applies the challenge before invoking the
+shipped initialization/preparation and launch CLIs. `preparation_mode: retest`
+instead invokes `prepare-retest.py` and requires actual `capacity_evidence`
+and `projected_growth_bytes`. Installed native paths must match the selected
+package; the candidate never redirects internal observation functions.
+
+The runner waits for the real scheduled finish service to complete, including
+an unsuccessful completion. It preserves the native 7200/86400-second duration,
+checks actual normal-stop and scheduler evidence, and requires the worker's
+exit code to match the saved native verdict. It never shortens the clock or
+turns an abort into normal finish. A failed owned observation may receive one
+bounded cleanup abort only when no terminal operation has started; unknown
+ownership or an existing terminal marker prevents another dispatch. Native
+commands are bounded to 2700 seconds and the configured case deadline; failure
+cleanup has its own 2700-second bound.
+
+```bash
+python3 -B "$scenarios/run-etl-independence-v3.py" run --config "$config"
+```
+
+Successful native collection leaves scenario expectation `Pending`. The runner
+restores the study, verifies the stopped state copy and freezes complete regular
+file membership for state, native sources, candidate sources and case receipts.
+The new replay refuses legacy or incomplete captures. It executes both native
+readers on fresh verified copies and preserves their complete JSON, stdout,
+stderr and native statuses. Record a post-finalization baseline once; transfer
+the complete case with independently pinned archive/member identities before
+recipient execution. Recipient tooling and runtime dependencies must be available.
+
+```bash
+case_dir=/path/to/completed-case
+replay="$scenarios/replay-etl-independence-v2.py"
+receipt=/path/to/actual-controller-command.json
+baseline="$case_dir/baseline"
+python3 -B "$replay" --case "$case_dir" --output "$baseline" --record-baseline --controller-receipt "$receipt"
+output=/path/to/new-recipient-output
+python3 -B "$replay" --case "$case_dir" --output "$output"
+```
+
+Replay compares the complete recorded native artifact bytes and scenario result
+without normalization. Execution receipts remain separate from the compared
+result. Preserved overall `Incomplete` findings are allowed only with the
+declared native status and complete required scheduler evidence; equality of
+two unsuccessful outputs alone is insufficient.
+
+The controller receipt is produced by the real caller after the standalone
+`run` command exits. It records the actual `command` array, `returncode`,
+candidate `source_sha256` and the captured `configuration_sha256` from
+`case_directory/configuration.json`. Baseline recording requires exit 0 and
+matching source/configuration identities. Do not replace an unobserved status
+with a default success value. Recipient replay preserves that original receipt.
+
+Local checks use the shipped journal module and an independently pinned actual
+normal terminal. They cover real challenge/restoration, source/configuration
+refusal and selected retained-record guards; they do not execute preparation,
+normal finish, full captured-case replay or an independent recipient.
+
+```bash
+terminal=/path/to/actual/shutdown.json
+terminal_hash=independently_recorded_sha256
+output=/path/to/new-local-evidence
+test="$scenarios/test-independence-candidate.py"
+python3 -B "$test" --terminal "$terminal" --terminal-sha256 "$terminal_hash" --output "$output"
+```
+
+## Source-Fault Candidate And Shared VM Package
+
+The v3 fault controller and v2 fault replay are separate candidates. Existing
+fault payloads, replay, observations and unsuccessful controller outcomes remain
+unchanged. The controller retains the shipped namespace sampler and native
+query/time-comparison operations. It calls the native query API's fault-v2
+caller contract; no native collector or observation function is replaced.
+
+`prepare-vm-batch.py` verifies complete source membership and hashes, stages all
+declared sources, excluding generated `__pycache__` directories, and produces an archive whose complete regular-file membership
+is read back and verified. It includes the original pinned startup waiter used
+by preparation and native preflight. It creates no VM, connection or service.
+
+```bash
+source=/path/to/archiver-soak
+staged=/path/to/new-source-package
+python3 -B "$scenarios/prepare-vm-batch.py" --source-root "$source" --output "$staged"
+```
+
+The package contains `source-members.json`, `package.json`, the source tree and
+archive, prerequisites and seven runtime claim groups in `batch.json`, plus a
+fault configuration template. Archive verification establishes source delivery
+readiness only. Verify the transferred archive against its independently pinned
+SHA-256 and complete members before installation. Target selection, actual
+resource checks, deployment, case execution and independent recipient execution
+remain separate operations.
+
+On a selected fresh environment, the scenario sources must occupy
+`/var/lib/etl-negative-orchestration/` and the unchanged native package must occupy
+its declared installed path. The fault configuration declares `role`, `chain`,
+`case` (E3 or E4), a finite positive `timeout_seconds`, complete `scenario_sha256`,
+the actual shipped namespace sampler bytes/hash and both preflight paths/hashes.
+Prepare the fixture and case directory with the preserved preparation path
+before `run`. The native preflight still consumes the actual installed startup
+waiter and its original pin. A configuration check does not inspect live
+readiness or run the fixture.
+
+```bash
+config=/path/to/private-fault-case.json
+runtime="$scenarios/run-etl-fault-v3.py"
+python3 -B "$runtime" --config "$config" check
+python3 -B "$runtime" --config "$config" run
+```
+
+The caller retains the actual controller command, stdout/stderr and native exit
+status after completion. Its receipt uses `command`, `returncode`,
+`source_sha256` and `configuration_sha256`, the latter identifying the captured
+`candidate-configuration.json`. Only the real run command with exit 0 qualifies;
+a successful check or a historical controller error cannot become a successful
+runtime receipt. The controller leaves scenario expectation Pending, records
+its source identities, enforces its execution budget and preserves native
+abort/Incomplete status 1. Automatic abort requires actual worker completion
+with the recorded invocation; planned abort requires the actual CLI status.
+Failure cleanup is separately bounded and applies only to an owned observation
+without a terminal operation already recorded.
+
+After real finalization, freeze complete regular-file membership for the native
+tools, observation and case roots. Retain the actual controller receipt with an
+independent hash. A frozen incomplete case is still incomplete; freezing does
+not make it a valid scenario.
+
+```bash
+tools=/path/to/frozen-native-tools
+input=/path/to/frozen-observation
+case_dir=/path/to/frozen-case
+members=/path/to/new-members.json
+support="$scenarios/fault_support.py"
+python3 -B "$support" --freeze --tools "$tools" --input "$input" --case "$case_dir" --output "$members"
+```
+
+The replay validates complete frozen roots, candidate identities, original path
+bindings, actual controller success and native terminal facts before reading
+the scenario. It uses precisely selected actual journal query outputs and fresh
+verified native/state copies, retaining full JSON, stdout/stderr and native
+Incomplete/1 findings. Record one baseline, independently pin `artifacts.json`,
+then transfer all frozen inputs, receipt and baseline to the independent
+recipient. The recipient uses `--baseline` and its pinned hash instead of
+`--record-baseline`; complete artifact bytes must agree without normalization.
+
+```bash
+replay="$scenarios/replay-etl-fault-v2.py"
+receipt=/path/to/actual-controller.json
+manifest_hash=independently_recorded_members_sha256
+receipt_hash=independently_recorded_controller_sha256
+baseline=/path/to/new-baseline
+set -- --tools "$tools" --input "$input" --case "$case_dir"
+set -- "$@" --members "$members" --members-sha256 "$manifest_hash"
+set -- "$@" --controller-receipt "$receipt" --controller-receipt-sha256 "$receipt_hash"
+python3 -B "$replay" "$@" --record-baseline --output "$baseline"
+baseline_hash=independently_recorded_baseline_artifacts_sha256
+recipient_output=/path/to/new-recipient-output
+set -- "$@" --baseline "$baseline" --baseline-sha256 "$baseline_hash"
+python3 -B "$replay" "$@" --output "$recipient_output"
+```
+
+Local `test-fault-candidate.py` requires an independently identified actual abort
+record. It runs real configuration/refusal CLIs and source staging, and checks
+terminal/controller and complete-file guards on actual records or explicitly
+changed negative copies. These are local boundary checks, not a successful
+live fault, final capture, complete scenario replay or recipient test. Keep all
+four chain/fault combinations and their lifecycle/recipient outcomes unverified
+until actual execution. Historical missing original populations and report
+baselines cannot be replaced by a new environment.
 
 ## Journal Query Component
 

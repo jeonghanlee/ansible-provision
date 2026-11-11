@@ -744,6 +744,35 @@ visibility bounds are distinct measurements; none is exact engine ingestion
 latency. The collector records kernel memory events and JVM identity changes;
 application journals remain evidence for OOM and service-failure analysis.
 
+Each visibility attempt records `query_start` and `query_end` with the exact
+UTC strings sent as the HTTP `from` and `to` parameters. Successful responses
+retain the normal request/response metadata; an HTTP or decoding error retains
+the query bounds alongside its existing `error_type`. These additions preserve
+the source-time selection, polling interval, deadline and outcome meanings.
+Earlier records without query bounds remain unknown; source calculations do
+not reconstruct observed historical request metadata.
+
+`etl-pass/test-visibility-query.py` runs `measure.latency()` with the unchanged
+903-PV database/CSV fixture, native EPICS Base `softIoc`, `caget` and `caRepeater`,
+and an isolated loopback HTTP boundary. It fixes only the owned IOC's SCAN state
+and processes its real records to obtain stable, recent CA timestamps. Received
+HTTP URLs are compared with finalized freshness/visibility JSON. The recovery
+case exposes actual HTTP 503 and empty responses before successful visibility.
+Each case owns its IOC, repeater and HTTP server, retains complete command/request
+records and stops its resources before evaluation. This covers query metadata,
+not a deployed appliance or missing historical evidence.
+
+```bash
+base=/path/to/epics/base
+output=/path/to/new/private-evidence
+python3 -B tests/archiver-soak/etl-pass/test-visibility-query.py --base "$base" --output "$output"
+```
+
+Use `--case recovery` for HTTP failure and empty-response recovery; `--tools`
+selects a separately identified baseline or candidate runtime directory. Native
+dependencies and all shipped fixture files must be readable. No root privilege,
+system service installation or additional long observation is required.
+
 For ETL timing, compare actual start with `plannedAt`. Without a preceding
 transition wait, require a start within one 5-second tick. A pass held by the
 ordering rule retains its original planned time and starts on the first tick

@@ -183,8 +183,13 @@ def iso(epoch):
     return datetime.datetime.fromtimestamp(epoch, datetime.timezone.utc).isoformat().replace('+00:00', 'Z')
 
 
+def query_bounds(start, end):
+    return {'query_start': iso(start), 'query_end': iso(end)}
+
+
 def request(pv, start, end):
-    query = urllib.parse.urlencode({'pv': pv, 'from': iso(start), 'to': iso(end)})
+    bounds = query_bounds(start, end)
+    query = urllib.parse.urlencode({'pv': pv, 'from': bounds['query_start'], 'to': bounds['query_end']})
     began, monotonic = time.time(), time.monotonic()
     with urllib.request.urlopen(RETRIEVAL + '?' + query, timeout=15) as response:
         status, body = response.status, response.read()
@@ -196,7 +201,7 @@ def request(pv, start, end):
         raise RuntimeError('Unexpected retrieval response')
     samples = [sample for block in decoded for sample in block.get('data', [])
                if 'secs' in sample and 'nanos' in sample]
-    return samples, {'request_started': iso(began), 'response_finished': iso(ended),
+    return samples, {**bounds, 'request_started': iso(began), 'response_finished': iso(ended),
                      'http': status, 'duration_ms': round(elapsed * 1000, 3),
                      'response_bytes': len(body), 'response_sha256': hashlib.sha256(body).hexdigest()}
 
@@ -242,11 +247,12 @@ def visibility(pv):
         return {**row, 'outcome': 'source_error'}
     source = datetime.datetime.fromisoformat(match[1]).replace(tzinfo=datetime.timezone.utc).timestamp()
     row['source_timestamp'] = iso(source)
+    query_start, query_end = source - 0.001, source + 0.001
     deadline = time.monotonic() + PROBE_TIMEOUT_SECONDS
     last_negative_started = None
     while time.monotonic() < deadline:
         try:
-            samples, response = request(pv, source - 0.001, source + 0.001)
+            samples, response = request(pv, query_start, query_end)
             matching = [sample for sample in samples if abs(timestamp(sample) - source) <= 0.0000011]
             row['attempts'].append({**response, 'matching_samples': len(matching)})
             if matching:
@@ -257,7 +263,7 @@ def visibility(pv):
                         'archived_secs': matching[0]['secs'], 'archived_nanos': matching[0]['nanos']}
             last_negative_started = datetime.datetime.fromisoformat(response['request_started'].replace('Z', '+00:00')).timestamp()
         except Exception as error:
-            row['attempts'].append({'error_type': type(error).__name__})
+            row['attempts'].append({**query_bounds(query_start, query_end), 'error_type': type(error).__name__})
         time.sleep(POLL_SECONDS)
     return {**row, 'outcome': 'not_observed_within_probe'}
 
