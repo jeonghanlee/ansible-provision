@@ -429,6 +429,7 @@ Status tally: 25 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 
 | Core | M25 | Verify independent journal recording, retention and collection | Milestone | Complete | No | D27, D28 | Accepted 24-hour recording, live retention and exact archive comparison Passed with zero violations/unresolved records; #31 closed completed on 2026-10-15. Two unexecuted tool checks are independent M27/M28 Backlog work; [detail](#m25---verify-independent-journal-recording-retention-and-collection) |
 | Core | M26 | Provision the SQLite Archiver Appliance on an existing general Rocky Linux 8.10 server | Milestone | Blocked | No | M18, G5, D26 | The `archiver_server_sqlite` assembly applies on the existing server without a proxy readiness gate, installs the appliance on the SQLite backend at the pinned sources, and passes the install checks on that server; the optional `proxy_check` role and its suite exist but are not part of the assembly; [detail](#m26---provision-the-sqlite-archiver-appliance-on-an-existing-general-rocky-linux-810-server) |
 | Core | M51 | Verify current Archiver sources through a complete general-server SQLite VM installation | Milestone | Complete | No | M18, G8, D45 | Fresh-VM T1-T7 Passed; role correction, reusable checks and trial record delivered in 82ef88a with exact upstream file verification on 2026-10-23 UTC; [detail](#m51---verify-current-archiver-sources-through-a-complete-general-server-sqlite-vm-installation) |
+| EPICS | M52 | Unify the EPICS-env release selector | Milestone | Deferred | No | D50 | One variable selects the EPICS-env release for both the `epics` and `epics_build` roles, and the recorded provenance equals the effective selection with and without an override; [detail](#m52---unify-the-epics-env-release-selector) |
 | Gate | G1 | the production IOC server reaches the internal git host | External gate | Complete | No | | Reachability achieved through the site HTTP proxy's CONNECT tunnel (an ssh `ProxyCommand` over the proxy), not a firewall whitelist: the owner's key authenticates and `git ls-remote` returns the refs; confirmed 2026-09-03 by the successful iocserver clone (M4/T2) |
 | Gate | G2 | cloud-provision ships the middleware package baseline and the middleware VM | External gate | Open | No | | The middleware operator/species structure and OS package baseline (system OpenJDK 21, Tomcat 9.0.121, MariaDB; no Maven package) originate in cloud-provision (`docs/milestone-e260630.md` M11) as the normative source and a middleware VM is provisionable there, before ansible-provision mirrors the set and layers its roles; owned by the cloud-provision session |
 | Gate | G3 | epicsarchiverap-env ships a `sql.fill` that loads the configuration schema when the database and application account are provisioned externally | External gate | Complete | No | | Complete when the jeonghanlee/epicsarchiverap-env#47 fix commit is on `modernize` and epicsarchiverap-env records #47's acceptance as met: with only the application account, `make sql.fill` loads the schema, `make sql.show` lists `PVTypeInfo`, `PVAliases`, `ArchivePVRequests` and `ExternalDataServers`, and an absent database exits non-zero. Observing it on an archiver-dev host is M14/T17, not this gate; owned by the epicsarchiverap-env session; met 2026-09-23: the fix is `1fc20a8` on `modernize`, and #47 closed with epicsarchiverap-env's acceptance recorded |
@@ -489,6 +490,7 @@ Status tally: 25 Complete, 0 In progress, 0 Not started, 0 Deferred, 2 Blocked. 
 | D47 | Select existing-file persistence for the M35 draft: save actual terminal facts before evaluation, then atomically update the same shutdown.json or abort.json with the evaluation result. Keep started-marker/repeated-stop protections and a non-successful record if evaluation or final persistence is interrupted. Authorize source/original inspection and detailed plan preparation only; plan acceptance, implementation, live environment execution and external mutations remain separate. | 2026-10-22 |
 | D48 | Narrow remaining M35 verification to a real evaluator exception and overlapping lifecycle requests. Accept and authorize that bounded continuation using existing corrected tools and preserved evidence. Exclude fresh-installed original/candidate comparison and full installed preparation-proof production/consumption from completion; neither is passed. Do not repeat two-hour observations, expand metric coverage or reopen accepted ETL functionality. Preserve all prior outcomes and resources. Necessary case preparation and exact resource binding remain; no commit, push, issue mutation or deletion is authorized. | 2026-10-24 |
 | D49 | Adopt one bounded completion approach for the four tool groups M47-M50: use retained actual evidence first, run only necessary short real cases for missing claims, and stop at the declared evidence or limit. Do not repeat accepted long observations, launch a broad matrix by default or perfect a general framework. Preserve original and unsuccessful results; exclusions require an explicit dated decision and are not Passed. Return the four group plans from Deferred to Not started for this approach; child components remain individually scoped. Record source changes and reconcile #53-#56 without claiming unexecuted work complete. | 2026-10-24 |
+| D50 | Defer M52 and move the roles to EPICS-env 1.5.0 first by changing `epics_env_version` and `epics_env_tag` in place. Unifying them into one selector is a later, separately authorized change; no variable rename, recorder change or change to another repository's bake script is authorized by this record. | 2026-11-09 |
 
 ### Assignment History
 
@@ -5996,6 +5998,66 @@ The VM provider supplies M51's fresh dedicated Rocky 8.10 guest through its norm
 ##### Closure Evidence
 
 - Complete at 2026-10-22T21:17:53.886309+00:00. Provider creation/access evidence and requester actual SSH/resource checks agree; all original guests remain preserved.
+
+#### M52 - Unify the EPICS-env release selector
+
+Origin: 38560eb / M52
+Identity History: none
+GitHub Issue: none
+Status: Deferred
+
+##### Summary
+
+The EPICS-env release is selected in two places: `epics_env_version` in `roles/epics/defaults/main.yml` and `epics_env_tag` in `roles/epics_build/defaults/main.yml`. A release change edits both, and overriding one leaves the other unchanged. The bake provenance reads `epics_env_version` from the role defaults file, so an inventory or extra-vars override may not appear in the recorded manifest; this was reported by the bake owner and is not yet verified here. This row replaces the two selectors with one.
+
+##### Scope
+
+- Define one release selector variable that both roles read, keeping each role usable on its own.
+- Keep the build-reference behavior of `epics_build` (a same-named tag is preferred, a branch is the fallback) and the tag selection of `epics`.
+- Determine how the provenance recorder and the bake obtain the selected release, so an override and the recorded value agree.
+- Update the documentation of the variables.
+
+Out of scope: site module installation, which the EPICS-env side delivers; the `tests/archiver-soak` fixture paths; the EPICS base version selector; any change to another repository's bake script, which its owner decides.
+
+##### Completion Criteria
+
+- A single variable selects the release in both roles, and one override changes both.
+- The provenance record of a run equals the effective selected release, with and without an override.
+- Every species playbook passes `ansible-playbook --syntax-check`.
+
+##### Dependencies And Decisions
+
+- D50
+
+##### Implementation Plan
+
+Plan Status: draft
+Plan Acceptance: none
+Implementation Authorization: none
+Superseded Plan Artifacts: none
+
+1. Inventory every reader of the two selectors: the roles, the provenance recorder, the tests and the documentation.
+2. Choose the single variable name and its location.
+3. Update both roles and the recorder to read it.
+4. Update the variable documentation.
+
+##### Test Plan
+
+| Label | Layer | Method | Environment | Expected Result |
+| --- | --- | --- | --- | --- |
+| T1 | Static | Run `ansible-playbook --syntax-check` on every species playbook | Control host | Every playbook passes |
+| T2 | Integration | Apply the `epics` operator with the default selector and with an override, then read the checked-out tag and the provenance record | One fresh guest | The checked-out tag and the recorded release equal the effective selector in both runs |
+
+##### Verification Results
+
+| Label | Observed At | Environment | Result | Evidence |
+| --- | --- | --- | --- | --- |
+| T1 | Not run | Control host | Pending | none |
+| T2 | Not run | One fresh guest | Pending | none |
+
+##### Closure Evidence
+
+- Not complete. Deferred by D50.
 
 ## Backlog
 
