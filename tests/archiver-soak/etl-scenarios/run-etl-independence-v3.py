@@ -22,6 +22,7 @@ STUDY_STATES = ('absent', 'failing', 'changed')
 POLL_SECONDS = 5
 IMPORT_TIMEOUT = 30
 COMMAND_TIMEOUT = 2700
+READINESS_TIMEOUT = 600
 MINIMUM_SAMPLES = 2
 SCENARIO_FILES = ('run-etl-independence-v3.py', 'replay-etl-independence-v2.py')
 IMPORT_CODE = ('import importlib.util, pathlib, sys; p=pathlib.Path(sys.argv[1]); '
@@ -242,6 +243,24 @@ def validate_terminal(terminal, native_status):
     require(terminal.get('evaluation', {}).get('scheduler_verdict') == 'Passed', 'Required ETL evidence is incomplete')
 
 
+def wait_fresh_ready(config, record, deadline):
+    case = Path(config['case_directory'])
+    limit = min(deadline, time.monotonic() + READINESS_TIMEOUT)
+    attempt = 0
+    while True:
+        remaining = limit - time.monotonic()
+        require(remaining > 0, 'Fresh readiness deadline expired; observation not started')
+        challenge_matches(config, record)
+        receipt = execute(case, 'readiness-%04d' % attempt,
+                          [sys.executable, '-B', str(Path(config['tools']) / 'initialize-fresh.py'), 'check'],
+                          min(COMMAND_TIMEOUT, remaining))
+        challenge_matches(config, record)
+        if receipt['returncode'] == 0:
+            return
+        attempt += 1
+        time.sleep(min(POLL_SECONDS, max(0, limit - time.monotonic())))
+
+
 def run(config):
     tools, out, case = (Path(config[k]) for k in ('tools', 'state_directory', 'case_directory'))
     contract = native(tools)
@@ -271,6 +290,7 @@ def run(config):
             duration = str(config['duration_seconds'])
             if config['preparation_mode'] == 'fresh':
                 step('instruments', [tools / 'initialize-fresh.py', 'instruments'])
+                wait_fresh_ready(config, record, deadline)
                 step('preparation', [tools / 'initialize-fresh.py', 'prepare', '--duration-seconds', duration, '--chain', config['chain']])
             else:
                 step('preparation', [tools / 'prepare-retest.py', tools, '--projected-growth-bytes',
@@ -278,6 +298,13 @@ def run(config):
                      '--duration-seconds', duration, '--chain', config['chain']])
             probe_challenge(config, record, 'challenge-after-preparation')
             require(not (out / 'observation.json').exists(), 'An existing observation must be preserved')
+            remaining = deadline - time.monotonic()
+            require(remaining > 0, 'Case time budget expired before chain verification')
+            verified = execute(case, 'prelaunch-chain', [sys.executable, '-B', str(tools / 'verify-chain.py'),
+                               '--chain', config['chain'], '--duration-seconds', duration],
+                               min(COMMAND_TIMEOUT, remaining))
+            require(verified['returncode'] == 0, 'Required deployed-chain verification failed; observation not started')
+            challenge_matches(config, record)
             step('launch', [tools / 'launch-retest.py', '--duration-seconds', duration, '--chain', config['chain'],
                  '--cause', 'Verify unrelated-study independence', '--corrective-action', 'Run native health verification'])
             owned = digest(out / 'observation.json')

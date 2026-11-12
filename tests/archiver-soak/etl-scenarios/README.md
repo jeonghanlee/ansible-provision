@@ -80,6 +80,14 @@ instead invokes `prepare-retest.py` and requires actual `capacity_evidence`
 and `projected_growth_bytes`. Installed native paths must match the selected
 package; the candidate never redirects internal observation functions.
 
+After fresh instrumentation restarts the JVMs, the runner repeats the installed
+`initialize-fresh.py check` within a 600-second readiness bound and the remaining
+case budget. Each actual command, failure and output is retained. Preparation
+follows a successful check of the complete PV population and instrument identity.
+Before either launch mode, the installed `verify-chain.py` must succeed for the
+selected chain and duration. A failed check restores the study without opening
+an observation; optional native findings remain separate.
+
 The runner waits for the real scheduled finish service to complete, including
 an unsuccessful completion. It preserves the native 7200/86400-second duration,
 checks actual normal-stop and scheduler evidence, and requires the worker's

@@ -207,80 +207,96 @@ def _evaluate(out, terminal, failures):
         ready = max([planned, *[epoch(prior['endedAt']) for prior in blockers]])
         if not 0 <= began - ready <= TIMING_TOLERANCE:
             failures.append('etl_timing_or_ordering')
-    snapshots = [(row, json.loads(evidence.path(out, row['raw_directory']).joinpath('metrics.json').read_text()))
-                 for row in full if evidence.path(out, row['raw_directory']).joinpath('metrics.json').exists()]
-    if len(snapshots) != len(full):
-        missing.append('metric_snapshot_coverage')
-    # A start no longer requires a clean readiness sample, so its metrics baseline may be absent:
-    # that is missing metric coverage in the overall verdict, never an unreadable evaluation.
+    diagnostic_errors = []
+    metric_known = False
+    # Diagnostic parsing failures retain their scope; required capture checks still run.
     try:
-        baseline = json.loads(evidence.path(out, manifest['counter_baseline']).read_text())
-        baseline_at = epoch(manifest['baseline_observed_at'])
-    except (OSError, KeyError, TypeError, ValueError):
-        baseline, baseline_at = None, None
-        missing.append('metric_counter_coverage')
-    ambiguities = 0
-    for transition in (0, 1):
-        metric = 'Passes so far in ETL(' + str(transition) + '&raquo;' + str(transition + 1) + ')'
-        values = [next((int(row['value']) for row in snapshot if row['name'] == metric), None)
-                  for snapshot in [baseline or [], *[value for row, value in snapshots]]]
-        if any(value is None for value in values):
+        snapshots = [(row, json.loads(evidence.path(out, row['raw_directory']).joinpath('metrics.json').read_text()))
+                     for row in full if evidence.path(out, row['raw_directory']).joinpath('metrics.json').exists()]
+        if len(snapshots) != len(full):
+            missing.append('metric_snapshot_coverage')
+        # A start no longer requires a clean readiness sample, so its metrics baseline may be absent:
+        # that is missing metric coverage in the overall verdict, never an unreadable evaluation.
+        try:
+            baseline = json.loads(evidence.path(out, manifest['counter_baseline']).read_text())
+            baseline_at = epoch(manifest['baseline_observed_at'])
+        except (OSError, KeyError, TypeError, ValueError):
+            baseline, baseline_at = None, None
             missing.append('metric_counter_coverage')
-        elif full and baseline_at is not None:
-            ended = sorted((row for row in records if row['transition'] == transition and
-                            baseline_at < epoch(row['endedAt']) <= epoch(full[-1]['metrics_observed_at'])),
-                           key=lambda row: epoch(row['endedAt']))
-            counts = {len(rows) for rows in metric_variants(ended, full[-1])}
-            if values[-1] - values[0] not in counts:
-                failures.append('metric_counter_reconciliation')
-        for summary, snapshot in snapshots:
-            closed = sorted((row for row in records if row['transition'] == transition and
-                             epoch(row['endedAt']) <= epoch(summary['metrics_observed_at'])),
-                            key=lambda row: epoch(row['endedAt']))
-            if not closed:
-                missing.append('metric_pass_record_coverage')
-                continue
-            variants = metric_variants(closed, summary)
-            ambiguities += len(variants) - 1
-            label = 'ETL(' + str(transition) + '&raquo;' + str(transition + 1) + ')'
-            metrics = {row['name']: row['value'] for row in snapshot}
-            if not any(int(metrics.get('Passes so far in ' + label, -1)) == len(rows) for rows in variants):
-                failures.append('metric_snapshot_counter')
-            for suffix, field in (('PVs', 'pvCount'), ('jobs failed', 'jobsFailed'),
-                                  ('jobs aborted', 'jobsAborted'), ('jobs skipped', 'jobsSkipped'),
-                                  ('partitions moved', 'partitionsMoved'), ('bytes moved', 'bytesMoved'),
-                                  ('max partitions moved by one PV', 'maxPartitionsMovedByOnePv')):
-                value = metrics.get('Last pass in ' + label + ' ' + suffix)
-                if value is None:
-                    missing.append('metric_field_coverage')
-                elif not any(int(value) == int(rows[-1][field]) for rows in variants if rows):
-                    failures.append('metric_last_pass')
-            for name, expected_values in (
-                    ('Last pass in ' + label + ' busy time (s)',
-                     [int(rows[-1]['busyMillis']) / 1000 for rows in variants if rows]),
-                    ('Average busy time per pass in ' + label + ' (s)',
-                     [sum(int(row['busyMillis']) for row in rows) / (1000 * len(rows)) for rows in variants if rows])):
-                if name not in metrics:
-                    missing.append('metric_field_coverage')
-                elif not any(abs(float(metrics[name]) - expected_value) <= 0.005001 for expected_value in expected_values):
-                    failures.append('metric_busy_time')
-    pairs = collections.defaultdict(set)
-    window_pairs = set()
-    heap, _ = evidence.deduplicate(evidence.rows(out, 'gc-heap.csv'), 'heap')
-    collections_rows, _ = evidence.deduplicate(evidence.rows(out, 'gc-collections.csv'), 'collection')
-    pauses, _ = evidence.deduplicate(evidence.rows(out, 'gc-pauses.csv'), 'pause')
-    for component in evidence.COMPONENTS:
-        for label, events in (('heap', heap), ('collections', collections_rows), ('pauses', pauses)):
-            if not any(row['component'] == component and start <= epoch(row['ts']) <= epoch(terminal['finished_at']) for row in events):
-                missing.append('gc_' + label + '_coverage')
-    for row in heap:
-        key = (row['component'], row['pid'], row['gc_id'])
-        pairs[key].add(row['when'])
-        if start <= epoch(row['ts']) <= epoch(terminal['finished_at']):
-            window_pairs.add(key)
-    incomplete_pairs = sum(pairs[key] != {'Before GC', 'After GC'} for key in window_pairs)
-    if incomplete_pairs:
-        missing.append('gc_pair_coverage')
+        ambiguities = 0
+        for transition in (0, 1):
+            metric = 'Passes so far in ETL(' + str(transition) + '&raquo;' + str(transition + 1) + ')'
+            values = [next((int(row['value']) for row in snapshot if row['name'] == metric), None)
+                      for snapshot in [baseline or [], *[value for row, value in snapshots]]]
+            if any(value is None for value in values):
+                missing.append('metric_counter_coverage')
+            elif full and baseline_at is not None:
+                ended = sorted((row for row in records if row['transition'] == transition and
+                                baseline_at < epoch(row['endedAt']) <= epoch(full[-1]['metrics_observed_at'])),
+                               key=lambda row: epoch(row['endedAt']))
+                counts = {len(rows) for rows in metric_variants(ended, full[-1])}
+                if values[-1] - values[0] not in counts:
+                    failures.append('metric_counter_reconciliation')
+            for summary, snapshot in snapshots:
+                closed = sorted((row for row in records if row['transition'] == transition and
+                                 epoch(row['endedAt']) <= epoch(summary['metrics_observed_at'])),
+                                key=lambda row: epoch(row['endedAt']))
+                if not closed:
+                    missing.append('metric_pass_record_coverage')
+                    continue
+                variants = metric_variants(closed, summary)
+                ambiguities += len(variants) - 1
+                label = 'ETL(' + str(transition) + '&raquo;' + str(transition + 1) + ')'
+                metrics = {row['name']: row['value'] for row in snapshot}
+                if not any(int(metrics.get('Passes so far in ' + label, -1)) == len(rows) for rows in variants):
+                    failures.append('metric_snapshot_counter')
+                for suffix, field in (('PVs', 'pvCount'), ('jobs failed', 'jobsFailed'),
+                                      ('jobs aborted', 'jobsAborted'), ('jobs skipped', 'jobsSkipped'),
+                                      ('partitions moved', 'partitionsMoved'), ('bytes moved', 'bytesMoved'),
+                                      ('max partitions moved by one PV', 'maxPartitionsMovedByOnePv')):
+                    value = metrics.get('Last pass in ' + label + ' ' + suffix)
+                    if value is None:
+                        missing.append('metric_field_coverage')
+                    elif not any(int(value) == int(rows[-1][field]) for rows in variants if rows):
+                        failures.append('metric_last_pass')
+                for name, expected_values in (
+                        ('Last pass in ' + label + ' busy time (s)',
+                         [int(rows[-1]['busyMillis']) / 1000 for rows in variants if rows]),
+                        ('Average busy time per pass in ' + label + ' (s)',
+                         [sum(int(row['busyMillis']) for row in rows) / (1000 * len(rows)) for rows in variants if rows])):
+                    if name not in metrics:
+                        missing.append('metric_field_coverage')
+                    elif not any(abs(float(metrics[name]) - expected_value) <= 0.005001 for expected_value in expected_values):
+                        failures.append('metric_busy_time')
+    except (OSError, KeyError, ValueError, TypeError, RuntimeError) as error:
+        missing.append('metric_evidence')
+        diagnostic_errors.append('metric: ' + type(error).__name__ + ': ' + str(error))
+    else:
+        metric_known = True
+    gc_known = False
+    try:
+        pairs = collections.defaultdict(set)
+        window_pairs = set()
+        heap, _ = evidence.deduplicate(evidence.rows(out, 'gc-heap.csv'), 'heap')
+        collections_rows, _ = evidence.deduplicate(evidence.rows(out, 'gc-collections.csv'), 'collection')
+        pauses, _ = evidence.deduplicate(evidence.rows(out, 'gc-pauses.csv'), 'pause')
+        for component in evidence.COMPONENTS:
+            for label, events in (('heap', heap), ('collections', collections_rows), ('pauses', pauses)):
+                if not any(row['component'] == component and start <= epoch(row['ts']) <= epoch(terminal['finished_at']) for row in events):
+                    missing.append('gc_' + label + '_coverage')
+        for row in heap:
+            key = (row['component'], row['pid'], row['gc_id'])
+            pairs[key].add(row['when'])
+            if start <= epoch(row['ts']) <= epoch(terminal['finished_at']):
+                window_pairs.add(key)
+        incomplete_pairs = sum(pairs[key] != {'Before GC', 'After GC'} for key in window_pairs)
+        if incomplete_pairs:
+            missing.append('gc_pair_coverage')
+    except (OSError, KeyError, ValueError, TypeError, RuntimeError) as error:
+        missing.append('gc_evidence')
+        diagnostic_errors.append('gc: ' + type(error).__name__ + ': ' + str(error))
+    else:
+        gc_known = True
     for sample in window:
         journal = evidence.path(out, sample['raw_directory']) / 'journal.jsonl'
         if not journal.exists():
@@ -309,8 +325,10 @@ def _evaluate(out, terminal, failures):
             'missing_coverage': sorted(set(missing)), 'full_samples': len(full),
             'health_invocations': len(health), 'expected_passes': len(expected),
             'missing_passes': len(absent), 'duplicate_passes': len(duplicates),
-            'unexpected_passes': len(unexpected), 'incomplete_gc_pairs': incomplete_pairs,
-            'metric_window_ambiguities': ambiguities,
+            'unexpected_passes': len(unexpected),
+            **({'incomplete_gc_pairs': incomplete_pairs} if gc_known else {}),
+            **({'metric_window_ambiguities': ambiguities} if metric_known else {}),
+            **({'evidence_error': '; '.join(diagnostic_errors)} if diagnostic_errors else {}),
             **scheduler_result(failures, missing, checks, terminal_sample_failures(terminal, window, checks))}
 
 

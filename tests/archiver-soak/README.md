@@ -48,6 +48,7 @@ contracts below and the linked Journal/scenario procedures.
 | `etl-pass/test-kernel-query.py` | Actual local journal queries and collector CLI checks for failed-query receipts |
 | `etl-pass/test-pass-wait.py` | Retained native pass checks through the actual observer wait and local collector |
 | `etl-pass/test-terminal.py` | Explicit-path lifecycle CLI receipts and complete retained terminal replay; separate replay assertions from live acceptance |
+| `etl-pass/test-retained-diagnostics.py` | Real evaluator/aggregator regression on complete preserved inputs and filesystem-fault copies |
 | `etl-pass/focused.py`, `PBFixture.java`, `test_focused.py` | Installed configuration inventory, real writer/decoder, automatic two-hop physical/HTTP checks and subsequent regular-pass evidence |
 | `etl-pass/replace-bundle.py` | Replace an installed bundle by a frozen bundle while carrying every other file and keeping a preserved sibling and rollback; not a bundle member |
 | `etl-pass/restart-observation.py` | Preserve a previous observation and restart its appliance with bounded GC/JFR settings and persistent ETL pass logging |
@@ -655,6 +656,12 @@ verdict and never decide the scheduler verdict; of the aggregated numerical
 items only `terminal_manifest_mismatch` enters it. A pass that ends inside a
 metrics request window is accepted under either counter reading;
 `metric_window_ambiguities` counts such snapshot and transition pairs.
+Unreadable or conflicting metric and GC evidence is recorded separately as
+`metric_evidence` or `gc_evidence`, with the error in `evidence_error`; required
+journal, shutdown and schedule checks still run. Unavailable metric ambiguity
+or GC pair counts are omitted rather than reported as zero. Required-input
+errors remain Incomplete in the scheduler result. The GC timestamp jitter
+limit is unchanged; additional distinct scheduled-pass identities remain failures.
 An observation recorded under any other schema is Incomplete with
 `unsupported_observation_schema`; earlier-schema sources are not shipped.
 Schema-2 inputs
@@ -1129,6 +1136,35 @@ Historical combined evidence uses its own preserved tools and schema.
 
 ```bash
 python3 -B -m unittest discover -s tests/archiver-soak/etl-pass -p 'test_*.py'
+```
+
+### Retained Diagnostic Regression
+
+`etl-pass/test-retained-diagnostics.py` requires Python 3.11+, a complete
+preserved export (`state`, `tools`, `preparation`, `case` and
+`metadata/members.json`), its independently retained producer record and the
+original JDK `jfr` executable. The record pins `members_sha256`; all original
+members, modes and hashes are verified before execution. The decoder must
+match the original terminal's SHA-256. The candidate bundle is checked against
+its own current manifest without changing the observation's tool identity.
+
+The suite targets an actual completed observation with GC timestamp conflicts
+and additional schedule identities. Each case runs the real evaluator or
+aggregator on a separate complete copy, with either unchanged evidence, an
+empty actual metrics file, a missing journal or missing pass records. Schedule
+failures, diagnostic errors, critical missing evidence and changed candidate
+tool identities remain visible. Native readers retain nonzero unsuccessful
+outcomes; the suite passes only when those declared distinctions hold. Full
+command receipts, dependency/input hashes and original-preservation checks
+are retained under the new output directory. This does not establish live
+normal-finish or independent-recipient scenario acceptance.
+
+```bash
+suite=tests/archiver-soak/etl-pass/test-retained-diagnostics.py
+export_root=/private/frozen-export
+record=/private/producer-record.json
+jfr=/private/original-jdk/bin/jfr
+python3 -B "$suite" --export-root "$export_root" --export-record "$record" --jfr-binary "$jfr" --output /private/new-check
 ```
 
 ## Baseline Tools
