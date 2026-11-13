@@ -26,6 +26,62 @@ def validate_controller(receipt, source_sha256, configuration_sha256):
                     receipt['configuration_sha256'] == configuration_sha256, 'Controller execution identity differs')
 
 
+def validate_steps(data, config, runtime):
+    required = (['instruments', 'preparation', 'startup-passes', 'launch']
+                if config['preparation_mode'] == 'fresh' else ['preparation', 'startup-passes', 'launch'])
+    support.require([step['label'] for step in runtime['steps']] == required, 'Required native case steps are incomplete')
+    for step in runtime['steps']:
+        receipt = support.load(data / (step['label'] + '.json'))
+        support.require(receipt == {k: v for k, v in step.items() if k != 'label'} and
+                        receipt['returncode'] == 0 and not receipt['timed_out'], 'Native preparation/start receipt differs')
+        script = Path(receipt['command'][2]).name
+        arguments = receipt['command'][3:]
+        if step['label'] == 'startup-passes':
+            support.require(script == 'wait-etl-startup-v1.py' and receipt['command'][1] == '-B' and
+                            Path(receipt['command'][2]).is_absolute(), 'Unexpected startup prerequisite entry point')
+            support.require(arguments == ['--chain', config['chain'], '--output',
+                            str(Path(config['case_directory']) / 'startup-passes')], 'Startup prerequisite arguments differ')
+            continue
+        expected = ('launch-retest.py' if step['label'] == 'launch' else
+                    'initialize-fresh.py' if config['preparation_mode'] == 'fresh' else 'prepare-retest.py')
+        support.require(script == expected and receipt['command'][1] == '-B' and
+                        Path(receipt['command'][2]).parent == Path(config['tools']), 'Unexpected native preparation/start entry point')
+        if step['label'] == 'instruments':
+            support.require(arguments == ['instruments'], 'Actual instrument preparation required')
+        else:
+            for flag, value in (('--duration-seconds', str(config['duration_seconds'])), ('--chain', config['chain'])):
+                support.require(arguments.count(flag) == 1 and arguments[arguments.index(flag) + 1] == value,
+                                'Native case arguments differ')
+            if step['label'] == 'preparation' and config['preparation_mode'] == 'fresh':
+                support.require(arguments[0] == 'prepare', 'Actual native preparation required')
+
+
+def validate_startup(data, config, runtime, manifest, hashes):
+    startup = support.load(data / 'startup-passes/state.json')
+    support.require(startup['state'] == 'Ready' and startup['chain'] == config['chain'],
+                    'Successful same-chain startup evidence required')
+    support.require(startup['tool_hashes'] == hashes and startup['actual_identity'] == runtime['runtime_identity'],
+                    'Startup source or runtime identity differs')
+    identity = startup['actual_identity']
+    unit = dict(line.split('=', 1) for line in manifest['unit_before_observation'].splitlines() if '=' in line)
+    support.require(identity['boot_id'] == manifest['boot_id'] and identity['jvms'] == manifest['jvm_identity'] and
+                    identity['invocation_id'] == unit['InvocationID'], 'Startup observation identity differs')
+    support.require(bool(startup['captures']), 'Actual startup captures required')
+    capture = data / 'startup-passes' / ('capture-%04d' % (len(startup['captures']) - 1))
+    passes = capture / ('passes-' + identity['invocation_id'] + '.jsonl')
+    support.require(support.digest(passes) == startup['captures'][-1]['pass_sha256'], 'Startup pass capture identity differs')
+    evaluate, evidence, focused = __import__('evaluate'), __import__('evidence'), __import__('focused')
+    records = evaluate.pass_records(passes)
+    began = evidence.pass_instant(manifest['started_at'])
+    for transition, cadence in enumerate(manifest['configuration']['cadences']):
+        rows = [row for row in records if row['invocation_id'] == identity['invocation_id'] and
+                row['transition'] == transition and row['cadence'] == cadence]
+        support.require(bool(rows), 'Required startup transition is missing: ' + str(transition))
+        first = min(rows, key=lambda row: evidence.pass_instant(row['plannedAt']))
+        focused.successful_pass(first)
+        support.require(evidence.pass_instant(first['endedAt']) < began, 'Startup transition does not precede observation')
+
+
 def capture(case):
     record = support.load(case / 'capture.json')
     support.require(record['version'] == support.VERSION, 'Normal-finish candidate capture required')
@@ -80,26 +136,7 @@ def capture(case):
         support.require(not probe['timed_out'] and (probe['returncode'] == 0) == (config['study_state'] == 'changed') and
                         probe['command'][1:] == ['-B', '-c', support.IMPORT_CODE, config['study_path']],
                         'Actual challenge phase import is incomplete: ' + label)
-    required = ['instruments', 'preparation', 'launch'] if config['preparation_mode'] == 'fresh' else ['preparation', 'launch']
-    support.require([step['label'] for step in runtime['steps']] == required, 'Required native case steps are incomplete')
-    for step in runtime['steps']:
-        receipt = support.load(data / (step['label'] + '.json'))
-        support.require(receipt == {k: v for k, v in step.items() if k != 'label'} and
-                        receipt['returncode'] == 0 and not receipt['timed_out'], 'Native preparation/start receipt differs')
-        script = Path(receipt['command'][2]).name
-        expected = ('launch-retest.py' if step['label'] == 'launch' else
-                    'initialize-fresh.py' if config['preparation_mode'] == 'fresh' else 'prepare-retest.py')
-        support.require(script == expected and receipt['command'][1] == '-B' and
-                        Path(receipt['command'][2]).parent == Path(config['tools']), 'Unexpected native preparation/start entry point')
-        arguments = receipt['command'][3:]
-        if step['label'] == 'instruments':
-            support.require(arguments == ['instruments'], 'Actual instrument preparation required')
-        else:
-            for flag, value in (('--duration-seconds', str(config['duration_seconds'])), ('--chain', config['chain'])):
-                support.require(arguments.count(flag) == 1 and arguments[arguments.index(flag) + 1] == value,
-                                'Native case arguments differ')
-            if step['label'] == 'preparation' and config['preparation_mode'] == 'fresh':
-                support.require(arguments[0] == 'prepare', 'Actual native preparation required')
+    validate_steps(data, config, runtime)
     state = frozen / 'state'
     terminal = support.load(state / 'shutdown.json')
     manifest = support.load(state / 'observation.json')
@@ -110,6 +147,7 @@ def capture(case):
                     'Observation/native source identities conflict')
     support.require(manifest['duration_seconds'] == config['duration_seconds'] and
                     manifest['configuration'] == contract.chain_configuration(config['chain']), 'Native observation configuration differs')
+    validate_startup(data, config, runtime, manifest, hashes)
     service = runtime['finish_service']
     support.require(service['ActiveState'] in ('inactive', 'failed') and service['ExecMainCode'] == '1',
                     'Completed native finish worker required')

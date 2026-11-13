@@ -12,7 +12,7 @@ This directory provides preparation, unrelated-module challenge, source-unavaila
 | --- | --- |
 | Preparation and finite worker launch | `prepare-etl-nextcase-v3.py`, `prepare-etl-nextcase-v4.py`, `launch-etl-nextcase-preparation-v2.py`, `launch-etl-nextcase-runtime-v3.py` |
 | Unrelated journal-module challenge | `apply-journal-challenge.py`, `run-etl-independence-v2.py` |
-| Normal-finish independence candidate | `run-etl-independence-v3.py`, `replay-etl-independence-v2.py`, `test-independence-candidate.py` |
+| Normal-finish independence candidate | `run-etl-independence-v3.py`, `replay-etl-independence-v3.py`, `test-independence-candidate.py` |
 | Source-fault candidates and local boundaries | `run-etl-fault-v3.py`, `replay-etl-fault-v2.py`, `fault_support.py`, `test-fault-candidate.py` |
 | Shared source staging and startup prerequisite | `prepare-vm-batch.py`, `wait-etl-startup-v1.py` |
 | Native readiness and actual fault boundary | `etl-native-preflight-v2.py`, `preflight-etl-fault-boundary.py` |
@@ -35,7 +35,7 @@ An original short observation's `Incomplete` status and a successful negative-sc
 
 ## Normal-Finish Independence Candidate
 
-`run-etl-independence-v3.py` and `replay-etl-independence-v2.py` are separate
+`run-etl-independence-v3.py` and `replay-etl-independence-v3.py` are separate
 candidates for both chains and the `absent`, `failing` and `changed` unrelated
 study states. The existing challenge, v2 runtime and original replay remain
 unchanged planned-abort sources. A candidate implementation or local check does
@@ -100,6 +100,16 @@ transition evidence remains Incomplete, and an observed ordering violation
 remains Failed. This check establishes startup ordering only, not the required
 normal-finish duration or recipient result.
 
+Normal-finish capture includes the complete nested startup evidence tree with
+before/copy/after member and byte comparisons. Replay consumes the actual
+startup command receipt, pinned native bundle, boot/invocation/JVM identities
+and final startup pass capture before accepting a complete case. Both first
+successful transitions must precede the observation using native nanoseconds.
+`test-startup-replay.py` exercises these production receipt/capture consumers
+with an independently pinned actual export and separate missing/changed-input
+copies. This local check preserves the original interrupted outcome and does
+not establish a complete normal-finish or independent-recipient result.
+
 The runner waits for the real scheduled finish service to complete, including
 an unsuccessful completion. It preserves the native 7200/86400-second duration,
 checks actual normal-stop and scheduler evidence, and requires the worker's
@@ -125,13 +135,23 @@ recipient execution. Recipient tooling and runtime dependencies must be availabl
 
 ```bash
 case_dir=/path/to/completed-case
-replay="$scenarios/replay-etl-independence-v2.py"
+replay="$scenarios/replay-etl-independence-v3.py"
 receipt=/path/to/actual-controller-command.json
-baseline="$case_dir/baseline"
-python3 -B "$replay" --case "$case_dir" --output "$baseline" --record-baseline --controller-receipt "$receipt"
+baseline="$case_dir/baseline-v3"
+work_root=/path/identical/on/producer/and/recipient
+set -- --case "$case_dir" --work-root "$work_root"
+python3 -B "$replay" "$@" --output "$baseline" --record-baseline --controller-receipt "$receipt"
 output=/path/to/new-recipient-output
-python3 -B "$replay" --case "$case_dir" --output "$output"
+python3 -B "$replay" "$@" --output "$output"
 ```
+
+The v3 reader requires a fresh canonical absolute work root identical on both
+producer and recipient. Native input copies and explicit JFR output directories
+use that root; it must not overlap the capture or replay output. The v3 baseline
+pins the reader source and work root. Numerical aggregate-result.json is distinct
+from the aggregate.json command receipt. Earlier v2 sources and baselines remain
+separate. test-replay-paths.py exercises the actual native subprocess path on
+complete retained inputs and compares complete raw output bytes.
 
 Replay compares the complete recorded native artifact bytes and scenario result
 without normalization. Execution receipts remain separate from the compared

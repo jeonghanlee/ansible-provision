@@ -24,7 +24,7 @@ IMPORT_TIMEOUT = 30
 COMMAND_TIMEOUT = 2700
 READINESS_TIMEOUT = 600
 MINIMUM_SAMPLES = 2
-SCENARIO_FILES = ('run-etl-independence-v3.py', 'replay-etl-independence-v2.py', 'wait-etl-startup-v1.py')
+SCENARIO_FILES = ('run-etl-independence-v3.py', 'replay-etl-independence-v3.py', 'wait-etl-startup-v1.py')
 IMPORT_CODE = ('import importlib.util, pathlib, sys; p=pathlib.Path(sys.argv[1]); '
                'sys.path.insert(0,str(p.parent)); '
                's=importlib.util.spec_from_file_location("unrelated_study",p); '
@@ -233,6 +233,35 @@ def restore(config):
     return result
 
 
+def freeze_evidence(case, out, tools, record, terminal_path):
+    contract = native(tools)
+    frozen = case / 'frozen'
+    frozen.mkdir()
+    state_before = members(out)
+    shutil.copytree(out, frozen / 'state')
+    require(members(out) == state_before == members(frozen / 'state'), 'Finalized state changed during capture')
+    (frozen / 'native').mkdir()
+    for name in (*contract.BUNDLE_FILES, 'bundle.json'):
+        shutil.copy2(tools / name, frozen / 'native' / name)
+    (frozen / 'scenario').mkdir()
+    for name in SCENARIO_FILES:
+        shutil.copy2(Path(__file__).parent / name, frozen / 'scenario' / name)
+    (frozen / 'case').mkdir()
+    for path in case.iterdir():
+        if path.is_file():
+            shutil.copy2(path, frozen / 'case' / path.name)
+    startup_before = members(case / 'startup-passes')
+    require(bool(startup_before), 'Required startup evidence is missing')
+    shutil.copytree(case / 'startup-passes', frozen / 'case' / 'startup-passes')
+    require(members(case / 'startup-passes') == startup_before ==
+            members(frozen / 'case' / 'startup-passes'), 'Startup evidence changed during capture')
+    require(contract.verify_bundle(frozen / 'native') == record['tool_hashes'], 'Frozen native source differs')
+    save(case / 'frozen-members.json', {'members': members(frozen)})
+    save(case / 'capture.json', {'version': VERSION, 'manifest_sha256': digest(case / 'frozen-members.json'),
+         'terminal_sha256': digest(terminal_path), 'scenario_sha256': {name: digest(frozen / 'scenario' / name)
+         for name in SCENARIO_FILES}, 'expectation': 'Pending'})
+
+
 def validate_terminal(terminal, native_status):
     require(terminal.get('terminal_kind') == 'finish', 'Normal-finish terminal required')
     require(terminal.get('verdict') in ('Passed', 'Failed', 'Incomplete'), 'Unsupported native verdict')
@@ -357,26 +386,7 @@ def run(config):
             runtime['restoration'] = restore(config)
             runtime.update(stage='NativeComplete', finished_at=now())
             save(case / 'runtime.json', runtime)
-            frozen = case / 'frozen'
-            frozen.mkdir()
-            state_before = members(out)
-            shutil.copytree(out, frozen / 'state')
-            require(members(out) == state_before == members(frozen / 'state'), 'Finalized state changed during capture')
-            (frozen / 'native').mkdir()
-            for name in (*contract.BUNDLE_FILES, 'bundle.json'):
-                shutil.copy2(tools / name, frozen / 'native' / name)
-            (frozen / 'scenario').mkdir()
-            for name in SCENARIO_FILES:
-                shutil.copy2(Path(__file__).parent / name, frozen / 'scenario' / name)
-            (frozen / 'case').mkdir()
-            for path in case.iterdir():
-                if path.is_file():
-                    shutil.copy2(path, frozen / 'case' / path.name)
-            require(contract.verify_bundle(frozen / 'native') == record['tool_hashes'], 'Frozen native source differs')
-            save(case / 'frozen-members.json', {'members': members(frozen)})
-            save(case / 'capture.json', {'version': VERSION, 'manifest_sha256': digest(case / 'frozen-members.json'),
-                 'terminal_sha256': runtime['terminal_sha256'], 'scenario_sha256': {name: digest(frozen / 'scenario' / name)
-                 for name in SCENARIO_FILES}, 'expectation': 'Pending'})
+            freeze_evidence(case, out, tools, record, terminal_path)
             return {'stage': runtime['stage'], 'expectation': 'Pending', 'case': str(case)}
         except BaseException as error:
             runtime.update(stage='Incomplete', error_type=type(error).__name__, error=str(error))
