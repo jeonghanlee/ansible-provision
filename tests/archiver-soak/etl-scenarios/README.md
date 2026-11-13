@@ -88,6 +88,18 @@ Before either launch mode, the installed `verify-chain.py` must succeed for the
 selected chain and duration. A failed check restores the study without opening
 an observation; optional native findings remain separate.
 
+Before launch, both preparation modes execute the unchanged
+`wait-etl-startup-v1.py` and retain its native application-file captures and
+successful startup transition records. The waiter is included in the scenario
+source identities. The runner requires the same boot, invocation and all four
+JVM identities immediately before launch; a runtime change refuses launch.
+`test-startup-boundary.py` reads an actual observation and its native pass
+capture with the original tools. It requires both first successful transitions
+to end strictly before observation start using exact nanoseconds. Missing
+transition evidence remains Incomplete, and an observed ordering violation
+remains Failed. This check establishes startup ordering only, not the required
+normal-finish duration or recipient result.
+
 The runner waits for the real scheduled finish service to complete, including
 an unsuccessful completion. It preserves the native 7200/86400-second duration,
 checks actual normal-stop and scheduler evidence, and requires the worker's
