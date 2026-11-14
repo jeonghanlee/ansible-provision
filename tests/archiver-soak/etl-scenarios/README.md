@@ -14,6 +14,7 @@ This directory provides preparation, unrelated-module challenge, source-unavaila
 | Unrelated journal-module challenge | `apply-journal-challenge.py`, `run-etl-independence-v2.py` |
 | Normal-finish independence candidate | `run-etl-independence-v3.py`, `replay-etl-independence-v3.py`, `test-independence-candidate.py` |
 | Source-fault candidates and local boundaries | `run-etl-fault-v3.py`, `replay-etl-fault-v2.py`, `fault_support.py`, `test-fault-candidate.py` |
+| Stable-path fault replay | `replay-etl-fault-v3.py`, `test-fault-replay-paths.py` |
 | Shared source staging and startup prerequisite | `prepare-vm-batch.py`, `wait-etl-startup-v1.py` |
 | Native readiness and actual fault boundary | `etl-native-preflight-v2.py`, `preflight-etl-fault-boundary.py` |
 | Actual source-access faults | `etl-fault-sampler.py`, `run-etl-fault.py`, `run-etl-fault-v2.py` |
@@ -282,6 +283,53 @@ live fault, final capture, complete scenario replay or recipient test. Keep all
 four chain/fault combinations and their lifecycle/recipient outcomes unverified
 until actual execution. Historical missing original populations and report
 baselines cannot be replaced by a new environment.
+
+## Stable-Path Fault Replay v3
+
+`replay-etl-fault-v3.py` retains the fault controller's real E3/E4 evidence
+assertions and requires an explicit `--work-root` for native analysis. The v2
+reader remains separately preserved. Use a new v3 baseline; its identity and
+artifact manifest are not interchangeable with a v2 baseline.
+
+The work root must be a fresh canonical absolute path identical on the producer
+and recipient, outside the frozen roots and result output. Both native readers
+use verified copies below that root and explicit separate JFR output
+directories. Complete stdout, stderr, numerical JSON and scenario results are
+compared without normalization. Actual command receipts remain separate.
+
+Use the same frozen-input, controller-receipt and independently pinned manifest
+arguments described above. Supply the stable work root when recording the v3
+baseline and when replaying it on the recipient:
+
+```bash
+replay="$scenarios/replay-etl-fault-v3.py"
+work_root=/path/identical/on/producer/and/recipient
+set -- --tools "$tools" --input "$input" --case "$case_dir"
+set -- "$@" --members "$members" --members-sha256 "$manifest_hash"
+set -- "$@" --controller-receipt "$receipt" --controller-receipt-sha256 "$receipt_hash"
+set -- "$@" --work-root "$work_root"
+python3 -B "$replay" "$@" --record-baseline --output "$baseline"
+baseline_hash=independently_recorded_v3_artifacts_sha256
+python3 -B "$replay" "$@" --baseline "$baseline" --baseline-sha256 "$baseline_hash" --output "$recipient_output"
+```
+
+For recipient execution, retain the completed producer's `artifacts.json` hash,
+replace `--record-baseline` with `--baseline` and `--baseline-sha256`, select a
+new output, and use the same work-root path in the independent environment.
+The baseline binds the replay source and work root as well as all six complete
+artifact hashes. Identity and original-byte checks occur before native launch;
+an existing work directory is preserved. Native abort/evaluation/aggregation
+remains `Incomplete` with exit 1, while a successful scenario replay exits 0.
+A complete artifact difference returns scenario `Failed`/1 and retains the
+actual numerical results and native receipts.
+
+`test-fault-replay-paths.py` requires a complete independently pinned real
+state/native export and the recipient's dependency/environment records. It
+executes actual native readers, checks their declared JFR directories and raw
+byte repeatability, and exercises real filesystem work-root guards. Its
+`--legacy` mode extracts the unchanged v2 reader's native argument expressions
+and executes those real commands. These checks cover native paths and guards;
+they do not manufacture a positive fault lifecycle or complete an E3/E4 row.
 
 ## Journal Query Component
 
