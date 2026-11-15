@@ -31,7 +31,7 @@ Canonical branch or ref: `master`
 Git upstream: `origin/master`
 Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: The four selected shortened/default E3/E4 fault cells and exact independent recipients are verified, with all six artifacts equal for every case. Both VMs are shut off and all originals are retained; provider closure and independent requester state/disk checks are in work/fault-vm-20261114/default-retry-01/resource-closure.json. Actual case results and final source/original checks are in verification-completion.json and original-input-bindings-final.json under that workspace. M39/M40 each satisfy all five live criteria and remain In progress for source landing and linked #54 reconciliation. Use those completed results for the remaining publication steps; no selected live fault check remains pending. Native short-observation Incomplete/1 and unavailable historical-input boundaries remain unchanged.
+Next session entry point: M39/M40 are Complete on 2026-11-15 under the accepted D49 component-completion approach. Both-chain E3/E4 technical verification, source 07afd2b on fetched origin/master and exact #54 readback are complete; the consolidated issue remains open at 46 checked and 35 unchecked conditions. Next prepare the concrete bounded case/resource plan for M38's three remaining default normal-finish/recipient rows; no new VM case is launched by this documentation update. Other remaining VM work is in M31, M41, M42 and M43. Reuse all completed shortened normal-finish and shortened/default fault cases without repeating them; unavailable historical originals are not sought or reconstructed. Publication evidence: `work/m39-m40-publication-20261115.json`; original live fault/native/resource results remain in `work/fault-vm-20261114/default-retry-01/verification-completion.json` and `resource-closure.json`.
 
 Retained results and available inputs are indexed by `work/retained-test-results-20261026/README.md`. Its 2026-10-26 retention policy supersedes historical original-path instructions below: retired raw observations are not complete local replay inputs, and historical hashes do not establish current availability. Check the retained archives and inventories before planning a replay.
 
@@ -6077,8 +6077,8 @@ Superseded Plan Artifacts: none
 | Tools | M36 | Match ETL pass times by UTC instant with nanosecond precision | Carry-forward | Complete | No | D31, D37, D38 | T1-T6 Passed; source landing and four UTC boxes in #54 verified; [detail](#m36---match-etl-pass-times-by-utc-instant-with-nanosecond-precision) |
 | Tools | M37 | Refresh preserved-tool checksums | Carry-forward | Complete | No | D31, D34, D35, D36 | Real source/copy checks, source landing and four checksum boxes in #56 verified; [detail](#m37---refresh-preserved-tool-checksums) |
 | Tools | M38 | Finish ETL tool independence checks across both store chains | Carry-forward | In progress | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m38---finish-etl-tool-independence-checks-across-both-store-chains) |
-| Tools | M39 | Finish partial-source ETL evidence verification on both chains | Carry-forward | In progress | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m39---finish-partial-source-etl-evidence-verification-on-both-chains) |
-| Tools | M40 | Finish all-source evidence loss and automatic-abort verification | Carry-forward | In progress | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m40---finish-all-source-evidence-loss-and-automatic-abort-verification) |
+| Tools | M39 | Finish partial-source ETL evidence verification on both chains | Carry-forward | Complete | No | D31, D49 | Both-chain technical criteria and source/issue publication verified; component-only closure under D49 recorded on 2026-11-15; [detail](#m39---finish-partial-source-etl-evidence-verification-on-both-chains) |
+| Tools | M40 | Finish all-source evidence loss and automatic-abort verification | Carry-forward | Complete | No | D31, D49 | Both-chain technical criteria and source/issue publication verified; component-only closure under D49 recorded on 2026-11-15; [detail](#m40---finish-all-source-evidence-loss-and-automatic-abort-verification) |
 | Tools | M41 | Verify ETL collector capture and refusal after normal shutdown | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m41---verify-etl-collector-capture-and-refusal-after-normal-shutdown) |
 | Tools | M42 | Verify real collection during source-store deletion | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m42---verify-real-collection-during-source-store-deletion) |
 | Tools | M43 | Reconcile retained ETL measurements and process identities | Carry-forward | In progress | No | D49 | Complete independently scoped tool work from real evidence; [detail](#m43---reconcile-retained-etl-measurements-and-process-identities) |
@@ -6086,7 +6086,7 @@ Superseded Plan Artifacts: none
 | Tools | M45 | Reproduce completed ETL observation reports on an independent recipient | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m45---reproduce-completed-etl-observation-reports-on-an-independent-recipient) |
 | Tools | M46 | Report actual test phase durations against the agreed allocations | Carry-forward | Complete | No | D31, D49 | Phase report in 5ae70cd on origin/master; exact #56 readback confirms all four related criteria; [detail](#m46---report-actual-test-phase-durations-against-the-agreed-allocations) |
 | Tools | M47 | Track journal test tooling | Carry-forward | Complete | No | D32, D33, D49 | Bounded lifecycle evidence preserved; unavailable-input recipient replay retired on 2026-11-10, Incomplete unchanged; exact #53 not_planned closure verified; [detail](#m47---track-journal-test-tooling) |
-| Tools | M48 | Track ETL test tooling | Carry-forward | In progress | No | D32, D33, D49 | Canonical and #54: 36 verified and 45 unmet criteria after the source-identification audit and exact readback; M32 Complete, remaining work grouped into local preparation and shared VM execution under D49; [detail](#m48---track-etl-test-tooling) |
+| Tools | M48 | Track ETL test tooling | Carry-forward | In progress | No | D32, D33, D49 | Canonical and #54: 46 verified and 35 unmet criteria after both-chain fault verification and source/issue publication; remaining runtime work is scoped to five components under D49; [detail](#m48---track-etl-test-tooling) |
 | Tools | M49 | Track buffer test tooling | Carry-forward | Complete | No | D32, D33, D49 | Five scoped criteria verified; final amendment published in 7af9050 and exact completed #55 closure verified on 2026-11-10; original-main revalidation retains Incomplete under the 2026-11-09 exclusion; [detail](#m49---track-buffer-test-tooling) |
 | Tools | M50 | Track shared test tooling | Carry-forward | Complete | No | D32, D33, D34, D35, D36, D49 | All eleven criteria verified; installer source/result published in 08b7ec4; exact #56 body/comment and completed closure verified on 2026-11-09; [detail](#m50---track-shared-test-tooling) |
 | Tools | G6 | Provide M33's dedicated systemd 239 query environment | External gate | Complete | No | D40 | Capacity, private handoff and actual guest access/versions verified; [detail](#g6---provide-m33s-dedicated-systemd-239-query-environment) |
@@ -8005,6 +8005,8 @@ Use the six-row scope matrix and preserve the two recorded planned-abort evidenc
 
 ##### Closure Evidence
 
+- Source/issue publication reconciled at 2026-11-15T09:45:43.144016+00:00: the shortened/failing and shortened/changed evidence is committed in `07afd2be617c36dec83d66e933319f21cfd5f0c6` on fetched origin/master, and exact #54 body readback records all three shortened normal-finish/recipient rows. The three default rows and remaining lifecycle boundaries are unverified; no all-cases criterion is newly checked by publication. Receipt: `work/m39-m40-publication-20261115.json`.
+
 - Scoped T2/T3 verification completed: shortened/failing and shortened/changed each retain actual 7200-second normal finish, controller/native/scheduler Passed, successful stop/restoration, complete original transfer and exact independent-recipient replay. Together with T12, the shortened matrix is 3 of 3 Passed; three default rows and other lifecycle boundaries remain unverified. The current allocation closed at 2026-11-14T01:04:09.241950+00:00 within its original window. Provider requester record 216 and independent native domstate agree on shut off. Definition, disk, seed, reservations and original evidence remain retained; other 40 guest states/definitions are unchanged. The operational active.json summary changed during provider verification; its before/after hashes are retained separately, and all other existing evidence entries match. Evidence: `work/vm-verification-20261113/failing/final-verification.json`, `changed/final-verification.json` and `resource-closure.json` below the same workspace. Component completion criteria remain unchecked where their full six-row scope is unmet; no new Git/GitHub publication was performed.
 
 - Scoped T12 verification completed at 2026-11-13T13:22:59.882923+00:00. The original-duration shortened/absent normal-finish and exact independent-recipient case is Passed for the recorded candidate source. Earlier Incomplete/abort results remain unchanged. M38 remains In progress: the other five normal-finish cells and remaining lifecycle boundaries are unverified, and source/issue publication remains separate. The provider confirmed shutdown at 2026-11-13T13:26:51.624715+00:00; independent requester state and disk/seed checks agree. Definition, disk, seed, reservations and original evidence remain retained. Closure: `work/m38-normal-20261113/retry/resource-closure.json`. No completion criterion is checked from this one cell.
@@ -8035,10 +8037,10 @@ Use the six-row scope matrix and preserve the two recorded planned-abort evidenc
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-17T01:09:40Z
-- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
-- Prepared Body: `work/issue-tools-etl.md`
-- Published Body SHA256: b6a0ab483695713866a62fe7ccf6cb65a4f04514238fa3adce424715686417f0
+- Observed Updated At: 2026-11-15T02:40:27Z
+- Last Compared: 2026-11-15T09:45:43.144016+00:00; exact #54 body SHA256 c9a2e81d9b183800d4a601f76a3d0e8ca3ddfc3fe5f9981c30335172a7c9310e, 46 checked/35 unchecked criteria, open state and unchanged title/label/milestone/assignee. Receipt: `work/m39-m40-publication-20261115.json`.
+- Prepared Body: `work/issue-etl-verification-body.md`
+- Published Body SHA256: c9a2e81d9b183800d4a601f76a3d0e8ca3ddfc3fe5f9981c30335172a7c9310e
 - Historical Source Issue: #43, https://github.com/jeonghanlee/ansible-provision/issues/43
 - Historical Source State: closed
 - Historical Source Reason: not_planned
@@ -8052,11 +8054,11 @@ Origin: 38560eb / M39
 Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
 GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
 Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #44 is closed not_planned at 2026-10-17T01:12:41Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
-Status: In progress
+Status: Complete
 
 ##### Summary
 
-The shortened journal-unavailable/application-file-available case retained two actual fault samples, one successful 903-job pass, no automatic abort, source restoration and orderly stop. The actual corrected shortened and default controllers, producer scenarios and exact independent recipient replays are verified; source landing and issue reconciliation remain pending.
+Both shortened and default journal-unavailable/application-file-available cases verify two actual fault samples, a successful regular ETL pass, no automatic abort, exact restoration and exact independent-recipient replay. All five technical criteria, source landing in 07afd2b and the five source-#44 checkboxes in #54 are verified. Complete on 2026-11-15 under the accepted D49 component-completion approach; consolidated #54 remains open for its other unmet contracts.
 
 ##### Scope
 
@@ -8161,6 +8163,10 @@ Completed workers, actual receipts and distinct native/scenario outcomes: work/f
 
 ##### Closure Evidence
 
+- Decision Date: 2026-11-15. Component-only linked-issue closure exception under the accepted D49 completion approach and the current instruction to finalize this work: all five E3 technical criteria, upstream source landing and the five source-#44 checkboxes in #54 are verified. This component is Complete; keep consolidated #54 open for its 35 other unmet conditions. No technical check, duration, native outcome or original-input requirement is waived.
+
+- Publication reconciled at 2026-11-15T09:45:43.144016+00:00: fetched origin/master and HEAD resolve to `07afd2be617c36dec83d66e933319f21cfd5f0c6`; all six committed paths match. Exact #54 body SHA256 `c9a2e81d9b183800d4a601f76a3d0e8ca3ddfc3fe5f9981c30335172a7c9310e` agrees with the prepared body. All five E3 component criteria are checked; the complete issue has 46 checked and 35 unchecked criteria and retains its open state, title, label, milestone and assignee. Source landing and issue reconciliation are complete. The component-only linked-issue closure exception is recorded above; consolidated #54 remains open for its other contracts. No runtime or recipient was repeated. Receipt: `work/m39-m40-publication-20261115.json`.
+
 - Both-chain scoped E3 verification completed on 2026-11-14: actual controllers, producer scenarios and independent recipients return 0 with complete six-artifact equality and preserved native abort/evaluator/aggregate Incomplete/1. All five live verification criteria are satisfied. The work remains In progress until source landing and linked-issue reconciliation have their required evidence. Both resources are normally shut off with all originals retained; provider and independent requester closure checks agree. Evidence: `work/fault-vm-20261114/default-retry-01/resource-closure.json`. Original successes and failures remain unchanged.
 
 - Not complete. Decision Date: 2026-11-11. Separate candidate source implementation, T4 local boundaries and complete source staging are verified within the consolidated preparation scope. Both-chain real fault/lifecycle/restoration and exact independent-recipient execution remain Pending for the shared VM batch; no completion criterion is checked. Source landing and linked-issue reconciliation remain pending. Historical controller errors, original source bytes and native Incomplete findings are unchanged.
@@ -8179,10 +8185,10 @@ Completed workers, actual receipts and distinct native/scenario outcomes: work/f
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-17T01:09:40Z
-- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
-- Prepared Body: `work/issue-tools-etl.md`
-- Published Body SHA256: b6a0ab483695713866a62fe7ccf6cb65a4f04514238fa3adce424715686417f0
+- Observed Updated At: 2026-11-15T02:40:27Z
+- Last Compared: 2026-11-15T09:45:43.144016+00:00; exact #54 body SHA256 c9a2e81d9b183800d4a601f76a3d0e8ca3ddfc3fe5f9981c30335172a7c9310e, 46 checked/35 unchecked criteria, open state and unchanged title/label/milestone/assignee. Receipt: `work/m39-m40-publication-20261115.json`.
+- Prepared Body: `work/issue-etl-verification-body.md`
+- Published Body SHA256: c9a2e81d9b183800d4a601f76a3d0e8ca3ddfc3fe5f9981c30335172a7c9310e
 - Historical Source Issue: #44, https://github.com/jeonghanlee/ansible-provision/issues/44
 - Historical Source State: closed
 - Historical Source Reason: not_planned
@@ -8196,11 +8202,11 @@ Origin: 38560eb / M40
 Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
 GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
 Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #45 is closed not_planned at 2026-10-17T01:12:47Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
-Status: In progress
+Status: Complete
 
 ##### Summary
 
-Actual corrected shortened/default E4 controllers, producer scenarios and exact independent recipients verify counters one then two, no premature first-sample abort, exactly one automatic native abort, appliance stop rc 0 and exact restoration. All six complete artifacts agree on each chain. Source landing and linked-issue reconciliation remain pending.
+Both shortened and default all-source cases verify counters one then two, no premature first-sample abort, exactly one automatic native abort, actual appliance stop 0, exact restoration and exact independent-recipient replay. All five technical criteria, source landing in 07afd2b and the five source-#45 checkboxes in #54 are verified. Complete on 2026-11-15 under the accepted D49 component-completion approach; consolidated #54 remains open for its other unmet contracts.
 
 ##### Scope
 
@@ -8304,6 +8310,10 @@ Completed workers, actual receipts and distinct native/scenario outcomes: work/f
 
 ##### Closure Evidence
 
+- Decision Date: 2026-11-15. Component-only linked-issue closure exception under the accepted D49 completion approach and the current instruction to finalize this work: all five E4 technical criteria, upstream source landing and the five source-#45 checkboxes in #54 are verified. This component is Complete; keep consolidated #54 open for its 35 other unmet conditions. No technical check, duration, native outcome or original-input requirement is waived.
+
+- Publication reconciled at 2026-11-15T09:45:43.144016+00:00: fetched origin/master and HEAD resolve to `07afd2be617c36dec83d66e933319f21cfd5f0c6`; all six committed paths match. Exact #54 body SHA256 `c9a2e81d9b183800d4a601f76a3d0e8ca3ddfc3fe5f9981c30335172a7c9310e` agrees with the prepared body. All five E4 component criteria are checked; the complete issue has 46 checked and 35 unchecked criteria and retains its open state, title, label, milestone and assignee. Source landing and issue reconciliation are complete. The component-only linked-issue closure exception is recorded above; consolidated #54 remains open for its other contracts. No runtime or recipient was repeated. Receipt: `work/m39-m40-publication-20261115.json`.
+
 - Both-chain scoped E4 verification completed on 2026-11-14: actual controllers, producer scenarios and independent recipients return 0 with complete six-artifact equality, no premature first-sample abort, counters one/two and exactly one automatic native abort. Native abort/evaluate/aggregate remain Incomplete/1 with actual appliance stop 0. All five live verification criteria are satisfied. The work remains In progress until source landing and linked-issue reconciliation have their required evidence. Both resources are normally shut off with all originals retained; provider and independent requester closure checks agree. Evidence: `work/fault-vm-20261114/default-retry-01/resource-closure.json`. All original successful and unsuccessful records are preserved.
 
 - Not complete. Decision Date: 2026-11-11. Separate candidate source implementation, T4 local boundaries and complete source staging are verified within the consolidated preparation scope. Both-chain real fault/lifecycle/restoration and exact independent-recipient execution remain Pending for the shared VM batch; no completion criterion is checked. Source landing and linked-issue reconciliation remain pending. Historical controller errors, original source bytes and native Incomplete findings are unchanged.
@@ -8322,10 +8332,10 @@ Completed workers, actual receipts and distinct native/scenario outcomes: work/f
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-17T01:09:40Z
-- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
-- Prepared Body: `work/issue-tools-etl.md`
-- Published Body SHA256: b6a0ab483695713866a62fe7ccf6cb65a4f04514238fa3adce424715686417f0
+- Observed Updated At: 2026-11-15T02:40:27Z
+- Last Compared: 2026-11-15T09:45:43.144016+00:00; exact #54 body SHA256 c9a2e81d9b183800d4a601f76a3d0e8ca3ddfc3fe5f9981c30335172a7c9310e, 46 checked/35 unchecked criteria, open state and unchanged title/label/milestone/assignee. Receipt: `work/m39-m40-publication-20261115.json`.
+- Prepared Body: `work/issue-etl-verification-body.md`
+- Published Body SHA256: c9a2e81d9b183800d4a601f76a3d0e8ca3ddfc3fe5f9981c30335172a7c9310e
 - Historical Source Issue: #45, https://github.com/jeonghanlee/ansible-provision/issues/45
 - Historical Source State: closed
 - Historical Source Reason: not_planned
@@ -9291,8 +9301,8 @@ Component canonical identities remain independent under this single GitHub proje
 - M35: historical source #40; unfinished work is tracked in #54.
 - M36: historical source #41; unfinished work is tracked in #54.
 - M38: historical source #43; unfinished work is tracked in #54.
-- M39: historical source #44; unfinished work is tracked in #54.
-- M40: historical source #45; unfinished work is tracked in #54.
+- M39: historical source #44; Complete on 2026-11-15 under D49 after all five technical criteria and source/issue publication were verified; #54 remains open for other contracts.
+- M40: historical source #45; Complete on 2026-11-15 under D49 after all five technical criteria and source/issue publication were verified; #54 remains open for other contracts.
 - M41: historical source #46; unfinished work is tracked in #54.
 - M42: historical source #47; unfinished work is tracked in #54.
 - M43: historical source #48; unfinished work is tracked in #54.
@@ -9356,20 +9366,20 @@ These summaries preserve the recorded scope. Each linked issue retains its full 
 
 ###### #43 - Finish ETL tool independence checks across both store chains
 
-- Problem and evidence: Two shortened failing/changed-module planned-abort cases have recipient evidence. None of the six required normal-finish cases is established.
-- Remaining work: Prepare separately identified absent-study/normal-finish support and verify two chains times three study states through normal finish/restoration and recipient replay.
+- Problem and evidence: All three shortened original-duration normal-finish cases and exact independent recipients are verified; planned-abort originals remain separate.
+- Remaining work: Three default normal-finish/recipient rows and remaining lifecycle boundaries retain their actual execution requirements.
 - Done when: All six rows satisfy original assertions; scenario/recipient exit 0 with expectation Passed, native verdict/exit contracts hold and planned-abort originals are not relabeled.
 
 ###### #44 - Finish partial-source ETL evidence verification on both chains
 
-- Problem and evidence: The shortened partial-source case retained two fault samples, one successful pass and no automatic abort. Default behavior and completed scenario replay are unverified.
-- Remaining work: Complete actual both-chain fault/recovery, corrected controller verification and exact independent-recipient replay.
+- Result: Both-chain E3 controller/producer/independent-recipient verification and all five technical criteria are verified, with complete six-artifact equality, no automatic abort, exact restoration, native Incomplete/1 and appliance stop 0. Source 07afd2b is landed and all five component criteria are checked in #54.
+- Remaining work: None for this component; Complete under D49 with #54 open for other contracts. No further E3 VM execution or recipient rerun is required.
 - Done when: Original assertions hold; corrected controller/scenario/recipient commands succeed, short native Incomplete/exit-1 and stop rc 0 remain explicit and historical errors are preserved.
 
 ###### #45 - Finish all-source evidence loss and automatic-abort verification
 
-- Problem and evidence: Shortened all-source failure advanced counters one to two and triggered one automatic abort with orderly stop/restoration. Default and completed recipient replay are unverified.
-- Remaining work: Complete actual both-chain counter/abort/restoration evidence, corrected controller verification and recipient replay.
+- Result: Both-chain E4 controller/producer/independent-recipient verification and all five technical criteria are verified, including first versus repeated critical samples, exactly one automatic abort, exact restoration and complete six-artifact equality. Source 07afd2b is landed and all five component criteria are checked in #54; native Incomplete/1 is unchanged.
+- Remaining work: None for this component; Complete under D49 with #54 open for other contracts. No further E4 VM execution or recipient rerun is required.
 - Done when: No premature first-failure abort occurs; repeated failure aborts once, all original command/verdict contracts hold and short native Incomplete originals remain unchanged.
 
 ###### #46 - Verify ETL collector capture and refusal after normal shutdown
@@ -9511,8 +9521,8 @@ The shared VM batch covers seven components. M39 and M40 have completed actual s
 | --- | --- | --- |
 | M31 / T1 | Real journal rotation/obsolete-anchor and independently proved required-interval coverage, including a genuine or unresolved gap control. | Existing receipt and source-identity checks need no repeat; a fresh case cannot recover unknown historical query bytes. |
 | M38 / T1-T7 | All three shortened absent/failing/changed normal-finish and exact independent-recipient rows are Passed in T12/T2/T3. The three default rows still require actual preparation/launch/scheduled finish, source restoration, complete capture and exact scenario/recipient replay. Exercise remaining candidate timeout/interruption/worker-failure handling under declared bounded conditions. | Reuse verified completed shortened cases and startup ordering without repeating them. T8's local proof does not establish the default rows. Preserve native durations and both historical planned-abort results. |
-| M39 / T1-T3 | Shortened and default journal-source refusal are verified with required application files available, actual sampler/stop/restoration and controller/producer/independent-recipient outcomes. | Reuse the verified cases and complete six-artifact equality; no repeat VM execution is required. Source landing and linked-issue reconciliation remain pending. |
-| M40 / T1-T3 | Shortened and default all-source refusal are verified with first versus repeated failure, exactly one actual automatic abort, actual stop/restoration and controller/producer/independent-recipient outcomes. | Reuse the verified cases and complete six-artifact equality; no repeat VM execution is required. Source landing and linked-issue reconciliation remain pending. |
+| M39 / T1-T3 | Shortened and default journal-source refusal are verified with required application files available, actual sampler/stop/restoration and controller/producer/independent-recipient outcomes. | Reuse the verified cases and complete six-artifact equality; no repeat VM execution is required. Source 07afd2b landing and #54 reconciliation verified; component Complete under the dated D49 linked-issue closure exception. |
+| M40 / T1-T3 | Shortened and default all-source refusal are verified with first versus repeated failure, exactly one actual automatic abort, actual stop/restoration and controller/producer/independent-recipient outcomes. | Reuse the verified cases and complete six-artifact equality; no repeat VM execution is required. Source 07afd2b landing and #54 reconciliation verified; component Complete under the dated D49 linked-issue closure exception. |
 | M41 / T1 | Actual final/post-stop file capture; invocation/PID/inode/prefix identity; changed invocation, wrong PID, truncation and missing-final-record refusal; repeated terminal request and replay. | Reuse M38 normal-stop evidence only if its actual captured identities and terminal receipts satisfy the complete M41 claim. |
 | M42 / T1 | Independently observed native collection during real source-file deletion, surviving sizes/status, unrelated command-failure distinction and frozen-result evaluation. | Existing parser tests and ordinary metrics overlap do not establish actual deletion overlap. The prior deferral remains until this batch is selected. |
 | M43 / T2 | Bounded actual accumulation and process restart, plus any remaining live request/pass-completion overlap and current transmitted query-bound coverage. | Reuse T3's query-bound and T4's retained overlap results; preserve the distinction between new measured evidence and unavailable historical measurements. |
@@ -9648,21 +9658,21 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 ###### Source #44 - Finish partial-source ETL evidence verification on both chains
 
-- [ ] Actual journal failure with all required configured application files available preserves ETL pass evidence and does not trigger an evidence-loss abort.
-- [ ] Both chains have declared fault/recovery boundaries, real sampler identity, exact restoration and actual bounded stop evidence.
-- [ ] Corrected candidate runtime/controller execution exits 0 with complete runtime evidence; historical controller errors and their original exit codes remain unchanged.
-- [ ] The scenario verifier and independent recipient replay each exit 0 with `expectation=Passed`, satisfy all declared source-availability assertions and reproduce exact complete results/identities; equality of two failed checks is insufficient.
-- [ ] The deliberately shortened native abort/evaluator/aggregator retains its exact `Incomplete` verdict and expected exit code 1, with actual appliance stop rc 0; no full-day acceptance is claimed.
+- [x] Actual journal failure with all required configured application files available preserves ETL pass evidence and does not trigger an evidence-loss abort.
+- [x] Both chains have declared fault/recovery boundaries, real sampler identity, exact restoration and actual bounded stop evidence.
+- [x] Corrected candidate runtime/controller execution exits 0 with complete runtime evidence; historical controller errors and their original exit codes remain unchanged.
+- [x] The scenario verifier and independent recipient replay each exit 0 with `expectation=Passed`, satisfy all declared source-availability assertions and reproduce exact complete results/identities; equality of two failed checks is insufficient.
+- [x] The deliberately shortened native abort/evaluator/aggregator retains its exact `Incomplete` verdict and expected exit code 1, with actual appliance stop rc 0; no full-day acceptance is claimed.
 
 
 
 ###### Source #45 - Finish all-source evidence loss and automatic-abort verification
 
-- [ ] The first actual critical sample does not prematurely abort; the declared consecutive failure triggers exactly one native abort.
-- [ ] Both chains retain real source-access failure, sampler/process identity, counter sequence, actual appliance stop rc 0 and exact restoration evidence.
-- [ ] Corrected candidate runtime/controller execution exits 0 with complete runtime evidence; historical controller errors and their original exit codes remain unchanged.
-- [ ] The scenario verifier and independent recipient replay each exit 0 with `expectation=Passed`, satisfy all declared counter/abort/restoration assertions and reproduce exact complete results/identities; equality of two failed checks is insufficient.
-- [ ] The deliberately shortened native abort/evaluator/aggregator retains its exact `Incomplete` verdict and expected exit code 1; source unavailability and successful automatic abort are not relabeled an ETL data-loss failure or full-day acceptance.
+- [x] The first actual critical sample does not prematurely abort; the declared consecutive failure triggers exactly one native abort.
+- [x] Both chains retain real source-access failure, sampler/process identity, counter sequence, actual appliance stop rc 0 and exact restoration evidence.
+- [x] Corrected candidate runtime/controller execution exits 0 with complete runtime evidence; historical controller errors and their original exit codes remain unchanged.
+- [x] The scenario verifier and independent recipient replay each exit 0 with `expectation=Passed`, satisfy all declared counter/abort/restoration assertions and reproduce exact complete results/identities; equality of two failed checks is insufficient.
+- [x] The deliberately shortened native abort/evaluator/aggregator retains its exact `Incomplete` verdict and expected exit code 1; source unavailability and successful automatic abort are not relabeled an ETL data-loss failure or full-day acceptance.
 
 
 
@@ -9763,8 +9773,11 @@ M35/D48 terminal criteria are verified from the recorded real normal/fault/repla
 | T1 | 2026-11-11T10:24:03.061593+00:00 | Current shipped CLIs and separately verified retained metric inputs | Pending; local pass-overlap regression verified | M43 / T4 completes five native cases: positive metric scopes preserve 3/0 actual overlaps, real counter/busy-time derivatives fail the intended comparisons and an isolated no-overlap source mutant is detected. Original native Incomplete/1 and 16877 original members remain preserved. Remaining live measurement and other environment-dependent checks are grouped under Shared VM Verification Batch; no VM was started. Canonical remains 35 checked and 46 unchecked; the recorded #54 readback remains 22 checked and 59 unchecked with thirteen updates pending. No additional checkbox or component closure follows from the partial measurement scope. |
 | T1 | 2026-11-11T18:35:08.345262+00:00 | Actual GitHub body/metadata readback after authorized body edit | Pending; verified conditions published | The complete body matches the prepared SHA256 4903c4bfd798668c251577e5a591ed08e8d08acf10ca9cb955e70522be732cac; all 81 criterion texts are preserved with only 13 additional verified conditions checked. Canonical and live #54 agree at 35 checked and 46 unchecked. Open state, title, enhancement label, Backlog milestone and jeonghanlee assignee are unchanged. Local candidate preparation is recorded without checking any unexecuted scenario criterion. Source landing and actual shared VM/recipient coverage remain pending. Receipt: `work/prepare-etl-batch-20261111/issue-publication.json`. |
 | T1 | 2026-11-11T19:03:01.459529+00:00 | 46-condition evidence audit and actual issue body/metadata readback | Pending; one source-identification condition verified | All 46 formerly unchecked conditions are accounted for: 16 aggregate/policy, 23 live runtime, 6 original-input/recipient and 1 candidate-source identity. Only source-#43 criterion 3 is newly checked from actual source/CLI identity and unchanged historical payload/result archive evidence. Canonical and #54 match at 36 checked and 45 unchecked; all 81 criterion texts, metadata and open state are preserved. No VM, new live case or independent recipient ran. Evidence: `work/criteria-46-audit-20261111/verification.json` and `publication.json`. |
+| T1 | 2026-11-15T09:45:43.144016+00:00 | Fetched origin/master, committed six-file source set and actual #54 readback | Pending; both-chain fault criteria and publication verified | Source `07afd2be617c36dec83d66e933319f21cfd5f0c6` is on fetched origin/master with all six paths matching. Exact #54 body SHA256 `c9a2e81d9b183800d4a601f76a3d0e8ca3ddfc3fe5f9981c30335172a7c9310e` preserves all 81 condition texts and verifies 46 checked/35 unchecked criteria. Ten newly checked conditions belong to M39/M40 only; M38 has three completed shortened rows and three unexecuted default rows. Metadata and open state are unchanged. No new runtime or recipient ran. Receipt: `work/m39-m40-publication-20261115.json`. |
 
 ##### Closure Evidence
+
+- Publication and current accounting reconciled at 2026-11-15T09:45:43.144016+00:00: source `07afd2be617c36dec83d66e933319f21cfd5f0c6` is landed, exact #54 body matches SHA256 `c9a2e81d9b183800d4a601f76a3d0e8ca3ddfc3fe5f9981c30335172a7c9310e`, and canonical/live criteria agree at 46 checked and 35 unchecked. The ten E3/E4 fault criteria are verified on both chains; M38 retains three default rows and other lifecycle boundaries. M39/M40 are Complete under the 2026-11-15 component-only linked-issue closure exceptions after source/issue publication was verified. The group and #54 remain open for their unmet contracts. Original records and unavailable historical-input requirements are unchanged. Receipt: `work/m39-m40-publication-20261115.json`.
 
 - Source/issue reconciliation completed at 2026-11-07T09:34:43Z: fetched origin/master and HEAD both resolve to `6146651461816059cda5c2a1caa456b51706dd8d`, and all six committed paths match. Exact #54 body readback matches `work/issue-etl-isolation-body.md`, SHA256 `b44d3d57cfa3ead1ef1e3ae8895bbbbd7433e1687d5e6aaf92d3428d95f76309`. M32 is Complete; its three source-#37 criteria and overlapping source-#34 criterion bring both checklists to 22 checked and 59 unchecked. M48 remains In progress and #54 remains open for the other component contracts. No additional test result or aggregate completion follows from this publication check.
 - At the 2026-11-06 verification checkpoint, M32's actual normal observation, four post-stop wait cases and frozen terminal replay verified four group criteria. Source landing and their #54 publication were pending. M32 and M48 were In progress; the original aggregate Incomplete was preserved.
@@ -9789,7 +9802,7 @@ M35/D48 terminal criteria are verified from the recorded real normal/fault/repla
 
 ##### GitHub Projection
 
-- Projection Difference: No checklist difference after the source-identification update and 2026-11-11T19:03:01.459529+00:00 exact readback. Canonical and live #54 contain 36 checked and 45 unchecked conditions; all 81 criterion texts remain preserved. Source landing, seven-component runtime verification and independent recipient execution remain unverified.
+- Projection Difference: Current canonical and #54 criteria agree at 46 checked and 35 unchecked after exact 2026-11-15T09:45:43.144016+00:00 readback. All four shortened/default fault cases and source/issue publication are verified; five component runtime contracts and original-input/report requirements remain. M39/M40 are Complete under their recorded 2026-11-15 component-only linked-issue closure exceptions; the aggregate remains In progress.
 - Title: `Track ETL test tooling`
 - Labels: `enhancement`
 - GitHub Milestone: `Backlog`
@@ -9800,13 +9813,13 @@ M35/D48 terminal criteria are verified from the recorded real normal/fault/repla
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-11-11T19:03:00Z
-- Last Compared: 2026-11-11T19:03:01.459529+00:00; actual readback confirms exact prepared body SHA256 1e6b1c7fc890c96193aca16a3ae9b4c9de9cdcd4cbe11eadaa5c46252b11a73a, 36 checked/45 unchecked conditions, open state and unchanged title/label/milestone/assignee. Receipt: `work/criteria-46-audit-20261111/publication.json` and `issue-after.json`.
+- Observed Updated At: 2026-11-15T02:40:27Z
+- Last Compared: 2026-11-15T09:45:43.144016+00:00; exact #54 body SHA256 c9a2e81d9b183800d4a601f76a3d0e8ca3ddfc3fe5f9981c30335172a7c9310e, 46 checked/35 unchecked criteria, open state and unchanged title/label/milestone/assignee. Receipt: `work/m39-m40-publication-20261115.json`.
 - Query Update Readback: 2026-10-21T08:34:55+00:00; four query criteria newly checked and all other source sections/criteria preserved. Full comparison retained at `work/issue-etl-query-applied-20261021.json`.
 - JFR Update Readback: 2026-10-22T10:49:17Z; the three source-#39 criteria and two overlapping source-#35 criteria are newly checked; all other sections and criteria are preserved. Receipt: `work/issue-etl-jfr-applied-20261022.json`.
-- Prepared Body: `work/issue-etl-criteria-audit-body.md`
-- Prepared Body SHA256: 1e6b1c7fc890c96193aca16a3ae9b4c9de9cdcd4cbe11eadaa5c46252b11a73a
-- Published Body SHA256: 1e6b1c7fc890c96193aca16a3ae9b4c9de9cdcd4cbe11eadaa5c46252b11a73a
+- Prepared Body: `work/issue-etl-verification-body.md`
+- Prepared Body SHA256: c9a2e81d9b183800d4a601f76a3d0e8ca3ddfc3fe5f9981c30335172a7c9310e
+- Published Body SHA256: c9a2e81d9b183800d4a601f76a3d0e8ca3ddfc3fe5f9981c30335172a7c9310e
 - Historical Source Issues: #34, #35, #36, #37, #38, #39, #40, #41, #43, #44, #45, #46, #47, #48, #49, #50
 
 #### M49 - Track buffer test tooling
