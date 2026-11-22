@@ -31,9 +31,9 @@ Canonical branch or ref: `master`
 Git upstream: `origin/master`
 Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: Review the M31 deferral and the recorded #54 text correction before committing the register update. The #54 introduction now reflects the completed M44 workload comparison. M31 remains Deferred because the original journal is unavailable. M41 final capture and repeat-stop refusal are verified; its remaining collector refusals require actual stopped-service and same-boot evidence. M43's retained default/absent retrieval bounds are recorded. M44's retained workload comparison is Complete under its 2026-11-19 component-only closure; shared #54 remains open. Resolve storage for the two unexecuted M38 default/failing and default/changed 86400-second cases before another resource window. T4 default/absent is Passed through actual normal finish, producer baseline and independent recipient; all seven complete artifact bytes match, bringing the normal-finish/recipient matrix to 4 of 6. The dedicated VM was normally shut off at 2026-11-18T18:49:10.753784+00:00, with retained definition, disk, seed, creation record, reservation and all evidence; independent requester verification agrees. The same-volume next-case forecast needs 81946554665 additional guest bytes against 19800133632 observed free, and 116476378824 recipient bytes against 38657507328 observed free. Source: work/m38-default-20261116/absent/verification-case.json and work/m38-default-20261116/resource-closure.json. Preserve every original; storage handling remains undecided, with no deletion, resize, restart, new allocation, extra fault, automatic retry or Git/GitHub operation selected. T5/T6 and all-case criteria remain incomplete; M39/M40 remain Complete.
+Next session entry point: Confirm producer and recipient capacity for the two unexecuted M38 default/failing and default/changed 86400-second cases before requesting another VM window. T4 default/absent passed the normal finish, producer baseline and independent recipient with all seven complete artifacts equal. The matrix stands at 4 of 6. The T4 VM was normally shut down on 2026-11-18 and subsequently removed on 2026-11-19. The retrieved host-side result remains available. The current recipient filesystem exceeds the 116476378824-byte next-case planning estimate. A new producer allocation must be sized and checked for the 81946554665-byte next-case forecast plus appliance store growth. See M38 Closure Evidence for the measurements and their scope. M41 final capture, repeat-stop refusal and repeated-request replay are verified. Its remaining collector refusals require actual stopped-service and same-boot evidence. M43 retains the default/absent retrieval bounds. M31 remains Deferred because the original journal is unavailable. M39, M40 and M44 remain Complete. Shared #54 remains open at 48 checked and 33 unchecked criteria.
 
-Remaining work: 13 work rows excluding external gates. The milestone table has 2 Blocked and 1 Deferred. Backlog has 3 In progress and 7 Deferred. The last verified #54 body has 35 unchecked conditions across its component and group requirements.
+Remaining work: 13 work rows excluding external gates. The milestone table has 2 Blocked and 1 Deferred. Backlog has 3 In progress and 7 Deferred. The last verified #54 body has 33 unchecked conditions across its component and group requirements.
 
 Retained results and available inputs are indexed by `work/retained-test-results-20261026/README.md`. Its 2026-10-26 retention policy supersedes historical original-path instructions below: retired raw observations are not complete local replay inputs, and historical hashes do not establish current availability. Check the retained archives and inventories before planning a replay.
 
@@ -6081,14 +6081,14 @@ Superseded Plan Artifacts: none
 | Tools | M38 | Finish ETL tool independence checks across both store chains | Carry-forward | In progress | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m38---finish-etl-tool-independence-checks-across-both-store-chains) |
 | Tools | M39 | Finish partial-source ETL evidence verification on both chains | Carry-forward | Complete | No | D31, D49 | Both-chain technical criteria and source/issue publication verified; component-only closure under D49 recorded on 2026-11-15; [detail](#m39---finish-partial-source-etl-evidence-verification-on-both-chains) |
 | Tools | M40 | Finish all-source evidence loss and automatic-abort verification | Carry-forward | Complete | No | D31, D49 | Both-chain technical criteria and source/issue publication verified; component-only closure under D49 recorded on 2026-11-15; [detail](#m40---finish-all-source-evidence-loss-and-automatic-abort-verification) |
-| Tools | M41 | Verify ETL collector capture and refusal after normal shutdown | Carry-forward | Deferred | No | D31 | Final capture and repeated-stop refusal verified; changed-input refusals and repeated-request replay remain; [detail](#m41---verify-etl-collector-capture-and-refusal-after-normal-shutdown) |
+| Tools | M41 | Verify ETL collector capture and refusal after normal shutdown | Carry-forward | Deferred | No | D31 | Final capture, repeated-stop refusal and replay verified; changed-input collector refusals remain; [detail](#m41---verify-etl-collector-capture-and-refusal-after-normal-shutdown) |
 | Tools | M42 | Verify real collection during source-store deletion | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m42---verify-real-collection-during-source-store-deletion) |
 | Tools | M43 | Reconcile retained ETL measurements and process identities | Carry-forward | In progress | No | D49 | Complete independently scoped tool work from real evidence; [detail](#m43---reconcile-retained-etl-measurements-and-process-identities) |
 | Tools | M44 | Compare ETL busy time and workload with retained earlier results | Carry-forward | Complete | No | D49 | Three reporting criteria, upstream report/analysis sources and live issue checks verified; component-only closure recorded on 2026-11-19; [detail](#m44---compare-etl-busy-time-and-workload-with-retained-earlier-results) |
 | Tools | M45 | Reproduce completed ETL observation reports on an independent recipient | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m45---reproduce-completed-etl-observation-reports-on-an-independent-recipient) |
 | Tools | M46 | Report actual test phase durations against the agreed allocations | Carry-forward | Complete | No | D31, D49 | Phase report in 5ae70cd on origin/master; exact #56 readback confirms all four related criteria; [detail](#m46---report-actual-test-phase-durations-against-the-agreed-allocations) |
 | Tools | M47 | Track journal test tooling | Carry-forward | Complete | No | D32, D33, D49 | Bounded lifecycle evidence preserved; unavailable-input recipient replay retired on 2026-11-10, Incomplete unchanged; exact #53 not_planned closure verified; [detail](#m47---track-journal-test-tooling) |
-| Tools | M48 | Track ETL test tooling | Carry-forward | In progress | No | D32, D33, D49 | Canonical and #54: 46 verified and 35 unmet criteria after both-chain fault verification and source/issue publication; remaining shared VM preparation covers M38/M41/M42/M43, with M31 Deferred; [detail](#m48---track-etl-test-tooling) |
+| Tools | M48 | Track ETL test tooling | Carry-forward | In progress | No | D32, D33, D49 | Canonical and #54: 48 verified and 33 unmet criteria after stopped-capture and repeated-request replay reconciliation; remaining shared VM preparation covers M38/M41/M42/M43, with M31 Deferred; [detail](#m48---track-etl-test-tooling) |
 | Tools | M49 | Track buffer test tooling | Carry-forward | Complete | No | D32, D33, D49 | Five scoped criteria verified; final amendment published in 7af9050 and exact completed #55 closure verified on 2026-11-10; original-main revalidation retains Incomplete under the 2026-11-09 exclusion; [detail](#m49---track-buffer-test-tooling) |
 | Tools | M50 | Track shared test tooling | Carry-forward | Complete | No | D32, D33, D34, D35, D36, D49 | All eleven criteria verified; installer source/result published in 08b7ec4; exact #56 body/comment and completed closure verified on 2026-11-09; [detail](#m50---track-shared-test-tooling) |
 | Tools | G6 | Provide M33's dedicated systemd 239 query environment | External gate | Complete | No | D40 | Capacity, private handoff and actual guest access/versions verified; [detail](#g6---provide-m33s-dedicated-systemd-239-query-environment) |
@@ -8067,7 +8067,11 @@ Use the six-row scope matrix and preserve the two recorded planned-abort evidenc
 
 - Issue-body publication verified at 2026-11-18T21:27:59.802842+00:00: #54 exactly matches prepared body SHA256 `257d0b97c83dac445b85d1d32e9aeb4ac17dea42fe27c04954bb86400489c223`. Its normal-finish/recipient matrix records four of six verified rows, including default/absent; default/failing and default/changed remain unexecuted with their original 86400-second and storage requirements. All 81 condition texts and states remain intact at 46 checked and 35 unchecked. Title, label, milestone, assignee and open state are unchanged. Source records and unsuccessful outcomes are preserved; repository commit/push are separate. Receipt: `work/m38-default-20261116/issue-publication-20261118.json`.
 
-- Scoped T4 verification and resource closure completed on 2026-11-18. Default/absent retains actual 86400-second normal finish, controller/native/scheduler Passed, successful stop/restoration, complete original transfer and exact independent-recipient replay. The six-row normal-finish/recipient matrix is now 4 of 6; default/failing and default/changed remain unexecuted. Provider requester record 228 and independent native libvirt reads agree on shut off; the selected persistent definition, disk/seed/creation record, live and persistent DHCP reservations and all evidence remain retained. Persistent network bytes and the other 43 domain states/definitions are unchanged. The live network root loses its runtime connections='1' attribute after shutdown; both raw versions are preserved separately. The guest's observed 19800133632 free bytes do not fit the 81946554665-byte next-case forecast; the recipient's observed 38657507328 free bytes do not fit its 116476378824-byte forecast. This stops further launch under the existing storage bounds; no cleanup, resize, restart or resource extension is performed. All-case criteria remain unchecked and Git/GitHub publication is separate. Evidence: work/m38-default-20261116/absent/verification-case.json, work/m38-default-20261116/resource-closure.json and work/m38-default-20261116/provider-closure-record.json.
+- Scoped T4 verification and resource closure completed on 2026-11-18. Default/absent retains actual 86400-second normal finish, controller/native/scheduler Passed, successful stop/restoration, complete original transfer and exact independent-recipient replay. The six-row normal-finish/recipient matrix is now 4 of 6; default/failing and default/changed remain unexecuted. Provider requester record 228 and independent native libvirt reads confirmed the shut-off state at that time. The selected persistent definition, disk/seed/creation record, live and persistent DHCP reservations and all evidence were retained at shutdown. Persistent network bytes and the other 43 domain states/definitions are unchanged. The live network root loses its runtime connections='1' attribute after shutdown; both raw versions are preserved separately. The guest's observed 19800133632 free bytes do not fit the 81946554665-byte next-case forecast; the recipient's observed 38657507328 free bytes do not fit its 116476378824-byte forecast. These storage bounds stopped further launches in that VM window. All-case criteria remain unchecked and Git/GitHub publication is separate. Evidence: work/m38-default-20261116/absent/verification-case.json, work/m38-default-20261116/resource-closure.json and work/m38-default-20261116/provider-closure-record.json.
+
+- Provider requester record 229 records the later removal of the T4 VM at 2026-11-19T21:02:17.798455+00:00 and reports removal of its definition, disk, seed and owned reservations. A read-only libvirt lookup on 2026-11-20 confirmed that the domain is absent. The retained recipient result still matches the SHA256 in shutdown record 228. At 2026-11-20T02:17:33Z, the filesystem containing the retained recipient inputs reported 1321825554432 available bytes against the 116476378824-byte next-case forecast. This is a planning check on that filesystem. Verify the selected recipient path before transfer. The removed guest's capacity is historical. A fresh producer allocation must fit the 81946554665-byte working-space forecast plus appliance store growth before either remaining case can start. The forecast is for one case and must be recalculated after retaining its artifacts.
+
+- Replacement capacity planning on 2026-11-20 UTC: the remaining two cases need an estimated 182673207544 producer bytes and 232952757648 recipient bytes to retain both results. The producer estimate combines the recorded 81946554665-byte working-space forecast and 9390049107-byte filesystem growth allowance per case. The difference between the prior T4 pre-case and post-case guest free-space measurements was 100908511232 bytes, giving a higher two-case planning comparison of 201817022464 bytes. A dedicated 256 GiB guest is the candidate for the sequential T5/T6 window. The shared host checker returned `capacity=FIT` for one guest with 8192 MiB and a 256 GiB disk, leaving 29.6 GiB memory and 2087.4 GiB image-store space. The recipient filesystem observation above exceeds the two-case estimate. Measure usable space on the new guest after deployment and remeasure both paths before each case. Retain the 86400-second duration and existing controller, preservation and remaining-window bounds. This records planning capacity only.
 
 
 - Source/issue publication reconciled at 2026-11-15T09:45:43.144016+00:00: the shortened/failing and shortened/changed evidence is committed in `07afd2be617c36dec83d66e933319f21cfd5f0c6` on fetched origin/master, and exact #54 body readback records all three shortened normal-finish/recipient rows. The three default rows and remaining lifecycle boundaries are unverified; no all-cases criterion is newly checked by publication. Receipt: `work/m39-m40-publication-20261115.json`.
@@ -8102,10 +8106,10 @@ Use the six-row scope matrix and preserve the two recorded planned-abort evidenc
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-11-19T19:24:02Z
-- Last Compared: 2026-11-19T19:25:32.089152+00:00; exact #54 body SHA256 46e55411476a2d60b84dc839d06ff0fc1865fb05ff8d6deb533ff406779e421c, 46 checked/35 unchecked criteria, all 81 condition texts/states preserved, and unchanged open state and metadata. Receipt: `work/issue-54-m44-readback-20261119.json`.
-- Prepared Body: `work/issue-54-m44-body.md`
-- Published Body SHA256: 46e55411476a2d60b84dc839d06ff0fc1865fb05ff8d6deb533ff406779e421c
+- Observed Updated At: 2026-11-19T23:16:14Z
+- Last Compared: 2026-11-19T23:16:30.019923+00:00; exact #54 body SHA256 364610813cfd105c7f687cbf16696327824fb6f3d28c7184c04f92c60ffd3622, 48 checked/33 unchecked criteria, two additional source-#46 checks and all 81 criterion texts preserved. Issue state and metadata are unchanged. Receipt: `work/issue-54-m41-readback-20261119.json`.
+- Prepared Body: `work/issue-54-m41-body.md`
+- Published Body SHA256: 364610813cfd105c7f687cbf16696327824fb6f3d28c7184c04f92c60ffd3622
 - Historical Source Issue: #43, https://github.com/jeonghanlee/ansible-provision/issues/43
 - Historical Source State: closed
 - Historical Source Reason: not_planned
@@ -8432,7 +8436,7 @@ Out of scope: The separate journal collector verification in #32, product shutdo
 
 - [x] Actual final/post-stop capture retains all required application-file bytes with the original invocation, PID, inode and prefix identity.
 - [ ] A changed invocation, wrong PID, truncation or missing final record refuses complete evidence.
-- [ ] Repeated terminal invocation dispatches no second stop and leaves original evidence unchanged; real replay reproduces the result.
+- [x] Repeated terminal invocation dispatches no second stop and leaves original evidence unchanged; real replay reproduces the result.
 
 ##### Dependencies And Decisions
 
@@ -8461,11 +8465,13 @@ Out of scope: The separate journal collector verification in #32, product shutdo
 
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
-| T1 | 2026-11-18T17:21:52.886250+00:00 | Retained M38 / T4 default/absent normal-stop and final collector records, compared locally | Pending overall; final capture verified | Native stop and final collector returned 0 on the same boot. All four JVM files match their before/after receipt sizes and hashes, retain device/inode and the original byte prefix, and have no partial final record. All 953 appended records match the original component PID and invocation. Evidence: `work/m38-default-20261116/absent/recipient-input/state/shutdown.json` and its named full sample plus `raw/20261118T172151.591620Z` under the same state directory. Identity/truncation/incomplete-record refusal and repeated terminal request with replay remain pending. |
+| T1 | 2026-11-18T17:21:52.886250+00:00 | Retained M38 / T4 default/absent normal-stop and final collector records, compared locally | Final capture verified | Native stop and final collector returned 0 on the same boot. All four JVM files match their before/after receipt sizes and hashes, retain device/inode and the original byte prefix, and have no partial final record. All 953 appended records match the original component PID and invocation. Evidence: `work/m38-default-20261116/absent/recipient-input/state/shutdown.json` and its named full sample plus `raw/20261118T172151.591620Z` under the same state directory. At this checkpoint, identity/truncation/incomplete-record refusal and repeated terminal request with replay were pending. |
+| T1 | 2026-11-19T22:21:46.335638+00:00 | Isolated local run using frozen tooling and retained M38 / T4 default/absent inputs | Repeated-request replay passed. Changed-input collector refusals pending. | The repeated finish returned 1 without dispatching another stop. Native replay returned 0 and all seven artifacts match the prior result and producer baseline byte for byte. The outer wrapper timed out after native replay completed. Independent preservation checks matched all 63900 input members and 448 JDK members. See `work/m41-repeated-replay-20261119/result.json`. |
 
 ##### Closure Evidence
 
-- The retained M38 / T4 normal-stop capture satisfies the first criterion. On 2026-11-19, one actual frozen `observe.py finish` invocation on that finalized state in an isolated local environment returned 1 with the repeated-stop refusal. All 23 tool hashes matched the observation. The process trace records only the Python entry point, and the three terminal-related input hashes remained identical. Evidence: `work/m41-repeat-finish-20261119.json`. The component remains Deferred under D31 for the changed-input refusals and the remaining repeated-request replay condition.
+- The retained M38 / T4 normal-stop capture satisfies the first criterion. On 2026-11-19, one actual frozen `observe.py finish` invocation on that finalized state in an isolated local environment returned 1 with the repeated-stop refusal. All 23 tool hashes matched the observation. The process trace records only the Python entry point, and the three terminal-related input hashes remained identical. Evidence: `work/m41-repeat-finish-20261119.json`. That checkpoint established repeat refusal before offline replay.
+- Repeated-request replay verified at 2026-11-19T22:21:46.335638+00:00. The real frozen finish CLI returned 1 with the recorded refusal and dispatched no child command. The actual recipient replay then returned 0 and all seven complete artifacts match the prior result and producer baseline byte for byte. The outer wrapper timed out after native replay completed. Separate preservation checks confirmed all 63900 copied input members, 448 JDK members, selected source hashes and pinned baseline. Evidence: `work/m41-repeated-replay-20261119/result.json`. The component remains Deferred under D31 for the changed-input collector refusals. The two verified source-#46 conditions are checked in live #54; the changed-input refusal criterion remains unchecked.
 
 ##### GitHub Projection
 
@@ -8479,10 +8485,10 @@ Out of scope: The separate journal collector verification in #32, product shutdo
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-10-17T01:09:40Z
-- Last Compared: 2026-10-17T01:14:10.675787+00:00; exact body/metadata and source body/comment preservation with not_planned closure verified by live readback.
-- Prepared Body: `work/issue-tools-etl.md`
-- Published Body SHA256: b6a0ab483695713866a62fe7ccf6cb65a4f04514238fa3adce424715686417f0
+- Observed Updated At: 2026-11-19T23:16:14Z
+- Last Compared: 2026-11-19T23:16:30.019923+00:00; exact #54 body SHA256 364610813cfd105c7f687cbf16696327824fb6f3d28c7184c04f92c60ffd3622, 48 checked/33 unchecked criteria, two additional source-#46 checks and all 81 criterion texts preserved. Issue state and metadata are unchanged. Receipt: `work/issue-54-m41-readback-20261119.json`.
+- Prepared Body: `work/issue-54-m41-body.md`
+- Published Body SHA256: 364610813cfd105c7f687cbf16696327824fb6f3d28c7184c04f92c60ffd3622
 - Historical Source Issue: #46, https://github.com/jeonghanlee/ansible-provision/issues/46
 - Historical Source State: closed
 - Historical Source Reason: not_planned
@@ -8835,10 +8841,10 @@ Both real current aggregate CLIs ran on verified retained state and returned Inc
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-11-19T19:24:02Z
-- Last Compared: 2026-11-19T19:25:32.089152+00:00; exact #54 body SHA256 46e55411476a2d60b84dc839d06ff0fc1865fb05ff8d6deb533ff406779e421c, 46 checked/35 unchecked criteria, all 81 condition texts/states preserved, and unchanged open state and metadata. Receipt: `work/issue-54-m44-readback-20261119.json`.
-- Prepared Body: `work/issue-54-m44-body.md`
-- Published Body SHA256: 46e55411476a2d60b84dc839d06ff0fc1865fb05ff8d6deb533ff406779e421c
+- Observed Updated At: 2026-11-19T23:16:14Z
+- Last Compared: 2026-11-19T23:16:30.019923+00:00; exact #54 body SHA256 364610813cfd105c7f687cbf16696327824fb6f3d28c7184c04f92c60ffd3622, 48 checked/33 unchecked criteria, two additional source-#46 checks and all 81 criterion texts preserved. Issue state and metadata are unchanged. Receipt: `work/issue-54-m41-readback-20261119.json`.
+- Prepared Body: `work/issue-54-m41-body.md`
+- Published Body SHA256: 364610813cfd105c7f687cbf16696327824fb6f3d28c7184c04f92c60ffd3622
 - Historical Source Issue: #49, https://github.com/jeonghanlee/ansible-provision/issues/49
 - Historical Source State: closed
 - Historical Source Reason: not_planned
@@ -9460,7 +9466,8 @@ These summaries preserve the recorded scope. Each linked issue retains its full 
 ###### #46 - Verify ETL collector capture and refusal after normal shutdown
 
 - Result: M38 / T4 establishes final/post-stop application capture and identity. The frozen terminal CLI refused a repeat request on the retained finalized state without a second stop.
-- Remaining work: Verify changed invocation, wrong PID, truncation and incomplete final record through the stopped collector, and verify the remaining repeated-request replay condition.
+- Result: The frozen recipient replay after the repeated request returned 0 with all seven result artifacts equal and the complete copied inputs preserved.
+- Remaining work: Verify changed invocation, wrong PID, truncation and incomplete final record through the stopped collector.
 - Done when: Required bytes and invocation/PID/inode/prefix identity persist; incomplete/wrong evidence is refused, replay agrees and no second stop or original overwrite occurs.
 
 ###### #47 - Verify real collection during source-store deletion
@@ -9598,7 +9605,7 @@ The original shared VM batch covered seven components. M39 and M40 have complete
 | M38 / T1-T7 | All three shortened rows and default/absent have actual original-duration normal finish and exact independent recipients in T12/T2/T3/T4. Default/failing and default/changed remain unexecuted; complete capture, native analysis copies and export must fit producer and recipient storage before their original 86400-second cases. Remaining timeout/interruption/worker-failure boundaries retain their declared scope. | Reuse the four completed rows and startup ordering without repeating them. T8's local proof does not establish the remaining rows. Preserve every original, native durations and both historical planned-abort results. |
 | M39 / T1-T3 | Shortened and default journal-source refusal are verified with required application files available, actual sampler/stop/restoration and controller/producer/independent-recipient outcomes. | Reuse the verified cases and complete six-artifact equality; no repeat VM execution is required. Source 07afd2b landing and #54 reconciliation verified; component Complete under the dated D49 linked-issue closure exception. |
 | M40 / T1-T3 | Shortened and default all-source refusal are verified with first versus repeated failure, exactly one actual automatic abort, actual stop/restoration and controller/producer/independent-recipient outcomes. | Reuse the verified cases and complete six-artifact equality; no repeat VM execution is required. Source 07afd2b landing and #54 reconciliation verified; component Complete under the dated D49 linked-issue closure exception. |
-| M41 / T1 | Changed invocation, wrong PID, truncation and incomplete final record refusal through the real stopped collector, plus remaining repeated-request replay. | Reuse M38 / T4 final capture and the verified local repeat-stop refusal. The stopped collector requires actual service status and the original boot identity before reading application files. |
+| M41 / T1 | Changed invocation, wrong PID, truncation and incomplete final record refusal through the real stopped collector. | Reuse M38 / T4 final capture and the verified local repeat-stop refusal and replay. The stopped collector requires actual service status and the original boot identity before reading application files. |
 | M42 / T1 | Independently observed native collection during real source-file deletion, surviving sizes/status, unrelated command-failure distinction and frozen-result evaluation. | Existing parser tests and ordinary metrics overlap do not establish actual deletion overlap. The prior deferral remains until this batch is selected. |
 | M43 / T2 | Bounded actual accumulation and process restart, plus any remaining live request/pass-completion overlap and current transmitted query-bound coverage. | Reuse T3's query-bound and T4's retained overlap results; preserve the distinction between new measured evidence and unavailable historical measurements. |
 
@@ -9753,9 +9760,9 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 ###### Source #46 - Verify ETL collector capture and refusal after normal shutdown
 
-- [ ] Actual final/post-stop capture retains all required application-file bytes with the original invocation, PID, inode and prefix identity.
+- [x] Actual final/post-stop capture retains all required application-file bytes with the original invocation, PID, inode and prefix identity.
 - [ ] A changed invocation, wrong PID, truncation or missing final record refuses complete evidence.
-- [ ] Repeated terminal invocation dispatches no second stop and leaves original evidence unchanged; real replay reproduces the result.
+- [x] Repeated terminal invocation dispatches no second stop and leaves original evidence unchanged; real replay reproduces the result.
 
 
 
@@ -9853,6 +9860,8 @@ M35/D48 terminal criteria are verified from the recorded real normal/fault/repla
 
 ##### Closure Evidence
 
+- Source #46 publication verified at 2026-11-19T23:16:30.019923+00:00: exact #54 readback checks normal-stop final capture and repeated-request replay against the retained evidence. The changed-input refusal remains unchecked. All 81 texts are preserved and only those two check states changed. The issue remains open at 48 checked and 33 unchecked. Receipt: `work/issue-54-m41-readback-20261119.json`.
+
 - Issue-body correction verified at 2026-11-19T19:25:32.089152+00:00: the live #54 body matches the draft SHA256 `46e55411476a2d60b84dc839d06ff0fc1865fb05ff8d6deb533ff406779e421c`. Only the introductory source-#49 sentence changed. All 81 condition texts and states match the preceding body, with 46 checked and 35 unchecked. The issue remains open with the same title, label, milestone and assignee. Receipt: `work/issue-54-m44-readback-20261119.json`.
 
 - M44 component-only completion verified at 2026-11-19T18:15:34.770194+00:00: its report and pinned analysis sources are on fetched origin/master 26d0979d4af387ad17da11217d7541849393d557, retained native/report hashes match, and all three source-#49 criteria are checked in live #54. The component is Complete under the 2026-11-19 linked-issue closure exception; native Incomplete/1, all other component requirements and the open group issue are preserved. At that checkpoint, counts remained 46 checked and 35 unchecked, and the introductory source-#49 sentence still needed correction. Evidence: work/m44-closure-20261119/verification.json.
@@ -9885,7 +9894,7 @@ M35/D48 terminal criteria are verified from the recorded real normal/fault/repla
 
 ##### GitHub Projection
 
-- Projection Difference: Canonical and exact #54 readback agree at 46 checked and 35 unchecked on 2026-11-19T19:25:32.089152+00:00. The M44 introduction now agrees with its verified detailed criteria. Four of six M38 normal-finish/recipient rows are verified; default/failing and default/changed remain unexecuted with original duration and storage requirements. Four components remain in shared VM preparation. M31 and its unresolved interval contract remain Deferred. Historical original-input/report requirements remain open. M39/M40 remain Complete under their recorded component-only closure exceptions; the aggregate and issue remain open.
+- Projection Difference: Canonical and exact #54 readback agree at 48 checked and 33 unchecked on 2026-11-19T23:16:30.019923+00:00. Source #46 has two verified criteria; changed-input refusal remains unchecked. The M44 introduction now agrees with its verified detailed criteria. Four of six M38 normal-finish/recipient rows are verified; default/failing and default/changed remain unexecuted with original duration and storage requirements. Four components remain in shared VM preparation. M31 and its unresolved interval contract remain Deferred. Historical original-input/report requirements remain open. M39/M40 remain Complete under their recorded component-only closure exceptions; the aggregate and issue remain open.
 - Title: `Track ETL test tooling`
 - Labels: `enhancement`
 - GitHub Milestone: `Backlog`
@@ -9896,13 +9905,13 @@ M35/D48 terminal criteria are verified from the recorded real normal/fault/repla
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-11-19T19:24:02Z
-- Last Compared: 2026-11-19T19:25:32.089152+00:00; exact #54 body SHA256 46e55411476a2d60b84dc839d06ff0fc1865fb05ff8d6deb533ff406779e421c, 46 checked/35 unchecked criteria, all 81 condition texts/states preserved, and unchanged open state and metadata. Receipt: `work/issue-54-m44-readback-20261119.json`.
+- Observed Updated At: 2026-11-19T23:16:14Z
+- Last Compared: 2026-11-19T23:16:30.019923+00:00; exact #54 body SHA256 364610813cfd105c7f687cbf16696327824fb6f3d28c7184c04f92c60ffd3622, 48 checked/33 unchecked criteria, two additional source-#46 checks and all 81 criterion texts preserved. Issue state and metadata are unchanged. Receipt: `work/issue-54-m41-readback-20261119.json`.
 - Query Update Readback: 2026-10-21T08:34:55+00:00; four query criteria newly checked and all other source sections/criteria preserved. Full comparison retained at `work/issue-etl-query-applied-20261021.json`.
 - JFR Update Readback: 2026-10-22T10:49:17Z; the three source-#39 criteria and two overlapping source-#35 criteria are newly checked; all other sections and criteria are preserved. Receipt: `work/issue-etl-jfr-applied-20261022.json`.
-- Prepared Body: `work/issue-54-m44-body.md`
-- Prepared Body SHA256: 46e55411476a2d60b84dc839d06ff0fc1865fb05ff8d6deb533ff406779e421c
-- Published Body SHA256: 46e55411476a2d60b84dc839d06ff0fc1865fb05ff8d6deb533ff406779e421c
+- Prepared Body: `work/issue-54-m41-body.md`
+- Prepared Body SHA256: 364610813cfd105c7f687cbf16696327824fb6f3d28c7184c04f92c60ffd3622
+- Published Body SHA256: 364610813cfd105c7f687cbf16696327824fb6f3d28c7184c04f92c60ffd3622
 - Historical Source Issues: #34, #35, #36, #37, #38, #39, #40, #41, #43, #44, #45, #46, #47, #48, #49, #50
 
 #### M49 - Track buffer test tooling
