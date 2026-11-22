@@ -60,6 +60,25 @@ archiver_storage_top: "/arch"
 # either side shows as drift.
 archiver_java_heapsize: "256M"
 
+# Extra JVM options of the four appliance instances, written to the
+# epicsarchiverap-env AA_JAVA_OPTS, which epicsarchiverap-env renders into the
+# JAVA_OPTS of archappl.conf and of the Tomcat systemd unit. Empty leaves the
+# epicsarchiverap-env default, which adds no option. Several options are
+# separated by single spaces and carry no quotes, because quotes around several
+# options break the epicsarchiverap-env configuration rendering. The value may
+# hold only letters, digits, spaces and the characters . : _ - , = / * % + and
+# the launch step refuses any other value before a build starts. A percent sign
+# reaches archappl.conf unchanged. The four instances start from the
+# archappl.bash launcher, which reads that file in
+# <archiver_install_parent>/epicsarchiverap-maven, so write %p in a JVM file name
+# pattern: the JVM expands it to its process id, while %%p leaves a stray percent
+# sign in the name. The Tomcat systemd unit also receives the value, but the
+# instances do not start from it, so systemd reading %p as a specifier does not
+# apply here.
+# The value reaches the appliance only at install, so a changed value shows as
+# drift and is applied with archiver_force_reinstall.
+archiver_java_opts: ""
+
 # Root level of the appliance's log4j2 configurations, written to the
 # epicsarchiverap-env ARCHAPPL_ROOT_LOGGER_LEVEL: one of OFF, FATAL, ERROR,
 # WARN, INFO, DEBUG, TRACE and ALL. Empty leaves the epicsarchiverap-env default
@@ -139,7 +158,7 @@ archiver_config_stamp: >-
   install={{ archiver_install_parent }}
   store=sts:{{ archiver_store_sts_granularity or '-' }}/{{ archiver_store_sts_hold or '-' }},mts:{{ archiver_store_mts_granularity or '-' }}/{{ archiver_store_mts_hold or '-' }},lts:{{ archiver_store_lts_granularity or '-' }}
   envref={{ archiver_env_ref }}
-  srctag={{ archiver_maven_src_tag }}{{ (' ca=' ~ (archiver_ca_addr_list or '-') ~ '/' ~ (archiver_ca_auto_addr_list or '-')) if (archiver_ca_addr_list or archiver_ca_auto_addr_list) else '' }}
+  srctag={{ archiver_maven_src_tag }}{{ (' ca=' ~ (archiver_ca_addr_list or '-') ~ '/' ~ (archiver_ca_auto_addr_list or '-')) if (archiver_ca_addr_list or archiver_ca_auto_addr_list) else '' }}{{ (' javaopts=' ~ archiver_java_opts) if archiver_java_opts else '' }}
 
 # Configuration database backend, written to epicsarchiverap-env as
 # DB_BACKEND (from bbe0968): mariadb, served by the mariadb operator, or sqlite,

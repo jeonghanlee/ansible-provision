@@ -55,6 +55,7 @@
     mts_hold="{{ archiver_store_mts_hold }}"
     lts_gran="{{ archiver_store_lts_granularity }}"
     root_level="{{ archiver_root_logger_level }}"
+    java_opts="{{ archiver_java_opts }}"
     ca_addr_list="{{ archiver_ca_addr_list }}"
     ca_auto="{{ archiver_ca_auto_addr_list }}"
     db_backend="{{ archiver_db_backend }}"
@@ -207,6 +208,11 @@
     # Root log level, written only when set; the launch step has checked it.
     if [ -n "${root_level}" ]; then
       printf 'ARCHAPPL_ROOT_LOGGER_LEVEL:=%s\n' "${root_level}" >> "${src_parent}/CONFIG_SITE.local"
+    fi
+    # Extra JVM options, written unquoted and only when set; the launch step
+    # has checked the characters.
+    if [ -n "${java_opts}" ]; then
+      printf 'AA_JAVA_OPTS:=%s\n' "${java_opts}" >> "${src_parent}/CONFIG_SITE.local"
     fi
 
     # Channel Access search settings in ../CONFIG_EPICSENV.local, which
@@ -468,6 +474,21 @@
       *)
         if [ "${will_build}" = "yes" ]; then
           echo "ARCHIVER_BUILD_PRECONDITION: archiver_root_logger_level must be empty or one of OFF FATAL ERROR WARN INFO DEBUG TRACE ALL (got [${root_level}])." >&2
+          echo "Nothing was stopped and no build was started." >&2
+          exit 1
+        fi
+        ;;
+    esac
+
+    # The extra JVM options reach epicsarchiverap-env only inside the build,
+    # which renders them with sed into archappl.conf and the Tomcat unit; refuse
+    # a character that would break that rendering or the shell quoting before
+    # anything is torn down.
+    java_opts="{{ archiver_java_opts }}"
+    case "${java_opts}" in
+      *[!0-9A-Za-z.:_,=/*%+\ -]*)
+        if [ "${will_build}" = "yes" ]; then
+          echo "ARCHIVER_BUILD_PRECONDITION: archiver_java_opts may hold only letters, digits, spaces and . : _ - , = / * % + (got [${java_opts}])." >&2
           echo "Nothing was stopped and no build was started." >&2
           exit 1
         fi
