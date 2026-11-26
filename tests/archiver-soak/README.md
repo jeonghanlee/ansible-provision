@@ -1104,6 +1104,11 @@ heap/post-GC range and change, GC counts/times, RSS, rates and retrieval bounds.
 Startup/final-capture passes remain separate. Raw source timestamps independently
 determine freshness. No private absolute path is required in the result.
 
+GC totals use the observation window. The `jstat` reconciliation uses the
+actual counter request bounds and matches JFR events from the observed JVM.
+Rate sample membership uses the full sample's observation timestamp. The rate
+coverage gap uses the actual metric observation times of those samples.
+
 `rate-semantics.json` pins the engine definitions: per-PV cumulative averages
 since initial/latest connection or reset are summed. Benchmark writing rows
 are excluded. Sampled means are arithmetic; overlapping intervals do not yield

@@ -220,6 +220,12 @@ def aggregate(out, result=None, evaluate_run=True, recording_result=None):
                 'delta': round(number(stats[-1][field]) - number(stats[0][field]), PRECISION)}
                 for field in ('YGC', 'YGCT', 'FGC', 'FGCT', 'CGC', 'CGCT', 'GCT')
                 if stats and stats[0].get(field) not in ('', '-') and stats[-1].get(field) not in ('', '-')}}
+        # Reconcile counters against their request bounds in the same JVM lifetime.
+        pid = str(identity.get('pid'))
+        counter_collections = [row for row in all_events.get('collection', [])
+                               if row['component'] == component and str(row['pid']) == pid]
+        counter_pauses = [row for row in all_events.get('pause', [])
+                          if row['component'] == component and str(row['pid']) == pid]
         for counter, gc_class in (('YGC', 'young'), ('FGC', 'full'), ('CGC', 'concurrent_pauses')):
             if len(stats) < 2:
                 continue
@@ -228,8 +234,8 @@ def aggregate(out, result=None, evaluate_run=True, recording_result=None):
             high_start = evidence.timestamp_ns(first.get('response_finished') or first['ts'])
             low_end = evidence.timestamp_ns(last.get('request_started') or last['ts'])
             high_end = evidence.timestamp_ns(last.get('response_finished') or last['ts'])
-            group = ([row for row in pauses if row['name'] in ('Pause Remark', 'Pause Cleanup')]
-                     if counter == 'CGC' else [row for row in collections_rows if GC_CLASSES.get(row['name']) == gc_class])
+            group = ([row for row in counter_pauses if row['name'] in ('Pause Remark', 'Pause Cleanup')]
+                     if counter == 'CGC' else [row for row in counter_collections if GC_CLASSES.get(row['name']) == gc_class])
             def count(left, right):
                 return sum(left < evidence.timestamp_ns(row['ts']) and
                            evidence.timestamp_ns(row['ts']) + evidence.duration_ns(row['duration']) <= right for row in group)
@@ -270,7 +276,8 @@ def aggregate(out, result=None, evaluate_run=True, recording_result=None):
         metrics = capture('metrics', lambda: load(raw / 'metrics.json')) or []
         observed_ns = evidence.timestamp_ns(sample.get('metrics_observed_at', sample['observed_at']))
         rates = capture('rate_semantics', lambda: __import__('collect').event_rates(metrics, sample.get('metrics_observed_at', sample['observed_at'])))
-        if rates and start <= observed_ns < end:
+        # Include the rate of each in-window full sample at its actual measurement time.
+        if rates:
             rate_times.append(observed_ns)
             for row in rates:
                 key = row['source'] + ':' + row['name']
