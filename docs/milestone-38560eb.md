@@ -31,9 +31,9 @@ Canonical branch or ref: `master`
 Git upstream: `origin/master`
 Remote tracker: `jeonghanlee/ansible-provision`, GitHub milestone `Backlog`
 
-Next session entry point: Compare the five verified M38 criteria with the #54 body before publication. All six normal-finish cases and independent recipient replays passed the scenario checks. T5 retains its original native Incomplete verdict. Other interruption, worker-failure and timeout boundaries remain unverified. M41 final capture, repeat-stop refusal and repeated-request replay are verified. Its remaining collector refusals require actual stopped-service and same-boot evidence. M43 retains the default/absent retrieval bounds. M31 remains Deferred because the original journal is unavailable. M39, M40 and M44 remain Complete. The last #54 readback has 48 checked and 33 unchecked criteria.
+Next session entry point: Reconcile the three verified retained-report conditions with #54. The active execution work uses the shared M38/M41/M42/M43 batch after per-case preparation and authorization.
 
-Remaining work: 13 work rows excluding external gates. The milestone table has 2 Blocked and 1 Deferred. Backlog has 3 In progress and 7 Deferred. The last verified #54 body has 33 unchecked conditions across its component and group requirements.
+Remaining work: 11 work rows excluding external gates. The milestone table has 2 Blocked and 1 Deferred. Backlog has 3 In progress and 5 Deferred. The canonical register records 60 verified, nine retired without execution and 12 active unmet criteria. The last verified #54 body records 57 verified, nine retired and 15 active unmet.
 
 Retained results and available inputs are indexed by `work/retained-test-results-20261026/README.md`. Its 2026-10-26 retention policy supersedes historical original-path instructions below: retired raw observations are not complete local replay inputs, and historical hashes do not establish current availability. Check the retained archives and inventories before planning a replay.
 
@@ -493,6 +493,7 @@ Status tally: 25 Complete, 0 In progress, 0 Not started, 1 Deferred, 2 Blocked. 
 | D48 | Narrow remaining M35 verification to a real evaluator exception and overlapping lifecycle requests. Accept and authorize that bounded continuation using existing corrected tools and preserved evidence. Exclude fresh-installed original/candidate comparison and full installed preparation-proof production/consumption from completion; neither is passed. Do not repeat two-hour observations, expand metric coverage or reopen accepted ETL functionality. Preserve all prior outcomes and resources. Necessary case preparation and exact resource binding remain; no commit, push, issue mutation or deletion is authorized. | 2026-10-24 |
 | D49 | Adopt one bounded completion approach for the four tool groups M47-M50: use retained actual evidence first, run only necessary short real cases for missing claims, and stop at the declared evidence or limit. Do not repeat accepted long observations, launch a broad matrix by default or perfect a general framework. Preserve original and unsuccessful results; exclusions require an explicit dated decision and are not Passed. Return the four group plans from Deferred to Not started for this approach; child components remain individually scoped. Record source changes and reconcile #53-#56 without claiming unexecuted work complete. | 2026-10-24 |
 | D50 | Defer M52 and move the roles to EPICS-env 1.5.0 first by changing `epics_env_version` and `epics_env_tag` in place. Unifying them into one selector is a later, separately authorized change; no variable rename, recorder change or change to another repository's bake script is authorized by this record. | 2026-11-09 |
+| D51 | Retire M31 historical journal interval proof and M45 original-tool full-day recipient reproduction because the required original inputs are unavailable. Retire the corresponding parent acceptance requirements. Exclude the unavailable historical fields from M43 while keeping its measurable report and live checks. Preserve recorded outcomes and accepted results. Keep shared #54 open for active criteria. | 2026-11-26 |
 
 ### Assignment History
 
@@ -6071,7 +6072,7 @@ Superseded Plan Artifacts: none
 | Tools | M28 | Reproduce journal results on an independent recipient | Carry-forward | Complete | No | D28 | Five replay requirements retired by 2026-11-10 decision: original inputs unavailable, Incomplete preserved; exact #53 not_planned closure verified; [detail](#m28---reproduce-journal-results-on-an-independent-recipient) |
 | Tools | M29 | Track ETL collection-tool follow-ups | Carry-forward | Deferred | No | D29, D30, D31 | Coordinate independent child completion and retain original evidence; no combined implementation or repeat full-day run solely for tool repair; [detail](#m29---track-etl-collection-tool-follow-ups) |
 | Tools | M30 | Track ETL evaluation and reporting follow-ups | Carry-forward | Deferred | No | D29, D30, D31 | Coordinate independent child completion and retain original evidence; no combined implementation or repeat full-day run solely for tool repair; [detail](#m30---track-etl-evaluation-and-reporting-follow-ups) |
-| Tools | M31 | Preserve kernel cursor refusal evidence and prove interval coverage | Carry-forward | Deferred | No | D31, D49 | Query receipts verified; original journal unavailable and required-interval coverage remains unverified; [detail](#m31---preserve-kernel-cursor-refusal-evidence-and-prove-interval-coverage) |
+| Tools | M31 | Preserve kernel cursor refusal evidence and prove interval coverage | Carry-forward | Complete | No | D31, D49, D51 | Query receipts and source identities verified; historical interval proof retired without execution; [detail](#m31---preserve-kernel-cursor-refusal-evidence-and-prove-interval-coverage) |
 | Tools | M32 | Keep kernel diagnostics independent of the ETL terminal verdict | Carry-forward | Complete | No | D31 | T1-T4 Passed within their declared scopes; 6146651 landed and all component criteria matched #54 readback on 2026-11-07; [detail](#m32---keep-kernel-diagnostics-independent-of-the-etl-terminal-verdict) |
 | Tools | M33 | Use timestamps accepted by systemd 239 journal queries | Carry-forward | Complete | No | D31, D39, D40, D41, G6 | T1-T6 Passed; source f633973 and four checked query criteria in #54 verified; [detail](#m33---use-timestamps-accepted-by-systemd-239-journal-queries) |
 | Tools | M34 | Match JFR exports to the recording process and lifetime | Carry-forward | Complete | No | D31, D43, D44, G7 | T1-T6 Passed; source e48083d and five JFR-related #54 criteria verified; [detail](#m34---match-jfr-exports-to-the-recording-process-and-lifetime) |
@@ -6085,10 +6086,10 @@ Superseded Plan Artifacts: none
 | Tools | M42 | Verify real collection during source-store deletion | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m42---verify-real-collection-during-source-store-deletion) |
 | Tools | M43 | Reconcile retained ETL measurements and process identities | Carry-forward | In progress | No | D49 | Complete independently scoped tool work from real evidence; [detail](#m43---reconcile-retained-etl-measurements-and-process-identities) |
 | Tools | M44 | Compare ETL busy time and workload with retained earlier results | Carry-forward | Complete | No | D49 | Three reporting criteria, upstream report/analysis sources and live issue checks verified; component-only closure recorded on 2026-11-19; [detail](#m44---compare-etl-busy-time-and-workload-with-retained-earlier-results) |
-| Tools | M45 | Reproduce completed ETL observation reports on an independent recipient | Carry-forward | Deferred | No | D31 | Complete independently scoped tool work from real evidence; [detail](#m45---reproduce-completed-etl-observation-reports-on-an-independent-recipient) |
+| Tools | M45 | Reproduce completed ETL observation reports on an independent recipient | Carry-forward | Complete | No | D31, D51 | Original-input baseline and independent reproduction retired without execution; [detail](#m45---reproduce-completed-etl-observation-reports-on-an-independent-recipient) |
 | Tools | M46 | Report actual test phase durations against the agreed allocations | Carry-forward | Complete | No | D31, D49 | Phase report in 5ae70cd on origin/master; exact #56 readback confirms all four related criteria; [detail](#m46---report-actual-test-phase-durations-against-the-agreed-allocations) |
 | Tools | M47 | Track journal test tooling | Carry-forward | Complete | No | D32, D33, D49 | Bounded lifecycle evidence preserved; unavailable-input recipient replay retired on 2026-11-10, Incomplete unchanged; exact #53 not_planned closure verified; [detail](#m47---track-journal-test-tooling) |
-| Tools | M48 | Track ETL test tooling | Carry-forward | In progress | No | D32, D33, D49 | Canonical and #54: 48 verified and 33 unmet criteria after stopped-capture and repeated-request replay reconciliation; remaining shared VM preparation covers M38/M41/M42/M43, with M31 Deferred; [detail](#m48---track-etl-test-tooling) |
+| Tools | M48 | Track ETL test tooling | Carry-forward | In progress | No | D32, D33, D49, D51 | 60 verified, nine retired and 12 active unmet; remaining shared VM work covers M38/M41/M42/M43; [detail](#m48---track-etl-test-tooling) |
 | Tools | M49 | Track buffer test tooling | Carry-forward | Complete | No | D32, D33, D49 | Five scoped criteria verified; final amendment published in 7af9050 and exact completed #55 closure verified on 2026-11-10; original-main revalidation retains Incomplete under the 2026-11-09 exclusion; [detail](#m49---track-buffer-test-tooling) |
 | Tools | M50 | Track shared test tooling | Carry-forward | Complete | No | D32, D33, D34, D35, D36, D49 | All eleven criteria verified; installer source/result published in 08b7ec4; exact #56 body/comment and completed closure verified on 2026-11-09; [detail](#m50---track-shared-test-tooling) |
 | Tools | G6 | Provide M33's dedicated systemd 239 query environment | External gate | Complete | No | D40 | Capacity, private handoff and actual guest access/versions verified; [detail](#g6---provide-m33s-dedicated-systemd-239-query-environment) |
@@ -6340,18 +6341,18 @@ Replay each unchanged completed observation through its actual frozen evaluator 
 Retained transferred technical coverage follows; record each result in its owning child detail rather than treating this list as one implementation.
 
 - [x] The real failed-query path preserves its original output and enough cursor/interval metadata to diagnose the refusal without exposing credentials or internal identifiers.
-- [ ] Focused real-journald checks distinguish an obsolete anchor with independently proven interval coverage from an actual or unresolved required-interval gap; unproved coverage never becomes `Passed`.
+- **Retired without execution (2026-11-26).** Focused real-journald checks distinguish an obsolete anchor with independently proven interval coverage from an actual or unresolved required-interval gap; unproved coverage never becomes `Passed`.
 - [x] The actual normal-finish and replay paths keep a kernel-only diagnostic failure visible without rejecting a complete required ETL pass set. Result: M32 / T4 verifies this claim; other child contracts remain independent.
-- [ ] Genuine loss of required ETL evidence remains `Incomplete` or `Failed` as applicable, and the declared all-sources-unavailable automatic-abort expectations remain enforced.
-- [ ] Both completed observations are rechecked from retained evidence with their exact original tools and a separately identified candidate; original data, failed records and verdicts remain unchanged.
+- [x] Genuine loss of required ETL evidence remains `Incomplete` or `Failed` as applicable, and the declared all-sources-unavailable automatic-abort expectations remain enforced.
+- **Retired without execution (2026-11-26).** Both completed observations are rechecked from retained evidence with their exact original tools and a separately identified candidate; original data, failed records and verdicts remain unchanged.
 - [x] The follow-up uses retained evidence and bounded real-path checks; no new 24-hour observation is required solely to repair the collector.
 
-- [ ] Complete collector/package independence through actual preparation, start, capture, normal terminal handling and replay on both chains with unrelated journal-study modules absent, failing and separately changed. Preserve completed shortened results; execute the unverified default variants as tool checks.
-- [ ] Complete the remaining collection-source failure and automatic-abort cases using actual configured sources. Distinguish successful ETL processing from unavailable test evidence, and retain first-failure versus repeated-failure behavior.
+- [x] Complete collector/package independence through actual preparation, start, capture, normal terminal handling and replay on both chains with unrelated journal-study modules absent, failing and separately changed. Preserve completed shortened results; execute the unverified default variants as tool checks.
+- [x] Complete the remaining collection-source failure and automatic-abort cases using actual configured sources. Distinguish successful ETL processing from unavailable test evidence, and retain first-failure versus repeated-failure behavior.
 - [ ] Verify final and post-stop application-file capture, process identity, repeated terminal refusal and restoration through the actual tools without changing completed ETL observation records.
 - [ ] Exercise real collection during source-store deletion and metrics requests overlapping ETL pass completion; preserve actual request bounds and measured outputs instead of converting collection races into ETL failures.
-- [ ] Preserve actual fixture/input counts, source timing and workload identity for later measurement reports; configured frequency multiplied by duration is not an observed event count.
-- [ ] Keep these tool checks independent of the completed ETL functionality result in #30. Future collector corrections follow the accepted ETL verification and do not require another full-day observation solely for tool repair.
+- [x] Preserve actual fixture/input counts, source timing and workload identity for later measurement reports; configured frequency multiplied by duration is not an observed event count.
+- [x] Keep these tool checks independent of the completed ETL functionality result in #30. Future collector corrections follow the accepted ETL verification and do not require another full-day observation solely for tool repair.
 
 ##### Dependencies And Decisions
 
@@ -6425,15 +6426,15 @@ Independent membership and transferred coverage:
 | T1 | 2026-11-06T18:43:46.190202+00:00; reuse reconciled 2026-11-10T21:18:48.804180+00:00 | Actual M31 Debian 13/systemd 257 collector/query evidence; current retained-file and source checks | Passed for failed-query preservation through reused M31 evidence | Five actual cases retained six receipts. All three failed cases preserve exact independently captured native stdout/stderr, status, arguments and interval identity; the collector CLI reports failure without advancing its failed cursor. All 326 evidence files and the current collector/test hashes match. Source 6876564 is on fetched origin/master. Public records contain generic claims and private evidence locators only. Historical coverage, obsolete-anchor cases, rotation and timeout remain unverified; no runtime rerun. Evidence: `work/m48-receipt-reuse-20261110.json`. |
 | T2 | Not run | Retained real-input or bounded future runtime verification | Pending | Candidate corrective verification is not established by the original accepted ETL result. |
 | T3 | 2026-11-06T23:41:56.796490+00:00 | Actual M32 appliance observation and frozen replay | Passed within M32's declared scope | M32 / T4 verifies complete required ETL passes through normal finish and replay while preserving kernel diagnostics and native aggregate Incomplete. This reuses the child result; it does not execute or complete other child contracts. |
-| T4 | Not run | Retained real-input or bounded future runtime verification | Pending | Candidate corrective verification is not established by the original accepted ETL result. |
+| T4 | 2026-11-14T12:11:52.061681+00:00 | Actual shortened/default all-source E4 and independent replay | Passed through component evidence reuse | M40 / T1-T3 verifies native Incomplete/1, no premature abort, one automatic abort per chain and actual stop 0. M32 / T2 and T4 establish missing required-evidence refusal. |
 | T5 | Not run | Retained real-input or bounded future runtime verification | Pending | Candidate corrective verification is not established by the original accepted ETL result. |
 | T6 | 2026-11-11T10:03:03.763768+00:00 | Retained actual M31 query cases and M32 bounded real collector observation/replays | Passed through evidence reuse | All 9932 M32 frozen/negative/replay regular files match complete membership, modes, sizes and SHA256; all 326 M31 query-evidence files match. The original 7200.384910-second observation retains 26/26 passes, 25 in-window full samples plus one final capture, and native stop rc 0. Four post-stop wait cases and frozen reader replay remain Passed; scheduler Passed and native aggregate Incomplete/1 are preserved. The method uses retained evidence and bounded execution without a new 24-hour producer. No new runtime, obsolete-anchor, automatic-abort or deletion-overlap result. Evidence: work/m29-method-reuse-20261111.json. |
-| T7 | Not run | Retained real-input or bounded future runtime verification | Pending | Candidate corrective verification is not established by the original accepted ETL result. |
-| T8 | Not run | Retained real-input or bounded future runtime verification | Pending | Candidate corrective verification is not established by the original accepted ETL result. |
+| T7 | 2026-11-25T22:13:17.548917+00:00 | Actual six original-duration normal-finish cases and independent replay | Passed through component evidence reuse | M38 / T12, T2-T6 verify preparation, capture, normal finish, restoration and seven byte-identical recipient artifacts per case. The original default/failing native Incomplete is preserved. |
+| T8 | 2026-11-14T12:11:52.061681+00:00 | Actual shortened/default partial-source E3 and all-source E4 | Passed through component evidence reuse | M39 / T1-T3 verifies required-file fallback, continued ETL pass evidence and recovery without automatic abort. M40 / T1-T3 verifies first versus repeated critical samples, one abort, exact restoration and independent replay on each chain. |
 | T9 | Not run | Retained real-input or bounded future runtime verification | Pending | Candidate corrective verification is not established by the original accepted ETL result. |
 | T10 | Not run | Retained real-input or bounded future runtime verification | Pending | Candidate corrective verification is not established by the original accepted ETL result. |
-| T11 | Not run | Retained real-input or bounded future runtime verification | Pending | Candidate corrective verification is not established by the original accepted ETL result. |
-| T12 | Not run | Retained real-input or bounded future runtime verification | Pending | Candidate corrective verification is not established by the original accepted ETL result. |
+| T11 | 2026-11-11T00:25:20.249009+00:00 | Actual M44 retained-input aggregate results and verified workload report | Passed through component evidence reuse | M44 / T1 preserves 903 verified PVs, matching fixture hashes, actual 86400-second windows and deployment-pinned metric semantics for both chains. Report and native output hashes match, with both native verdicts Incomplete/1 preserved. |
+| T12 | 2026-11-26 | M22 accepted observations, D29 and source issue #30 closure | Satisfied by recorded scope | M22 acceptance records actual scheduling, physical/HTTP and orderly stop before independent tooling follow-up. #30 closed completed on 2026-10-15; collector corrections do not gate that result or require a repeat full-day observation solely for tool repair. |
 | T2 existing shortened E4 | 2026-10-15T17:39:50.066490+00:00 | Actual stopped additional-test deployment and frozen native readers; original files read only | Passed for observed automatic-abort behavior; original controller/native short observation Incomplete | Two full fault samples at 15:55:00.707457 and 16:00:00.364564 UTC could read neither journal nor four application files; actual native counters 1 then 2 triggered one automatic abort. The appliance stopped with rc 0 in 11.878069368991419 seconds, final capture had no errors and the sampler configuration was exactly restored. One successful 903-job pass existed during the fault. Literal plannedAt comparison found zero matches; native nanosecond comparison found exactly one. Evidence: private E4-owner-verification-20261015-001.stdout SHA256 3101a45cda7378620eda34768980766c85da828a1156df3c439261e41a9240b7. All original hashes and bundle unchanged; no guest mutation. |
 | T13 | Not run | Independent child issue and evidence reconciliation | Pending | Decomposition is prepared only; child correction/verification is not complete. |
 | T14 | Not run | Independent child issue and evidence reconciliation | Pending | Decomposition is prepared only; child correction/verification is not complete. |
@@ -6528,10 +6529,10 @@ Retained transferred technical coverage follows; record each result in its ownin
 - [x] Use the completed observations for regression and focused real terminal checks for ordering; a new 24-hour observation is not required solely to repair these verifier defects.
 
 - [x] Compare original UTC instants with the shipped timestamp parser, retaining nanosecond precision and original strings. Verify actual retained source-availability and automatic-abort inputs through the real runtime/scenario and replay paths; do not change an original controller status to satisfy the checker. Result: M36 / T1-T6 Passed through all three actual callers on both retained fault kinds; source 982733f and the matching #54 checkbox are verified.
-- [ ] Reconcile per-component heap, GC cause/pause, jstat, RSS, observed input/event rates, retrieval freshness/visibility, request bounds and identity/gap/OOM evidence from the already collected observations.
+- [x] Reconcile per-component heap, GC cause/pause, jstat, RSS, observed input/event rates, retrieval freshness/visibility, request bounds and identity/gap/OOM evidence from the already collected observations.
 - [ ] Evaluate retained and focused real-input measurement regressions for source-store shrink, pass-end/request overlap, accumulation and restart. Collection-path corrections are coordinated with #34; no internal mock establishes integration acceptance.
 - [x] Produce the supplemental workload/performance comparison: last-pass and average busy time, weekly usage and actual load, concurrency, store-age and resource differences. Missing comparable historical rates prohibit an improvement claim but do not reopen ETL functionality acceptance.
-- [ ] Privately transfer the retained evidence and exact frozen tools to an independent recipient, verify declared members/hashes and reproduce complete result JSON and numerical reports. Keep original unsuccessful findings, raw operational data and deployment identifiers out of public Git.
+- **Retired without execution (2026-11-26).** Privately transfer the retained evidence and exact frozen tools to an independent recipient, verify declared members/hashes and reproduce complete result JSON and numerical reports. Keep original unsuccessful findings, raw operational data and deployment identifiers out of public Git.
 - [x] Record actual preparation, processing, waiting, observation and analysis times against the agreed one-hour journal, three-hour ETL, parallel full-day and two-hour overall decision allocations as supplemental reporting; do not impose a new observation to complete the report.
 - [ ] Complete these evaluator/report/reproduction checks after the accepted ETL functionality result. Their completion is not a gate on #30 and no new 24-hour data-production run is required solely for these corrections or analyses.
 
@@ -6609,7 +6610,7 @@ Independent membership and transferred coverage:
 | T5 | 2026-11-11T09:38:55.308212+00:00 | Actual retained full samples, numerical outputs and M43 reporting limits | Passed through evidence reuse | The two half-open observation windows each contain 289 full samples; actual kernel_journal error counts are 239 shortened and 236 default. Native results retain kernel_journal and kernel_journal_coverage findings. Reported kernel/OOM/forced-termination coverage remains Unknown, not zero; retention exclusions and original unsuccessful outcomes remain explicit. Accepted M22/#30 ETL functionality is independent. Evidence: work/m30-evidence-reuse-20261111/verification.json and verified-inputs.json. |
 | T6 | 2026-11-11T09:50:27.950106+00:00 | Verified archived real M34/M35 execution records; no runtime rerun | Passed through scoped evidence reuse | Archived M34 completed-observation regressions and M35 focused real terminal records establish the selected method. Actual normal finish observed 7200.399098 seconds, two terminal saves, stop rc 0 and fresh reader agreement; no new 24-hour observation ran. Five archive/inventory pairs and 15 selected native records match preservation identities. Unavailable originals, original Incomplete outcomes and D48 exclusions remain explicit. Evidence: work/m30-method-reuse-20261111/verification.json. |
 | T7 | 2026-10-19T19:36:33Z | Debian 13/Python 3.13.5; actual retained E3/E4 inputs and three real CLIs | Passed | M36 / T1-T6 establishes UTC matching only: 228 native commands, strict nanosecond controls and preserved originals; source 982733f and the matching #54 criterion are verified. Other evaluator/reporting checks remain separate. |
-| T8 | Not run | Retained real-input or bounded future runtime verification | Pending | Candidate corrective verification is not established by the original accepted ETL result. |
+| T8 | 2026-11-26T23:32:18Z | Reused M43 / T1 retained reporting and actual M38 / T4 retrieval records | Passed for available reporting through component evidence reuse | M43 criteria 1 and 2 cover measured heap, GC, jstat, RSS and rates, retrieval bounds and identity/gap findings. Unavailable historical inputs and OOM coverage stay unknown under D51. Collection regressions retain their own open conditions. |
 | T9 | Not run | Retained real-input or bounded future runtime verification | Pending | Candidate corrective verification is not established by the original accepted ETL result. |
 | T10 | 2026-11-11T00:25:20.249009+00:00 | M44 actual retained-input aggregation and deployment-pinned metric source | Passed for supplemental workload comparison | M44 / T1 verifies four busy-time groups and 1156 weekly snapshots with exact saved numerical-field agreement. Workload/resource differences and missing earlier measurements are explicit; both actual CLI outcomes remain Incomplete/1. Source/issue publication remains pending. |
 | T11 | Not run | Retained real-input or bounded future runtime verification | Pending | Candidate corrective verification is not established by the original accepted ETL result. |
@@ -6658,7 +6659,7 @@ Origin: 38560eb / M31
 Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
 GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
 Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #36 is closed not_planned at 2026-10-17T01:12:02Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
-Status: Deferred
+Status: Complete
 
 ##### Summary
 
@@ -6688,8 +6689,8 @@ Both original observations identify the same complete 23-member runtime source s
 
 - [x] Historical frozen tools and the current candidate are identified separately by complete manifests/source hashes; the existing checkpoint-output change is distinguished from unverified behavior.
 - [x] A real refused candidate query preserves stdout/stderr, return code, original arguments and cursor/interval metadata.
-- [ ] An actual obsolete-anchor case with independently proved required coverage is distinguished from a real or unresolved required-interval gap.
-- [ ] Unproved coverage remains `Incomplete` or `Failed`; original full-day records and unsuccessful verdicts stay unchanged.
+- **Retired without execution (2026-11-26).** An actual obsolete-anchor case with independently proved required coverage is distinguished from a real or unresolved required-interval gap.
+- **Retired without execution (2026-11-26).** Unproved coverage remains `Incomplete` or `Failed`; original full-day records and unsuccessful verdicts stay unchanged.
 
 ##### Dependencies And Decisions
 
@@ -6726,6 +6727,8 @@ Both original observations identify the same complete 23-member runtime source s
 | T2 | 2026-11-11T08:58:17.866388+00:00 | Separate retained original and candidate source directories; native Python contract verifiers | Passed for source-identity criterion 1 | All 50 original runtime/manifest members match archive inventory hashes and sizes; both 23-member original runtime sets equal their own observation tool_hashes. Five actual contract verifiers return 0 for both originals, current candidate and both earlier receipt stages. All 326 earlier query-evidence files match. Current collector equals the verified receipt candidate; source inspection separates original, checkpoint-output and complete-receipt behavior. The 4.093445-second identity operation establishes no interval or collector-execution claim. Private evidence: work/m31-identities-20261111/verification.json and evidence-members.json. |
 
 ##### Closure Evidence
+
+- D51; Decision Date: 2026-11-26. Retire the historical obsolete-anchor versus required-interval-gap check and its associated coverage verdict check because the original journal is unavailable. Retain verified source identities and refused-query receipts, with the original diagnostic gaps and unsuccessful verdicts unchanged. No replacement journal or fresh execution is selected. Component-only issue-closure exception: source #36 is already closed and #54 stays open for independent work.
 
 - The bounded receipt correction is verified under M48/D49. Source landing was rechecked on 2026-11-10: 6876564802a3492853feac8143aa828c21213e4f is in fetched origin/master and the current collector matches the verified bytes. Source-#36's receipt criterion is already checked in #54. Its overlapping source-#34 condition is now checked in M29/M48 from the same actual result, with that parent issue update pending. The full component remains Deferred under D31 for its unselected interval-coverage work; no whole-component closure or historical coverage claim is made.
 - Source identities verified on 2026-11-11 under T2. Criteria 1 and 2 are verified; criteria 3 and 4 remain unchecked for obsolete-anchor/required-interval coverage and its verdict contract. Original runtime manifests and records remain unchanged. Criterion 1 awaits publication to #54; M31 remains Deferred for the unselected full component plan. Evidence-members.json SHA256: `26aae72cf2d168f5e48f67688d5679fa007f0355f78edc198f27f122f9e19ba7`.
@@ -8613,8 +8616,8 @@ Out of scope: Changing ETL functionality acceptance, rewriting raw measurements,
 
 ##### Completion Criteria
 
-- [ ] Per-component heap, GC cause and pause, jstat, RSS and observed input/event counts and rates reconcile with actual process/lifetime identities and time ranges; units, provenance and rate denominators are explicit.
-- [ ] Retrieval freshness and visibility are reported with actual query/request/response bounds. Process identity continuity, evidence gaps and OOM or forced-termination findings are reported explicitly; absent evidence is not recorded as zero events or complete coverage.
+- [x] Per-component heap, GC cause and pause, jstat, RSS and observed input/event counts and rates reconcile with actual process/lifetime identities and time ranges; units, provenance and rate denominators are explicit.
+- [x] Retrieval freshness and visibility are reported with actual query/request/response bounds. Process identity continuity, evidence gaps and OOM or forced-termination findings are reported explicitly; absent evidence is not recorded as zero events or complete coverage.
 - [x] Actual request/pass overlaps, accumulation and process changes are evaluated from retained records and remain distinct from failed assertions.
 - [x] Configured rates and array capacity are never used as observed event counts or actual lengths; missing data is stated rather than invented.
 - [ ] Retained-input and bounded real measurement regressions cover accumulation, process restart and pass-end/request overlap; actual coverage and unresolved cases remain explicit.
@@ -8652,6 +8655,7 @@ Out of scope: Changing ETL functionality acceptance, rewriting raw measurements,
 | Label | Observed At | Environment | Result | Evidence |
 | --- | --- | --- | --- | --- |
 | T1 | 2026-11-11T03:22:33.750524+00:00 | Reused real M44 native aggregate outputs and actual retained process/request records | Passed for retained-report criteria 3 and 4; component incomplete | All 16877 retained files and 23 sources match. Eight process groups and stored GC/jstat fields match saved native outputs; sampled heap/RSS and jstat endpoint arithmetic reconcile. Each chain verifies 260967 actual freshness query/request/response bounds and 1734 visibility request/response bounds. Explicit visibility query bounds are absent. Actual shortened/default metric overlaps are 3/0 with zero metric findings. Original native Incomplete/1, unknown input totals and kernel coverage remain unchanged. Evidence: work/m43-measurements-20261110/report.json and verification.json. No new runtime regression. |
+| T1 | 2026-11-26T23:32:18Z | Rechecked original retained report/native aggregates and real default/absent retrieval files | Passed for available reporting under D51 | All eight native JVM groups and jstat reconciliation fields match, with rate windows/denominators and 289 checkpoints per group. Rechecked 260967 freshness and 1734 visibility requests with ordered query/request/response times across 289 in-window sample directories. Both earlier native Incomplete results and unknown historical producer totals, visibility query bounds and complete OOM coverage remain explicit. No new runtime execution. |
 | T2 | Not run | Later shared VM batch for remaining real measurement regressions | Pending | Actual accumulation, process restart and remaining live collection/request-overlap coverage remain unexecuted. T4 separately verifies retained-input pass-end/request-overlap regression; it does not complete these live claims or criterion 5. |
 | T3 | 2026-11-11T07:16:29.001416+00:00 | Shipped 903-PV fixtures, native local EPICS Base 7.0.10 IOC/CA and loopback HTTP response boundary | Passed for query-metadata correction; historical criterion 2 remains unmet | Two native cases pass 9174 assertions across 909/921 requests. Recovery exposes six HTTP 503 and six empty replies before visibility succeeds. Original code fails for missing query_start; three separate mutations fail for their intended missing/mismatched bounds. All six cases stop their IOC normally and stop owned repeater/HTTP resources within their 90-second bounds. Existing-output refusal returns 2 without changing 646 members. Two local HTTP-boundary regressions pass; source coverage/checksums pass for 124/5/19 files. Final source, fixture and dependency identities match. Private evidence: work/m43-query-bounds-20261110/verification.json and evidence-members.json. No appliance or historical reconstruction claim. |
 | T4 | 2026-11-11T10:24:03.061593+00:00 | Separate verified retained-input copies, current shipped aggregate/evaluator CLIs and isolated source mutant | Passed for retained pass-end/request-overlap regression only | Five real CLI executions finish in 78.620898 seconds overall within their 180-second per-case bounds. Native results remain Incomplete/1. Independent integer-time request/pass accounting matches 3 shortened and 0 default overlaps, with zero positive metric failures or missing coverage. Changed actual counter and busy-time fields produce metric_snapshot_counter and metric_busy_time respectively. Removing overlap accounting in an isolated source copy yields 0 instead of 3 and fails the intended count check; its additional metric findings remain preserved. All 16877 original members and runtime sources remain unchanged. Evidence: work/m43-overlap-regression-20261111/verification.json and execution-evidence-members.json. No live accumulation/restart, appliance or recipient result. |
@@ -8686,23 +8690,23 @@ These are observed exported-event and checkpoint quantities, not claims that mis
 
 Each component has 289 checkpoints and one observed PID/start identity inside its configured window. The longest process checkpoint gaps are 300.759012 seconds shortened and 300.105365 seconds default. Earlier exported records contain two different pre-window identities per shortened component and one per default component; these are preserved as earlier-process evidence, not a new restart test. Checkpoint identity continuity is not continuous observation between samples. Post-GC endpoint changes and M44's measured store growth describe retained observations; they do not establish a memory leak, controlled accumulation regression or capacity forecast.
 
-Each chain retains 260967 freshness queries with explicit query_start/query_end and request_started/response_finished, plus 1734 visibility attempts with actual request/response timestamps. The first freshness request through last freshness response is 2026-10-14 02:10:55.319582 to 2026-10-15 02:10:06.041135 UTC shortened, and 2026-10-14 02:17:03.936505 to 2026-10-15 02:15:04.747909 UTC default. All these recorded bounds were checked. Visibility attempts omit explicit query bounds; the frozen source's source-timestamp-based query calculation is not substituted for observed request metadata. Criterion 2 therefore remains unchecked.
+Each chain retains 260967 freshness queries with explicit query_start/query_end and request_started/response_finished, plus 1734 visibility attempts with actual request/response timestamps. The first freshness request through last freshness response is 2026-10-14 02:10:55.319582 to 2026-10-15 02:10:06.041135 UTC shortened, and 2026-10-14 02:17:03.936505 to 2026-10-15 02:15:04.747909 UTC default. All these recorded bounds were checked. Visibility attempts omit explicit query bounds; the frozen source's source-timestamp-based query calculation is not substituted for observed request metadata. At that checkpoint criterion 2 remained unchecked. D51 later excluded the unavailable historical query bounds.
 
 Mean/maximum freshness request latency is 5.298257/166.170 milliseconds shortened and 5.171723/135.483 milliseconds default. Maximum observed source-sample age is 8.438586/5.127018 seconds. The 1734 visibility probes per chain have mean/maximum upper bounds 1.607354/9.959846 seconds shortened and 1.178160/7.473020 seconds default; lower bounds are zero in these retained probes. These are bounded source-timestamp visibility observations, not exact ingestion latency. Overlapping freshness responses report 16595083/16594962 returned samples; repeated queries can include the same event. These counts are not unique producer input-event totals. Sampled cumulative engine rates retain M44's denominator semantics and are never multiplied by duration or replaced with configured rates or array capacity.
 
 The real evaluator identifies three shortened transition-0 metric requests containing a pass end: 2026-10-14 04:45:02.349297305, 05:50:02.355720877 and 11:00:02.783480002 UTC. Their measured request durations are 25.514, 13.903 and 24.189 milliseconds. The request windows follow the shipped completion-time/elapsed-time convention; the counter-read instant inside each request is unobservable. Default has no such recorded ambiguity. Both chains retain zero metric failed assertions and zero metric missing-coverage findings; the overlaps are observed timing cases, not three failed comparisons. This does not execute the separate accumulation/restart/pass-end regression contract.
 
-Full-sample and rate populations contain 289 samples per configured window; maximum sampled-rate gaps are 300.887568/300.450353 seconds. Those windows retain 239/236 kernel_journal error records. The earlier terminal-inclusive original inspection retains 240/237 errors and its own sample population; the different boundaries are preserved. Missing raw kernel and journal populations prevent complete OOM or forced-termination coverage. Unknown coverage is not reported as zero events. Total producer/engine input events and complete original raw populations are not established locally, so criterion 1 remains unchecked. Criterion 5 remains unchecked for unexecuted required measurement regressions.
+Full-sample and rate populations contain 289 samples per configured window; maximum sampled-rate gaps are 300.887568/300.450353 seconds. Those windows retain 239/236 kernel_journal error records. The earlier terminal-inclusive original inspection retains 240/237 errors and its own sample population; the different boundaries are preserved. Missing raw kernel and journal populations prevent complete OOM or forced-termination coverage. Unknown coverage is not reported as zero events. Total producer/engine input events and complete original raw populations remain unknown under D51. Criterion 5 remains unchecked for unexecuted required measurement regressions.
 
-Only retained-report criteria 3 and 4 are verified. No component closure, new runtime case, original full-input replay or product acceptance is claimed. Private evidence: `work/m43-measurements-20261110/report.json` and `verification.json`; report SHA256 `0ce54ebae16090e2d271e12355c5752e81de25e5c41bda30b2ce90fabe770b96`.
+The 2026-11-11 retained-report checkpoint verified criteria 3 and 4. The 2026-11-26 reconciliation below adds the available reporting scope for criteria 1 and 2 under D51. Private evidence: `work/m43-measurements-20261110/report.json` and `verification.json`; report SHA256 `0ce54ebae16090e2d271e12355c5752e81de25e5c41bda30b2ce90fabe770b96`.
 
 ###### Default/Absent Retrieval Bounds
 
-The later M38 / T4 default/absent run preserves the actual query start/end and request/response timestamps in `work/m38-default-20261116/absent/recipient-input/state/raw/`. Select records by request start in the half-open window from 2026-11-17T17:21:25.955989Z through 2026-11-18T17:21:25.955989Z, as recorded in `observation.json` in the same state directory. Across 289 in-window sample directories, 260967 freshness requests and 1734 visibility attempts have all four timestamps, ordered query bounds and ordered request/response timestamps. All responses completed before the cutoff. A further 3612 freshness requests and 24 visibility attempts started outside the window and are excluded from these counts. These results cover retrieval timing in this run. The earlier observations' missing query bounds, original producer totals and separate live regression requirements remain open.
+The later M38 / T4 default/absent run preserves the actual query start/end and request/response timestamps in `work/m38-default-20261116/absent/recipient-input/state/raw/`. Select records by request start in the half-open window from 2026-11-17T17:21:25.955989Z through 2026-11-18T17:21:25.955989Z, as recorded in `observation.json` in the same state directory. Across 289 in-window sample directories, 260967 freshness requests and 1734 visibility attempts have all four timestamps, ordered query bounds and ordered request/response timestamps. All responses completed before the cutoff. A further 3612 freshness requests and 24 visibility attempts started outside the window and are excluded from these counts. These results cover retrieval timing in this run. The earlier observations retain unknown query bounds and original producer totals under D51. Separate live regression requirements remain open.
 
 ##### Visibility Query-Bound Correction
 
-Successful retrieval metadata stores the exact UTC query_start/query_end strings transmitted as HTTP from/to. Failed visibility attempts retain the same bounds with their existing error_type. Source timestamp selection, polling interval, deadline and visibility outcome meanings are preserved. Missing bounds in retained historical observations remain unknown; the correction does not reconstruct them or complete criterion 2.
+Successful retrieval metadata stores the exact UTC query_start/query_end strings transmitted as HTTP from/to. Failed visibility attempts retain the same bounds with their existing error_type. Source timestamp selection, polling interval, deadline and visibility outcome meanings are preserved. Missing bounds in retained historical observations remain unknown. This bounded correction establishes query metadata; the actual default/absent result supplies the measured retrieval scope.
 
 The real measure.latency path uses the unchanged shipped 903-PV database/CSV fixtures and native CA reads. The HTTP boundary serves timestamps captured from that IOC, including actual 503 and empty-response recovery. Finalized freshness/visibility records are compared with independently received URLs after normal target stop. Baseline and mutation failures are observed assertion failures after actual request execution, distinct from candidate acceptance. This verifies metadata persistence within the bounded cases; appliance persistence, controlled accumulation, restart, pass-end overlap and long-duration behavior remain outside T3.
 
@@ -8718,6 +8722,10 @@ The complete execution evidence contains 43079 files totaling 3015458367 bytes. 
 
 ##### Closure Evidence
 
+- On 2026-11-26, retained report/native aggregate identities and available component measurements were rechecked against M43 / T1 and M44 / T1, and recorded retrieval bounds were rechecked directly from M38 / T4 raw files. Criteria 1 and 2 are satisfied under D51. The original unknown fields and unsuccessful results remain recorded. Criterion 5 and the live accumulation/restart/overlap scope remain open.
+
+- D51; Decision Date: 2026-11-26. Retire recovery and verification of unavailable historical producer totals, raw populations and historical retrieval query bounds within criteria 1 and 2. Report those fields as unknown. Keep available-data reconciliation, actual bounds in new measurements, and criterion 5 live regressions active.
+
 - Retained reporting reconciled at 2026-11-11T03:22:33.750524+00:00. Criteria 3 and 4 are verified; criteria 1, 2 and 5 remain unchecked for unavailable producer totals/original populations, missing explicit visibility query bounds and unexecuted measurement regressions. M43 remains In progress; source publication and scoped issue reconciliation remain pending.
 - Query-bound correction verified at 2026-11-11T07:16:29.001416+00:00 under T3. New successful and failed visibility attempts preserve transmitted bounds. Historical criterion 2 and separate T2 coverage remain unresolved; no additional completion criterion is checked. Source publication remains pending.
 
@@ -8727,7 +8735,7 @@ The complete execution evidence contains 43079 files totaling 3015458367 bytes. 
 
 ##### GitHub Projection
 
-- Projection Difference: Source-#48 criteria 3 and 4 are verified canonically and await publication; criteria 1, 2 and 5 remain unmet.
+- Projection Difference: Source-#48 criteria 1 and 2 are verified for available evidence under D51 and await publication. Criteria 3 and 4 are already reflected in #54. Criterion 5 remains unmet.
 
 - Title: `Track ETL test tooling`
 - Labels: `enhancement`
@@ -8869,7 +8877,7 @@ Origin: 38560eb / M45
 Identity History: created by independent tool-work decomposition on 2026-10-15 (D31).
 GitHub Issue: #54, https://github.com/jeonghanlee/ansible-provision/issues/54
 Tracking Consolidation: D33, Decision Date: 2026-10-16. Historical source #50 is closed not_planned at 2026-10-17T01:13:12Z; unfinished criteria are tracked in #54. Original issue references below are historical and do not create an active source-issue dependency.
-Status: Deferred
+Status: Complete
 
 ##### Summary
 
@@ -8910,10 +8918,10 @@ The retained M35 archive and inventory still match their preservation hashes. Bo
 
 ##### Completion Criteria
 
-- [ ] Before transfer, freeze actual post-finalization evaluator and aggregator outputs for each chain, with the exact input/terminal identities, full tool/dependency hashes and versions, CLI arguments, exit codes and complete-output SHA256 values.
-- [ ] Every declared archive member, saved baseline and frozen dependency matches before actual recipient execution.
-- [ ] The recipient executes the same original frozen offline CLIs at the original declared paths and reproduces the complete baseline JSON bytes/hashes, per-check findings, numerical outputs and exit codes without normalization or rewritten inputs/identities.
-- [ ] The initial embedded evaluation and original unsuccessful findings remain unchanged. Any corrected candidate has its own tool identity and post-finalization baseline; it is never compared with the original-tool baseline as if the tools were identical.
+- **Retired without execution (2026-11-26).** Before transfer, freeze actual post-finalization evaluator and aggregator outputs for each chain, with the exact input/terminal identities, full tool/dependency hashes and versions, CLI arguments, exit codes and complete-output SHA256 values.
+- **Retired without execution (2026-11-26).** Every declared archive member, saved baseline and frozen dependency matches before actual recipient execution.
+- **Retired without execution (2026-11-26).** The recipient executes the same original frozen offline CLIs at the original declared paths and reproduces the complete baseline JSON bytes/hashes, per-check findings, numerical outputs and exit codes without normalization or rewritten inputs/identities.
+- **Retired without execution (2026-11-26).** The initial embedded evaluation and original unsuccessful findings remain unchanged. Any corrected candidate has its own tool identity and post-finalization baseline; it is never compared with the original-tool baseline as if the tools were identical.
 
 ##### Dependencies And Decisions
 
@@ -8948,6 +8956,8 @@ The retained M35 archive and inventory still match their preservation hashes. Bo
 | T2 | 2026-11-12T22:06:56.696560+00:00 | Actual libvirt/file existence queries and retained archive/inventory verification | Incomplete | Original domain/image queries failed before export. Archive/inventory and both historical member-manifest hashes match, but full original content is unavailable at the recorded paths. Filename search has permission-limited coverage. Complete source-tree and bundle verification, baseline generation and recipient replay did not run. See `work/etl-original-inputs-20261112/availability-001/result.json`. |
 
 ##### Closure Evidence
+
+- D51; Decision Date: 2026-11-26. Retire all four original-tool recipient criteria: freeze original post-finalization baselines, verify the complete transfer and dependencies, execute exact independent replay, and verify replay preservation and separation of candidate baselines. Original input recovery remains Incomplete, baseline and replay were not run, and existing outputs and findings are preserved. Component-only issue-closure exception: source #50 is already closed and #54 stays open for independent work.
 
 - Not complete. D31 excludes this independent follow-up from current execution; no candidate correction or follow-up acceptance is claimed.
 
@@ -9370,7 +9380,7 @@ Use retained actual evidence first. Run the real reader, evaluator or replay on 
 
 Run a short real experiment only for a necessary behavior that retained evidence cannot establish. Before starting, name the missing claim, real entry point and inputs, required exposure, expected native outcome, time and resource limits, and stop condition. Use the existing shipped tools and fixtures; do not replace internal execution with mocks or reconstructed positive fixtures. Stop when the declared evidence is complete, or preserve Failed/Incomplete when the bound is reached. A short run cannot satisfy an unmet long-duration requirement.
 
-Preserve accepted ETL, journal and buffer functionality, original records and unsuccessful outcomes. All six M38 normal-finish cases and all four shortened/default partial/all-source fault cases have actual controller, producer and independent-recipient results. Remaining lifecycle boundaries retain their original requirements. The required historical originals cannot be obtained; preserve those unmet conditions without another acquisition search, reconstructed input or substitute producer. Completed short cases do not replace long-duration or original-input requirements. No expanded matrix, general framework redesign, automatic retry or repetition of an accepted observation solely for tool correction/reporting is selected.
+Preserve accepted ETL, journal and buffer functionality, original records and unsuccessful outcomes. All six M38 normal-finish cases and all four shortened/default partial/all-source fault cases have actual controller, producer and independent-recipient results. Remaining lifecycle boundaries retain their original requirements. D51 retires criteria that require unavailable historical originals. Retain unknown fields and original outcomes. Completed short cases do not replace long-duration or original-input requirements. No expanded matrix, general framework redesign, automatic retry or repetition of an accepted observation solely for tool correction/reporting is selected.
 
 Close a component after its required claims have actual evidence, its relevant source changes are committed, and its issue criteria agree with the result. Unexecuted or excluded work is never marked Passed; any retirement or exclusion needs an explicit dated decision. Keep each group issue open until its own remaining criteria are satisfied or explicitly retired.
 
@@ -9380,13 +9390,13 @@ Close a component after its required claims have actual evidence, its relevant s
 
 ##### Scope
 
-All remaining component work is tracked directly in this issue. Source issue references identify preserved historical records; retiring those issues does not complete their checks or require their reopening. Every unmet criterion in the transferred contracts remains active here. Shared source checksums and cross-test phase timing are owned by the shared tools issue.
+All remaining component work is tracked directly in this issue. Source issue references identify preserved historical records; retiring those issues does not complete their checks or require their reopening. Transferred criteria remain active unless their disposition is recorded explicitly. Shared source checksums and cross-test phase timing are owned by the shared tools issue.
 
 Component canonical identities remain independent under this single GitHub projection:
 
 - M29: historical source #34; unfinished work is tracked in #54.
 - M30: historical source #35; unfinished work is tracked in #54.
-- M31: historical source #36; unfinished work is tracked in #54.
+- M31: historical source #36; historical interval proof retired under D51.
 - M32: historical source #37; diagnostic-isolation component Complete on 2026-11-07, with its verified criteria retained in #54.
 - M33: historical source #38; query component Complete under D41, with its verified criteria retained in #54.
 - M34: historical source #39; JFR recording component Complete under D44, with its verified criteria retained in #54.
@@ -9399,7 +9409,7 @@ Component canonical identities remain independent under this single GitHub proje
 - M42: historical source #47; unfinished work is tracked in #54.
 - M43: historical source #48; unfinished work is tracked in #54.
 - M44: historical source #49; Complete on 2026-11-19 under D49 after retained numerical evidence, report/source landing and all three checked issue criteria were verified; #54 remains open for other contracts.
-- M45: historical source #50; unfinished work is tracked in #54.
+- M45: historical source #50; original-tool full-day recipient work retired under D51.
 
 Source GitHub issues were retired for consolidation at 2026-10-17T01:14:10.675787+00:00. Component work is not Complete; current tracking is #54 and the retired source metadata is recorded in component details.
 
@@ -9423,7 +9433,7 @@ These summaries preserve the recorded scope. Each linked issue retains its full 
 
 - Problem and evidence: Frozen cursor refusals affected 240 shortened and 237 default samples without saved failed-query bytes. Candidate checkpoint-output changes exist but coverage is unverified.
 - Result: M31 / T2 verifies both complete original runtime manifests and separately identifies checkpoint-output and complete-receipt candidates. The existing real refused-query receipt result remains valid.
-- Remaining work: Exercise actual obsolete-anchor and required-interval-gap coverage; source identity does not establish those behaviors.
+- Disposition: D51 retires historical interval verification because the original journal is unavailable. Historical interval coverage remains unknown.
 - Done when: Outputs, status, arguments and cursor/interval identity persist; required coverage is independently proved where possible and historical unknowns are not declared successful.
 
 ###### #37 - Keep kernel diagnostics independent of the ETL terminal verdict
@@ -9490,7 +9500,7 @@ These summaries preserve the recorded scope. Each linked issue retains its full 
 ###### #48 - Reconcile retained ETL measurements and process identities
 
 - Problem and evidence: Measurements exist but per-component reconciliation is unfinished. Three shortened request/pass overlaps had zero metric failures and zero missing coverage.
-- Result: M43 retained reporting verifies actual overlap/accumulation/process accounting and avoids invented event counts. Producer totals, explicit visibility query bounds and separate required regressions remain unresolved; only source-#48 criteria 3 and 4 are verified.
+- Result: M43 criteria 1-4 are verified from retained component, retrieval and process evidence within the D51 exclusions. Unknown historical totals, visibility bounds and complete OOM coverage remain explicit. Criterion 5 retains the outstanding live regressions.
 - Done when: Units, intervals, denominators and coverage are explicit; actual counts are used, unknowns are disclosed and normal overlap is not called failed comparison.
 
 ###### #49 - Compare ETL busy time and workload with retained earlier results
@@ -9502,7 +9512,7 @@ These summaries preserve the recorded scope. Each linked issue retains its full 
 ###### #50 - Reproduce completed ETL observation reports on an independent recipient
 
 - Problem and evidence: Exact independent-recipient reproduction of complete finalized ETL JSON/numerical reports is unfinished on both chains.
-- Remaining work: Freeze actual post-finalization original evaluator/aggregator outputs and identities, privately transfer them and run identical frozen CLIs at declared paths.
+- Disposition: D51 retires baseline generation, transfer and independent replay because complete original inputs are unavailable. Original recovery remains Incomplete.
 - Done when: Complete bytes/hashes, findings, numbers and exit codes match without normalization; embedded initial evaluations remain historical and corrected candidates use separate baselines.
 
 ##### Retained Evidence Accounting
@@ -9608,11 +9618,11 @@ The supported checklist becomes 36 checked and 45 unchecked. No criterion text, 
 
 Decision Date: 2026-11-11. Consolidate every remaining component into one local preparation batch, one shared VM execution batch and one result/publication batch. Do not continue selecting a separate small follow-up after each local result. This updates execution grouping only: component criteria, original case matrices, Deferred decisions and external gates retain their authority. No VM is started or source deployed by this grouping.
 
-The original shared VM batch covered seven components. M39 and M40 have completed actual shortened/default execution and independent-recipient verification. Prepare only M38, M41, M42 and M43 for the remaining shared VM work. M31 remains Deferred and is excluded from preparation and execution.
+The original shared VM batch covered seven components. M39 and M40 have completed actual shortened/default execution and independent-recipient verification. Prepare only M38, M41, M42 and M43 for the remaining shared VM work. M31 is retired under D51 and excluded from preparation and execution.
 
 | Component | Required VM Work | Reuse Boundary |
 | --- | --- | --- |
-| M31 / T1 | Deferred on 2026-11-19. Required-interval coverage remains unverified because the original journal is unavailable. | Reuse the verified receipt and source-identity checks. Fresh journal generation and rotation are outside the selected work. |
+| M31 / T1 | Retired under D51 on 2026-11-26. Historical required-interval coverage remains unknown. | Reuse the verified receipt and source-identity checks. Fresh journal generation and rotation are outside the selected work. |
 | M38 / T1-T7 | All six normal-finish and exact recipient rows are verified by T12/T2/T3/T4/T5/T6. Remaining timeout, interruption and worker-failure boundaries retain their declared scope. | Reuse all six completed rows and startup ordering. Retain the T5 native Incomplete record, its separate aggregation correction and the two historical planned-abort results. |
 | M39 / T1-T3 | Shortened and default journal-source refusal are verified with required application files available, actual sampler/stop/restoration and controller/producer/independent-recipient outcomes. | Reuse the verified cases and complete six-artifact equality; no repeat VM execution is required. Source 07afd2b landing and #54 reconciliation verified; component Complete under the dated D49 linked-issue closure exception. |
 | M40 / T1-T3 | Shortened and default all-source refusal are verified with first versus repeated failure, exactly one actual automatic abort, actual stop/restoration and controller/producer/independent-recipient outcomes. | Reuse the verified cases and complete six-artifact equality; no repeat VM execution is required. Source 07afd2b landing and #54 reconciliation verified; component Complete under the dated D49 linked-issue closure exception. |
@@ -9628,9 +9638,9 @@ Observed local result at 2026-11-11T18:17:37.322524+00:00: candidate source impl
 
 The 2026-11-11 grouping request covers preparation and accounting together. It does not approve an unreviewed component implementation plan, retire a missing-evidence requirement, start an environment, or grant Git/GitHub mutation authority.
 
-1. Prepare the complete source set before requesting the shared environment. Retain M38's separately identified and locally verified runner/replay. Inspect M39/M40's preserved controller/replay contracts together, resolve the required candidate corrections under their component plans and perform meaningful local interface/refusal checks. Inspect the M41/M42/M43 real entry points and define their VM cases and source prerequisites in the same preparation pass. Exclude M31 under its 2026-11-19 deferral. Local tests never replace a runtime span or establish an unexecuted live claim.
+1. Prepare the complete source set before requesting the shared environment. Retain M38's separately identified and locally verified runner/replay. Inspect M39/M40's preserved controller/replay contracts together, resolve the required candidate corrections under their component plans and perform meaningful local interface/refusal checks. Inspect the M41/M42/M43 real entry points and define their VM cases and source prerequisites in the same preparation pass. Exclude retired M31 work under D51. Local tests never replace a runtime span or establish an unexecuted live claim.
 2. Verify the complete current-source manifests, frozen native bundle, preserved historical sources and canonical document together after the last candidate change. Bind every local result to its actual final source bytes; rerun affected checks after changes. Reuse already verified retained reports instead of adding another numerical-report task. Preserve immutable original inputs, native Incomplete/Failed findings and private runtime evidence.
-3. Keep M43 historical-field availability and M45 original-input discovery separate from VM runtime work. M43 still lacks some original producer totals/populations and historical query bounds. M45 needs complete original per-chain finalized inputs, dependencies and post-finalization baselines before any independent-recipient execution can count; a new VM or new observation cannot supply those originals. If complete originals become available, prepare its recipient replay alongside the scenario transfers while preserving its distinct original-tool baseline.
+3. Keep unavailable historical producer totals, raw populations and query bounds unknown under D51. Use retained and new real measurements for the remaining M43 reporting and VM checks. M45 original-input recovery and replay are retired.
 4. M44's retained report and both analysis sources match fetched origin/master, and its three issue criteria are checked; component-only completion was verified on 2026-11-19. Keep M38 preparation and its remaining execution scope separate. Reconcile all verified criterion updates in one #54 body preparation after final results are known. The 13 verified updates were published together and exactly read back on 2026-11-11T18:35:08.345262+00:00; the remaining criteria and aggregate stay open.
 5. After the shared runtime and recipient results are finalized, update component evidence and derive M29/M30/M48 parent criteria from those same results in one reconciliation pass. Do not execute parent criteria as duplicate tests or close a child from a parent summary. Commit, push and live issue changes retain their independent authorization requirements.
 
@@ -9650,23 +9660,28 @@ Reopening #30/#31, changing application scheduling/storage, predicting event cou
 
 ##### Transferred Acceptance Criteria
 
-All criteria below remain active in the replacement issue. Source closure is administrative; actual verification is still required. The source scopes, evidence and real-path methods remain in their component canonical details and are copied completely into the prepared public body.
+Criteria marked retired below are excluded from active work under D51. Source closure is administrative; actual verification is still required. The source scopes, evidence and real-path methods remain in their component canonical details and are copied completely into the prepared public body.
 
 ###### Source #34 - Fix kernel journal collection and ETL terminal isolation
 
 - [x] The real failed-query path preserves its original output and enough cursor/interval metadata to diagnose the refusal without exposing credentials or internal identifiers.
-- [ ] Focused real-journald checks distinguish an obsolete anchor with independently proven interval coverage from an actual or unresolved required-interval gap; unproved coverage never becomes `Passed`.
+- **Retired without execution (2026-11-26).** Focused real-journald checks distinguish an obsolete anchor with independently proven interval coverage from an actual or unresolved required-interval gap; unproved coverage never becomes `Passed`.
 - [x] The actual normal-finish and replay paths keep a kernel-only diagnostic failure visible without rejecting a complete required ETL pass set. Result: M32 / T4 confirms 26/26 required passes through actual normal finish and frozen replay; native aggregate Incomplete and diagnostic findings remain preserved.
-- [ ] Genuine loss of required ETL evidence remains `Incomplete` or `Failed` as applicable, and the declared all-sources-unavailable automatic-abort expectations remain enforced.
-- [ ] Both completed observations are rechecked from retained evidence with their exact original tools and a separately identified candidate; original data, failed records and verdicts remain unchanged.
+- [x] Genuine loss of required ETL evidence remains `Incomplete` or `Failed` as applicable, and the declared all-sources-unavailable automatic-abort expectations remain enforced.
+- **Retired without execution (2026-11-26).** Both completed observations are rechecked from retained evidence with their exact original tools and a separately identified candidate; original data, failed records and verdicts remain unchanged.
 - [x] The follow-up uses retained evidence and bounded real-path checks; no new 24-hour observation is required solely to repair the collector.
 
-- [ ] Complete collector/package independence through actual preparation, start, capture, normal terminal handling and replay on both chains with unrelated journal-study modules absent, failing and separately changed. Preserve completed shortened results; execute the unverified default variants as tool checks.
-- [ ] Complete the remaining collection-source failure and automatic-abort cases using actual configured sources. Distinguish successful ETL processing from unavailable test evidence, and retain first-failure versus repeated-failure behavior.
+- [x] Complete collector/package independence through actual preparation, start, capture, normal terminal handling and replay on both chains with unrelated journal-study modules absent, failing and separately changed. Preserve completed shortened results; execute the unverified default variants as tool checks.
+- [x] Complete the remaining collection-source failure and automatic-abort cases using actual configured sources. Distinguish successful ETL processing from unavailable test evidence, and retain first-failure versus repeated-failure behavior.
 - [ ] Verify final and post-stop application-file capture, process identity, repeated terminal refusal and restoration through the actual tools without changing completed ETL observation records.
 - [ ] Exercise real collection during source-store deletion and metrics requests overlapping ETL pass completion; preserve actual request bounds and measured outputs instead of converting collection races into ETL failures.
-- [ ] Preserve actual fixture/input counts, source timing and workload identity for later measurement reports; configured frequency multiplied by duration is not an observed event count.
-- [ ] Keep these tool checks independent of the completed ETL functionality result in #30. Future collector corrections follow the accepted ETL verification and do not require another full-day observation solely for tool repair.
+- [x] Preserve actual fixture/input counts, source timing and workload identity for later measurement reports; configured frequency multiplied by duration is not an observed event count.
+- [x] Keep these tool checks independent of the completed ETL functionality result in #30. Future collector corrections follow the accepted ETL verification and do not require another full-day observation solely for tool repair.
+
+The three checked parent conditions reuse the completed child runs. Required-evidence refusal remains visible, and E4 records native `Incomplete`/1 with no abort on the first critical sample and exactly one automatic abort after the repeated failure on each chain. E3 retains successful ETL passes during journal refusal while required application files remain available, then verifies recovery and exact restoration. All six independence cases completed at their original durations with seven byte-identical independent-recipient artifacts per case. Default/failing retains its original native `Incomplete`. See 07afd2b and 61115ff.
+
+The workload comparison retains 903 verified PVs on each chain, the matching fixture hash, actual 86400-second observation windows and measured workload under the pinned metric definitions. Both retained native aggregate results remain `Incomplete`. The accepted ETL functionality in #30 was closed as completed on 2026-10-15. Collector-tool validation remains independent, and tool repair alone does not require repeating a full-day observation.
+
 
 
 
@@ -9680,10 +9695,10 @@ All criteria below remain active in the replacement issue. Source closure is adm
 - [x] Use the completed observations for regression and focused real terminal checks for ordering; a new 24-hour observation is not required solely to repair these verifier defects.
 
 - [x] Compare original UTC instants with the shipped timestamp parser, retaining nanosecond precision and original strings. Verify actual retained source-availability and automatic-abort inputs through the real runtime/scenario and replay paths; do not change an original controller status to satisfy the checker. Result: M36 / T1-T6 Passed through all three actual callers on both retained fault kinds; source 982733f and the matching #54 checkbox are verified.
-- [ ] Reconcile per-component heap, GC cause/pause, jstat, RSS, observed input/event rates, retrieval freshness/visibility, request bounds and identity/gap/OOM evidence from the already collected observations.
+- [x] Reconcile per-component heap, GC cause/pause, jstat, RSS, observed input/event rates, retrieval freshness/visibility, request bounds and identity/gap/OOM evidence from the already collected observations.
 - [ ] Evaluate retained and focused real-input measurement regressions for source-store shrink, pass-end/request overlap, accumulation and restart. Collection-path corrections are coordinated with #34; no internal mock establishes integration acceptance.
 - [x] Produce the supplemental workload/performance comparison: last-pass and average busy time, weekly usage and actual load, concurrency, store-age and resource differences. Missing comparable historical rates prohibit an improvement claim but do not reopen ETL functionality acceptance.
-- [ ] Privately transfer the retained evidence and exact frozen tools to an independent recipient, verify declared members/hashes and reproduce complete result JSON and numerical reports. Keep original unsuccessful findings, raw operational data and deployment identifiers out of public Git.
+- **Retired without execution (2026-11-26).** Privately transfer the retained evidence and exact frozen tools to an independent recipient, verify declared members/hashes and reproduce complete result JSON and numerical reports. Keep original unsuccessful findings, raw operational data and deployment identifiers out of public Git.
 - [x] Record actual preparation, processing, waiting, observation and analysis times against the agreed one-hour journal, three-hour ETL, parallel full-day and two-hour overall decision allocations as supplemental reporting; do not impose a new observation to complete the report.
 - [ ] Complete these evaluator/report/reproduction checks after the accepted ETL functionality result. Their completion is not a gate on #30 and no new 24-hour data-production run is required solely for these corrections or analyses.
 
@@ -9693,8 +9708,8 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 - [x] Historical frozen tools and the current candidate are identified separately by complete manifests/source hashes; the existing checkpoint-output change is distinguished from unverified behavior.
 - [x] A real refused candidate query preserves stdout/stderr, return code, original arguments and cursor/interval metadata.
-- [ ] An actual obsolete-anchor case with independently proved required coverage is distinguished from a real or unresolved required-interval gap.
-- [ ] Unproved coverage remains `Incomplete` or `Failed`; original full-day records and unsuccessful verdicts stay unchanged.
+- **Retired without execution (2026-11-26).** An actual obsolete-anchor case with independently proved required coverage is distinguished from a real or unresolved required-interval gap.
+- **Retired without execution (2026-11-26).** Unproved coverage remains `Incomplete` or `Failed`; original full-day records and unsuccessful verdicts stay unchanged.
 
 
 
@@ -9787,8 +9802,8 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 ###### Source #48 - Reconcile retained ETL measurements and process identities
 
-- [ ] Per-component heap, GC cause and pause, jstat, RSS and observed input/event counts and rates reconcile with actual process/lifetime identities and time ranges; units, provenance and rate denominators are explicit.
-- [ ] Retrieval freshness and visibility are reported with actual query/request/response bounds. Process identity continuity, evidence gaps and OOM or forced-termination findings are reported explicitly; absent evidence is not recorded as zero events or complete coverage.
+- [x] Per-component heap, GC cause and pause, jstat, RSS and observed input/event counts and rates reconcile with actual process/lifetime identities and time ranges; units, provenance and rate denominators are explicit.
+- [x] Retrieval freshness and visibility are reported with actual query/request/response bounds. Process identity continuity, evidence gaps and OOM or forced-termination findings are reported explicitly; absent evidence is not recorded as zero events or complete coverage.
 - [x] Actual request/pass overlaps, accumulation and process changes are evaluated from retained records and remain distinct from failed assertions.
 - [x] Configured rates and array capacity are never used as observed event counts or actual lengths; missing data is stated rather than invented.
 - [ ] Retained-input and bounded real measurement regressions cover accumulation, process restart and pass-end/request overlap; actual coverage and unresolved cases remain explicit.
@@ -9805,10 +9820,10 @@ All criteria below remain active in the replacement issue. Source closure is adm
 
 ###### Source #50 - Reproduce completed ETL observation reports on an independent recipient
 
-- [ ] Before transfer, freeze actual post-finalization evaluator and aggregator outputs for each chain, with the exact input/terminal identities, full tool/dependency hashes and versions, CLI arguments, exit codes and complete-output SHA256 values.
-- [ ] Every declared archive member, saved baseline and frozen dependency matches before actual recipient execution.
-- [ ] The recipient executes the same original frozen offline CLIs at the original declared paths and reproduces the complete baseline JSON bytes/hashes, per-check findings, numerical outputs and exit codes without normalization or rewritten inputs/identities.
-- [ ] The initial embedded evaluation and original unsuccessful findings remain unchanged. Any corrected candidate has its own tool identity and post-finalization baseline; it is never compared with the original-tool baseline as if the tools were identical.
+- **Retired without execution (2026-11-26).** Before transfer, freeze actual post-finalization evaluator and aggregator outputs for each chain, with the exact input/terminal identities, full tool/dependency hashes and versions, CLI arguments, exit codes and complete-output SHA256 values.
+- **Retired without execution (2026-11-26).** Every declared archive member, saved baseline and frozen dependency matches before actual recipient execution.
+- **Retired without execution (2026-11-26).** The recipient executes the same original frozen offline CLIs at the original declared paths and reproduces the complete baseline JSON bytes/hashes, per-check findings, numerical outputs and exit codes without normalization or rewritten inputs/identities.
+- **Retired without execution (2026-11-26).** The initial embedded evaluation and original unsuccessful findings remain unchanged. Any corrected candidate has its own tool identity and post-finalization baseline; it is never compared with the original-tool baseline as if the tools were identical.
 
 
 
@@ -9871,6 +9886,8 @@ M35/D48 terminal criteria are verified from the recorded real normal/fault/repla
 
 ##### Closure Evidence
 
+- D51; Decision Date: 2026-11-26. Retire nine transferred criteria without execution: source #34 historical interval proof and exact rechecks of both original observations; source #35 independent full-day recipient reproduction; source #36 historical interval/coverage checks 3 and 4; all four source #50 original-tool reproduction criteria. The unavailable historical portions of source #48 criteria 1 and 2 are excluded within their otherwise active criteria. Keep the original records, verdicts and accepted product results. Shared #54 stays open for active work. The retirement accounted for 20 active unmet criteria before the reuse of three verified parent results.
+
 - Source #46 publication verified at 2026-11-19T23:16:30.019923+00:00: exact #54 readback checks normal-stop final capture and repeated-request replay against the retained evidence. The changed-input refusal remains unchecked. All 81 texts are preserved and only those two check states changed. The issue remains open at 48 checked and 33 unchecked. Receipt: `work/issue-54-m41-readback-20261119.json`.
 
 - Issue-body correction verified at 2026-11-19T19:25:32.089152+00:00: the live #54 body matches the draft SHA256 `46e55411476a2d60b84dc839d06ff0fc1865fb05ff8d6deb533ff406779e421c`. Only the introductory source-#49 sentence changed. All 81 condition texts and states match the preceding body, with 46 checked and 35 unchecked. The issue remains open with the same title, label, milestone and assignee. Receipt: `work/issue-54-m44-readback-20261119.json`.
@@ -9905,7 +9922,7 @@ M35/D48 terminal criteria are verified from the recorded real normal/fault/repla
 
 ##### GitHub Projection
 
-- Projection Difference: Canonical and exact #54 readback agreed at 48 checked and 33 unchecked on 2026-11-19T23:16:30.019923+00:00. Source #46 has two verified criteria; changed-input refusal remains unchecked. The M44 introduction now agrees with its verified detailed criteria. The last readback reflects four of six M38 normal-finish/recipient rows. Canonical evidence now verifies all six, including T5 default/failing and T6 default/changed. Both case results and the four additional verified M38 criteria are pending projection to #54. Four components remain in shared VM preparation. M31 and its unresolved interval contract remain Deferred. Historical original-input/report requirements remain open. M39/M40 remain Complete under their recorded component-only closure exceptions; the aggregate and issue remain open.
+- Projection Difference: Three verified retained-report criteria await publication: source #35 numerical reporting and source #48 criteria 1 and 2 under D51. The canonical count is 60 verified, nine retired without execution and 12 active unmet. The last #54 readback remains open at 57 verified, nine retired and 15 active unmet.
 - Title: `Track ETL test tooling`
 - Labels: `enhancement`
 - GitHub Milestone: `Backlog`
@@ -9916,13 +9933,13 @@ M35/D48 terminal criteria are verified from the recorded real normal/fault/repla
 - Observed Labels: `enhancement`
 - Observed Milestone: `Backlog`
 - Observed Assignees: `jeonghanlee`
-- Observed Updated At: 2026-11-19T23:16:14Z
-- Last Compared: 2026-11-19T23:16:30.019923+00:00; exact #54 body SHA256 364610813cfd105c7f687cbf16696327824fb6f3d28c7184c04f92c60ffd3622, 48 checked/33 unchecked criteria, two additional source-#46 checks and all 81 criterion texts preserved. Issue state and metadata are unchanged. Receipt: `work/issue-54-m41-readback-20261119.json`.
+- Observed Updated At: 2026-11-26T23:29:05Z
+- Last Compared: 2026-11-26T23:29:18.195067+00:00; live #54 matches the prepared body byte for byte (SHA256 2ce80e0156f154ee92c2e42497c2429f4177b2bfe35a491cbd608f4082198d8c). All 81 criterion texts, title, labels, milestone and assignee are preserved.
 - Query Update Readback: 2026-10-21T08:34:55+00:00; four query criteria newly checked and all other source sections/criteria preserved. Full comparison retained at `work/issue-etl-query-applied-20261021.json`.
 - JFR Update Readback: 2026-10-22T10:49:17Z; the three source-#39 criteria and two overlapping source-#35 criteria are newly checked; all other sections and criteria are preserved. Receipt: `work/issue-etl-jfr-applied-20261022.json`.
-- Prepared Body: `work/issue-54-m41-body.md`
-- Prepared Body SHA256: 364610813cfd105c7f687cbf16696327824fb6f3d28c7184c04f92c60ffd3622
-- Published Body SHA256: 364610813cfd105c7f687cbf16696327824fb6f3d28c7184c04f92c60ffd3622
+- Prepared Body: `work/issue-54-reporting-body.md`
+- Prepared Body SHA256: 8038c6af56e4d819dbdb6c9f990ab8fb94759e03bb05f25b6860bf93f35794cd
+- Published Body SHA256: 2ce80e0156f154ee92c2e42497c2429f4177b2bfe35a491cbd608f4082198d8c
 - Historical Source Issues: #34, #35, #36, #37, #38, #39, #40, #41, #43, #44, #45, #46, #47, #48, #49, #50
 
 #### M49 - Track buffer test tooling
