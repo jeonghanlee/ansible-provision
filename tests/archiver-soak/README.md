@@ -13,7 +13,7 @@ for Git tracking.
 Out of scope: VM inventories, SSH settings, credentials, application
 configuration backups, measured CSVs, logs, JFR recordings and live run status.
 Those belong in private evidence directories. The canonical plan and observed
-verification results are in [the work register](../../docs/milestone-38560eb.md).
+verification results are in [the work register](../../docs/milestone-6bf1b9d.md).
 
 Use the [shared evidence procedures](PROCEDURES.md) for source/input selection,
 privacy, transfer verification, separate original/candidate replay and verdict

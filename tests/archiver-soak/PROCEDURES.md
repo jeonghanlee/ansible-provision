@@ -12,7 +12,7 @@ installed bundle, repairing a test, and deciding product acceptance from a
 generic helper result. Follow the [ETL contracts](README.md#execution-contracts),
 [Journal procedures](journal-validation/README.md), and
 [scenario contracts](etl-scenarios/README.md) for those operations. Current work
-and verification status belong to the [canonical record](../../docs/milestone-38560eb.md).
+and verification status belong to the [canonical record](../../docs/milestone-6bf1b9d.md).
 
 ## 1. Select The Claim And Actual Inputs
 

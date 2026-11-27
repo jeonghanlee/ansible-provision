@@ -4,8 +4,9 @@
 
 Preserve the buffer observer, native write-delay shim, decoder, campaign tools
 and retained-input diagnostics. This directory contains reusable source, its
-original identity and build procedures. The [work register](../../../docs/milestone-38560eb.md)
-owns verification results and remaining work under M50 and M49.
+original identity and build procedures. The [work register](../../../docs/milestone-6bf1b9d.md)
+tracks remaining work. Completed buffer and installation results are preserved
+in [the prior verification record](https://github.com/jeonghanlee/ansible-provision/blob/6bf1b9d11ed404dc6307f5a83acd4b4f263239c2/docs/milestone-38560eb.md).
 
 Out of scope: installation acceptance, another appliance campaign, changes to
 completed product acceptance, raw traces, native PB, logs, credentials and
@@ -152,7 +153,7 @@ no `etl-soak-sample.service`, `etl-soak-sample.timer` or
 `etl-soak-finish.service`; those ETL commands belong to the separate shared
 installer. The buffer campaign uses its own runner. Existing units are not
 removed; installation requires a dedicated empty appliance. Actual installation
-verification remains recorded under M50 separately from source/build checks.
+verification is recorded in [the shared tooling issue](https://github.com/jeonghanlee/ansible-provision/issues/56).
 
 ## Bounded Installation Verification
 
@@ -344,7 +345,7 @@ four-hour acceptance and recorded comparisons remain separate historical
 results. This offline pass check performs no installation, live capture,
 decoder/PB comparison, service lifecycle or new product acceptance. Progress
 verification and Maven assertion accounting use their separate methods under
-M49/#55.
+[the buffer tooling issue](https://github.com/jeonghanlee/ansible-provision/issues/55).
 
 ## Maven Assertion Boundary
 

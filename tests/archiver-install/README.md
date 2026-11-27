@@ -3,8 +3,8 @@
 ## Scope
 
 These checks exercise a real general-server SQLite installation on a dedicated
-Rocky Linux 8.10 VM. The canonical test contract and observed results belong to
-M51 in `docs/milestone-38560eb.md`.
+Rocky Linux 8.10 VM. The test contract and observed results are preserved in
+[the installation verification record](https://github.com/jeonghanlee/ansible-provision/blob/6bf1b9d11ed404dc6307f5a83acd4b4f263239c2/docs/milestone-38560eb.md#m51---verify-current-archiver-sources-through-a-complete-general-server-sqlite-vm-installation).
 
 Out of scope: physical-server deployment, source promotion, long observations,
 performance comparisons and the aa-maven unit test suite.
@@ -53,7 +53,7 @@ VM lifecycle is performed by its provider; send a finished notice when use ends.
 guest UUID; they retain command and HTTP evidence in a new output directory.
 `compare` reads saved CA and retrieval inputs and reports Passed, Failed or
 Incomplete. Configuration selects the PVs, fixture hash, sample count, timeouts
-and timestamp tolerance. The canonical M51 results record which modes and data
+and timestamp tolerance. The retained installation results record which modes and data
 comparisons actually ran; source checks alone establish no functional result.
 
 Create a private JSON config using the actual provider UUID and installed SQLite
